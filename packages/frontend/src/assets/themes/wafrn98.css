@@ -1,4 +1,4 @@
- /*
+/*
 theme by vv0ltz
 https://app.wafrn.net/blog/vv0ltz
  */
@@ -43,11 +43,11 @@ https://app.wafrn.net/blog/vv0ltz
 
         --popup-bgcolor: silver;
 
-        --color-trans: none/*0.37s cubic-bezier(0.77, 0, 0.23, 1)*/;
+        --color-trans: none !important/*0.37s cubic-bezier(0.77, 0, 0.23, 1)*/;
 
-        --image-transoff: none/*0.37s cubic-bezier(0.88, 0.52, 0.48, 1)*/;
+        --image-transoff: none !important/*0.37s cubic-bezier(0.88, 0.52, 0.48, 1)*/;
 
-        --image-trans: none/*0.37s cubic-bezier(0.81, -0.19, 0.27, 0.34)*/;
+        --image-trans: none !important/*0.37s cubic-bezier(0.81, -0.19, 0.27, 0.34)*/;
 
         --mat-sys-corner-large: 0px;
 
@@ -500,7 +500,7 @@ div.follow-counts {}
     .mdc-tab {
         box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
 
-        background-color: var(--element-bgcolor);
+        background-color: var(--element-bgcolor) !important;
     }
 
     .mdc-tab[aria-selected="true"] {
