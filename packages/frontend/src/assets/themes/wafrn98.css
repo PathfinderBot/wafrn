@@ -1,4 +1,4 @@
-   /*
+ /*
 theme by vv0ltz
 https://app.wafrn.net/blog/vv0ltz
  */
@@ -43,11 +43,11 @@ https://app.wafrn.net/blog/vv0ltz
 
         --popup-bgcolor: silver;
 
-        --color-trans: 0.37s cubic-bezier(0.77, 0, 0.23, 1);
+        --color-trans: none/*0.37s cubic-bezier(0.77, 0, 0.23, 1)*/;
 
-        --image-transoff: 0.37s cubic-bezier(0.88, 0.52, 0.48, 1);
+        --image-transoff: none/*0.37s cubic-bezier(0.88, 0.52, 0.48, 1)*/;
 
-        --image-trans: 0.37s cubic-bezier(0.81, -0.19, 0.27, 0.34);
+        --image-trans: none/*0.37s cubic-bezier(0.81, -0.19, 0.27, 0.34)*/;
 
         --mat-sys-corner-large: 0px;
 
@@ -98,12 +98,15 @@ https://app.wafrn.net/blog/vv0ltz
         --mat-sys-on-primary-container: var(--mat-sys-on-surface);
 
         --mat-sys-tertiary: #1084d0;
+
+        --mat-sys-surface-container-highest: #1084d0;
     }
 
 
 
     /* BACKGROUND */
-    .mat-drawer-content, .mat-drawer-container {
+    .mat-drawer-content,
+    .mat-drawer-container {
         background-color: var(--main-bgcolor) !important;
     }
 
@@ -140,8 +143,6 @@ https://app.wafrn.net/blog/vv0ltz
     button {
         background-color: var(--button-bgcolor);
 
-        color: var(--main-textcolor);
-
         border-color: var(--button-accent-color);
 
         border-style: solid;
@@ -168,15 +169,13 @@ https://app.wafrn.net/blog/vv0ltz
 
         border-radius: 3px;
 
-        color: var(--main-textcolor);
-
         transition: var(--color-trans);
     }
 
     button:active {
         background-color: var(--button-bgcolor-hover);
 
-        color: var(button-accent-color);
+        color: var(--button-accent-color);
 
         border-color: var(--button-accent-color-hover);
 
@@ -185,8 +184,6 @@ https://app.wafrn.net/blog/vv0ltz
         border-width: 0px;
 
         border-radius: 3px;
-
-        color: var(--main-textcolor);
 
         transition: var(--color-trans);
 
@@ -412,6 +409,27 @@ https://app.wafrn.net/blog/vv0ltz
         border-color: silver;
     }
 
+    app-settings .wafrn-container-wide {
+        background: var(--element-bgcolor);
+
+        padding: 1rem;
+
+        box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px grey, inset 2px 2px #fff;
+    }
+
+    app-settings .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+        background: white;
+
+        box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+
+        border: none !important;
+    }
+
+    .setting-header,
+    app-settings h2 {
+        color: var(--main-textcolor);
+    }
+
     /* PROFILE */
     /*
 
@@ -476,6 +494,17 @@ div.follow-counts {}
         border: none;
         border-radius: 0;
         box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px grey, inset 2px 2px #fff;
+    }
+
+    /* PROFILE TABS */
+    .mdc-tab {
+        box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+
+        background-color: var(--element-bgcolor);
+    }
+
+    .mdc-tab[aria-selected="true"] {
+        box-shadow: inset -1px 0 #0a0a0a, inset 1px 1px #dfdfdf, inset -2px 0 grey, inset 2px 2px #fff;
     }
 
     /* DIVIDER LINE */
@@ -668,7 +697,9 @@ div.fragment-content-warning button {}
 
     /* MEDIA CONTAINER */
     .media-gallery {
-        max-width: 70%;
+        max-width: 100%;
+
+        height: 100%;
 
         display: block;
 
@@ -734,9 +765,9 @@ div.fragment-content-warning button {}
         border-radius: 0;
     }
 
-   a.tag .tag-text {
+    a.tag .tag-text {
         color: var(--link-textcolor);
-   }
+    }
 
     a.tag:hover {
         color: var(--link-textcolor-hover) !important;
@@ -782,6 +813,12 @@ div.fragment-content-warning button {}
     }
 
     /* REACTS */
+    .emoji-container {
+        background-color: var(--element-bgcolor);
+
+        color: var(--main-textcolor);
+    }
+
     #emoji-reactions button {
         background-color: var(--element-bgcolor);
 
@@ -798,6 +835,23 @@ div.fragment-content-warning button {}
         transition: var(--color-trans);
 
         fill: var(--main-textcolor);
+    }
+
+    #emoji-reactions button:disabled,
+    button[disabled] {
+        text-shadow: 1px 1px 0 #fff;
+
+        box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf !important;
+
+        background-color: var(--element-bgcolor) !important;
+
+        opacity: 0.5;
+    }
+
+    .reacted {
+        background-color: var(--element-bgcolor) !important;
+
+        box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px #808080 !important;
     }
 
     /*
@@ -938,20 +992,23 @@ app-post hr > div a:hover {}
 
 
     /* IMAGE CW TEXT BACKGROUND, AUDIO */
-    .image-cw-text, .v-container, .v-media, .v-media > iframe {
+    .image-cw-text,
+    .v-container,
+    .v-media,
+    .v-media > iframe {
         background: #808080 !important;
     }
 
-:root .footer-links a {
-  color: var(--mat-sys-on-surface);
-}
+    :root .footer-links a {
+        color: var(--mat-sys-on-surface);
+    }
 
-/* Bottom Toolbar */
-.wafrn-toolbar {
-  border-top: 2px outset;
-}
+    /* Bottom Toolbar */
+    .wafrn-toolbar {
+        border-top: 2px outset;
+    }
 
-:root .new-woot-button {
-  --mat-sys-on-primary: silver;
-  --mat-sys-primary: navy;
-}
+    :root .new-woot-button {
+        --mat-sys-on-primary: silver;
+        --mat-sys-primary: navy;
+    }
