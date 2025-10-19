@@ -135,18 +135,20 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const builder = new RichtextBuilder()
   const encoder = new TextEncoder()
 
-  const postWithMediaCutoff = 270
-  const textOnlyPostCutoff = 290
-  const tokens = tokenize(postText)
+  const postMax = 300
+  // A bit more to account for unicode and such
+  const shortenerWithMediaLength = 31
+  const textOnlyShortenerLength = 15
 
+  const tokens = tokenize(postText)
   for (const token of tokens) {
     let text = builder.text
     if (token.type === 'link') text += token.text
     else text += token.raw
 
     const length = encoder.encode(text).byteLength
-    if (length > postWithMediaCutoff && medias.length && medias.length <= 4) {
-      const lengthLeft = postWithMediaCutoff - builder.text.length
+    if (length > postMax && medias.length && medias.length <= 4) {
+      const lengthLeft = postMax - builder.text.length - shortenerWithMediaLength
       if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
       else builder.addText(token.raw.slice(0, lengthLeft))
 
@@ -155,8 +157,8 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       postShortened = true
       break
-    } else if (length > textOnlyPostCutoff) {
-      const lengthLeft = textOnlyPostCutoff - builder.text.length
+    } else if (length > postMax) {
+      const lengthLeft = postMax - builder.text.length - textOnlyShortenerLength
       if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
       else builder.addText(token.raw.slice(0, lengthLeft))
 

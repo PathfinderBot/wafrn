@@ -353,8 +353,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         .map((emoji) => ({
           img: emoji.url
             ? EnvironmentService.environment.externalCacheurl +
-              EnvironmentService.environment.baseMediaUrl +
-              encodeURIComponent(emoji.url)
+            EnvironmentService.environment.baseMediaUrl +
+            encodeURIComponent(emoji.url)
             : '',
           id: emoji.id,
           name: emoji.name.includes(')') ? emoji.name.split(')')[1] : emoji.name
@@ -612,19 +612,19 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     var copy = document.createElement('div')
     copy.textContent = textArea.value
     var style = getComputedStyle(textArea)
-    ;[
-      'fontFamily',
-      'fontSize',
-      'fontWeight',
-      'wordWrap',
-      'whiteSpace',
-      'borderLeftWidth',
-      'borderTopWidth',
-      'borderRightWidth',
-      'borderBottomWidth'
-    ].forEach(function (key: any) {
-      copy.style[key] = style[key]
-    })
+      ;[
+        'fontFamily',
+        'fontSize',
+        'fontWeight',
+        'wordWrap',
+        'whiteSpace',
+        'borderLeftWidth',
+        'borderTopWidth',
+        'borderRightWidth',
+        'borderBottomWidth'
+      ].forEach(function (key: any) {
+        copy.style[key] = style[key]
+      })
     copy.style.overflow = 'auto'
     copy.style.width = textArea.offsetWidth + 'px'
     copy.style.height = textArea.offsetHeight + 'px'
@@ -708,21 +708,22 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   calculateBskyPostLength() {
-    // TODO do things in a better way
-    const cwText = this.contentWarning.length > 0 ? `[${this.contentWarning}]\n` : ''
+    const cwText = this.contentWarning.length > 0 ? `[${this.contentWarning.trim()}]\n` : ''
     const tagText =
       this.tags.length > 0
         ? `\n${this.tags
-            .split(',')
-            .map((elem) => '#' + elem)
-            .join(' ')}`
+          .split(',')
+          .map((elem) => '#' + elem)
+          .join(' ')}`
         : ''
     const askText = this.data?.ask
-      ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked ' + this.data.ask.question + '\n'
+      ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked: ' + this.data.ask.question + '\n\n'
       : ''
-    const fediQuoteText = this.data?.quote && !this.data.quote.bskyUri ? '\nRE: ' + 'link20extracharacterssssss' : ''
-    const inputText = `${askText}${cwText}${this.removeMarkdown(this.postCreatorForm.controls['content'].value as string)}${tagText}${fediQuoteText}`
-    return inputText.length
+    const fediQuoteText = this.data?.quote && !this.data.quote.bskyUri ? '\nRE: ' + this.data?.quote.remotePostId : ''
+    const inputText = `${askText}${cwText}${this.removeMarkdown(this.postCreatorForm.controls['content'].value as string).trim()}${tagText}${fediQuoteText}`
+
+    const encoder = new TextEncoder()
+    return encoder.encode(inputText).byteLength
   }
 
   calculateBskyPostLengthPercent() {
