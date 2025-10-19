@@ -4,8 +4,9 @@ import { forcePopulateUsers, getAtprotoUser } from '../../atproto/utils/getAtpro
 import { Follows, User } from '../../models/index.js'
 import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import { getAdminAtprotoSession } from './getAdminAtprotoSession.js'
+import { getAtProtoThread } from '../../atproto/utils/getAtProtoThread.js'
 
-async function syncBskyFollowersAndFollowing(userId: string) {
+async function syncBskyFollowersAndFollowing(userId: string, syncPosts?: boolean) {
   const user = await User.findByPk(userId)
   if (user && user.bskyDid) {
     const agent = await getAdminAtprotoSession()
@@ -70,6 +71,23 @@ async function syncBskyFollowersAndFollowing(userId: string) {
         }
       }
     })
+
+    if (syncPosts) {
+      let postsResponse = await agent.getAuthorFeed({ actor: user.bskyDid })
+      let uris: string[] = []
+      while (postsResponse.data.feed.length > 0) {
+        uris = uris.concat(postsResponse.data.feed.map((elem) => elem.post.uri))
+        if (postsResponse.data.cursor) {
+          postsResponse = await agent.getAuthorFeed({ actor: user.bskyDid, cursor: postsResponse.data.cursor })
+        } else {
+          break
+        }
+      }
+      console.log(`Sync posts of user ${user.url}: ${uris.length} posts`)
+      for await (const uri of uris) {
+        await getAtProtoThread(uri, false, false)
+      }
+    }
 
     for await (const newFollow of newFollowsToCreate) {
       await Follows.findOrCreate({
