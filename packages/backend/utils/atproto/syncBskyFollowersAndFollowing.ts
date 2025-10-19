@@ -85,7 +85,7 @@ async function syncBskyFollowersAndFollowing(userId: string, syncPosts?: boolean
       }
       console.log(`Sync posts of user ${user.url}: ${uris.length} posts`)
       for await (const uri of uris) {
-        await getAtProtoThread(uri, false, false)
+        await getAtProtoThread(uri, true, false)
       }
     }
 
