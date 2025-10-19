@@ -565,6 +565,7 @@ export class PostsService {
       'thead',
       'ruby',
       'rt',
+      'rp',
       'img' // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
     ]
   ): string {
