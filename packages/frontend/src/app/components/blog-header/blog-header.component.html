@@ -11,13 +11,13 @@
         @if (loggedIn) {
           <div class="flex">
             @if (!blog.isBlueskyUser) {
-              <button 
-                matButton="outlined" 
-                style="width: 40px ; padding: 0; margin-right: 4px;" 
+              <button
+                matButton="outlined"
+                style="width: 40px; padding: 0; margin-right: 4px"
                 (click)="biteAccount(blog.id)"
                 matTooltip="{{ 'post-actions.biteUser' | translate }}"
-                >
-                  <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
+              >
+                <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
               </button>
             }
             @if (!postService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
@@ -101,20 +101,20 @@
           ) {
             @if (postService.usersRewootsDisabled.includes(blog.id)) {
               <button mat-menu-item (click)="updateDisableRewoots()">
-                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-enable rewoots of this user
+                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-show rewoots made by this user
               </button>
             } @else {
               <button mat-menu-item (click)="updateDisableRewoots()">
-                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Disable rewoots of this user
+                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Hide rewoots made by this user
               </button>
             }
             @if (postService.usersQuotesDisabled.includes(blog.id)) {
               <button mat-menu-item (click)="updateDisableQuotes()">
-                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-enable quotes for this user
+                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-hide quotes from this user
               </button>
             } @else {
               <button mat-menu-item (click)="updateDisableQuotes()">
-                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Disable quotes for this user
+                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Hide quotes from this user
               </button>
             }
           }
