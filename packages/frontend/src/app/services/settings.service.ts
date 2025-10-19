@@ -436,7 +436,8 @@ export class SettingsService {
       localStorageKey: 'public.asks',
       type: 'checkbox',
       default: false,
-      convertFromStorage: (val) => val === '2'
+      convertFromStorage: (val) => val === '1',
+      convertToStorage: () => this.convertAsksTo()
     },
     displayMentionsOfBlockedUsersFromOtherUsers: {
       key: 'displayMentionsOfBlockedUsersFromOtherUsers',
@@ -777,7 +778,7 @@ export class SettingsService {
           try {
             this.fediAttachments.length = 0
             this.fediAttachments.push(...JSON.parse(rawAttachments.optionValue))
-          } catch (error) {}
+          } catch (error) { }
 
           if (this.fediAttachments.length === 0) {
             this.fediAttachments.push({ name: '', value: '' })
