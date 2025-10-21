@@ -3,10 +3,45 @@
 </div>
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container-wide">
-  <mat-form-field class="w-full">
+  <mat-form-field class="pb-1 mat-form-field-no-padding w-full">
     <mat-label>Reports Filter</mat-label>
-    <input matInput class="w-full" [(ngModel)]="reportDataSource.filter" />
+    <input matInput class="w-full" [(ngModel)]="reportDataSource.filter" (input)="updateMode($event)" />
   </mat-form-field>
+  @if (advancedSearch()) {
+    <div>
+      <span>Advanced Search: </span>
+      <span class="inline-flex gap-2">
+        @for (filter of mapFilters(searchFilters()); track $index) {
+          <span class="filter-entry">{{ filter }}</span>
+        }
+      </span>
+    </div>
+  }
+  <div class="pb-3 pt-3"
+    ><mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Advanced Search Help </mat-panel-title>
+      </mat-expansion-panel-header>
+      <p
+        >You can add advanced filters by prefixing terms in the following list with <code>+</code> or <code>-</code>.
+        Entries only match if all filters match.</p
+      >
+      <ul>
+        <li><code>r</code> or <code>reporter</code> URL of the user who reported the target</li>
+        <li><code>t</code> or <code>target</code> URL of the user who was reported</li>
+        <li><code>d</code> or <code>resolved</code> whether a report was resolved</li>
+      </ul>
+      <p>Examples:</p>
+      <ul>
+        <li><code>+resolved</code> filters to only resolved reports</li>
+        <li><code>-r=ReportSpammer -d</code> filters to unresolved reports not sent by <code>ReportSpammer</code></li>
+        <li
+          ><code>+reporter=Vigilante -target=EvilUser</code> filters to only reports of user <code>EvilUser</code> that
+          were sent by <code>Vigilante</code></li
+        >
+      </ul>
+    </mat-expansion-panel></div
+  >
 
   <div class="w-full overflow-x-auto">
     <table mat-table matSort #reportSort="matSort" [dataSource]="reportDataSource" class="w-max">

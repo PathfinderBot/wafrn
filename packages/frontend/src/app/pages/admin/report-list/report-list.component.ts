@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, viewChild, ViewChild } from '@angular/core'
+import { Component, computed, OnInit, signal, viewChild, WritableSignal } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
+import { parseReportFilter, ReportFilter } from 'src/app/grammars/report-grammar'
 import { AdminService, UserReport } from 'src/app/services/admin.service'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
@@ -18,6 +19,9 @@ export class ReportListComponent implements OnInit {
   reportSort = viewChild.required<MatSort>('reportSort')
   displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'actions']
 
+  searchFilters: WritableSignal<ReportFilter> = signal([], { equal: () => false })
+  advancedSearch = computed(() => this.searchFilters().length !== 0)
+
   loading = signal(false) // Not actually used, but could have a loader inside the table
 
   reportMap: { [index: number]: string } = {
@@ -25,6 +29,15 @@ export class ReportListComponent implements OnInit {
     3: 'Unlabeled NSFW',
     5: 'Hate',
     10: 'Illegal'
+  }
+
+  filterMap: Record<string, string> = {
+    t: 'target',
+    target: 'target',
+    r: 'reporter',
+    reporter: 'reporter',
+    d: 'resolved',
+    resolved: 'resolved'
   }
 
   constructor(
@@ -39,11 +52,7 @@ export class ReportListComponent implements OnInit {
 
   ngOnInit(): void {
     this.reportDataSource.sort = this.reportSort()
-    this.reportDataSource.filterPredicate = (report, filter) =>
-      report.user.url.startsWith(filter) ||
-      report.reportedUser.url.startsWith(filter) ||
-      report.severity.toString() === filter ||
-      report.description.includes(filter)
+    this.reportDataSource.filterPredicate = this.filterReport.bind(this)
     this.reportDataSource.paginator = this.reportPaginator()
   }
 
@@ -121,6 +130,14 @@ export class ReportListComponent implements OnInit {
     this.loadReports()
   }
 
+  updateMode(event: Event) {
+    const target = event.target
+    if (!target || !(target instanceof HTMLInputElement)) return
+    if (target.value === '') {
+      this.searchFilters.set([])
+    }
+  }
+
   mapReport(key: number) {
     return this.reportMap[key] ?? 'unknown'
   }
@@ -128,5 +145,68 @@ export class ReportListComponent implements OnInit {
   mapSeverity(key: number): number {
     // Hard coding 10 as max severity
     return key / 10
+  }
+
+  mapFilters(filters: ReportFilter) {
+    return filters.map((filter) => {
+      if (filter.type === 'flag') {
+        return `${filter.mode === '+' ? 'is' : 'is not'} ${this.filterMap[filter.value]}`
+      } else {
+        return `${this.filterMap[filter.key]} ${filter.mode === '+' ? 'is' : 'is not'} ${filter.value}`
+      }
+    })
+  }
+
+  filterReport(report: UserReport, query: string): boolean {
+    const match = parseReportFilter(query)
+
+    // Basic search (full text query)
+    if (!match.succeeded) {
+      console.log(this.searchFilters)
+      this.searchFilters.set([])
+      return (
+        report.user.url.startsWith(query) ||
+        report.reportedUser.url.startsWith(query) ||
+        report.severity.toString() === query ||
+        report.description.includes(query)
+      )
+    }
+
+    // Advanced search
+    //
+    // Combining add and remove of the same filter just hides everything
+    // The if statements have to check evil statements to implement
+    const entryMatches = match.filter.every((entry) => {
+      let reportMatch: boolean // evil global
+      if (entry.type === 'flag') {
+        // Expandable idk
+        switch (entry.value) {
+          case 'd':
+          case 'resolved':
+            reportMatch = report.resolved
+            if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+            break
+        }
+        return false
+      } else {
+        switch (entry.key) {
+          case 'r':
+          case 'reporter':
+            reportMatch = report.user.url === entry.value
+            if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+            break
+          case 't':
+          case 'target':
+            reportMatch = report.reportedUser.url === entry.value
+            if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+            break
+        }
+        return false
+      }
+    })
+
+    this.searchFilters.set(match.filter)
+
+    return entryMatches
   }
 }

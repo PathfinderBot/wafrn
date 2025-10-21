@@ -13,6 +13,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { AvatarSmallComponent } from 'src/app/components/avatar-small/avatar-small.component'
 import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
 import { TranslateModule } from '@ngx-translate/core'
+import { MatExpansionModule } from '@angular/material/expansion'
 
 @NgModule({
   declarations: [ReportListComponent],
@@ -34,7 +35,8 @@ import { TranslateModule } from '@ngx-translate/core'
     MatButtonModule,
     AvatarSmallComponent,
     PostLinkModule,
-    TranslateModule
+    TranslateModule,
+    MatExpansionModule
   ]
 })
 export class ReportListModule {}

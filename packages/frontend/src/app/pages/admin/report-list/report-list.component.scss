@@ -1,3 +1,13 @@
+.filter-entry {
+  background-color: var(--mat-sys-surface-container-low);
+  padding: 0 0.2em;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-primary-container);
+  background-color: var(--mat-sys-primary-container);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
 .avatar {
   max-height: 32px;
   max-width: 32px;
