@@ -16,7 +16,7 @@ export class ReportListComponent implements OnInit {
   reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
   reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
   reportSort = viewChild.required<MatSort>('reportSort')
-  displayedColumns = ['user', 'reportedUser', 'type', 'report', 'solved', 'actions']
+  displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'actions']
 
   loading = signal(false) // Not actually used, but could have a loader inside the table
 
@@ -123,5 +123,10 @@ export class ReportListComponent implements OnInit {
 
   mapReport(key: number) {
     return this.reportMap[key] ?? 'unknown'
+  }
+
+  mapSeverity(key: number): number {
+    // Hard coding 10 as max severity
+    return key / 10
   }
 }

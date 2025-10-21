@@ -9,6 +9,17 @@
   font-size: 0.8rem;
 }
 
+.report-severity {
+  font-weight: bold;
+  --color-least: oklch(from var(--mat-sys-primary) l calc(c + 0.2) 144);
+  --color-most: oklch(from var(--mat-sys-primary) l 0.2 16.4);
+  color: color-mix(
+    in oklch,
+    var(--color-least) calc(100% - var(--severity-scale, 0%)),
+    var(--color-most) var(--severity-scale, 100%)
+  );
+}
+
 .report-description {
   max-width: 45ch;
 }
