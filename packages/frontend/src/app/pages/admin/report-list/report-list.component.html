@@ -11,28 +11,28 @@
   <div class="w-full overflow-x-auto">
     <table mat-table matSort #reportSort="matSort" [dataSource]="reportDataSource" class="w-max">
       <ng-container matColumnDef="user">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>User</th>
-        <td mat-cell *matCellDef="let element">
-          <a [routerLink]="'/blog/' + element.user.url">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Reporter</th>
+        <td mat-cell *matCellDef="let row">
+          <a [routerLink]="'/blog/' + row.user.url">
             <div class="flex gap-2 align-items-start">
-              <app-avatar-small [user]="element.user"></app-avatar-small>
-              {{ element.user.url }}
+              <app-avatar-small [user]="row.user"></app-avatar-small>
+              {{ row.user.url }}
             </div>
           </a>
         </td>
       </ng-container>
       <ng-container matColumnDef="reportedUser">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>Reported user</th>
-        <td mat-cell *matCellDef="let element">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Target User</th>
+        <td mat-cell *matCellDef="let row">
           <a
-            [routerLink]="element.post ? ['/fediverse/post/' + element.post.id] : ['/blog/' + element.reportedUser.url]"
+            [routerLink]="row.post ? ['/fediverse/post/' + row.post.id] : ['/blog/' + row.reportedUser.url]"
             class="subtle-link"
           >
             <div class="flex gap-2 align-items-start line-height-2">
-              <app-avatar-small [user]="element.reportedUser"></app-avatar-small>
+              <app-avatar-small [user]="row.reportedUser"></app-avatar-small>
               <div class="flex flex-column">
-                {{ element.reportedUser.url }}
-                @if (element.post) {
+                {{ row.reportedUser.url }}
+                @if (row.post) {
                   <span class="report-type">(post)</span>
                 } @else {
                   <span class="report-type">(account)</span>
@@ -43,19 +43,19 @@
         </td>
       </ng-container>
       <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let element">{{ element.severity }} ({{ mapReport(element.severity) }})</td>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let row">{{ row.severity }} ({{ mapReport(row.severity) }})</td>
       </ng-container>
       <ng-container matColumnDef="report">
         <th mat-header-cell *matHeaderCellDef>Report</th>
-        <td mat-cell *matCellDef="let element">
-          <div class="report-description">{{ element.description }}</div>
+        <td mat-cell *matCellDef="let row">
+          <div class="report-description">{{ row.description }}</div>
         </td>
       </ng-container>
       <ng-container matColumnDef="solved">
-        <th mat-header-cell *matHeaderCellDef>Solved</th>
-        <td mat-cell *matCellDef="let element">
-          <mat-checkbox [disabled]="true" [checked]="element.resolved"></mat-checkbox>
+        <th mat-header-cell *matHeaderCellDef>Resolved</th>
+        <td mat-cell *matCellDef="let row">
+          <mat-checkbox [disabled]="true" [checked]="row.resolved"></mat-checkbox>
         </td>
       </ng-container>
       <ng-container matColumnDef="actions">
