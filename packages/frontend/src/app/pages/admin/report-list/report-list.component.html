@@ -5,11 +5,11 @@
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container-wide">
   <mat-form-field class="w-full">
     <mat-label>Reports Filter</mat-label>
-    <input matInput class="w-full" [(ngModel)]="dataSource.filter" />
+    <input matInput class="w-full" [(ngModel)]="reportDataSource.filter" />
   </mat-form-field>
 
   <div class="w-full overflow-x-auto">
-    <table mat-table matSort [dataSource]="dataSource" class="w-max">
+    <table mat-table matSort #reportSort="matSort" [dataSource]="reportDataSource" class="w-max">
       <ng-container matColumnDef="user">
         <th mat-header-cell mat-sort-header *matHeaderCellDef>User</th>
         <td mat-cell *matCellDef="let element">
@@ -76,9 +76,10 @@
   </div>
 
   <mat-paginator
+    #reportPaginator
     [pageSizeOptions]="[10, 25, 50, 100]"
     showFirstLastButtons
-    aria-label="Select page of periodic elements"
+    aria-label="Select report list page"
   >
   </mat-paginator>
 </mat-card>

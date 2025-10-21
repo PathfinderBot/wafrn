@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
+import { Component, OnInit, signal, viewChild, ViewChild } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
+import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
 import { AdminService, UserReport } from 'src/app/services/admin.service'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
@@ -12,11 +13,12 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   standalone: false
 })
 export class ReportListComponent implements OnInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  dataSource!: MatTableDataSource<any, MatPaginator>
+  reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
+  reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
+  reportSort = viewChild.required<MatSort>('reportSort')
   displayedColumns = ['user', 'reportedUser', 'type', 'report', 'solved', 'actions']
 
-  ready = false
+  loading = signal(false) // Not actually used, but could have a loader inside the table
 
   reportMap: { [index: number]: string } = {
     1: 'SPAM',
@@ -36,20 +38,21 @@ export class ReportListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.dataSource = new MatTableDataSource<Report, MatPaginator>([])
-    setTimeout(() => {
-      this.dataSource.paginator = this.paginator
-    })
-    console.log(this.dataSource)
+    this.reportDataSource.sort = this.reportSort()
+    this.reportDataSource.filterPredicate = (report, filter) =>
+      report.user.url.startsWith(filter) ||
+      report.reportedUser.url.startsWith(filter) ||
+      report.severity.toString() === filter ||
+      report.description.includes(filter)
+    this.reportDataSource.paginator = this.reportPaginator()
   }
 
   async loadReports() {
-    this.ready = false
+    this.loading.set(false)
     const res = await this.adminService.getReports()
     res.sort((a, b) => +a.resolved - +b.resolved)
-    this.dataSource.data = res
-    console.log(res)
-    this.ready = true
+    this.reportDataSource.data = res
+    this.loading.set(true)
   }
 
   async ignore(report: UserReport) {
