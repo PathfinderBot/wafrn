@@ -22,16 +22,19 @@
       <mat-expansion-panel-header>
         <mat-panel-title> Advanced Search Help </mat-panel-title>
       </mat-expansion-panel-header>
-      <p
-        >You can add advanced filters by prefixing terms in the following list with <code>+</code> or <code>-</code>.
-        Entries only match if all filters match.</p
-      >
+      <p>
+        You can add advanced filters by prefixing filter keywords in the following list with plus sign <code>+</code> as
+        an additive filter or minus sign <code>-</code> as a subtractive filter. Select filters are separated from their
+        value by either a colon <code>:</code> or equal sign <code>=</code>, for example <code>+target:EvilUser</code>.
+        Select filters can be used implicitly as additive filters without a plus sign <code>+</code>.
+      </p>
+      <p class="mb-1">Here are the existing keywords:</p>
       <ul>
-        <li><code>r</code> or <code>reporter</code> URL of the user who reported the target</li>
-        <li><code>t</code> or <code>target</code> URL of the user who was reported</li>
-        <li><code>d</code> or <code>resolved</code> whether a report was resolved</li>
+        <li><code>r</code> or <code>reporter</code> (Select) URL of the user who reported the target</li>
+        <li><code>t</code> or <code>target</code> (Select) URL of the user who was reported</li>
+        <li><code>d</code> or <code>resolved</code> (Flag) whether a report was resolved</li>
       </ul>
-      <p>Examples:</p>
+      <p class="mb-1">Examples:</p>
       <ul>
         <li><code>+resolved</code> filters to only resolved reports</li>
         <li><code>-r=ReportSpammer -d</code> filters to unresolved reports not sent by <code>ReportSpammer</code></li>

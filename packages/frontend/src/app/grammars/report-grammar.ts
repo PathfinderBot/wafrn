@@ -8,7 +8,7 @@ Search {
     = Filter+
 
   Filter
-    = filterModifier #filterLabeled #selectSeparator #filterSelectValue -- select
+    = filterModifier? #filterLabeled #selectSeparator #filterSelectValue -- select
     | filterModifier #filterFlag -- flag
 
   filterLabeled
@@ -30,6 +30,7 @@ Search {
 
   selectSeparator
     = "="
+    | ":"
 }
 `)
 
@@ -91,7 +92,7 @@ export function parseReportFilter(query: string): { succeeded: false } | { succe
       filter.length === 3
         ? {
             type: 'select',
-            mode: filter[0] as FilterMode,
+            mode: (Array.isArray(filter[0]) ? '+' : filter[0]) as FilterMode,
             key: filter[1],
             value: filter[2]
           }
