@@ -162,7 +162,6 @@ export class ReportListComponent implements OnInit {
 
     // Basic search (full text query)
     if (!match.succeeded) {
-      console.log(this.searchFilters)
       this.searchFilters.set([])
       return (
         report.user.url.startsWith(query) ||
