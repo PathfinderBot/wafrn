@@ -353,8 +353,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         .map((emoji) => ({
           img: emoji.url
             ? EnvironmentService.environment.externalCacheurl +
-            EnvironmentService.environment.baseMediaUrl +
-            encodeURIComponent(emoji.url)
+              EnvironmentService.environment.baseMediaUrl +
+              encodeURIComponent(emoji.url)
             : '',
           id: emoji.id,
           name: emoji.name.includes(')') ? emoji.name.split(')')[1] : emoji.name
@@ -612,19 +612,19 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     var copy = document.createElement('div')
     copy.textContent = textArea.value
     var style = getComputedStyle(textArea)
-      ;[
-        'fontFamily',
-        'fontSize',
-        'fontWeight',
-        'wordWrap',
-        'whiteSpace',
-        'borderLeftWidth',
-        'borderTopWidth',
-        'borderRightWidth',
-        'borderBottomWidth'
-      ].forEach(function (key: any) {
-        copy.style[key] = style[key]
-      })
+    ;[
+      'fontFamily',
+      'fontSize',
+      'fontWeight',
+      'wordWrap',
+      'whiteSpace',
+      'borderLeftWidth',
+      'borderTopWidth',
+      'borderRightWidth',
+      'borderBottomWidth'
+    ].forEach(function (key: any) {
+      copy.style[key] = style[key]
+    })
     copy.style.overflow = 'auto'
     copy.style.width = textArea.offsetWidth + 'px'
     copy.style.height = textArea.offsetHeight + 'px'
@@ -712,9 +712,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     const tagText =
       this.tags.length > 0
         ? `\n${this.tags
-          .split(',')
-          .map((elem) => '#' + elem)
-          .join(' ')}`
+            .split(',')
+            .map((elem) => '#' + elem)
+            .join(' ')}`
         : ''
     const askText = this.data?.ask
       ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked: ' + this.data.ask.question + '\n\n'
@@ -760,14 +760,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   handlePaste(event: ClipboardEvent) {
     const items = event.clipboardData?.items
-    const files = event.clipboardData?.files
-    console.log(files)
+    // const files = event.clipboardData?.files // Does not allow us to check for firefox, might have better API though!
     if (items === undefined) return
 
     // Choose first matching media format
     // Has to be a for loop because of evil APIs
     const mediaFormats = ['image', 'video', 'audio']
-    let item = undefined
+    const mediaItems = []
     for (let i = 0; i < items.length; i++) {
       const element = items[i]
       const itemIsMedia = mediaFormats.some((format) => element.type.includes(format))
@@ -778,16 +777,17 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         })
       }
       if (itemIsMedia) {
-        item = items[i]
-        break
+        mediaItems.push(items[i])
       }
     }
-    if (item === undefined) return
+    if (mediaItems.length === 0) return
 
-    const image = item.getAsFile()
-    if (!image) return
+    for (const item of mediaItems) {
+      const image = item.getAsFile()
+      if (!image) return
 
-    this.fileUploadComponent?.uploadFile(image)
+      this.fileUploadComponent?.uploadFile(image)
+    }
   }
 
   handleDrop(event: DragEvent) {
