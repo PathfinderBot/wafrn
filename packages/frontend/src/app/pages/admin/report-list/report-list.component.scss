@@ -21,8 +21,13 @@
 
 .report-severity {
   font-weight: bold;
-  --color-least: oklch(from var(--mat-sys-primary) l calc(c + 0.1) 170);
-  --color-most: oklch(from var(--mat-sys-primary) l calc(c + 0.3) 14);
+
+  // For theme author customization
+  --color-least-hue: 170;
+  --color-most-hue: 17;
+
+  --color-least: oklch(from var(--mat-sys-primary) l calc(c + 0.1) var(--color-least-hue));
+  --color-most: oklch(from var(--mat-sys-primary) l calc(c + 0.3) var(--color-most-hue));
   color: color-mix(
     in oklch,
     var(--color-least) calc(100% - var(--severity-scale, 0%)),
