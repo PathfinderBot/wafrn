@@ -18,6 +18,7 @@ export type UserReport = {
   post: string
   reportedUserId: string
   reportedUser: SimplifiedUser
+  createdAt: string
 }
 
 export type AdminUserBlock = {

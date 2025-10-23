@@ -59,7 +59,10 @@ export class ReportListComponent implements OnInit {
   async loadReports() {
     this.loading.set(false)
     const res = await this.adminService.getReports()
-    res.sort((a, b) => +a.resolved - +b.resolved)
+    console.log(res)
+    res
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => +a.resolved - +b.resolved)
     this.reportDataSource.data = res
     this.loading.set(true)
   }
