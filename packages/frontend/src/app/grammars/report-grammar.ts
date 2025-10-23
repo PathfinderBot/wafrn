@@ -73,7 +73,8 @@ type ReportFilterEntry =
       key: string
       value: string
     }
-export type ReportFilter = ReportFilterEntry[]
+export type ReportFilter = ReportFilterGroup[]
+export type ReportFilterGroup = ReportFilterEntry[]
 type FilterMode = '+' | '-'
 
 export function parseReportFilter(query: string): { succeeded: false } | { succeeded: true; filter: ReportFilter } {
@@ -85,29 +86,33 @@ export function parseReportFilter(query: string): { succeeded: false } | { succe
   }
 
   // Parse search into a more useful form
-  const parsedFilter: ReportFilter = []
   const res = searchSemantic(match)['eval']() as string[][]
+  const filterGroups: Record<string, ReportFilterGroup> = {}
   res.forEach((filter) => {
+    const mode = (Array.isArray(filter[0]) ? filter[0].at(0) || '+' : filter[0]) as FilterMode
     const entry: ReportFilterEntry =
       filter.length === 3
         ? {
             type: 'select',
-            mode: (Array.isArray(filter[0]) ? '+' : filter[0]) as FilterMode,
+            mode,
             key: filter[1],
             value: filter[2]
           }
         : {
             type: 'flag',
-            mode: filter[0] as FilterMode,
+            mode,
             value: filter[1]
           }
 
-    if (filter[0] === '+') {
-      parsedFilter.push(entry)
-    } else {
-      parsedFilter.push(entry)
-    }
+    const groupName = filter[1] + mode
+
+    // Ensure list exists
+    if (filterGroups[groupName] === undefined) filterGroups[groupName] = []
+
+    filterGroups[groupName].push(entry)
   })
+
+  const parsedFilter: ReportFilter = Object.entries(filterGroups).map(([_, group]) => group)
 
   return {
     succeeded: true,

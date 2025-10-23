@@ -29,6 +29,10 @@
         value by either a colon <code>:</code> or equal sign <code>=</code>, for example <code>+target:EvilUser</code>.
         Select filters can be used implicitly as additive filters without a plus sign <code>+</code>.
       </p>
+      <p>
+        Additive filters are OR within their category but AND with different keywords. Subtractive filters are AND with
+        themselves and other keywords.
+      </p>
       <p class="mb-1">Here are the existing keywords:</p>
       <ul>
         <li><code>r</code> or <code>reporter</code> (Select) URL of the user who reported the target</li>

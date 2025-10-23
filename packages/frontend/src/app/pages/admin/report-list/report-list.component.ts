@@ -159,12 +159,19 @@ export class ReportListComponent implements OnInit {
   }
 
   mapFilters(filters: ReportFilter) {
-    return filters.map((filter) => {
-      if (filter.type === 'flag') {
-        return `${filter.mode === '+' ? 'is' : 'is not'} ${this.filterMap[filter.value]}`
-      } else {
-        return `${this.filterMap[filter.key]} ${filter.mode === '+' ? 'is' : 'is not'} ${filter.value}`
+    // Future translators I apologize for my string building crimes
+    return filters.map((group) => {
+      const groupType = group[0].type
+
+      // Flags are the only entry of a group
+      if (groupType === 'flag') {
+        return `${group[0].mode === '+' ? 'is' : 'is not'} ${this.filterMap[group[0].value]}`
       }
+
+      return `${this.filterMap[group[0].key]} ${group[0].mode === '+' ? 'is' : 'is not'} \
+${group.length !== 1 ? '(' : ''}\
+${group.map((filter) => filter.value).join(' or ')}\
+${group.length !== 1 ? ')' : ''}`
     })
   }
 
@@ -186,34 +193,36 @@ export class ReportListComponent implements OnInit {
     //
     // Combining add and remove of the same filter just hides everything
     // The if statements have to check evil statements to implement
-    const entryMatches = match.filter.every((entry) => {
-      let reportMatch: boolean // evil global
-      if (entry.type === 'flag') {
-        // Expandable idk
-        switch (entry.value) {
-          case 'd':
-          case 'resolved':
-            reportMatch = report.resolved
-            if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
-            break
+    const entryMatches = match.filter.every((group) =>
+      group.some((entry) => {
+        let reportMatch: boolean // evil global
+        if (entry.type === 'flag') {
+          // Expandable idk
+          switch (entry.value) {
+            case 'd':
+            case 'resolved':
+              reportMatch = report.resolved
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+          }
+          return false
+        } else {
+          switch (entry.key) {
+            case 'r':
+            case 'reporter':
+              reportMatch = report.user.url === entry.value
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+            case 't':
+            case 'target':
+              reportMatch = report.reportedUser.url === entry.value
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+          }
+          return false
         }
-        return false
-      } else {
-        switch (entry.key) {
-          case 'r':
-          case 'reporter':
-            reportMatch = report.user.url === entry.value
-            if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
-            break
-          case 't':
-          case 'target':
-            reportMatch = report.reportedUser.url === entry.value
-            if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
-            break
-        }
-        return false
-      }
-    })
+      })
+    )
 
     this.searchFilters.set(match.filter)
 
