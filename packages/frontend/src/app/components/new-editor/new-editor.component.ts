@@ -763,7 +763,6 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     // const files = event.clipboardData?.files // Does not allow us to check for firefox, might have better API though!
     if (items === undefined) return
 
-    // Choose first matching media format
     // Has to be a for loop because of evil APIs
     const mediaFormats = ['image', 'video', 'audio']
     const mediaItems = []
@@ -797,19 +796,27 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     event.preventDefault()
     this.draggingOverTextarea = false
 
-    const items = event.dataTransfer?.items
-
     // Handle Firefox jank and guard for if we had to resort to dark arts
+    const items = event.dataTransfer?.items
     if (items && this.handleFirefoxJank(items)) return
 
-    const item = event.dataTransfer?.files[0]
-    if (item === undefined) return
+    // Otherwise we can just do the normal File jank...
+    const fileList: File[] = []
+    if (event.dataTransfer) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const file = event.dataTransfer.files[i]
+        const mediaFormats = ['image', 'video', 'audio']
+        const fileIsMedia = mediaFormats.some((format) => file.type.includes(format))
+        if (fileIsMedia) {
+          fileList.push(file)
+        }
+      }
+    }
+    if (fileList.length === 0) return
 
-    const mediaFormats = ['image', 'video', 'audio']
-    const itemIsMedia = mediaFormats.some((format) => item.type.includes(format))
-    if (!itemIsMedia) return
-
-    this.fileUploadComponent?.uploadFile(item)
+    for (const file of fileList) {
+      this.fileUploadComponent?.uploadFile(file)
+    }
   }
 
   // Returns true if we had to do it the evil way
