@@ -193,7 +193,8 @@ export default function adminRoutes(app: Application) {
         postId: elem.postId,
         post: elem.post,
         reportedUserId: elem.reportedUserId ? elem.reportedUserId : elem.post.userId,
-        reportedUser: reporteduser
+        reportedUser: reporteduser,
+        createdAt: elem.createdAt
       }
     })
   }
