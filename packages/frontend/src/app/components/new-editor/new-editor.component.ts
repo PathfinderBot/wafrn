@@ -791,6 +791,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   handleDrop(event: DragEvent) {
+    const isMedia = event.dataTransfer?.types.includes('Files')
+    if (!isMedia) return
+
     event.preventDefault()
     this.draggingOverTextarea = false
 
@@ -830,10 +833,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   handleDrag(event: DragEvent) {
-    if (event.type === 'dragenter') {
-      this.draggingOverTextarea = true
-    } else {
-      this.draggingOverTextarea = false
+    const isMedia = event.dataTransfer?.types.includes('Files')
+    if (isMedia) {
+      if (event.type === 'dragenter') {
+        this.draggingOverTextarea = true
+      } else {
+        this.draggingOverTextarea = false
+      }
     }
   }
 
