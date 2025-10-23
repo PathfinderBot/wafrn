@@ -15,7 +15,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 export class ReportListComponent implements OnInit {
   reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
   reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
-  displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'actions']
+  displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'date', 'actions']
 
   searchFilters: WritableSignal<ReportFilter> = signal([], { equal: () => false })
   advancedSearch = computed(() => this.searchFilters().length !== 0)
