@@ -268,7 +268,7 @@ function activityPubRoutes(app: Application) {
       }
       if (user) {
         res.sendStatus(200)
-        await inboxQueue.add('processInbox', { petition: req.body, petitionBy: user.id }, { jobId: req.body.id })
+        await inboxQueue.add('processInbox', { petition: req.body, petitionBy: user.id })
       } else {
         return404(res)
       }
