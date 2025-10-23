@@ -103,11 +103,13 @@
       <ng-container matColumnDef="solved">
         <th mat-header-cell *matHeaderCellDef>Resolved</th>
         <td mat-cell *matCellDef="let row">
-          @if (row.resolved) {
-            ✅
-          } @else {
-            ❌
-          }
+          <div class="flex justify-content-center">
+            @if (row.resolved) {
+              ✅
+            } @else {
+              ❌
+            }
+          </div>
         </td>
       </ng-container>
       <ng-container matColumnDef="date">
