@@ -101,7 +101,142 @@ Ok so you definetively need to do some backend stuff! As long as you do not need
 5. Copy the development environment file for backend `cp packages/backend/environment.dev.ts packages/backend/environment.ts`
 6. Start the services required for wafrn to work: redis, postgres, and a db admin tool on https://localhost:8080 (type postgres, user and pass: root, db: wafrn) `docker compose up -d`
 7. Check that you can connect to the database in your browser in https://localhost:8080 . If you have problem here, contact the dev team
-8. Edit the environment file. Replace adminEmail and adminUser with youur desired email, user and password
+8. Edit the environment file. Replace adminEmail and adminUser with your desired email, user and password. Use this file as a template, check for the EDIT HERE comments:
+
+```import { Environment } from './interfaces/environment.js'
+
+export const baseEnvironment: Environment = {
+  prod: false,
+  // this makes the logs really heavy, but might be useful for queries
+  logSQLQueries: true,
+  workers: {
+    // if you set this to true, workers will start in the main thread. no need for starting the utils/workers.ts in other tmux tab
+    mainThread: true,
+    low: 5,
+    medium: 10,
+    high: 100
+  },
+  // this was a dev thing. leave to true unless you are doing stuff in local or your media url is yourinstance/uploads (not recomended)
+  removeFolderNameFromFileUploads: true,
+  // we use now postgresql.
+  databaseConnectionString: 'postgresql://root:root@localhost:5432/wafrn',
+  // PROD
+  // databaseConnectionString: 'postgresql://wafrn:Skied-Obscurity6-Tightwad@localhost:1111/wafrn',
+
+  listenIp: '0.0.0.0',
+  port: 3002,
+  // In the case of you wantint to put fedi petitions in another thread, use a different port here. You will have to update your apache config
+  fediPort: 3002,
+  // If you want to run the cache routes in another port, same thing!
+  cachePort: 3002,
+  saltRounds: 14,
+  // for jwt secret you should use something like https://www.grc.com/passwords.htm please this is SUPER DUPER SECRET.
+  jwtSecret: Buffer.from('secret', 'base64'),
+  // https://app.wafrn.net
+  // EDIT HERE if you are gona do fedi stuff like ssh -R 192.168.100.100:3002:localhost:3002 192.168.100.100
+  frontendUrl: 'https://instance3.dev.wafrn.net',
+  // app.wafrn.net
+  // EDIT HERE (optional)
+  instanceUrl: 'instance3.dev.wafrn.net',
+  // https://media.wafrn.net
+  mediaUrl: 'https://local.dev.wafrn.net/api/uploads',
+  // You should run also this project github.com/gabboman/fediversemediacacher. In my case, https://cache.wafrn.net/?media= The cache is there because at some point in the past I configured it to precache images. No need for it to be honest
+  externalCacheurl: 'https://local.dev.wafrn.net/api/cache?media=',
+  // If main cache fails due to IP limits you can install additional proxies, and use them here. The cache will try these as well before failing.
+  // You can deploy https://github.com/sztupy/did-decoder-lambda this project to Netlify or Vercel as a backup for example
+  externalCacheBackups: [],
+  // after the first run, create the admin user. and a deleted user. You will have to edit the user url in db so it starts with an @
+  adminUser: 'admin',
+  // admin email wich you will recive things like "someone registred and you need to review this"
+  // EDIT HERE
+  adminEmail: 'YOUREMAILGOESHERE',
+  adminPassword: 'ADMINPASSWORD',
+  // after creating the deleted_user we advice to also set the user to BANNED
+  deletedUser: '@DELETEDUSER',
+  // in MB. Please make sure you have the same in the frontend
+  uploadLimit: 250,
+  // 20 is a good number. With the new query we could investigate a higher number but no need to do it
+  postsPerPage: 20,
+  // trace is extreme logging. debug is ok for now
+  logLevel: 'debug',
+  // There is a script that loads the file from this url and blocks the servers
+  blocklistUrl: '',
+  // In some cases we serve the frontend with the backend with a small preprocessing. We need the location of the frontend
+  // EDIT HERE: put a location with a build of the frontend. or an index file. you may need this
+  frontedLocation: '/Users/gabriel/workspace/wafrn/packages/frontend/dist/wafrn/browser',
+  // oh yes, you need TWO redis connections, one for queues other for cache
+  bullmqConnection: {
+    host: 'localhost',
+    port: 6379,
+    db: 0
+  },
+  // second database used for cache
+  redisioConnection: {
+    host: 'localhost',
+    port: 6379,
+    db: 1
+  },
+  // this will create a backendlog.log file on the folder superior to this one.
+  pinoTransportOptions: {
+    targets: [
+      {
+        target: 'pino/file',
+        level: 'trace',
+        options: {
+          destination: 1
+        }
+      }
+    ]
+  },
+  // you can try with gmail but we actually use sendinblue for this. bear in mind that this might require some fiddling in your gmail account too
+  // you might need to enable https://myaccount.google.com/lesssecureapps
+  // https://miracleio.me/snippets/use-gmail-with-nodemailer/
+  emailConfig: {
+    host: 'mail.wafrn.net',
+    port: 587,
+    auth: {
+      user: 'info@wafrn.net',
+      pass: 'didYouThoughtIwouldLeaveThisOneHere?',
+      from: 'info@wafrn.net'
+    }
+  },
+  // you dont have an smtp server and you want to do a single user instance? set this to true!
+  disableRequireSendEmail: true,
+  // if someone is trying to scrap your place you can send a funny message in some petitions (attacks to the frontend)
+  blockedIps: [] as string[],
+  // do you want to manually review registrations or have them open? We advice to leave this one to true
+  reviewRegistrations: true,
+  // if the blocklist youre using turns out to be biased you can tell the script that loads the block host to do not block these hosts
+  ignoreBlockHosts: [] as string[],
+  // default SEO data that will be used when trying to load server data
+  defaultSEOData: {
+    title: 'localhost',
+    description: 'localhost, a wafrn instance',
+    img: 'https://localhost/assets/logo.png'
+  },
+  // EDIT HERE if you have a PDS that you want to connect
+  enableBsky: false,
+  bskyPds: 'at.app.wafrn.net',
+  bskyPdsJwtSecret: 'SECRET1',
+  bskyPdsAdminPassword: 'SECRET2',
+  // to generate these keys use the following command: `npx web-push generate-vapid-keys`.
+  webpushPrivateKey: 'CDUUngHrbAUOBg_1-jXZJFj3IOGMTAbR5zhJupKzMOE', // dont worry these ones are local
+  webpushPublicKey: 'BIWrO9knKAnPj2TFfU7pIxo0QkO_b2-PZCqYwAPArJdHTQ3Xsvf-E_WXaKGFB531fBOxCE92SZ6R_vHTVM1yTNw',
+  // this is a email that will be sent to the distribution services in the users devices in case the owner of the distribution service wants to contact the server that is sending the notifications
+  webpushEmail: 'mailto:info@wafrn.net',
+  frontendEnvironment: {
+    logo: '/assets/logo.png',
+    frontUrl: 'http://localhost:4200',
+    baseUrl: 'http://localhost:4200/api',
+    baseMediaUrl: '/api/uploads',
+    externalCacheurl: '/api/cache?media=',
+    shortenPosts: 3,
+    disablePWA: false,
+    maintenance: false
+  }
+}
+```
+
 9. Do this command to initialize the database `cd packages/backend && npm run db:migrate`
 10. On the root directory, do this command to start the backend server: `npm run backend:develop`
 11. Do this command to start the frontend `npm run frontend:develop:prod`
