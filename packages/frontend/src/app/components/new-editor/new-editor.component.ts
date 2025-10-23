@@ -231,7 +231,6 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     private particle: ParticleService
   ) {
     // Current account is assumed to be the logged in user
-    console.log('will post as', loginService.accountList().at(this.posterAccount()))
     this.accountList = loginService.accountList
     this.toAvatarUrl = dashboardService.getAvatarUrl
 
