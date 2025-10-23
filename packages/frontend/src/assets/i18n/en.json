@@ -567,6 +567,12 @@
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
       "userUsedVPN": "User used VPN"
+    },
+    "reportList": {
+      "ignoreReport": "Ignore report",
+      "forceNSFW": "Mark user as NSFW",
+      "banUser": "Ban user",
+      "reopenReport": "Reopen report"
     }
   },
   "page-not-found": {

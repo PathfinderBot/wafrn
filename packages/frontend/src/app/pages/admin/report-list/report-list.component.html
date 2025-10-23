@@ -143,12 +143,20 @@
         <td mat-cell *matCellDef="let element">
           @if (!element.resolved) {
             <div class="flex gap-2">
-              <button mat-flat-button (click)="ignore(element)">Ignore report</button>
-              <button mat-flat-button class="warn" (click)="forceNSFW(element)">Mark user as NSFW</button>
-              <button mat-flat-button class="warn" (click)="ban(element)">Ban user</button>
+              <button mat-flat-button (click)="ignore(element)">{{
+                'admin.reportList.ignoreReport' | translate
+              }}</button>
+              <button mat-flat-button class="warn" (click)="forceNSFW(element)">{{
+                'admin.reportList.forceNSFW' | translate
+              }}</button>
+              <button mat-flat-button class="warn" (click)="ban(element)">{{
+                'admin.reportList.banUser' | translate
+              }}</button>
             </div>
           } @else {
-            <button mat-stroked-button (click)="reopen(element)">Reopen report</button>
+            <button mat-stroked-button (click)="reopen(element)">{{
+              'admin.reportList.reopenReport' | translate
+            }}</button>
           }
         </td>
       </ng-container>
