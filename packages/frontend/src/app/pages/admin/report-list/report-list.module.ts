@@ -26,7 +26,6 @@ import { MatExpansionModule } from '@angular/material/expansion'
       }
     ]),
     MatTableModule,
-    MatSortModule,
     FormsModule,
     MatCardModule,
     MatPaginatorModule,

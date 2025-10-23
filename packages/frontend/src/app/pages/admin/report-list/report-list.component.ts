@@ -1,6 +1,5 @@
 import { Component, computed, OnInit, signal, viewChild, WritableSignal } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
-import { MatSort } from '@angular/material/sort'
 import { MatTableDataSource } from '@angular/material/table'
 import { parseReportFilter, ReportFilter } from 'src/app/grammars/report-grammar'
 import { AdminService, UserReport } from 'src/app/services/admin.service'
@@ -16,7 +15,6 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 export class ReportListComponent implements OnInit {
   reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
   reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
-  reportSort = viewChild.required<MatSort>('reportSort')
   displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'actions']
 
   searchFilters: WritableSignal<ReportFilter> = signal([], { equal: () => false })
@@ -51,7 +49,6 @@ export class ReportListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.reportDataSource.sort = this.reportSort()
     this.reportDataSource.filterPredicate = this.filterReport.bind(this)
     this.reportDataSource.paginator = this.reportPaginator()
   }
