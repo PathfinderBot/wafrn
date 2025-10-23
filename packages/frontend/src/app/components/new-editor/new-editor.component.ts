@@ -231,7 +231,6 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     private particle: ParticleService
   ) {
     // Current account is assumed to be the logged in user
-    console.log('will post as', loginService.accountList().at(this.posterAccount()))
     this.accountList = loginService.accountList
     this.toAvatarUrl = dashboardService.getAvatarUrl
 
@@ -353,8 +352,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         .map((emoji) => ({
           img: emoji.url
             ? EnvironmentService.environment.externalCacheurl +
-            EnvironmentService.environment.baseMediaUrl +
-            encodeURIComponent(emoji.url)
+              EnvironmentService.environment.baseMediaUrl +
+              encodeURIComponent(emoji.url)
             : '',
           id: emoji.id,
           name: emoji.name.includes(')') ? emoji.name.split(')')[1] : emoji.name
@@ -612,19 +611,19 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     var copy = document.createElement('div')
     copy.textContent = textArea.value
     var style = getComputedStyle(textArea)
-      ;[
-        'fontFamily',
-        'fontSize',
-        'fontWeight',
-        'wordWrap',
-        'whiteSpace',
-        'borderLeftWidth',
-        'borderTopWidth',
-        'borderRightWidth',
-        'borderBottomWidth'
-      ].forEach(function (key: any) {
-        copy.style[key] = style[key]
-      })
+    ;[
+      'fontFamily',
+      'fontSize',
+      'fontWeight',
+      'wordWrap',
+      'whiteSpace',
+      'borderLeftWidth',
+      'borderTopWidth',
+      'borderRightWidth',
+      'borderBottomWidth'
+    ].forEach(function (key: any) {
+      copy.style[key] = style[key]
+    })
     copy.style.overflow = 'auto'
     copy.style.width = textArea.offsetWidth + 'px'
     copy.style.height = textArea.offsetHeight + 'px'
@@ -712,9 +711,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     const tagText =
       this.tags.length > 0
         ? `\n${this.tags
-          .split(',')
-          .map((elem) => '#' + elem)
-          .join(' ')}`
+            .split(',')
+            .map((elem) => '#' + elem)
+            .join(' ')}`
         : ''
     const askText = this.data?.ask
       ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked: ' + this.data.ask.question + '\n\n'
@@ -760,14 +759,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   handlePaste(event: ClipboardEvent) {
     const items = event.clipboardData?.items
-    const files = event.clipboardData?.files
-    console.log(files)
+    // const files = event.clipboardData?.files // Does not allow us to check for firefox, might have better API though!
     if (items === undefined) return
 
-    // Choose first matching media format
     // Has to be a for loop because of evil APIs
     const mediaFormats = ['image', 'video', 'audio']
-    let item = undefined
+    const mediaItems = []
     for (let i = 0; i < items.length; i++) {
       const element = items[i]
       const itemIsMedia = mediaFormats.some((format) => element.type.includes(format))
@@ -778,35 +775,47 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         })
       }
       if (itemIsMedia) {
-        item = items[i]
-        break
+        mediaItems.push(items[i])
       }
     }
-    if (item === undefined) return
+    if (mediaItems.length === 0) return
 
-    const image = item.getAsFile()
-    if (!image) return
+    for (const item of mediaItems) {
+      const image = item.getAsFile()
+      if (!image) return
 
-    this.fileUploadComponent?.uploadFile(image)
+      this.fileUploadComponent?.uploadFile(image)
+    }
   }
 
   handleDrop(event: DragEvent) {
+    const isMedia = event.dataTransfer?.types.includes('Files')
+    if (!isMedia) return
+
     event.preventDefault()
     this.draggingOverTextarea = false
 
-    const items = event.dataTransfer?.items
-
     // Handle Firefox jank and guard for if we had to resort to dark arts
+    const items = event.dataTransfer?.items
     if (items && this.handleFirefoxJank(items)) return
 
-    const item = event.dataTransfer?.files[0]
-    if (item === undefined) return
+    // Otherwise we can just do the normal File jank...
+    const fileList: File[] = []
+    if (event.dataTransfer) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const file = event.dataTransfer.files[i]
+        const mediaFormats = ['image', 'video', 'audio']
+        const fileIsMedia = mediaFormats.some((format) => file.type.includes(format))
+        if (fileIsMedia) {
+          fileList.push(file)
+        }
+      }
+    }
+    if (fileList.length === 0) return
 
-    const mediaFormats = ['image', 'video', 'audio']
-    const itemIsMedia = mediaFormats.some((format) => item.type.includes(format))
-    if (!itemIsMedia) return
-
-    this.fileUploadComponent?.uploadFile(item)
+    for (const file of fileList) {
+      this.fileUploadComponent?.uploadFile(file)
+    }
   }
 
   // Returns true if we had to do it the evil way
@@ -830,10 +839,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   handleDrag(event: DragEvent) {
-    if (event.type === 'dragenter') {
-      this.draggingOverTextarea = true
-    } else {
-      this.draggingOverTextarea = false
+    const isMedia = event.dataTransfer?.types.includes('Files')
+    if (isMedia) {
+      if (event.type === 'dragenter') {
+        this.draggingOverTextarea = true
+      } else {
+        this.draggingOverTextarea = false
+      }
     }
   }
 
