@@ -18,6 +18,7 @@ export type UserReport = {
   post: string
   reportedUserId: string
   reportedUser: SimplifiedUser
+  createdAt: string
 }
 
 export type AdminUserBlock = {
@@ -113,6 +114,10 @@ export class AdminService {
 
   async forceNSFWUser(id: string) {
     return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceNSFWUser`, { id: id }))
+  }
+
+  async reopenReport(id: number): Promise<any> {
+    return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/reopenReport`, { id: id }))
   }
 
   async banList() {

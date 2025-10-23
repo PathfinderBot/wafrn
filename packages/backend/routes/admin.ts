@@ -193,7 +193,8 @@ export default function adminRoutes(app: Application) {
         postId: elem.postId,
         post: elem.post,
         reportedUserId: elem.reportedUserId ? elem.reportedUserId : elem.post.userId,
-        reportedUser: reporteduser
+        reportedUser: reporteduser,
+        createdAt: elem.createdAt
       }
     })
   }
@@ -278,6 +279,20 @@ export default function adminRoutes(app: Application) {
       await PostReport.update(
         {
           resolved: true
+        },
+        {
+          where: {
+            id: req.body.id
+          }
+        }
+      )
+    )
+  })
+  app.post('/api/admin/reopenReport', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    res.send(
+      await PostReport.update(
+        {
+          resolved: false
         },
         {
           where: {

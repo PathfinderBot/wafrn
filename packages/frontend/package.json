@@ -44,6 +44,7 @@
     "luxon": "^3.5.0",
     "ng-mocks": "^14.13.4",
     "ngx-image-cropper": "^9.1.5",
+    "ohm-js": "^17.2.1",
     "parchment": "^2.0.1",
     "postcss-media-query-parser": "^0.2.3",
     "primeflex": "^3.3.1",
