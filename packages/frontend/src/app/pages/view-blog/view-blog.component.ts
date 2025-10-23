@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, Signal, signal, WritableSignal } from '@angular/core'
-import { Meta, Title } from '@angular/platform-browser'
+import { Component, computed, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core'
+import { Meta } from '@angular/platform-browser'
 import { ActivatedRoute, Router } from '@angular/router'
 import {
   faArrowUpRightFromSquare,
@@ -10,7 +10,7 @@ import {
   faReply,
   faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons'
-import { Subscription } from 'rxjs'
+import { asyncScheduler, Subject, Subscription, throttleTime } from 'rxjs'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { BlocksService } from 'src/app/services/blocks.service'
 import { DashboardService } from 'src/app/services/dashboard.service'
@@ -26,6 +26,8 @@ import { SnappyBlogData } from 'src/app/directives/blog-link/blog-link.directive
 import { SnappyHide, SnappyShow } from 'src/app/components/snappy/snappy-life'
 import { SettingsService } from 'src/app/services/settings.service'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { MatTabChangeEvent } from '@angular/material/tabs'
 
 @Component({
   selector: 'app-view-blog',
@@ -43,10 +45,8 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   blogUrl: string = ''
   avatarUrl = ''
   blogDetails = signal<BlogDetails | undefined>(undefined)
-  loggedIn: Signal<boolean>
   paramSubscription!: Subscription
   viewedPostsIds: string[] = []
-  intersectionObserverForLoadPosts!: IntersectionObserver
 
   simpleUser?: SimplifiedUser
   useSimple = signal<boolean>(false)
@@ -64,24 +64,39 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
 
   test = snappyInject(SnappyBlogData)
 
+  // evil
   postsVisible = true
+  mediaVisible = false
+
+  // HACK: Currently we do not have a special path for media posts so
+  // this is just filtering them manually, though it causes a lot of API calls
+  //
+  // We should replace this with a separate route when that is implemented
+  mediaFilteredPosts() {
+    return this.posts.filter((thread) => (thread.at(-1)?.medias.length ?? 0) > 0)
+  }
+
+  rateLimitLoadSubject = new Subject<void>()
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly dashboardService: DashboardService,
     readonly loginService: LoginService,
-    private readonly router: Router,
-    private readonly titleService: Title,
     private readonly metaTagService: Meta,
     private readonly themeService: ThemeService,
     public readonly blockService: BlocksService,
-    private readonly dialog: MatDialog,
     private readonly snappy: SnappyRouter,
     private settingService: SettingsService,
-    private simpleDialog: SimpleDialogService
+    private simpleDialog: SimpleDialogService,
+    private simpleTitle: SimpleTitleService
   ) {
-    this.loggedIn = loginService.loggedIn
+    this.rateLimitLoadSubject
+      .pipe(throttleTime(5000, asyncScheduler, { leading: true, trailing: true }))
+      .subscribe(() => {
+        this.loadPosts(this.currentPage)
+      })
   }
+
   snOnShow(): void {
     const blogDetails = this.blogDetails()
     if (blogDetails) {
@@ -100,7 +115,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   }
 
   async ngOnInit() {
-    this.paramSubscription = this.activatedRoute.params.subscribe((e) => {
+    this.paramSubscription = this.activatedRoute.params.subscribe(() => {
       this.currentPage = 0
       this.blogUrl = ''
       this.avatarUrl = ''
@@ -146,7 +161,8 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       const blogDetails = blogResponse
       this.blogDetails.set(blogDetails)
       this.avatarUrl = this.getAvatarUrl(blogResponse)
-      this.titleService.setTitle(`${this.blogDetails()!.url}'s blog`)
+
+      this.simpleTitle.set(`${this.blogDetails()?.nameMarkdown ?? this.blogDetails()?.url}'s blog`)
       this.metaTagService.addTags([
         {
           name: 'description',
@@ -162,15 +178,6 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       this.useSimple.set(false)
       this.handleTheme(blogDetails)
     }
-
-    this.intersectionObserverForLoadPosts = new IntersectionObserver(
-      (intersectionEntries: IntersectionObserverEntry[]) => {
-        if (intersectionEntries[0].isIntersecting) {
-          this.currentPage++
-          this.loadPosts(this.currentPage)
-        }
-      }
-    )
   }
 
   async handleTheme(blogDetails: BlogDetails) {
@@ -214,26 +221,28 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     this.currentPage = 0
     this.viewedPosts = 0
     this.viewedPostsIds = []
-    this.loadPosts(this.currentPage)
+    const timeScrollStart = this.activatedRoute.snapshot.queryParams['startScrollDate']
+    this.loadPosts(this.currentPage, timeScrollStart)
   }
 
-  async loadPosts(page: number) {
+  rateLimitLoadPosts() {
+    this.loading.set(true)
+    this.rateLimitLoadSubject.next()
+  }
+
+  async loadPosts(page: number, timeScrollStart?: number) {
     this.currentPage += 1
-    if (this.blogUrl === '') {
+    if (this.blogUrl === '' || !this.blogDetails()) {
       return
     }
-    if (!this.blogDetails()) {
-      return
-    }
-    if (!this.loggedIn() && this.blogDetails()!.url.startsWith('@')) {
+    if (!this.loginService.loggedIn.value && this.blogDetails()!.url.startsWith('@')) {
       this.loading.set(false)
       this.noMorePosts = true
       return
     }
 
     this.loading.set(true)
-
-    const tmpPosts = await this.dashboardService.getBlogPage(page, this.blogUrl)
+    const tmpPosts = await this.dashboardService.getBlogPage(page, this.blogUrl, timeScrollStart)
     const filteredPosts = tmpPosts.filter((post: ProcessedPost[]) => {
       let allFragmentsSeen = true
       post.forEach((component) => {
@@ -245,9 +254,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       })
       return !allFragmentsSeen
     })
-    filteredPosts.forEach((post) => {
-      this.posts.push(post)
-    })
+    this.posts = [...this.posts, ...filteredPosts]
     this.loading.set(false)
     if (tmpPosts.length === 0) {
       this.noMorePosts = true
@@ -259,6 +266,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       id: usr.id,
       url: usr.url,
       name: usr.name,
+      nameMarkdown: usr.nameMarkdown ?? usr.name,
       createdAt: '',
       description: '',
       descriptionMarkdown: '',
@@ -281,6 +289,19 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       disableEmailNotifications: false,
       hideFollows: false,
       hideProfileNotLoggedIn: false
+    }
+  }
+  handleTabChange(event: MatTabChangeEvent) {
+    console.log('tab is now', event.index)
+    switch (event.index) {
+      case 0:
+        this.postsVisible = true
+        this.mediaVisible = false
+        break
+      case 1:
+        this.postsVisible = false
+        this.mediaVisible = true
+        break
     }
   }
 }

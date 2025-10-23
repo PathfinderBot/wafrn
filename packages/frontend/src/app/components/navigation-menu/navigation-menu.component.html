@@ -31,13 +31,12 @@
             }
           }
         }
-        @if (loggedIn()) {
+        @if (loginService.loggedIn.value) {
           <a
             class="my-4 new-woot-button"
             routerLink="/editor"
             mat-list-item
             (click)="hideMenu(); openEditor()"
-            (keydown)="handleWootKeydown($event)"
             tabIndex="0"
           >
             <div class="flex align-items-center justify-content-start">
@@ -65,7 +64,26 @@
       <hr />
       <div class="footer-stack">
         <app-color-scheme-switcher></app-color-scheme-switcher>
-        <div class="text-sm version-text">v{{ frontendVersion }}</div>
+        <div class="text-xs flex flex-column gap-1 align-items-end version-text">
+          @if (!buildData.version.endsWith('-DEV')) {
+            <a
+              class="subtle-link"
+              [href]="'https://codeberg.org/wafrn/wafrn/releases/tag/' + buildData.version"
+              target="_blank"
+              >v{{ buildData.version }}</a
+            >
+          } @else {
+            <span>v{{ buildData.version }}</span>
+          }
+          @if (buildData.git.fullHash) {
+            <a
+              class="subtle-link"
+              [href]="'https://codeberg.org/wafrn/wafrn/commit/' + buildData.git.fullHash"
+              target="_blank"
+              >{{ 'common.commit' | translate }} {{ buildData.git.hash }}</a
+            >
+          }
+        </div>
       </div>
     </div>
   </mat-drawer>

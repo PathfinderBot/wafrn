@@ -1,13 +1,13 @@
 @if (title) {
   <div class="mx-3 lg:mx-4 wafrn-container">
-    <h2 class="my-3 text-3xl dashboard-title">{{ title }}</h2>
+    <h2 class="my-3 text-3xl dashboard-title">{{ title | translate }}</h2>
   </div>
 }
 <app-post-list
   [posts]="posts"
   [visible]="snActive"
   [loading]="loadingPosts"
-  (loadPosts)="loadPosts(currentPage)"
+  (loadPosts)="rateLimitLoadPosts()"
 ></app-post-list>
 
 @if (noMorePosts) {

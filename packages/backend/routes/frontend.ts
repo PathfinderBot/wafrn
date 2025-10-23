@@ -579,7 +579,7 @@ function formatIndexSeo(indexRaw: string, options: MetaTagOptions) {
   if (options.image) {
     const urlParsed = options.image.url.toLowerCase().startsWith('https')
       ? options.image.url
-      : completeEnvironment.mediaUrl + options.image.url
+      : completeEnvironment.mediaUrl + encodeURIComponent(options.image.url)
     const urlSanitized = sanitizeStringForSEO(urlParsed)
     optionsClean.push(
       ...[

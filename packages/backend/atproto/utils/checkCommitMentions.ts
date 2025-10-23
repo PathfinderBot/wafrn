@@ -3,6 +3,8 @@ import { Post } from '../../models/index.js'
 import { Op, Sequelize } from 'sequelize'
 import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
 import { RichText } from '@atproto/api'
+import { getQuotedPostUri } from './getAtProtoThread.js'
+import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
 
 // Preemptive checks to see if
 function checkCommitMentions(
@@ -15,7 +17,7 @@ function checkCommitMentions(
   }
 ): boolean {
   const didsToCheck = cacheData.followedDids
-
+  let quotedPostUri: string | undefined = undefined
   let res = false
   // first we check if there are any mentions to local users. if so we return true
   for (const operation of commit.ops) {
@@ -54,7 +56,7 @@ function checkCommitMentions(
         .flatMap((elem: any) => elem.features)
         .map((elem: any) => elem.did)
         .filter((elem: any) => elem)
-
+      quotedPostUri = getQuotedPostUri({ record } as PostView)
       if (record.text) {
         const rt = new RichText({
           text: record.text,
@@ -74,13 +76,18 @@ function checkCommitMentions(
     }
   }
   // second one first approach: is post being replied on db? if so we store it.
-  const urisToCheck: string[] = commit.ops
+  const fullUrisToCheck: string[] = commit.ops
     .filter((op) => op.action === 'create' && op.path.startsWith('app.bsky.feed.post') && (op.record as any)?.reply)
     .map((op) => {
       return { parent: (op as any).record.reply.parent.uri, root: (op as any).record.reply.root.uri }
     })
     .map((elem) => [elem.parent, elem.root])
     .flat()
+
+  if (quotedPostUri) {
+    fullUrisToCheck.concat(quotedPostUri)
+  }
+  const urisToCheck = fullUrisToCheck
     .map((elem) => elem.split('at://')[1])
     .map((elem) => elem.split('/app.bsky.feed')[0])
   let postsFounds = 0

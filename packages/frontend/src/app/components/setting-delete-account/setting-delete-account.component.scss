@@ -1,5 +1,5 @@
 .request-delete-button {
   --mat-button-filled-horizontal-padding: 18px;
-  background-color: var(--mat-sys-error);
+  --mat-button-filled-container-color: var(--mat-sys-error);
   border-radius: var(--mat-sys-corner-small);
 }

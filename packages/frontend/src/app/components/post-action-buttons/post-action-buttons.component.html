@@ -1,4 +1,4 @@
-@if (loggedIn()) {
+@if (loginService.loggedIn.value) {
   @let fragment = this.fragment();
   <div class="flex flex-wrap justify-content-evenly gap-1 action-list" aria-label="Action list">
     @for (button of buttonList; track $index) {
@@ -8,70 +8,83 @@
             @if (fragment.privacy !== 10 && fragment.privacy !== 1 && fragment.privacy !== 2) {
               <button
                 [disabled]="!fragment.canQuote"
-                aria-label="Quote woot"
+                [matTooltip]="'post-actions.quotePost' | translate"
                 mat-button
                 (click)="quotePost()"
-                class="cursor-pointer mat-circle-button quote-icon"
+                class="mat-circle-button quote-icon"
               >
-                <fa-icon size="lg" [icon]="quoteIcon" matTooltip="Quote woot"></fa-icon>
+                <fa-icon size="lg" [icon]="quoteIcon"></fa-icon>
               </button>
             }
           }
           @case ('rewoot') {
-            @if (myRewootsIncludePost) {
+            @if (myRewootsIncludePost()) {
               <button
-                aria-label="Delete rewoot"
+                [matTooltip]="'post-actions.deleteRewootPost' | translate"
                 mat-button
                 (click)="deleteRewoots()"
-                class="cursor-pointer mat-circle-button delete-rewoot-icon"
+                class="mat-circle-button delete-rewoot-icon"
                 [disabled]="loadingAction"
               >
-                <fa-icon size="lg" [icon]="closeIcon" matTooltip="Delete rewoot"></fa-icon>
+                <fa-icon size="lg" [icon]="closeIcon"></fa-icon>
               </button>
-            } @else if (!myRewootsIncludePost && fragment.privacy !== 10 && fragment.privacy !== 1) {
+            } @else if (fragment.privacy !== 10 && fragment.privacy !== 1) {
               <button
-                aria-label="Rewoot"
+                [matTooltip]="'post-actions.rewootPost' | translate"
                 [disabled]="!fragment.canReblog"
                 mat-button
-                (click)="quickReblog()"
-                class="cursor-pointer mat-circle-button rewoot-icon"
+                (click)="$event.stopPropagation()"
+                (mousedown)="startReblog($event)"
+                (mouseup)="endReblog($event)"
+                class="relative mat-circle-button rewoot-icon"
                 [disabled]="loadingAction"
               >
-                <fa-icon size="lg" [icon]="quickReblogIcon" matTooltip="Rewoot"></fa-icon>
+                <fa-icon size="lg" [icon]="quickReblogIcon"></fa-icon>
+                <button #reblogMenuOpener [mat-menu-trigger-for]="reblogMenu" class="menu-toggle-hidden"></button>
               </button>
+              <mat-menu #reblogMenu="matMenu">
+                @for (account of accountList(); track $index) {
+                  <button mat-menu-item (click)="quickReblog($index, $event)">
+                    <div class="user-info"
+                      ><img [src]="toAvatarUrl(account.blog)" class="user-avatar" />
+                      <span [innerHTML]="account.blog.url" class="user-name"></span
+                    ></div>
+                  </button>
+                }
+              </mat-menu>
             }
           }
           @case ('reply') {
             <button
-              aria-label="Reply woot"
+              [matTooltip]="'post-actions.replyPost' | translate"
               [disabled]="!fragment.canReply"
               mat-button
               (click)="replyPost()"
-              class="cursor-pointer mat-circle-button reply-icon"
+              class="mat-circle-button reply-icon"
             >
-              <fa-icon size="lg" [icon]="reblogIcon" matTooltip="Reply woot"></fa-icon>
+              <fa-icon size="lg" [icon]="reblogIcon"></fa-icon>
             </button>
           }
           @case ('bookmark') {
             @if (bookmarked()) {
               <button
-                aria-label="Unbookmark woot"
+                [matTooltip]="'post-actions.unbookmarkPost' | translate"
                 mat-button
                 (click)="unbookmarkPost()"
-                class="cursor-pointer mat-circle-button unlike-icon"
+                class="mat-circle-button unlike-icon"
                 [disabled]="loadingAction"
               >
-                <fa-icon size="lg" [icon]="unbookmarkIcon" matTooltip="Unbookmark woot"></fa-icon>
+                <fa-icon size="lg" [icon]="unbookmarkIcon"></fa-icon>
               </button>
             } @else {
               <button
-                aria-label="Bookmark woot"
+                [matTooltip]="'post-actions.bookmarkPost' | translate"
                 mat-button
-                (click)="bookmarkPost()"
-                class="cursor-pointer mat-circle-button unlike-icon"
+                (click)="bookmarkPost($event)"
+                class="mat-circle-button unlike-icon"
                 [disabled]="loadingAction"
               >
-                <fa-icon size="lg" [icon]="bookmarkIcon" matTooltip="Bookmark woot"></fa-icon>
+                <fa-icon size="lg" [icon]="bookmarkIcon"></fa-icon>
               </button>
             }
           }
@@ -79,24 +92,24 @@
             @if (fragment.userId !== myId) {
               @if (fragment.userLikesPostRelations.includes(myId)) {
                 <button
-                  aria-label="Remove like"
+                  [matTooltip]="'post-actions.dislikePost' | translate"
                   mat-button
                   (click)="unlikePost()"
-                  class="cursor-pointer mat-circle-button unlike-icon"
+                  class="mat-circle-button unlike-icon"
                   [disabled]="loadingAction"
                 >
-                  <fa-icon size="lg" [icon]="clearHeartIcon" matTooltip="Remove like"></fa-icon>
+                  <fa-icon size="lg" [icon]="clearHeartIcon"></fa-icon>
                 </button>
               } @else {
                 <button
-                  aria-label="Like woot"
+                  [matTooltip]="'post-actions.likePost' | translate"
                   [disabled]="!fragment.canLike"
                   mat-button
-                  (click)="likePost()"
-                  class="cursor-pointer mat-circle-button like-icon"
+                  (click)="likePost($event)"
+                  class="mat-circle-button like-icon"
                   [disabled]="loadingAction"
                 >
-                  <fa-icon size="lg" [icon]="solidHeartIcon" matTooltip="Like woot"></fa-icon>
+                  <fa-icon size="lg" [icon]="solidHeartIcon"></fa-icon>
                 </button>
               }
             }
@@ -104,24 +117,25 @@
           @case ('edit') {
             @if (fragment.userId === myId) {
               <button
-                aria-label="Edit woot"
+                [matTooltip]="'post-actions.editPost' | translate"
                 mat-button
                 (click)="editPost(fragment)"
-                class="cursor-pointer mat-circle-button edit-woot-icon"
+                class="mat-circle-button edit-woot-icon"
               >
-                <fa-icon size="lg" [icon]="editedIcon" matTooltip="Edit woot"></fa-icon>
+                <fa-icon size="lg" [icon]="editedIcon"></fa-icon>
               </button>
             }
           }
           @case ('delete') {
             @if (fragment.userId === myId) {
               <button
-                aria-label="Delete woot"
+                matTooltip="Delete woot"
+                [matTooltip]="'post-actions.deletePost' | translate"
                 mat-button
                 (click)="deletePost(fragment.id)"
-                class="cursor-pointer mat-circle-button delete-woot-icon"
+                class="mat-circle-button delete-woot-icon"
               >
-                <fa-icon size="lg" [icon]="deleteIcon" matTooltip="Delete woot"></fa-icon>
+                <fa-icon size="lg" [icon]="deleteIcon"></fa-icon>
               </button>
             }
           }

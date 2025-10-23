@@ -11,10 +11,13 @@ export default function muteRoutes(app: Application) {
     try {
       const posterId = req.jwtData?.userId as string
       const userMuter = await User.findByPk(posterId)
-      if (req.body?.userId && req.body.userId != req.jwtData?.userId) {
+      if (req.jwtData?.userId && req.body?.userId && req.body.userId != req.jwtData?.userId) {
         const userToBeMuted = await User.findByPk(req.body.userId)
         if (userMuter && userToBeMuted) {
-          userToBeMuted.addMuter(userMuter)
+          const reason: string | undefined = req.body.reason
+
+          const mute = new Mutes({ muterId: req.jwtData.userId, mutedId: req.body.userId, reason: reason })
+          await mute.save()
         }
         await redisCache.del('mutedUsers:' + posterId)
         success = true

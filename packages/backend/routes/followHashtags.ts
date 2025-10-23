@@ -4,8 +4,9 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 import { UserFollowHashtags } from '../models/userFollowHashtag.js'
 import { Queue } from 'bullmq'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 
-export default function followHashtagRoutes(app: Application) {
+function followHashtagRoutes(app: Application) {
   app.post('/api/followHashtag', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     let success = false
     if (req.body.hashtag && typeof req.body.hashtag === 'string') {
@@ -54,19 +55,6 @@ export default function followHashtagRoutes(app: Application) {
       })
     )
   })
-
-  async function forceUpdateCacheDidsAtThread() {
-    const forceUpdaDidsteQueue = new Queue('forceUpdateDids', {
-      connection: completeEnvironment.bullmqConnection,
-      defaultJobOptions: {
-        removeOnComplete: true,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 1000
-        }
-      }
-    })
-    await forceUpdaDidsteQueue.add('forceUpdateDids', {})
-  }
 }
+
+export { followHashtagRoutes }

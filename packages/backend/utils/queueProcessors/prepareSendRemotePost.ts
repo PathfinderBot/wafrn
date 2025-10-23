@@ -1,7 +1,7 @@
 import { Model, Op, Sequelize } from 'sequelize'
 import { logger } from '../logger.js'
 import { postPetitionSigned } from '../activitypub/postPetitionSigned.js'
-import { postToJSONLD } from '../activitypub/postToJSONLD.js'
+import { getPostUrlForQuote, postToJSONLD } from '../activitypub/postToJSONLD.js'
 import { LdSignature } from '../activitypub/rsa2017.js'
 import {
   FederatedHost,
@@ -17,6 +17,8 @@ import {
 import { Job, Queue } from 'bullmq'
 import { Privacy } from '../../models/post.js'
 import { completeEnvironment } from '../backendOptions.js'
+import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
+import { getPetitionSigned } from '../activitypub/getPetitionSigned.js'
 
 const processPostViewQueue = new Queue('processRemoteView', {
   connection: completeEnvironment.bullmqConnection,
@@ -79,6 +81,35 @@ async function prepareSendRemotePostWorker(job: Job) {
   // we check if we need to send the post to fedi
   const isBskyPost = parents.some((elem) => elem.isRemoteBlueskyPost)
   if (localUser && !isBskyPost) {
+    // we get quote authorizations
+    const quotes = (
+      await Quotes.findAll({
+        include: [{ model: Post, as: 'quotedPost', include: [{ model: User, as: 'user' }] }],
+        where: {
+          quoterPostId: post.id
+        }
+      })
+    ).filter((quote: any) => !!quote.dataValues.quotedPost.dataValues.user.remoteId)
+    // TODO change in the future if fedi decides to do more than one quote
+    if (quotes && quotes.length == 1) {
+      const quote: any = quotes[0]
+      const objectToSend: activityPubObject = {
+        '@context': [
+          'https://www.w3.org/ns/activitystreams',
+          `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+        ],
+        actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`,
+        id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${post.id}`,
+        type: 'QuoteRequest',
+        object: getPostUrlForQuote(quote.dataValues.quotedPost),
+        instrument: await postToJSONLD(post.id)
+      }
+      const response = await postPetitionSigned(
+        objectToSend,
+        localUser,
+        quote.dataValues.quotedPost.dataValues.user.remoteInbox
+      )
+    }
     // servers with shared inbox
     let serversToSendThePost: FederatedHost[] = []
     const localUserFollowers = await localUser.getFollower()

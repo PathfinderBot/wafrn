@@ -35,7 +35,7 @@ export class ReportService {
 
     if (res.block && res.userId) {
       // HACK: this is not coupled with the report so you can possibly block but not report.
-      this.blockService.blockUser(res.userId)
+      this.blockService.blockUser(res.userId, 'USER WAS BLOCKED WHILE REPORTING')
     }
 
     const reportData: UserReport = res

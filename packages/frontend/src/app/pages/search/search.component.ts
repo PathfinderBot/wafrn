@@ -10,7 +10,7 @@ import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
 import { MessageService } from 'src/app/services/message.service'
 import { PostsService } from 'src/app/services/posts.service'
-import { ThemeService } from 'src/app/services/theme.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-search',
@@ -34,7 +34,6 @@ export class SearchComponent implements OnInit, OnDestroy {
   followedUsers: string[] = []
   notYetAcceptedFollows: string[] = []
 
-  loggedIn: Signal<boolean>
   currentPage = 0
   loading = signal(false)
   navigationSubscription: Subscription
@@ -48,11 +47,13 @@ export class SearchComponent implements OnInit, OnDestroy {
     private dashboardService: DashboardService,
     private messages: MessageService,
     public postService: PostsService,
-    loginService: LoginService,
+    protected loginService: LoginService,
     router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    simpleTitle: SimpleTitleService
   ) {
-    this.loggedIn = loginService.loggedIn
+    simpleTitle.set('menu.search')
+
     this.navigationSubscription = router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {

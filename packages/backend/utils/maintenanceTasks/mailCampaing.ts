@@ -1,7 +1,7 @@
 import { Op } from 'sequelize'
 import { Notification, User } from '../../models/index.js'
 import { wait } from '../wait.js'
-import sendActivationEmail from '../sendActivationEmail.js'
+import sendEmail from '../sendEmail.js'
 import getBlockedIds from '../cacheGetters/getBlockedIds.js'
 import { getMutedPosts } from '../cacheGetters/getMutedPosts.js'
 import { getNotificationOptions } from '../../routes/notifications.js'
@@ -49,15 +49,12 @@ async function sendMail() {
         }
       }
     })
+    // Modify before sending the email!
     const subject = `Hello ${user.url}, this new wafrn update includes gay tags and will not gaslight you!.`
-    const body = `
-    <h1>${user.url}, We miss you at <a href="https://app.wafrn.net">wafrn</a>!</h1>
-    <p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
-    ${
-      notificationsCount == 0
-        ? '<p>Wow, still zero. Are you going to come back or should I keep roasting you on those emails? (please come back :3 )</p>'
-        : ''
-    }
+    const body = `\
+<h1>${user.url}, We miss you at <a href="https://app.wafrn.net">wafrn</a>!</h1>
+<p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
+${notificationsCount == 0 ? '<p>Wow, still zero. Are you going to come back or should I keep roasting you on those emails? (please come back :3 )</p>' : ''}
 <br />
 <img src="https://cdn.wafrn.net/api/cache?media=https%3A%2F%2Fmedia.wafrn.net%2F1756576344253_aa9288f523582f1072066f1f21aafb45cc64ba25_processed.webp" style="width: 100%"> </img>
 So some of the changelog for last month:
@@ -72,11 +69,8 @@ So some of the changelog for last month:
 	<li>We have added new bugs</li>
   <li>No more gaslighting</li>
   <li>Added pictures of herobrine</li>
-
-
 </ul>
 And finaly, the part of the email where I say "give me money". Well, first, give money to the team, and then me
-
 <ul>
   <li><a href="https://app.wafrn.net/blog/fireisgood">FireIsGood</a> has done A LOT. Like A HUGE FUCKING LOT. You should give her moneys <a href="https://ko-fi.com/fireisgood">here</a> </li>
 	<li><a href="https://social.sztupy.hu/blog/sztupy" target="_blank">SztupY</a> has helped to create a wafrn hosting guide and streamlined the process a lot. You should give <a href="https://ko-fi.com/SztupY" target="_blank">SztupY</a> some money. Also yes his profile is not on the main wafrn!</li>
@@ -84,20 +78,11 @@ And finaly, the part of the email where I say "give me money". Well, first, give
 	<li><a href="https://ko-fi.com/cyrneko/tiers" target="_blank">Alexia</a> has helped improve the quality of the code and made the way for other improvements. She has done a lot to help wafrn grow</li>
 	<li>And finaly... we have to link the wafrn <a href="https://patreon.com/wafrn" target="_blank">patreon</a> and <a href="https://ko-fi.com/wafrn" target="_blank">kofi</a>. This money goes to gabbo for fried chicken and to the wafrn servers. Give me money! please :3</li>
 </ul>
-
-<p>If you no longer desire to get these emails, please <a href="${
-      completeEnvironment.frontendUrl
-    }/api/disableEmailNotifications/${user.id}/${user.activationCode}">click here</a>.</p>
-<p>Apologies if last time link did not work. Sorry</p>
-    `
+<br />
+<p>If you no longer desire to get these emails, you can <a href="${completeEnvironment.frontendUrl}/api/disableEmailNotifications/${user.id}/${user.activationCode}">unsubscribe</a>.</p>
+`
     console.log(`mailing ${user.url}`)
-    try {
-      await sendActivationEmail(user.email, '', subject, body)
-    } catch (error) {
-      console.log(error)
-      console.log('Extra waiting time')
-      await wait(5000)
-    }
+    await sendEmail({ email: user.email, subject, body })
     await wait(1500)
   }
 }

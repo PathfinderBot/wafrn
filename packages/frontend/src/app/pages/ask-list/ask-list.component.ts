@@ -8,6 +8,7 @@ import { DashboardService } from 'src/app/services/dashboard.service'
 import { EditorService } from 'src/app/services/editor.service'
 import { LoaderComponent } from 'src/app/components/loader/loader.component'
 import { TranslatePipe } from '@ngx-translate/core'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-ask-list',
@@ -22,8 +23,11 @@ export class AskListComponent {
   constructor(
     private dashboard: DashboardService,
     private editor: EditorService,
-    private blogService: BlogService
-  ) {}
+    private blogService: BlogService,
+    simpleTitle: SimpleTitleService
+  ) {
+    simpleTitle.set('menu.unansweredAsks')
+  }
 
   async ngOnInit() {
     await this.syncAsks()

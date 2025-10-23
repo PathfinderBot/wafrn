@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, signal } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -7,6 +7,8 @@ import { faWarning } from '@fortawesome/free-solid-svg-icons'
 import { TranslatePipe } from '@ngx-translate/core'
 import { InfoCardComponent } from '../info-card/info-card.component'
 import { MatExpansionModule } from '@angular/material/expansion'
+import { LoginService } from 'src/app/services/login.service'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 
 @Component({
   selector: 'app-setting-delete-account',
@@ -15,6 +17,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
     MatFormFieldModule,
     MatButtonModule,
     MatInputModule,
+    MatProgressSpinnerModule,
     FontAwesomeModule,
     InfoCardComponent,
     TranslatePipe
@@ -24,10 +27,11 @@ import { MatExpansionModule } from '@angular/material/expansion'
 })
 export class SettingDeleteAccountComponent {
   password: string = ''
+  loading = signal(false)
 
   warnIcon = faWarning
 
-  constructor() {}
+  constructor(private loginService: LoginService) {}
 
   handleInput(event: Event) {
     const target = event.target
@@ -36,5 +40,12 @@ export class SettingDeleteAccountComponent {
     }
   }
 
-  requestDeleteAccount() {}
+  async requestDeleteAccount() {
+    this.loading.set(true)
+    const success = await this.loginService.deleteAccount(this.password)
+    if (success) {
+      this.loginService.logOutAccount(this.loginService.accountList()[0].token)
+    }
+    this.loading.set(false)
+  }
 }

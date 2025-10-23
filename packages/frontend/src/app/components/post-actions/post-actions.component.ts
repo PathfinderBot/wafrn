@@ -24,7 +24,8 @@ import {
   faLink,
   faPaperPlane,
   faUserSlash,
-  faVolumeMute
+  faVolumeMute,
+  faCookieBite
 } from '@fortawesome/free-solid-svg-icons'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
@@ -52,7 +53,6 @@ import { BlocksService } from 'src/app/services/blocks.service'
 })
 export class PostActionsComponent implements OnChanges {
   post = input.required<ProcessedPost>()
-  loggedIn: Signal<boolean>
   myId: string = 'user-00000000-0000-0000-0000-000000000000 '
   postSilenced = false
   myRewootsIncludePost = false
@@ -92,25 +92,25 @@ export class PostActionsComponent implements OnChanges {
   refederateIcon = faPaperPlane
   muteIcon = faVolumeMute
   blockIcon = faUserSlash
+  biteIcon = faCookieBite
 
   constructor(
     private messages: MessageService,
     private postService: PostsService,
-    loginService: LoginService,
+    protected loginService: LoginService,
     private reportService: ReportService,
     private utilsService: UtilsService,
     private settingsService: SettingsService,
     private simpleDialog: SimpleDialogService,
     private blockService: BlocksService
   ) {
-    this.loggedIn = loginService.loggedIn
-    if (this.loggedIn()) {
+    if (loginService.loggedIn.value) {
       this.myId = loginService.getLoggedUserUUID()
     }
   }
 
   ngOnChanges(): void {
-    this.myRewootsIncludePost = this.postService.rewootedPosts.includes(this.post().id)
+    this.myRewootsIncludePost = this.postService.rewootedPosts().has(this.post().id)
     this.checkPostSilenced()
   }
 
@@ -188,27 +188,29 @@ export class PostActionsComponent implements OnChanges {
     await this.postService.forceRefederate(this.post().id)
   }
 
+  async bitePost() {
+    if (await this.postService.bitePost(this.post().id)) {
+      this.messages.add({
+        severity: 'success',
+        summary: 'messages.bitePostSuccess',
+        translate: true
+      })
+    } else {
+      this.messages.add({
+        severity: 'error',
+        summary: 'messages.genericError',
+        translate: true
+      })
+    }
+  }
+
   // Dangerous options
   async muteAccount() {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.post-header.muteAccountTitle',
-      content: 'dialog.post-header.muteAccountDescription'
-    })
-
-    if (!confirm) return
-
-    this.blockService.muteUser(this.post().userId)
+    this.blockService.promptMuteUser(this.post().userId)
   }
 
   async blockAccount() {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.post-header.blockAccountTitle',
-      content: 'dialog.post-header.blockAccountDescription'
-    })
-
-    if (!confirm) return
-
-    this.blockService.blockUser(this.post().userId)
+    this.blockService.promptBlockUser(this.post().userId)
   }
 
   reportPost() {

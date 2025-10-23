@@ -84,6 +84,12 @@ ${{PDS_DOMAIN_NAME}} *.${{PDS_DOMAIN_NAME}} {
         on_demand
     }
 
+    handle / {
+        root * /pds-homepage
+        try_files {path} /pds.txt
+        file_server
+    }
+
     reverse_proxy ${{PDS_HOST:-pds:3000}}
 
     import /etc/caddy/config/pds_domain_post/* ${{DOMAIN_NAME}} ${{PDS_DOMAIN_NAME}}

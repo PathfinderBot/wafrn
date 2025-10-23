@@ -79,76 +79,61 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
 
-  app.get('/.well-known/nodeinfo/2.0', cacher.cache('hours', 24), async (req, res) => {
+  app.get('/.well-known/nodeinfo/2.0', cacher.cache('hours', 1), async (req, res) => {
+    const cacheResult = await redisCache.get('nodeInfoData')
+    if (cacheResult) {
+      return res.send(JSON.parse(cacheResult))
+    }
     const localUsersIds = await getAllLocalUserIds()
-    const localUsersCountCache = await redisCache.get('nodeinfo:localUserCount')
-    const localUsers = localUsersCountCache
-      ? parseInt(localUsersCountCache)
-      : await User.count({
-          where: {
-            id: {
-              [Op.in]: localUsersIds
-            },
-            banned: false,
-            activated: true
+    const localUsers = await User.count({
+      where: {
+        id: {
+          [Op.in]: localUsersIds
+        },
+        banned: false,
+        activated: true
+      }
+    })
+    const activeUsersSixMonths = await User.count({
+      where: {
+        id: {
+          [Op.in]: localUsersIds
+        },
+        [Op.or]: [
+          {
+            lastActiveAt: {
+              [Op.gt]: new Date().setMonth(new Date().getMonth() - 6)
+            }
+          },
+          {
+            lastTimeNotificationsCheck: {
+              [Op.gt]: new Date().setMonth(new Date().getMonth() - 6)
+            }
           }
-        })
-    const activeSixMonthsCache = await redisCache.get('nodeinfo:activeSixMonths')
-    const activeUsersSixMonths = activeSixMonthsCache
-      ? parseInt(activeSixMonthsCache)
-      : await User.count({
-          where: {
-            id: {
-              [Op.in]: localUsersIds
-            },
-            [Op.or]: [
-              {
-                lastActiveAt: {
-                  [Op.gt]: new Date().setMonth(new Date().getMonth() - 6)
-                }
-              },
-              {
-                lastTimeNotificationsCheck: {
-                  [Op.gt]: new Date().setMonth(new Date().getMonth() - 6)
-                }
-              }
-            ]
+        ]
+      }
+    })
+    const activeUsersLastMonth = await User.count({
+      where: {
+        id: {
+          [Op.in]: localUsersIds
+        },
+        [Op.or]: [
+          {
+            lastActiveAt: {
+              [Op.gt]: new Date().setMonth(new Date().getMonth() - 1)
+            }
+          },
+          {
+            lastTimeNotificationsCheck: {
+              [Op.gt]: new Date().setMonth(new Date().getMonth() - 1)
+            }
           }
-        })
-    const activeOneMonthCache = await redisCache.get('nodeinfo:activeOneMonth')
-    const activeUsersLastMonth = activeOneMonthCache
-      ? parseInt(activeOneMonthCache)
-      : await User.count({
-          where: {
-            id: {
-              [Op.in]: localUsersIds
-            },
-            [Op.or]: [
-              {
-                lastActiveAt: {
-                  [Op.gt]: new Date().setMonth(new Date().getMonth() - 1)
-                }
-              },
-              {
-                lastTimeNotificationsCheck: {
-                  [Op.gt]: new Date().setMonth(new Date().getMonth() - 1)
-                }
-              }
-            ]
-          }
-        })
+        ]
+      }
+    })
     const packageJsonFile = JSON.parse(fs.readFileSync('package.json').toString())
-
-    if (!localUsersCountCache) {
-      redisCache.set('nodeinfo:localUserCount', localUsers, 'EX', 3600 * 24)
-    }
-    if (!activeSixMonthsCache) {
-      redisCache.set('nodeinfo:activeSixMonths', activeUsersSixMonths, 'EX', 3600 * 24)
-    }
-    if (!activeOneMonthCache) {
-      redisCache.set('nodeinfo:activeOneMonth', localUsers, 'EX', 3600 * 24)
-    }
-    res.send({
+    const result = {
       version: '2.0',
       software: {
         name: 'wafrn',
@@ -178,7 +163,9 @@ function wellKnownRoutes(app: Application) {
       metadata: {
         themeColor: '#96d8d1'
       }
-    })
+    }
+    redisCache.set('nodeInfoData', JSON.stringify(result), 'EX', 3600 * 48)
+    res.send(result)
     res.end()
   })
   app.get('/.well-known/assetlinks.json', (req, res) => {

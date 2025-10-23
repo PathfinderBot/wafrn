@@ -4,6 +4,7 @@ export interface SimplifiedUser {
   avatar: string
   url: string
   name: string
+  nameMarkdown?: string
   id: string
   remoteId?: string
   description?: string

@@ -18,6 +18,7 @@ import { FederatedHost } from './federatedHost.js'
 import { Post } from './post.js'
 import { Media } from './media.js'
 import { PostMentionsUserRelation } from './postMentionsUserRelation.js'
+import { UserBitesPostRelation } from './userBitesPostRelation.js'
 import { UserLikesPostRelations } from './userLikesPostRelations.js'
 import { UserBookmarkedPosts } from './userBookmarkedPosts.js'
 import { RemoteUserPostView } from './remoteUserPostView.js'
@@ -34,6 +35,7 @@ import {
 import { Col } from 'sequelize/lib/utils'
 import { UserFollowHashtags } from './userFollowHashtag.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { Bites } from './bites.js'
 
 export interface UserAttributes {
   id?: string
@@ -80,6 +82,7 @@ export interface UserAttributes {
   emailVerified: Boolean | null
   selfDeleted: Boolean | null
   userMigratedTo: String | null
+  bskyInviteCode: String | null
 }
 
 @Table({
@@ -101,7 +104,8 @@ export interface UserAttributes {
         'registerIp',
         'bskyAuthData',
         'bskyAppPassword',
-        'birthDate'
+        'birthDate',
+        'bskyInviteCode'
       ]
     }
   }
@@ -295,6 +299,12 @@ export class User extends Model<UserAttributes, UserAttributes> implements UserA
 
   @Column({
     allowNull: true,
+    type: DataType.STRING
+  })
+  declare bskyInviteCode: string
+
+  @Column({
+    allowNull: true,
     type: DataType.INTEGER,
     defaultValue: 0
   })
@@ -384,6 +394,16 @@ export class User extends Model<UserAttributes, UserAttributes> implements UserA
     foreignKey: 'userAsked'
   })
   declare userAsked: Ask[]
+
+  @HasMany(() => Bites, {
+    foreignKey: 'biterId'
+  })
+  declare hasBitten: Bites[]
+
+  @HasMany(() => Bites, {
+    foreignKey: 'bittenId'
+  })
+  declare bittenBy: Bites[]
 
   @HasMany(() => QuestionPollAnswer, {
     sourceKey: 'id'
@@ -509,6 +529,12 @@ export class User extends Model<UserAttributes, UserAttributes> implements UserA
   @BelongsToMany(() => Post, () => PostMentionsUserRelation)
   declare mentionPost: Post[]
 
+  @HasMany(() => UserBitesPostRelation, {
+    sourceKey: 'id'
+  })
+  declare userBitesPostRelation: UserBitesPostRelation[]
+  declare getUserBitesPostRelation: HasManyGetAssociationsMixin<UserBitesPostRelation>
+
   @HasMany(() => UserLikesPostRelations, {
     sourceKey: 'id'
   })
@@ -562,19 +588,16 @@ export class User extends Model<UserAttributes, UserAttributes> implements UserA
 
   // the username part of the handle, without the domain for both bsky and fedi
   get shortHandle() {
-    if (this.isBlueskyUser)
-      return this.url.split('@')[1].split('.')[0];
+    if (this.isBlueskyUser) return this.url.split('@')[1].split('.')[0]
 
-    if (this.isFediverseUser)
-      return this.url.split('@')[1]
+    if (this.isFediverseUser) return this.url.split('@')[1]
 
     return this.url
   }
 
   // the username part of the handle. For bluesky also includes the domain, but for fedi it doesn't
   get longHandle() {
-    if (this.isBlueskyUser || this.isFediverseUser)
-      return this.url.split('@')[1]
+    if (this.isBlueskyUser || this.isFediverseUser) return this.url.split('@')[1]
 
     return this.url
   }
@@ -613,7 +636,7 @@ export interface HandleData {
   username: string
   handle: string
   domain: string
-  type: "fediverse" | "bluesky" | "local"
+  type: 'fediverse' | 'bluesky' | 'local'
 }
 
 export function splitHandle(handleString: string): HandleData {
@@ -627,7 +650,7 @@ export function splitHandle(handleString: string): HandleData {
         handle: handleString,
         username: username,
         domain: domain,
-        type: "fediverse"
+        type: 'fediverse'
       }
     } else if (userData.length === 2 && userData[0] == '') {
       const handle = userData[1]
@@ -638,7 +661,7 @@ export function splitHandle(handleString: string): HandleData {
         handle: handle,
         username: username,
         domain: domain,
-        type: "bluesky"
+        type: 'bluesky'
       }
     }
   }
@@ -646,7 +669,7 @@ export function splitHandle(handleString: string): HandleData {
     username: handleString,
     handle: handleString,
     domain: completeEnvironment.instanceUrl,
-    type: "local"
+    type: 'local'
   }
 }
 

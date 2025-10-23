@@ -6,6 +6,7 @@ import { Reblog } from 'src/app/interfaces/reblog'
 import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
 import { UserNotifications } from 'src/app/interfaces/user-notifications'
 import { NotificationsService } from 'src/app/services/notifications.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-notifications',
@@ -35,8 +36,11 @@ export class NotificationsComponent implements OnInit {
 
   constructor(
     private notificationsService: NotificationsService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    simpleTitle: SimpleTitleService
   ) {
+    simpleTitle.set('menu.notifications')
+
     this.observer = new IntersectionObserver((intersectionEntries: IntersectionObserverEntry[]) => {
       if (intersectionEntries.some((elem) => elem.isIntersecting)) {
         this.page = this.page + 1
@@ -55,6 +59,7 @@ export class NotificationsComponent implements OnInit {
     // window.scrollTo(0, 0)
     localStorage.setItem('lastTimeCheckNotifications', new Date().toISOString())
     await this.loadNotificationsV2(0)
+    this.notificationsService.updateCount()
   }
 
   async loadNotificationsV2(page: number) {
@@ -76,7 +81,7 @@ export class NotificationsComponent implements OnInit {
 
   reblogToNotification(
     reblog: Reblog,
-    type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW'
+    type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE'
   ): UserNotifications {
     if (!reblog.user) {
       console.log(`ERROR WITH ${type}`)

@@ -1,8 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
+import { Component, computed, OnInit, signal, viewChild, WritableSignal } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatTableDataSource } from '@angular/material/table'
+import { parseReportFilter, ReportFilter } from 'src/app/grammars/report-grammar'
 import { AdminService, UserReport } from 'src/app/services/admin.service'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-report-list',
@@ -11,11 +13,14 @@ import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
   standalone: false
 })
 export class ReportListComponent implements OnInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator
-  dataSource!: MatTableDataSource<any, MatPaginator>
-  displayedColumns = ['user', 'reportedUser', 'type', 'report', 'solved', 'actions']
+  reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
+  reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
+  displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'date', 'actions']
 
-  ready = false
+  searchFilters: WritableSignal<ReportFilter> = signal([], { equal: () => false })
+  advancedSearch = computed(() => this.searchFilters().length !== 0)
+
+  loading = signal(false) // Not actually used, but could have a loader inside the table
 
   reportMap: { [index: number]: string } = {
     1: 'SPAM',
@@ -24,28 +29,39 @@ export class ReportListComponent implements OnInit {
     10: 'Illegal'
   }
 
+  filterMap: Record<string, string> = {
+    t: 'target',
+    target: 'target',
+    r: 'reporter',
+    reporter: 'reporter',
+    d: 'resolved',
+    resolved: 'resolved'
+  }
+
   constructor(
     private adminService: AdminService,
-    private simpleDialog: SimpleDialogService
+    private simpleDialog: SimpleDialogService,
+    simpleTitle: SimpleTitleService
   ) {
+    simpleTitle.set('menu.admin.reports')
+
     this.loadReports()
   }
 
   ngOnInit(): void {
-    this.dataSource = new MatTableDataSource<Report, MatPaginator>([])
-    setTimeout(() => {
-      this.dataSource.paginator = this.paginator
-    })
-    console.log(this.dataSource)
+    this.reportDataSource.filterPredicate = this.filterReport.bind(this)
+    this.reportDataSource.paginator = this.reportPaginator()
   }
 
   async loadReports() {
-    this.ready = false
+    this.loading.set(false)
     const res = await this.adminService.getReports()
-    res.sort((a, b) => +a.resolved - +b.resolved)
-    this.dataSource.data = res
     console.log(res)
-    this.ready = true
+    res
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => +a.resolved - +b.resolved)
+    this.reportDataSource.data = res
+    this.loading.set(true)
   }
 
   async ignore(report: UserReport) {
@@ -114,7 +130,102 @@ export class ReportListComponent implements OnInit {
     this.loadReports()
   }
 
+  async reopen(report: UserReport) {
+    const confirm = await this.simpleDialog.createConfirmDialog({
+      title: 'dialog.admin.confirmReopenTitle'
+    })
+
+    if (!confirm) return
+
+    await this.adminService.reopenReport(report.id)
+    this.loadReports()
+  }
+
+  updateMode(event: Event) {
+    const target = event.target
+    if (!target || !(target instanceof HTMLInputElement)) return
+    if (target.value === '') {
+      this.searchFilters.set([])
+    }
+  }
+
   mapReport(key: number) {
     return this.reportMap[key] ?? 'unknown'
+  }
+
+  mapSeverity(key: number): number {
+    // Hard coding 10 as max severity
+    return key / 10
+  }
+
+  mapFilters(filters: ReportFilter) {
+    // Future translators I apologize for my string building crimes
+    return filters.map((group) => {
+      const groupType = group[0].type
+
+      // Flags are the only entry of a group
+      if (groupType === 'flag') {
+        return `${group[0].mode === '+' ? 'is' : 'is not'} ${this.filterMap[group[0].value]}`
+      }
+
+      return `${this.filterMap[group[0].key]} ${group[0].mode === '+' ? 'is' : 'is not'} \
+${group.length !== 1 ? '(' : ''}\
+${group.map((filter) => filter.value).join(' or ')}\
+${group.length !== 1 ? ')' : ''}`
+    })
+  }
+
+  filterReport(report: UserReport, query: string): boolean {
+    const match = parseReportFilter(query)
+
+    // Basic search (full text query)
+    if (!match.succeeded) {
+      this.searchFilters.set([])
+      return (
+        report.user.url.startsWith(query) ||
+        report.reportedUser.url.startsWith(query) ||
+        report.severity.toString() === query ||
+        report.description.includes(query)
+      )
+    }
+
+    // Advanced search
+    //
+    // Combining add and remove of the same filter just hides everything
+    // The if statements have to check evil statements to implement
+    const entryMatches = match.filter.every((group) =>
+      group.some((entry) => {
+        let reportMatch: boolean // evil global
+        if (entry.type === 'flag') {
+          // Expandable idk
+          switch (entry.value) {
+            case 'd':
+            case 'resolved':
+              reportMatch = report.resolved
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+          }
+          return false
+        } else {
+          switch (entry.key) {
+            case 'r':
+            case 'reporter':
+              reportMatch = report.user.url === entry.value
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+            case 't':
+            case 'target':
+              reportMatch = report.reportedUser.url === entry.value
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+          }
+          return false
+        }
+      })
+    )
+
+    this.searchFilters.set(match.filter)
+
+    return entryMatches
   }
 }

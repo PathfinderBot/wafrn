@@ -1,4 +1,3 @@
-
 import { Component, inject, input } from '@angular/core'
 import { Overlay, OverlayModule } from '@angular/cdk/overlay'
 import { MatButtonModule } from '@angular/material/button'
@@ -9,6 +8,8 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { Emoji } from '../../interfaces/emoji'
 import { Dialog } from '@angular/cdk/dialog'
 import { EmojiPickerComponent } from '../emoji-picker/emoji-picker.component'
+import { ParticleService } from 'src/app/services/particle.service'
+import { EnvironmentService } from 'src/app/services/environment.service'
 
 @Component({
   selector: 'app-emoji-react',
@@ -26,7 +27,8 @@ export class EmojiReactComponent {
   constructor(
     private overlay: Overlay,
     private postsService: PostsService,
-    private messages: MessageService
+    private messages: MessageService,
+    private particle: ParticleService
   ) {
     this.scrollStrategy = this.overlay.scrollStrategies.reposition()
   }
@@ -46,12 +48,23 @@ export class EmojiReactComponent {
     this.loading = true
     const response = await this.postsService.emojiReactPost(this.postId(), emoji.name)
     if (response) {
-      const disableConfetti = localStorage.getItem('disableConfetti') == 'true'
       this.messages.add({
         severity: 'success',
-        summary: `Reacted with ${emoji.name} succesfully`,
-        confettiEmojis: !disableConfetti && !emoji.url ? [emoji.name] : []
+        summary: `Reacted with ${emoji.name} succesfully`
       })
+
+      // Play emoji
+      const emojiIsImage = emoji.url !== ''
+      if (emojiIsImage) {
+        const mediaCached = encodeURIComponent(
+          emoji.external ? emoji.url : EnvironmentService.environment.baseMediaUrl + emoji.url
+        )
+        const fullUrl = `${EnvironmentService.environment.externalCacheurl}${mediaCached}`
+        this.particle.imageReact(fullUrl)
+      } else {
+        this.particle.emojiReact(emoji.name)
+      }
+
       this.isOpen = false
       this.loading = false
     } else {

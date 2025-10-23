@@ -1,4 +1,5 @@
 @let post = this.post();
+@let loggedIn = this.loginService.loggedIn.value;
 @let isBskyPost = !!post.bskyUri;
 @let isExternalPost = post.user.url.startsWith('@') && post.privacy !== 1 && post.privacy !== 10;
 @let isMyPost = myId == post.userId && post.privacy != 2;
@@ -13,7 +14,7 @@
 </button>
 <mat-menu #menu="matMenu" xPosition="before" id="post-actions-menu">
   <ng-template matMenuContent>
-    @if (loggedIn()) {
+    @if (loggedIn) {
       <div class="post-action-buttons" mat-menu-item>
         <app-post-action-buttons [fragment]="post" settingKey="postActionsButtonBarOrder"></app-post-action-buttons>
       </div>
@@ -57,7 +58,7 @@
         </span>
       </button>
     }
-    @if (loggedIn()) {
+    @if (loggedIn) {
       @if (!postSilenced) {
         <button (click)="silencePost()" mat-menu-item>
           <span class="post-actions-menu-span-content">
@@ -82,9 +83,17 @@
           </span>
         </button>
       }
+      @if (!isMyPost) {
+        <a (click)="bitePost()" mat-menu-item>
+          <span class="post-actions-menu-span-content">
+            {{ 'post-actions.bitePost' | translate }}
+            <fa-icon [fixedWidth]="true" [icon]="biteIcon"></fa-icon>
+          </span>
+        </a>
+      }
     }
     @if (!isMyPost) {
-      @if (loggedIn()) {
+      @if (loggedIn) {
         <hr class="my-0" />
         <button (click)="muteAccount()" mat-menu-item class="dangerous-option">
           <span class="post-actions-menu-span-content">

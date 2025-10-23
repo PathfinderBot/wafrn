@@ -120,12 +120,15 @@ export default function cacheRoutes(app: Application) {
         let dbMediaUrl = String(req.query?.media).startsWith(completeEnvironment.mediaUrl)
           ? String(req.query?.media).split(completeEnvironment.mediaUrl)[1]
           : String(req.query?.media)
-        let media = await Media.findOne({
-          where: sequelize.where(
-            sequelize.fn('md5', sequelize.col('url')),
-            crypto.createHash('md5').update(dbMediaUrl).digest('hex')
-          )
-        })
+        // we are disabling this feature temporarily
+        let media = true
+          ? undefined
+          : await Media.findOne({
+              where: sequelize.where(
+                sequelize.fn('md5', sequelize.col('url')),
+                crypto.createHash('md5').update(dbMediaUrl).digest('hex')
+              )
+            })
         if (media) {
           altText = media.description
         }

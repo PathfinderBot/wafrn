@@ -13,7 +13,7 @@ export class HomeRedirectorComponent {
     loginService: LoginService,
     private router: Router
   ) {
-    if (!loginService.loggedIn()) {
+    if (!loginService.loggedIn.value) {
       this.router.navigate(['/dashboard/exploreLocal'])
     }
   }

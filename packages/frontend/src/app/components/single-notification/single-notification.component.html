@@ -44,13 +44,19 @@
           @case ('EMOJIREACT') {
             reacted to your woot
           }
+          @case ('USERBITE') {
+            bit you!
+          }
+          @case ('POSTBITE') {
+            bit one of your woots
+          }
         }
       </span>
     </app-post-ribbon>
-    @if (notification.type !== 'FOLLOW') {
+    @if (notification.type !== 'FOLLOW' && notification.type !== 'USERBITE') {
       <hr />
       <div class="notification-content-shortened">
-        <div [routerLink]="notification.url">
+        <div>
           @if (notification.fragment) {
             <app-post-header [fragment]="notification.fragment"></app-post-header>
             <app-post-fragment [fragment]="notification.fragment"></app-post-fragment>

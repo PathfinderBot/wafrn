@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input'
 import { Router } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { MessageService } from 'src/app/services/message.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 import { ThemeService } from 'src/app/services/theme.service'
 
 @Component({
@@ -20,8 +21,11 @@ export class CssEditorComponent {
   constructor(
     private themeService: ThemeService,
     private messages: MessageService,
-    private router: Router
+    private router: Router,
+    simpleTitle: SimpleTitleService
   ) {
+    simpleTitle.set('menu.settings.themeEditor')
+
     this.themeService
       .getMyThemeAsSting()
       .then((theme) => {

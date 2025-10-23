@@ -4,7 +4,7 @@
     <textarea formControlName="question" type="textarea" matNativeControl rows="4"></textarea>
   </mat-form-field>
 
-  @if (loggedIn() && allowAnons) {
+  @if (loginService.loggedIn.value && allowAnons) {
     <mat-checkbox formControlName="anonymous">{{ 'ask-dialog-content.askAnonymously' | translate }}</mat-checkbox>
   }
 

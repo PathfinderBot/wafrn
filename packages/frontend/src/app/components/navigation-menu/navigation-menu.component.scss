@@ -61,11 +61,12 @@
 }
 
 hr {
-  margin: 16px 0;
+  margin: 12px 0;
 }
 
 .version-text {
   color: var(--mat-sys-outline);
+  line-height: 1.15;
   text-align: center;
 }
 

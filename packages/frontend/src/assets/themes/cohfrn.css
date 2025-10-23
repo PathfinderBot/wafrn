@@ -219,20 +219,25 @@ mat-nav-list app-menu-item {}
     border-color: var(--container-bordercolor);
   }
 
-  app-post .wafrn-container,
-  app-notifications .mat-mdc-card.mdc-card.wafrn-container,
-  app-forum-component .wafrn-container {
-    background-color: #fff;
-    color: var(--main-textcolor);
-    box-shadow: 0px 0px 8px #a6a4a3 !important;
-    border-radius: 10px 10px 0px 0px;
-  }
+app-post .wafrn-container, app-notifications .mat-mdc-card.mdc-card.wafrn-container, app-forum-component .wafrn-container
+{
+background-color: #fff;
+color: var(--main-textcolor);
+box-shadow: 0px 0px 8px #a6a4a3 !important;
+border-radius: 10px 10px 0px 0px;
+padding: 0;
+}
 
-  app-forum-component app-post-ribbon .wafrn-container,
-  app-forum-component app-post-ribbon .ribbon-container {
-    border-radius: 10px;
-    padding: 10px 15px 10px 15px !important;
-  }
+app-post .wafrn-container button, app-notifications .mat-mdc-card.mdc-card.wafrn-container button, app-forum-component .wafrn-container button
+{
+  background-color: transparent !important;
+}
+
+app-forum-component app-post-ribbon .wafrn-container, app-forum-component app-post-ribbon .ribbon-container
+{
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px !important;
+}
 
   app-search .mat-mdc-card {
     background: #fff;
@@ -361,11 +366,7 @@ mat-nav-list app-menu-item {}
     border-width: 2px;
   }
 
-  app-post-ribbon {
-    padding: 10px 5px 10px 5px !important;
-  }
-
-  /* POST DATE - you can use these i think but use mat-sys-outline at the top to change both at once*/
+/* POST DATE - you can use these i think but use mat-sys-outline at the top to change both at once*/
 
   /*
 
@@ -511,11 +512,15 @@ svg.fa-globe {}
     transition: var(--color-trans);
   }
 
-  #emoji-reactions .mat-mdc-tooltip-trigger {
-    background: none !important;
-    box-shadow: none !important;
-    border-radius: 0px;
-  }
+#emoji-reactions button {
+  background: transparent !important;
+}
+
+#emoji-reactions button:hover {
+  background:none !important;
+   box-shadow:none !important;
+  transition: var(--color-trans);
+}
 
   #emoji-reactions .mat-mdc-tooltip-trigger:hover {
     background: none !important;
@@ -530,196 +535,196 @@ svg.fa-globe {}
 
   /* ^ this is for the stubborn ones */
 
-  .mat-mdc-button-persistent-ripple {
-    color: black !important;
-    box-shadow: none !important;
-    background: none;
-  }
+/* ^ this is for the stubborn ones */
 
-  /* ^ ??? */
+.mat-mdc-button-persistent-ripple {
+  color: black !important;
+  box-shadow:none !important;
+background:none;
+}
 
-  app-emoji-react svg {
-    fill: var(--link-textcolor);
-    background: none !important;
-    transition: var(--color-trans);
-  }
+/* ^ ??? */
 
-  app-emoji-react svg:hover {
-    fill: var(--link-textcolor-hover);
-    background: none !important;
-    transition: var(--color-trans);
-  }
+app-emoji-react svg {
+  fill: var(--link-textcolor);
+  background: none !important;
+  transition: var(--color-trans);
+}
 
-  /* ^ these two change the color of the emoji react button itself, like the smiley with the plus */
+app-emoji-react svg:hover {
+  fill: var(--link-textcolor-hover);
+  background: none !important;
+  transition: var(--color-trans);
+}
 
-  div.emojireact-overlay {
-  }
+/* ^ these two change the color of the emoji react button itself, like the smiley with the plus */
 
-  .emoji-reactions {
-    padding: 0px 0px 0px 10px;
-  }
+div.emojireact-overlay {}
 
-  /* TAGS */
+.emoji-reactions
+{
+padding: 0px 0px 10px 10px;
+}
 
-  a.tag {
-    background-color: transparent !important;
+/* TAGS */
 
-    color: #83254f !important;
+a.tag {
+  background-color: transparent !important;
 
-    transition: var(--color-trans);
+  color: #83254f !important;
 
-    font-family: monospace;
-  }
+  transition: var(--color-trans);
 
-  a.tag:hover {
-    color: var(--link-textcolor-hover) !important;
+  font-family: monospace;
+}
 
-    transition: var(--color-trans);
-  }
+a.tag:hover {
+  color: var(--link-textcolor-hover) !important;
 
-  .tag-list {
-    padding: 0px 0px 0px 20px;
-  }
+  transition: var(--color-trans);
+}
 
-  .ql-snow a {
-    color: white;
-  }
+.tag-list
+{
+padding: 0px 0px 0px 20px;
+}
 
-  /* ^ changes inline bsky etc. tags*/
+.ql-snow a {
+  color: white;
+}
 
-  /* MENTIONS */
+/* ^ changes inline bsky etc. tags*/
 
-  a.mention {
-    color: #faa55b !important;
-    transition: var(--color-trans);
-  }
 
-  a.mention:hover {
-    color: #f8efe3 !important;
-    transition: var(--color-trans);
-  }
+/* MENTIONS */
 
-  .mention {
-    background-color: #83254f !important;
-    border-width: 0px !important;
-    border-radius: 0px !important;
-    padding: 0 10px;
-    color: #faa55b !important;
-    border-radius: 30px !important;
-  }
+a.mention {
+  color: #faa55b !important;
+  transition: var(--color-trans);
+}
 
-  /* container of quoted post */
+a.mention:hover {
+  color: #f8efe3 !important;
+  transition: var(--color-trans);
+}
 
-  div.quoted-post {
-    border-width: 0px;
-    background: none;
-    border-color: var(--button-accent-color);
-    border-style: dotted;
-    box-shadow: none;
-  }
+.mention {
+background-color: #83254f !important;
+border-width: 0px !important;
+border-radius: 0px !important;
+padding: 0 10px;
+color: #faa55b !important;
+border-radius: 30px !important;
+}
 
-  .quoted-post.quote-collapsed::before {
-    box-shadow: none !important;
-  }
+/* container of quoted post */
 
-  .quoted-post.quote-collapsed {
-    max-height: 17.5rem !important;
-    margin: 20px;
-    border: 1px solid #ddd;
-    padding: 0px 0px 10px 0px;
-    box-shadow: 0px 0px 20px #e4ddd5 inset;
-  }
+div.quoted-post {
+  border-width: 0px;
+  background:none;
+  border-color: var(--button-accent-color);
+  border-style: dotted;
+  box-shadow: none;
+}
 
-  /* EMBED CONTAINER */
+.quoted-post.quote-collapsed::before
+{
+	box-shadow: none !important;
+}
 
-  .embed-container {
-    background: rgba(255, 255, 255, 1);
-    display: inline;
-    border: none !important;
-  }
+.quoted-post.quote-collapsed {
+  max-height: 17.5rem !important;
+  margin: 20px;
+  border: 1px solid #ddd;
+  padding: 0px 0px 10px 0px;
+  box-shadow: 0px 0px 20px #e4ddd5 inset;
+}
 
-  /* ^ INLINE STACKS PICTURE ON TOP OF LINK TEXT */
+/* EMBED CONTAINER */
 
-  .embed-link {
-    border-radius: 5px !important;
-    border: 1px solid #bbb8b8 !important;
-    background: none !important;
-  }
+.embed-container {
+background: rgba(255,255,255, 1);
+display:inline;
+border: none !important;
+}
 
-  .embed-link .embed-image-container {
-    max-height: 100%;
-    max-width: 14em !important;
-    display: flex;
-  }
+/* ^ INLINE STACKS PICTURE ON TOP OF LINK TEXT */
 
-  a.embed-link .embed-image {
-    max-width: 100%;
-    max-height: 100%;
-    margin: 0;
-    object-fit: cover;
-    padding: 0;
-  }
+.embed-link {
+  border-radius: 5px !important;
+  border: 1px solid #bbb8b8 !important;
+  background: none !important;
+}
 
-  .embed-link .mat-typography h2 {
-    font-size: 1.1em;
-    line-height: 1.1;
-    margin-bottom: 10px;
-  }
+.embed-link .embed-image-container {
+  max-height: 100%;
+  max-width: 14em !important;
+  display: flex;
+}
 
-  .embed-title,
-  .embed-description,
-  .embed-link,
-  .embed-url {
-    color: black !important;
-  }
+a.embed-link .embed-image {
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  object-fit: cover;
+  padding: 0;
+}
 
-  /* MEDIA CONTAINER */
+.embed-link .mat-typography h2 {
+  font-size: 1.1em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
 
-  .media-content-container {
-    background-color: #fff0 !important;
-  }
+.embed-title, .embed-description, .embed-link, .embed-url {
+color:black !important;
+}
 
-  .media-container {
-    background-color: #fff !important;
-    border-style: groove;
-    border-width: 0px;
-    border-radius: 0px;
-    border-color: black;
-    display: grid;
-  }
+/* MEDIA CONTAINER */
+.media-content-container {
+background-color: #fff0 !important;;
+}
 
-  .media-gallery,
-  .media-carousel {
-    background-color: #fff !important;
-    border-radius: 0px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+.media-container {
+background-color: #fff !important;
+border-style:groove;
+border-width:0px;
+border-radius:0px;
+border-color:black;
+display: grid;
+}
 
-  /* IMAGES */
+.media-gallery, .media-carousel {
+background-color: #fff !important;
+border-radius:0px;
+margin-left: auto;
+margin-right: auto;
+}
 
-  app-wafrn-media img {
-    filter: brightness(0.7);
-    transition: var(--image-transoff);
-  }
+/* IMAGES */
 
-  app-wafrn-media img:hover {
-    filter: brightness(1);
-    transition: var(--image-trans);
-  }
+app-wafrn-media img {
+  filter: brightness(0.7);
+  transition: var(--image-transoff);
+}
 
-  /* MEDIA DESCRIPTION */
+app-wafrn-media img:hover {
+  filter: brightness(1);
+  transition: var(--image-trans);
+}
 
-  app-wafrn-media div.media-description {
-    background-color: var(--element-bgcolor) !important;
-    border-radius: 0px;
-    font-family: monospace;
-    font-size: 11px;
-  }
+/* MEDIA DESCRIPTION */
 
-  /* VOTING [lol] */
+app-wafrn-media div.media-description {
+  background-color: var(--element-bgcolor) !important;
+  border-radius: 0px;
+  font-family: monospace;
+  font-size: 11px;
+}
 
-  /*
+/* VOTING [lol] */
+
+/*
 
 .mdc-linear-progress__bar-inner {}
 .mdc-linear-progress__buffer-bar {}
@@ -1019,757 +1024,20 @@ div.follow-counts {}
     box-shadow: 1px 1px 2px #99938d inset;
   }
 
-  /* ^ changes the theme editor
-
-
-### Initial template made by [@fizzyday@app.wafrn.net](https://app.wafrn.net/blog/fizzyday)
-
-Here is a theming template you can use to customize the appearance of your profile and how the dashboard appears to you.
-
-It is not complete, nor perfect, but the most important elements are there, have fun playing with it :)
-
-Watch out for when you copy the CSS into wafrn, it changes the double-space indentations to single spaces, you may have to correct that manually for it to work.
-
-Feel free to leave any improvement as a PR, or any issue in the issues section
-
-
-css
-*/
-  /* VARIABLES */
-
-  :root {
-    /* ELEMENT VARIABLES */
-
-    --main-bgcolor: #212121;
-
-    --main-textcolor: white;
-
-    --container-bordercolor: none;
-
-    --link-textcolor: #38fef1;
-
-    --link-textcolor-hover: #38fef1;
-
-    --link-textcolor-visited: #38fef1;
-
-    --button-bgcolor: #424242;
-
-    --button-bgcolor-hover: #424242;
-
-    --button-accent-color: #69f0ae;
-
-    --button-accent-color-hover: #69f0ae;
-
-    --element-bgcolor: #424242;
-
-    --username-textcolor: #38fef1;
-
-    --username-textcolor-hover: #38fef1;
-
-    --url-textcolor: #38fef1;
-
-    --popup-textcolor: white;
-
-    --popup-bgcolor: #424242;
-
-    --color-trans: 0.37s cubic-bezier(0.77, 0, 0.23, 1);
-
-    --image-transoff: 0.37s cubic-bezier(0.88, 0.52, 0.48, 1);
-
-    --image-trans: 0.37s cubic-bezier(0.81, -0.19, 0.27, 0.34);
-  }
-
-  /* BACKGROUND */
-
-  .mat-drawer-content {
-    background-color: var(--main-bgcolor) !important;
-  }
-
-  /* LINKS */
-
-  a {
-    color: var(--link-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  a:visited {
-    color: var(--link-textcolor-visited);
-  }
-
-  a:hover {
-    color: var(--link-textcolor-hover);
-
-    transition: var(--color-trans);
-  }
-
-  a:active {
-    color: var(--link-textcolor-hover);
-  }
-
-  .footer-links a {
-    color: #faa55b !important;
-  }
-
-  /* BUTTONS - these may be overwritten by the class of the button, see below */
-
-  button {
-    /*background-color: var(--button-bgcolor);*/
-
-    color: var(--main-textcolor);
-
-    border-color: var(--button-accent-color);
-
-    border-style: solid;
-
-    border-width: 0px;
-
-    border-radius: 3px;
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  button:hover {
-    background-color: var(--button-bgcolor-hover);
-
-    color: var(button-accent-color);
-
-    border-color: var(--button-accent-color-hover);
-
-    border-style: solid;
-
-    border-width: 0px;
-
-    border-radius: 3px;
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  button:active {
-    background-color: var(--button-bgcolor-hover);
-
-    color: var(button-accent-color);
-
-    border-color: var(--button-accent-color-hover);
-
-    border-style: solid;
-
-    border-width: 0px;
-
-    border-radius: 3px;
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  /* SIDE MENU */
-
-  /*
-
-mat-drawer.side-menu {}
-
-img[alt="instance logo"] {}
-
-mat-drawer.side-menu hr {}
-
-mat-nav-list {}
-
-mat-nav-list app-menu-item {}
-
-*/
-
-  /* DASHBOARD TITLE */
-
-  app-dashboard div.mx-3.lg:mx-4.wafrn-container {
-    background-color: transparent !important;
-    box-shadow: none !important;
-  }
-
-  h2.my-3.text-3xl.dashboard-title,
-  h2.my-3.text-3xl.notifications-text {
-    color: #83254f !important;
-  }
-
-  div.wafrn-container.mx-1 {
-    display: none;
-
-    background-color: transparent;
-  }
-
-  div.wafrn-container.mx-1 h3 {
-    display: none;
-
-    font-family: sans-serif;
-  }
-
-  /* BUTTONS - use these i think */
-
-  .mat-mdc-unelevated-button.mat-primary {
-    background-color: var(--button-bgcolor);
-
-    border-color: var(--button-accent-color);
-
-    border-width: 0px;
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  .mat-mdc-unelevated-button.mat-primary:hover {
-    background-color: var(--button-bgcolor-hover);
-
-    border-color: var(--button-accent-color-hover);
-
-    color: var(--main-textcolor);
-
-    border-width: 0px;
-
-    transition: var(--color-trans);
-  }
-
-  .mat-mdc-unelevated-button {
-    background-color: var(--button-bgcolor);
-
-    border-color: var(--button-accent-color);
-
-    border-width: 0px;
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  .mat-mdc-unelevated-button:hover {
-    background-color: var(--button-bgcolor-hover);
-
-    border-color: var(--button-accent-color-hover);
-
-    color: var(--main-textcolor);
-
-    border-width: 0px;
-
-    transition: var(--color-trans);
-  }
-
-  button[aria-label='Go back to the dashboard'] {
-    background-color: var(--button-bgcolor);
-
-    border-color: var(--button-accent-color);
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  button[aria-label='Go back to the dashboard']:hover {
-    background-color: var(--button-bgcolor-hover);
-
-    border-color: var(--button-accent-color-hover);
-
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  /* LOADING - not quite sure this works */
-
-  mat-spinner {
-    width: 42px;
-
-    height: 42px;
-  }
-
-  circle {
-    color: #8531a9 !important;
-
-    stroke-dasharray: 77px;
-
-    stroke-width: 33px;
-  }
-
-  p#if-you-see-this-load-more-posts {
-    color: var(--main-textcolor);
-  }
-
-  /* POPUP TOOLTIPS */
-
-  .mdc-tooltip__surface {
-    background-color: var(--popup-bgcolor) !important;
-
-    color: var(--popup-textcolor) !important;
-
-    border-radius: 2px;
-  }
-
-  /* UNIVERSAL WAFRN CONTAINER */
-
-  .wafrn-container {
-  }
-
-  /* PROFILE */
-
-  /*
-
-app-view-blog mat-card.wafrn-container {}
-
-app-view-blog img[alt="user avatar"] {}
-
-*/
-
-  /* UNFOLLOW BUTTON */
-
-  .mat-mdc-unelevated-button.mat-warn {
-    color: var(--main-textcolor);
-
-    background-color: #f44336;
-
-    transition: var(--color-trans);
-  }
-
-  .mat-mdc-unelevated-button.mat-warn:hover {
-    background-color: #f44336;
-
-    transition: var(--color-trans);
-  }
-
-  /* FOLLOW COUNT */
-
-  /*
-
-div.follow-counts {}
-
-*/
-
-  /* TEXT EDITOR */
-
-  .ql-snow > .ql-editor {
-    background-color: var(--element-bgcolor);
-
-    color: var(--main-textcolor) !important;
-
-    max-height: 600px;
-  }
-
-  .ql-snow > .ql-editor:focus {
-    background-color: var(--element-bgcolor);
-
-    color: var(--main-textcolor);
-  }
-
-  /* POSTS */
-
-  /* POST CONTAINER */
-
-  .mat-mdc-card .blog-header {
-    color: #ddd;
-  }
-
-  .mat-mdc-card.mdc-card.wafrn-container.post-card div app-post-header.w-full div.flex.justify-content-between.mb-3,
-  .mat-mdc-card.mdc-card.wafrn-container.post-card app-post-header div.flex.justify-content-between.mb-3 {
-    background: #fff9f2;
-    border-bottom: 1px solid #dfd9d1;
-    padding: 10px;
-    border-radius: 15px 15px 0px 0px;
-  }
-
-  .mat-mdc-card {
-    color: var(--main-textcolor);
-
-    border-radius: 8px;
-
-    border-color: var(--button-accent-color);
-
-    box-shadow: none;
-  }
-
-  /* DIVIDER LINE */
-
-  app-post hr {
-    color: var(--element-bgcolor);
-
-    border: 0px;
-  }
-
-  app-forum-component hr {
-    display: none;
-  }
-
-  /* POSTER INFO */
-
-  .original-poster-name {
-    color: var(--username-textcolor) !important;
-
-    transition: var(--color-trans);
-  }
-
-  .original-poster-name:hover {
-    color: var(--username-textcolor-hover) !important;
-
-    transition: var(--color-trans);
-  }
-
-  .original-poster-url {
-    color: var(--url-textcolor);
-
-    font-family: monospace;
-  }
-
-  .avatar {
-    height: 45px;
-
-    width: 45px;
-  }
-
-  .avatar img {
-    border-radius: 3px;
-
-    height: 45px;
-
-    width: 45px;
-  }
-
-  .user-name {
-    color: var(--username-textcolor) !important;
-
-    transition: var(--color-trans);
-  }
-
-  .user-name:hover {
-    color: var(--username-textcolor-hover) !important;
-
-    transition: var(--color-trans);
-  }
-
-  span.user-url {
-    color: var(--url-textcolor);
-
-    font-family: monospace;
-  }
-
-  /* FOLLOW BUTTON */
-
-  button.follow-button {
-    background: none !important;
-
-    color: #69f0ae !important;
-
-    border: none !important;
-
-    transition: var(--color-trans);
-  }
-
-  button.follow-button:hover {
-    background: none !important;
-
-    color: var(--link-textcolor-hover) !important;
-
-    border: none !important;
-
-    transition: var(--color-trans);
-  }
-
-  .mat-mdc-button-persistent-ripple {
-    display: none;
-  }
-
-  /* POST DATE */
-
-  /*
-
-div.date-line {}
-
-svg.fa-globe {}
-
-*/
-
-  /* POST SHARE */
-
-  app-post-actions button:hover {
-    background: none !important;
-
-    border-width: 0px;
-  }
-
-  svg.fa-share-nodes {
-    color: var(--button-accent-color);
-
-    transition: var(--color-trans);
-  }
-
-  svg.fa-share-nodes:hover {
-    color: var(--button-accent-color-hover);
-
-    transition: var(--color-trans);
-  }
-
-  svg.fa-chevron-down {
-    color: var(--button-accent-color);
-
-    transition: var(--color-trans);
-  }
-
-  svg.fa-chevron-down:hover {
-    color: var(--button-accent-color-hover);
-
-    transition: var(--color-trans);
-  }
-
-  /* CONTENT WARNING */
-
-  #fragment-content-warning {
-    color: var(--main-textcolor);
-
-    font-family: monospace;
-  }
-
-  /*
-
-div.fragment-content-warning div.fragment-content {}
-
-div.fragment-content-warning button {}
-
-*/
-
-  /* POST TEXT */
-
-  div.wafrn-text-default {
-    color: var(--main-textcolor);
-
-    font-family: Georgia, serif;
-  }
-
-  /* MENTIONS */
-
-  a.mention {
-    color: var(--username-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  a.mention:hover {
-    color: var(--username-textcolor-hover);
-
-    transition: var(--color-trans);
-  }
-
-  /* MEDIA CONTAINER */
-
-  app-wafrn-media {
-    max-width: 90%;
-
-    display: block;
-
-    margin-left: auto;
-
-    margin-right: auto;
-  }
-
-  /* IMAGES */
-
-  app-wafrn-media img {
-    filter: brightness(0.7);
-
-    transition: var(--image-transoff);
-  }
-
-  app-wafrn-media img:hover {
-    filter: brightness(1);
-
-    transition: var(--image-trans);
-  }
-
-  /* MEDIA DESCRIPTION */
-
-  app-wafrn-media div.media-description {
-    background-color: var(--element-bgcolor) !important;
-
-    border-radius: 0px;
-
-    font-family: monospace;
-
-    font-size: 11px;
-  }
-
-  /* VOTING */
-
-  /*
-
-.mdc-linear-progress__bar-inner {}
-
-.mdc-linear-progress__buffer-bar {}
-
-*/
-
-  /* TAGS */
-
-  a.tag {
-    background-color: transparent !important;
-    color: #83254f !important;
-    transition: var(--color-trans);
-    font-family: monospace;
-  }
-
-  a.tag:hover {
-    color: var(--link-textcolor-hover) !important;
-
-    transition: var(--color-trans);
-  }
-
-  /* container of quoted post */
-
-  div.quoted-post {
-    border-width: 2px;
-
-    border-color: var(--button-accent-color);
-
-    border-style: dotted;
-
-    box-shadow: none;
-  }
-
-  /* REACTS */
-
-  #emoji-reactions button {
-    background-color: var(--element-bgcolor);
-
-    border-width: 0px !important;
-
-    transition: var(--color-trans);
-
-    fill: var(--main-textcolor);
-  }
-
-  #emoji-reactions button:hover {
-    background-color: var(--button-bgcolor-hover);
-
-    transition: var(--color-trans);
-
-    fill: var(--main-textcolor);
-  }
-
-  /*
-
-#emoji-reactions .mat-mdc-tooltip-trigger {}
-
-#emoji-reactions .mat-mdc-tooltip-trigger:hover {}
-
-*/
-
-  app-emoji-react svg {
-    fill: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  app-emoji-react svg:hover {
-    fill: var(--link-textcolor-hover);
-
-    transition: var(--color-trans);
-  }
-
-  /*
-
-div.emojireact-overlay {}
-
-*/
-
-  /* POST ACTIONS */
-
-  /*
-
-app-post hr > div a {}
-
-app-post hr > div a:hover {}
-
-*/
-
-  fa-icon[mattooltip='Quote woot'] {
-    color: #83254f;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Quote woot']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Quick rewoot'] {
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Quick rewoot']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Delete rewoot'] {
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Delete rewoot']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Reply woot'] {
-    color: #83254f;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Reply woot']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Like woot'] {
-    color: #83254f;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Like woot']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Remove like'] {
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Remove like']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Delete woot'] {
-    color: var(--main-textcolor);
-
-    transition: var(--color-trans);
-  }
-
-  fa-icon[mattooltip='Delete woot']:hover {
-    color: #faa55b;
-
-    transition: var(--color-trans);
-  }
+p#if-you-see-this-load-more-posts {
+  color: var(--main-textcolor);
 }
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
+color: #5e5e5e !important;
+}
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+background-color: #fff !important;
+border-color: #bdbdbd !important;
+border-style: solid;
+border-width: 1px;
+border-radius: 5px !important;
+box-shadow: 1px 1px 2px #99938d inset;
+}
+
+/* ^ changes the theme editor */

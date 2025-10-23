@@ -3,62 +3,9 @@ services:
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
-      # these args configure private env vars for the backend and public env vars for the frontend
-      args:
-        ADMIN_USER: ${ADMIN_USER}
-        ADMIN_EMAIL: ${ADMIN_EMAIL}
-        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-        JWT_SECRET: ${JWT_SECRET}
-        DOMAIN_NAME: ${DOMAIN_NAME}
-
-        CACHE_DOMAIN: ${CACHE_DOMAIN}
-        MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-
-        SMTP_HOST: ${SMTP_HOST}
-        SMTP_USER: ${SMTP_USER}
-        SMTP_PORT: ${SMTP_PORT}
-        SMTP_PASSWORD: ${SMTP_PASSWORD}
-        SMTP_FROM: ${SMTP_FROM}
-
-        POSTGRES_USER: ${POSTGRES_USER}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        POSTGRES_DBNAME: ${POSTGRES_DBNAME}
-
-        WEBPUSH_EMAIL: ${WEBPUSH_EMAIL}
-        WEBPUSH_PRIVATE: ${WEBPUSH_PRIVATE}
-        WEBPUSH_PUBLIC: ${WEBPUSH_PUBLIC}
-
-        ENABLE_BSKY: ${ENABLE_BSKY}
-        PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
-        PDS_JWT_SECRET: ${PDS_JWT_SECRET}
-        PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
-
-        USE_WORKERS: true
-        LOG_SQL_QUERIES: ${LOG_SQL_QUERIES:-}
-        UPLOAD_LIMIT: ${UPLOAD_LIMIT:-}
-        POSTS_PER_PAGE: ${POSTS_PER_PAGE:-}
-        LOG_LEVEL: ${LOG_LEVEL:-}
-        BLOCKLIST_URI: ${BLOCKLIST_URI:-}
-        FRONTEND_PATH: ${FRONTEND_PATH:-}
-        DISABLE_REQUIRE_SEND_EMAIL: ${DISABLE_REQUIRE_SEND_EMAIL:-}
-        BLOCKED_IPS: ${BLOCKED_IPS:-}
-        REVIEW_REGISTRATIONS: ${REVIEW_REGISTRATIONS:-}
-        IGNORE_BLOCK_HOSTS: ${IGNORE_BLOCK_HOSTS:-}
-
-        FRONTEND_LOGO: ${FRONTEND_LOGO:-}
-        FRONTEND_API_URL: ${FRONTEND_API_URL:-}
-        FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-}
-        FRONTEND_CACHE_URL: ${FRONTEND_CACHE_URL:-}
-        FRONTEND_CACHE_BACKUP_URLS: ${FRONTEND_CACHE_BACKUP_URLS:-}
-        FRONTEND_SHORTEN_POSTS: ${FRONTEND_SHORTEN_POSTS:-}
-        FRONTEND_DISABLE_PWA: ${FRONTEND_DISABLE_PWA:-}
-        FRONTEND_MAINTENANCE: ${FRONTEND_MAINTENANCE:-}
-        FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
-        FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
-        FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       frontend:
@@ -67,7 +14,60 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
+      NODE_ENV: production
+      ADMIN_USER: ${ADMIN_USER}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+
+      CACHE_DOMAIN: ${CACHE_DOMAIN}
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
+
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DBNAME: ${POSTGRES_DBNAME}
+
+      WEBPUSH_EMAIL: ${WEBPUSH_EMAIL}
+      WEBPUSH_PRIVATE: ${WEBPUSH_PRIVATE}
+      WEBPUSH_PUBLIC: ${WEBPUSH_PUBLIC}
+
+      ENABLE_BSKY: ${ENABLE_BSKY}
+      PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
+      PDS_JWT_SECRET: ${PDS_JWT_SECRET}
+      PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
+
+      USE_WORKERS: true
+      LOG_SQL_QUERIES: ${LOG_SQL_QUERIES:-}
+      UPLOAD_LIMIT: ${UPLOAD_LIMIT:-}
+      POSTS_PER_PAGE: ${POSTS_PER_PAGE:-}
+      LOG_LEVEL: ${LOG_LEVEL:-}
+      BLOCKLIST_URI: ${BLOCKLIST_URI:-}
+      FRONTEND_PATH: ${FRONTEND_PATH:-}
+      DISABLE_REQUIRE_SEND_EMAIL: ${DISABLE_REQUIRE_SEND_EMAIL:-}
+      BLOCKED_IPS: ${BLOCKED_IPS:-}
+      REVIEW_REGISTRATIONS: ${REVIEW_REGISTRATIONS:-}
+      IGNORE_BLOCK_HOSTS: ${IGNORE_BLOCK_HOSTS:-}
+
+      FRONTEND_LOGO: ${FRONTEND_LOGO:-}
+      FRONTEND_API_URL: ${FRONTEND_API_URL:-}
+      FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-}
+      FRONTEND_CACHE_URL: ${FRONTEND_CACHE_URL:-}
+      FRONTEND_CACHE_BACKUP_URLS: ${FRONTEND_CACHE_BACKUP_URLS:-}
+      FRONTEND_SHORTEN_POSTS: ${FRONTEND_SHORTEN_POSTS:-}
+      FRONTEND_DISABLE_PWA: ${FRONTEND_DISABLE_PWA:-}
+      FRONTEND_MAINTENANCE: ${FRONTEND_MAINTENANCE:-}
+      FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
+      FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
+      FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
+
+      FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
     volumes:
       - ./packages/backend/uploads:/app/packages/backend/uploads
       - ./packages/backend/cache:/app/packages/backend/cache
@@ -90,18 +90,18 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
-      args:
-        DOMAIN_NAME: ${DOMAIN_NAME}
-        PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
-        CACHE_DOMAIN: ${CACHE_DOMAIN}
-        MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-        ACME_EMAIL: ${ACME_EMAIL}
-        FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
-        FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
-        FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
     ports:
       - 80:80
       - 443:443
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
+      CACHE_DOMAIN: ${CACHE_DOMAIN}
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+      FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
+      FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
+      FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
     volumes:
       - "caddy:/data"
       - "frontend:/var/www/html/frontend"
@@ -148,8 +148,8 @@ services:
       PDS_REPORT_SERVICE_URL: "https://mod.bsky.app"
       PDS_REPORT_SERVICE_DID: "did:plc:ar7c4by46qjdydhdevvrndac"
       PDS_CRAWLERS: "https://bsky.network, https://atproto.africa"
-      PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
-      PDS_EMAIL_FROM_ADDRESS: "${SMTP_USER}"
+      PDS_EMAIL_SMTP_URL: "smtp://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
+      PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
       LOG_ENABLED: true
     volumes:
       - pds:/pds

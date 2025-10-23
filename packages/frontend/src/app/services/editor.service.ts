@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpContext } from '@angular/common/http'
 import { Injectable, OnDestroy } from '@angular/core'
 import { BehaviorSubject, firstValueFrom, Subscription } from 'rxjs'
 
@@ -15,6 +15,7 @@ import { NewEditorComponent } from '../components/new-editor/new-editor.componen
 import { MessageService } from './message.service'
 import { SimplifiedUser } from '../interfaces/simplified-user'
 import { Router } from '@angular/router'
+import { AUTH_OVERRIDE } from '../interceptors/wafrn-auth.interceptor'
 
 @Injectable({
   providedIn: 'root'
@@ -58,34 +59,33 @@ export class EditorService implements OnDestroy {
     idPostToEdit?: string
     idPosToQuote?: string
     ask?: Ask
-  }): Promise<boolean> {
-    const content = options.content
-    const media = options.media
-    const privacy = options.privacy
-    const tags = options.tags
-    const idPostToReblog = options.idPostToReblog
-    const contentWarning = options.contentWarning
-    const mentionedUsers = options.mentionedUsers
-    let success: boolean = false
+    withToken?: string
+  }): Promise<{ success: false } | { success: true; id: string }> {
     try {
-      const formdata = {
-        content: content,
-        parent: idPostToReblog,
-        medias: media,
-        tags: tags,
-        privacy: privacy,
-        content_warning: contentWarning ? contentWarning : '',
-        idPostToEdit: options.idPostToEdit,
-        postToQuote: options.idPosToQuote,
-        ask: options.ask?.id,
-        mentionedUserIds: mentionedUsers
-      }
-      const url = `${this.base_url}/v3/createPost`
-      const petitionResponse: any = await this.http.post(url, formdata).toPromise()
-      success = petitionResponse.id
-      if (success) {
+      const httpOptions = options.withToken ? { context: new HttpContext().set(AUTH_OVERRIDE, options.withToken) } : {}
+      const petitionResponse: any = await this.http
+        .post(
+          `${this.base_url}/v3/createPost`,
+          {
+            content: options.content,
+            parent: options.idPostToReblog,
+            medias: options.media,
+            tags: options.tags,
+            privacy: options.privacy,
+            content_warning: options.contentWarning ?? '',
+            idPostToEdit: options.idPostToEdit,
+            postToQuote: options.idPosToQuote,
+            ask: options.ask?.id,
+            mentionedUserIds: options.mentionedUsers
+          },
+          httpOptions
+        )
+        .toPromise()
+      if (petitionResponse && !('success' in petitionResponse)) {
         // HACK wait 0.7 seconds so post is fully processed?
         await new Promise((resolve) => setTimeout(resolve, 700))
+
+        return { success: true, id: petitionResponse.id }
       }
     } catch (exception: any) {
       if (exception.error?.message) {
@@ -101,7 +101,7 @@ export class EditorService implements OnDestroy {
       }
     }
 
-    return success
+    return { success: false }
   }
 
   async uploadMedia(description: string, nsfw: boolean, img: File): Promise<WafrnMedia | undefined> {

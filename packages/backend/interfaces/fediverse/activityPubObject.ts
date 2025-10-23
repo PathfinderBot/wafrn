@@ -12,4 +12,5 @@ export interface activityPubObject {
   tag?: fediverseTag[]
   content?: string
   target?: string
+  instrument?: any
 }

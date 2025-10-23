@@ -4,7 +4,7 @@
   },
   "login": {
     "welcomeBack": "¡Bienvenide de vuelta!",
-    "exploreWithoutAccount": "¡Cliqueá acá para mirar sin una cuenta!",
+    "exploreWithoutAccount": "¡Cliqueá acá para navegar sin una cuenta!",
     "dontHaveAccount": "¿No tenés una cuenta?",
     "register": "¡Registrate ahora!",
     "checkSpam": "¡Si tenés algún problema, por favor revisá tu carpeta de spam!",
@@ -20,9 +20,20 @@
     "checkEmailLine1": "Te mandamos un email. Por favor revisá tu email y tu carpeta de spam",
     "checkEmailLine2": "Si tenés algún problema, escribile a une admin de la instancia, cuyo email se encuentra <a href=\"/about\">acá</a>"
   },
+  "register": {
+    "title": "Registrarse",
+    "welcome": "¡Bienvenide a Wafrn!",
+    "manualReviewInfo": "Une administradore tiene que revisar tu perfil antes de que te puedas unir. Este proceso puede tardar un par de horas.",
+    "registerButton": "Registrarse"
+  },
   "notifications": {
     "loadingMore": "Cargando más notificaciones",
     "refresh": "Actualizar"
+  },
+  "asks": {
+    "title": "Preguntas",
+    "noAsks": "No quedan más preguntas",
+    "nobodyAsked": "Nadie te preguntó..."
   },
   "menu": {
     "login": "Iniciar sesión",
@@ -52,8 +63,8 @@
       "editProfile": "Preferencias y Perfil",
       "themeEditor": "Editor de temas",
       "mutedUsers": "Usuaries silenciades",
-      "mutedPosts": "Posts silenciados",
-      "bookmarkedPosts": "Posts guardados",
+      "mutedPosts": "Woots silenciados",
+      "bookmarkedPosts": "Woots guardados",
       "myBlockedUsers": "Usuarios bloqueados",
       "myBlockedServers": "Servidores bloqueados",
       "importFollows": "Importar seguidores",
@@ -70,14 +81,22 @@
       "awaitingAproval": "Esperando aprobación"
     }
   },
+  "theme-editor": {
+    "title": "Editor de Estilos",
+    "templateNote": "Podés ver una plantilla base y algunos consejos en la",
+    "themeTextLabel": "Editá tu estilo CSS",
+    "themeTextPlaceholder": "Escribí tu propio CSS...",
+    "themeGuideName": "Guía de Estilos",
+    "updateButton": "Actualizar Estilo"
+  },
   "editor": {
     "inReplyTo": "Respondiendo a:",
     "quoteButton": "Citar un woot",
     "publishWoot": "Publicar este woot",
     "directMessageWarning": "Les admins de tu servidor y el servidor externo pueden leer estos mensajes.",
-    "unlistedWarning": "Los posts no listados van a ser ignorados por las búsquedas (INCLUYENDO TAGS), y no van a mostrarse en explorar localmente, pero van a mostrarse a tus seguidores. Y si alguien manda un link van a ser visibles, a diferencia de los posts solo para seguidores. En resumen, para cuando querés postear mucho pero no querés llenar explorar localmente",
+    "unlistedWarning": "Los woots no listados van a ser ignorados por las búsquedas (INCLUYENDO TAGS), y no van a mostrarse en explorar localmente, pero van a mostrarse a tus seguidores. Y si alguien manda un enlace van a ser visibles, a diferencia de los woots solo para seguidores. En resumen, para cuando querés wootear mucho pero no querés llenar la feed local",
     "directMessageWithQuoteWarning": "Le usuarie citade también va a ser notificade de esto como una mención",
-    "sensitivePlaceholder": "¿Qué tiene este woot de delicado?",
+    "sensitivePlaceholder": "¿Qué parte de este woot es delicada?",
     "wootQuoteBoxLabel": "Pegá la URL de un woot para citarlo. Puede ser la URL externa o la URL de wafrn",
     "wootQuoteBoxPlaceholder": "Nada más pegá la URL del woot",
     "wootQuoteConfirmButton": "Agregar woot como cita",
@@ -86,7 +105,7 @@
     "altTextFieldLabel": "Descripción de Imagen",
     "altTextFieldPlaceholder": "Descripción. Por favor LLENÁ ESTO",
     "isNSFWToggle": "Para Adultes",
-    "mediaCountMastodonWarning": "¡ATENCIÓN! CUALQUIER ARCHIVO ADICIONAL NO VA A SER MOSTRADO EN MASTODON",
+    "mediaCountMastodonWarning": "¡ATENCIÓN! EL CONTENIDO MULTIMEDIA ADICIONAL NO VA A SER MOSTRADO EN MASTODON",
     "altTextWarning": "Por favor llená las descripciones de contenido. Si querés desactivar esta alerta, podés hacerlo en las opciones.",
     "quoteTitle": "Citando:",
     "tagFieldLabel": "Tags",
@@ -99,13 +118,17 @@
     "hiddenMentionsTooltip": "Otres usuaries mencionades",
     "editorGuide": "¿Dudas sobre cómo formatear el texto o cómo empezar? Revisá <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">la guía</a> (en inglés)"
   },
+  "blog": {
+    "tabWoots": "Woots",
+    "tabMedia": "Contenido Multimedia"
+  },
   "profile": {
     "profile": {
       "chooseAvatar": "Elegir otro avatar",
       "chooseHeader": "Elegir imágen de cabecera",
       "changeDisplayName": "Nombre para mostrar (puede contener códigos de emoji)",
       "changeBio": "Tu bio/descripción. También podés poner códigos de emoji acá. Podés usar markdown acá",
-      "extraInfoHead": "Información extra (exclusiva para Fediverse)",
+      "extraInfoHead": "Información extra (exclusiva para el Fediverso)",
       "fieldPropertyName": "Nombre de propiedad",
       "fieldPropertyValue": "Valor de propiedad"
     },
@@ -126,13 +149,13 @@
         "rewooted": "Rewoots"
       },
       "manuallyAcceptFollows": "Aceptar follows manualmente",
-      "disableForceAltText": "Permitir subir archivos sin descripciones (solamente activá esto si sos male)",
+      "disableForceAltText": "Permitir subir archivos sin descripciones (solamente activá esto si sos malvade)",
       "forceClassicLogo": "Forzar logo clásico",
       "forceClassicVideoPlayer": "Forzar reproductor de video clásico",
       "forceClassicAudioPlayer": "Forzar reproductor de audio clásico",
       "forceClassicMediaView": "Forzar carrusel de medios clásico (vertical)",
       "dontCollapseQuotes": "No colapsar citas",
-      "disableCwExceptMuted": "Desactivar alertas de contenido a no ser que el post tenga palabras silenciadas",
+      "disableCwExceptMuted": "Desactivar alertas de contenido a no ser que el woot tenga palabras silenciadas",
       "disableConfetti": "Desactivar efectos de confeti al realizar ciertas acciones",
       "enableConfettiRecivingLike": "Activar confeti cuando recibís un like",
       "disableUiSounds": "Desactivar efectos de sonido al realizar ciertas acciones",
@@ -141,10 +164,10 @@
       "customCocAIne": "Palabra personalizada para reemplazar IA",
       "notRecommendedOptions": "Opciones no recomendadas",
       "disableNSFWFilter": "Desactivar filtro de imágenes para adultes",
-      "automaticallyExpandAllPosts": "Expandir todos los posts automáticamente"
+      "automaticallyExpandAllPosts": "Expandir todos los woots automáticamente"
     },
     "privacy": {
-      "defaultPostPrivacy": "Privacidad de posts por defecto",
+      "defaultPostPrivacy": "Privacidad de woots por defecto",
       "asks": "Preguntas",
       "disableEmailNotifications": "Desactivar notificaciones por email",
       "hideFollows": "Esconder mis follows y seguidores",
@@ -180,8 +203,8 @@
     },
     "other": {
       "movingFromAccount": "'Mudándose de una cuenta distinta (sin la @)'",
-      "wordsThatWillAutoCwPosts": "Palabras que van a agregar una alerta de contenido al post",
-      "superMutedWords": "Frases que van a esconder posts que las contengan (TENÉ CUIDADO)",
+      "wordsThatWillAutoCwPosts": "Palabras que van a agregar una alerta de contenido al woot",
+      "superMutedWords": "Frases que van a esconder woots que las contengan (TENÉ CUIDADO)",
       "availableEmoji": "Emojis disponibles"
     },
     "bsky": {
@@ -208,12 +231,300 @@
     },
     "updateButton": "Actualizar perfil"
   },
+  "settings": {
+    "sidebar": {
+      "profile": "Perfil",
+      "account": "Cuenta",
+      "appearance": "Apariencia y IU",
+      "behavior": "Comportamiento",
+      "privacy": "Privacidad",
+      "mutesAndBlocks": "Usuaries Silenciades y Bloqueades",
+      "miscellaneous": "Miscelánea"
+    },
+    "header": {
+      "fediAttachments": "Adjuntos del Fediverso",
+      "emailAndPassword": "Email y Contraseña",
+      "integrations": "Integraciones",
+      "migration": "Migración de Cuenta",
+      "deleteAccount": "Borrar Cuenta",
+      "appearance": "Apariencia",
+      "userInterface": "Interfaz de Usuarie",
+      "classicOptions": "Opciones Clásicas",
+      "animationsAndSounds": "Animaciones y Sonidos",
+      "dashboardBehavior": "Comportamiento del Dashboard",
+      "cwBehavior": "Comportamiento de las Alertas de Contenido",
+      "profilePrivacy": "Privacidad del Perfil",
+      "editor": "Editor",
+      "followers": "Seguidores",
+      "mutedBlockedWords": "Palabras Silenciadas y Bloqueadas",
+      "blockBehavior": "Comportamiento de los Bloqueos",
+      "mutedBlockedUsers": "Usuaries Silenciades y Bloqueades",
+      "fun": "Diversión"
+    },
+    "fediPropertyKey": "Nombre de la Propiedad",
+    "fediPropertyValue": "Valor de la Propiedad",
+    "addFediAttachment": "Añadir Adjunto",
+    "changeAvatar": "Cambiar Avatar",
+    "changeHeaderImage": "Cambiar Imagen de Cabecera",
+    "name": "Nombre",
+    "description": "Descripción",
+    "changePasswordTitle": "Solicitar cambio de contraseña",
+    "changePassword": "Cambiar contraseña",
+    "changePasswordDescription": "Mandamos un enlace para cambiar tu contraseña a tu email.",
+    "changePasswordMessage": "Mandamos un enlace para cambiar tu contraseña a tu email.",
+    "disableEmailNotifications": "Desactivar notificaciones por email",
+    "rssOptions": "Activar RSS y microfront para mi perfil",
+    "rssOptionsOptions": {
+      "none": "Ninguno",
+      "articles": "Artículos (Funcionalidad En Progreso)",
+      "all": "Todo"
+    },
+    "alsoKnownAs": "Alias anterior",
+    "requestAccountDeletion": "Solicitar Borrado de Cuenta",
+    "alsoKnownAsDescription": "Migrar de una cuenta distinta (sin la @)",
+    "theme": "Estilo",
+    "themeDescription": "Estilo. Afecta los colores, algunos estilos también afectan el modo claro/oscuro.",
+    "lightDarkMode": "Modo Claro/Oscuro",
+    "lightDarkModeDescription": "Modo claro/oscuro. Algunos estilos no funcionan bien con ciertos modos.",
+    "additionalStyleModes": "Modos de estilo adicionales",
+    "additionalStyleModesDescription": "Opciones adicionales para el layout y versiones clásicas de la IU.",
+    "useOtherUserCustomThemes": "Usar estilos personalizados en blogs de usuaries",
+    "useOtherUserCustomThemesDescription": "Usar el CSS de otres usuaries cuando visitás sus blogs. Los estilos de usuarie no son moderados y pueden tener elementos parpadeantes.",
+    "askToUseOtherUserCustomThemes": "Preguntar si usar estilos personalizados en blogs de usuaries",
+    "askToUseOtherUserCustomThemesDescription": "Pregunta si te gustaría usar estilos personalizados cuando visitás un blog con estilos personalizados.",
+    "uiLanguage": "Idioma de la Interfaz de Usuarie",
+    "uiLanguageDescription": "Wafrn es traducido a varios idiomas gracias a voluntaries. Revisá <a href=\"https://codeberg.org/wafrn/wafrn\">el código fuente</a> si querés ayudar!",
+    "forceClassicLogo": "Forzar logo clásico",
+    "forceClassicVideoPlayer": "Forzar reproductor de video clásico",
+    "forceClassicAudioPlayer": "Forzar reproductor de audio clásico",
+    "forceClassicMediaView": "Forzar vista clásica de contenido multimedia (vertical)",
+    "disableConfetti": "Desactivar efectos de confeti al realizar ciertas acciones",
+    "disableConfettiDescription": "Por defecto, se tira confeti de emojis al likear, reaccionar, wootear, editar y rewootear.",
+    "enableConfettiReceivingLike": "Activar confeti al recivir un like (PvP)",
+    "disableSounds": "Desactivar efectos de sonido al realizar ciertas acciones",
+    "disableSoundsDescription": "Por defecto, hay efectos de sonido al likear, reaccionar, wootear, editar y rewootear.",
+    "defaultDashboard": "Dashboard por defecto",
+    "defaultDashboardOptions": {
+      "dashboard": "Dashboard",
+      "exploreLocal": "Explorar Localmente"
+    },
+    "automaticallyExpandPosts": "Expandir todos los woots automáticamente",
+    "expandQuotes": "No colapsar citas",
+    "atprotoLinkDestination": "Destino para enlaces Atproto",
+    "atprotoLinkDestinationDescription": "Sitio web Atproto para ver woots externamente. Por defecto es \"bsky.app\".",
+    "disableCW": "Desactivar alertas de contenido a no ser que el woot tenga palabras silenciadas",
+    "disableNSFWFilter": "Desactivar filtro de imágenes para adultos",
+    "hideNoDescriptionMedia": "Añadir una alerta de contenido al contenido multimedia sin descripción",
+    "disableForceAltText": "Permitir subir contenido multimedia sin descripciones",
+    "disableForceAltTextDescription": "Nomás activá esto si sos malvade",
+    "manuallyAcceptsFollows": "Aceptar follows manualmente",
+    "enableAsks": "Activar preguntas",
+    "enableAnonymousAsks": "Activar preguntas anónimas",
+    "hideProfileNotLoggedIn": "Esconder perfil de usuaries que no iniciaron sesión",
+    "hideProfileNotLoggedInDescription": "Solo aplica a tu perfil en este wafrn, no a tus woots u otras instancias o bluesky.",
+    "hideFollows": "Esconder mis follows y seguidores",
+    "displayMentionsOfBlockedUsersFromOtherUsers": "Mostrar woots que contienen menciones a usuaries bloqueades",
+    "defaultPostEditorPrivacy": "Privacidad por defecto en el editor de woots",
+    "postEditorPrivacyOptions": {
+      "public": "Público",
+      "followersOnly": "Solo para Seguidores",
+      "instanceOnly": "Solo para esta Instancia",
+      "unlisted": "No Listado"
+    },
+    "mutedWords": "Palabras silenciadas",
+    "mutedWordsDescription": "Una palabra por línea. Los woots con estas frases van a tener una alerta de contenido.",
+    "superMutedWords": "Palabras bloqueadas",
+    "superMutedWordsDescription": "Una palabra por línea. Los woots con estas frases van a estar completamente ocultos.",
+    "hideQuotes": "Esconder Citas",
+    "hideQuotesOptions": {
+      "cwDisabledQuotesUsers": "Añadir una alerta de contenido a woots de usuaries para les que desactivaste las citas",
+      "cwUnfollowedOrDisabledQuotesUsers": "Añadir una alerta de contenido a woots de cualquiera a quien no sigás",
+      "hidePostsDisabledQuotesUsers": "Bloquear citas de usuaries que no seguís"
+    },
+    "replaceAIWithCocaine": "Reemplazar IA con una palabra personalizada",
+    "replaceAIWord": "Palabra con la que reemplazar IA",
+    "postReplyBarOrder": "Órden de los íconos en la barra de respuesta",
+    "postReplyBarOrderDescription": "La visibilidad de algunos íconos depende de si sos le autore.",
+    "postActionsButtonBarOrder": "Órden de los íconos en el menú de acciones",
+    "postActionsButtonBarOrderDescription": "Íconos mostrados en el menú de acciones de un woot. La visibilidad de algunos íconos depende de si sos le autore.",
+    "confettiOptions": "Confeti",
+    "confettiMultiplier": "Multiplicador de confeti",
+    "confettiMultiplierDescription": "Multiplica la cantidad de confeti. ¡Los valores muy altos pueden tildar tu navegador!",
+    "flatConfetti": "Confeti plano",
+    "flatConfettiDescription": "Desactiva el efecto 3D del confeti.",
+    "confettiTestAreaDescription": "Probar el confeti de varias interacciones:",
+    "confettiType": "Tipo de interacción",
+    "confettiTestLocational": "Bajo el mouse",
+    "confettiTestGeneric": "Lados de la pantalla"
+  },
+  "dialog": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "bluesky": {
+      "generateInviteCodeWarningTitle": "Atención",
+      "generateInviteCodeWarning": "Generar un código de invitación va a borrar IRREVERSIBLEMENTE cualquier cuenta be bluesky asociada"
+    },
+    "admin": {
+      "requireExtraStepsTitle": "Requerir pasos extra de le usuarie",
+      "requireExtraStepsDescription": "Le usuarie va a recibir un email con pasos extra.",
+      "userUsedVPNTitle": "Marcar que le usuarie está usando una VPN",
+      "userUsedVPNDescription": "Le usuarie va a recibir un email explicando que el uso de VPNs no está permitido y su solicitud va a ser borrada.",
+      "promptBanTitle": "Banear",
+      "promptBanReasonLabel": "Motivo",
+      "promptBanReasonDescription": "Le usuarie va a recibir este motivo en un email explicando el baneo.",
+      "confirmBanTitle": "Confirmar baneo",
+      "confirmBanContentBluesky": "Le usuarie de Bluesky va a ser permanentemente baneade.",
+      "confirmBanContentFedi": "Le usuarie va a ser permanentemente baneade por el siguiente motivo:",
+      "confirmNSFWTitle": "Confirmar silenciar",
+      "confirmNSFWContent": "Todos los woots de este usuarie van a tener alertas de contenido.",
+      "confirmIgnoreTitle": "Confirmar ignorar reporte de",
+      "confirmIgnoreContent": "El woot fue reportado por el siguiente motivo:",
+      "confirmUnbanTitle": "Confirmar revertir baneo",
+      "confirmUnbanContent": "Todavía no almacenamos información sobre baneos pero eventualmente va a estar acá:"
+    },
+    "post-header": {
+      "followTitle": "Seguir usuarie",
+      "silenceInteractionsTitle": "Silenciar woot",
+      "silenceInteractionsDescription": "Silenciar notificaciones de likes, rewoots y reacciones a este woot.",
+      "silenceReplyTitle": "Silenciar woot y respuestas",
+      "silenceReplyDescription": "Silenciar notificaciones de likes, rewoots, reacciones y respuestas a este woot.",
+      "muteAccountTitle": "Silenciar cuenta",
+      "muteAccountDescription": "Esconder woots y respuestas de este usuarie. Va a seguir pudiendo interactuar con tus woots.",
+      "blockAccountTitle": "Bloquear cuenta",
+      "muteAccountLabel": "Motivo (opcional)",
+      "unmuteAccountTitle": "Desilenciar cuenta",
+      "unmuteAccountDescription": "Los woots y respuestas de este usuarie van a volver a ser mostrados.",
+      "blockAccountDescription": "Esconder woots y respuestas de este usuarie o woots y respuestas mencionando a este usuarie. Este no va a poder interactuar con tus woots.",
+      "blockAccountLabel": "Motivo (opcional)",
+      "unblockAccountTitle": "Desbloquear cuenta",
+      "unblockAccountDescription": "Los woots y respuestas de este usuarie y los woots y respuestas mencionando a este usuarie van a volver a ser mostrados. Este va a poder interactuar con tus woots."
+    },
+    "blog": {
+      "customThemeTitle": "Estilos Personalizados",
+      "customThemeDescription": "Este usuarie tiene estilos personalizados. Querés activar los estilos personalizados globalmente para verlos?<br><br>Podés cambiar esta opción en Opciones > Apariencia",
+      "customThemeOptions": {
+        "yes": "Sí",
+        "cancel": "No",
+        "cancelRemember": "No, no preguntes de nuevo"
+      }
+    },
+    "report": {
+      "reportUserTitle": "Reportar Usuario",
+      "reportPostTitle": "Reportar Woot",
+      "reportTypeLabel": "Tipo de Reporte",
+      "reportTypeOptions": {
+        "spam": "Spam"
+      },
+      "reportDescription": "Descripción",
+      "reportBlockUser": "Bloquear a este usuarie",
+      "reportConfirm": "Reportar"
+    }
+  },
   "ask-dialog-content": {
-    "askAnonymously": "Hacer anónima la pregunta",
+    "askAnonymously": "Preguntar de manera anónima",
     "askFormLabel": "Pregunta",
     "askButtonText": "Preguntar"
   },
+  "messages": {
+    "deleteRewootSuccess": "Tu rewoot fue borrado exitosamente.",
+    "likePostSuccess": "Woot likeado exitosamente.",
+    "unlikePostSuccess": "Ya no te gusta este woot.",
+    "bookmarkPostSuccess": "Este woot fue guardado exitosamente.",
+    "unbookmarkPostSuccess": "Este woot ya no está guardado.",
+    "rewootPostSuccess": "Rewooteaste el woot!",
+    "followMessageSuccess": "Ahora seguís a este usuarie!",
+    "cancelFollowMessageSuccess": "Tu solicitud de follow fue cancelada.",
+    "unfollowMessageSuccess": "Ya no seguís a este usuarie!",
+    "copyLocalLinkSuccess": "Enlace copiado al portapapeles.",
+    "copyRemoteLinkSuccess": "Enlace remoto copiado al portapapeles.",
+    "silencePostSuccess": "Silenciaste las notificaciones de este woot exitosamente.",
+    "unsilencePostSuccess": "Desilenciaste las notificaciones de este woot exitosamente.",
+    "blockUserSuccess": "Bloqueaste a este usuarie.",
+    "unblockUserSuccess": "Desbloqueaste a este usuarie.",
+    "muteUserSuccess": "Silenciaste a este usuarie.",
+    "unmuteUserSuccess": "Desilenciaste a este usuarie.",
+    "blockServerSuccess": "Bloqueaste este servidor.",
+    "reportUserSuccess": "Le usuarie fue reportade exitosamente.",
+    "reportPostSuccess": "El woot fue reportado exitosamente.",
+    "genericError": "¡Algo salió mal! Revisá tu conexión a internet y probá de nuevo.",
+    "notRewootableError": "Este woot no es rewooteable, a solicitud de su autore."
+  },
+  "keyboard-shortcuts": {
+    "keyboardShortcuts": "Atajos de Teclado",
+    "groupNavigation": "Navegación",
+    "scrollDown": "Desplazarse abajo",
+    "scrollUp": "Desplazarse arriba",
+    "scrollDownPage": "Desplazarse una página abajo",
+    "scrollUpPage": "Desplazarse una página arriba",
+    "nextPost": "Woot siguiente",
+    "previousPost": "Woot anterior",
+    "groupPostAction": "Acciones de woot",
+    "likePost": "Likear woot",
+    "rewootPost": "Rewootear woot",
+    "replyPost": "Responder al woot",
+    "quotePost": "Citar woot",
+    "groupMisc": "Miscelánea",
+    "openEditor": "Abrir editor",
+    "viewKeyboardShortcuts": "Ver atajos de teclado",
+    "unbound": "no asignado",
+    "additionalOptions": "Opciones Adicionales",
+    "smoothScroll": "Desplazamiento suave"
+  },
+  "post-actions": {
+    "shareUrl": "Copiar enlace",
+    "shareExternalUrl": "Copiar enlace remoto",
+    "viewOnAtproto": "Ver en Atproto",
+    "forceRefederate": "Forzar a refederar este woot",
+    "viewOriginalPost": "Ver woot original",
+    "replyPost": "Responder al woot",
+    "rewootPost": "Rewootear woot",
+    "deleteRewootPost": "Borrar rewoot",
+    "quotePost": "Citar woot",
+    "bookmarkPost": "Guardar woot",
+    "unbookmarkPost": "Ya no guardar woot",
+    "likePost": "Likear woot",
+    "dislikePost": "Remover like",
+    "reportPost": "Reportar woot",
+    "editPost": "Editar woot",
+    "deletePost": "Borrar woot",
+    "silenceInteractions": "Silenciar woot",
+    "silenceReplyNotifications": "Silenciar woot y respuestas",
+    "unsilenceReplyNotifications": "Desilenciar woot",
+    "muteUser": "Silenciar usuarie",
+    "unmuteUser": "Desilenciar usuarie",
+    "blockUser": "Bloquear usuarie",
+    "unblockUser": "Desbloquear usuarie",
+    "reportUser": "Reportar usuarie"
+  },
+  "post-header": {
+    "follow": "Seguir",
+    "awaitingApproval": "Esperando aprobación",
+    "viewPost": "Ver woot"
+  },
   "post-fragment": {
     "replyingTo": "respondiendo a: "
+  },
+  "media": {
+    "noAltText": "Este contenido no tiene una descripción",
+    "sensitiveContent": "Contenido sensible",
+    "manuallyHidden": "Contenido ocultado manualmente"
+  },
+  "admin": {
+    "pendingUsers": {
+      "url": "URL",
+      "email": "Email",
+      "registerIp": "IP de registro",
+      "description": "Descripción",
+      "checkIpInfo": "Revisar en IPinfo",
+      "activateUser": "Activar usuarie",
+      "requireExtraSteps": "Requerir pasos extra",
+      "userUsedVPN": "Usuarie está usando VPN"
+    }
+  },
+  "page-not-found": {
+    "title": "404: página no encontrada",
+    "subtitle": "Parece que acá no hay nada",
+    "couldNotFind": "No lleva a ninguna página",
+    "returnHome": "Volver al inicio"
   }
 }

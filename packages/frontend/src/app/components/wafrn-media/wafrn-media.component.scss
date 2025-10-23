@@ -83,7 +83,7 @@ video {
   padding: 0 2rem;
   background-color: var(--mat-sys-outline);
   color: var(--mat-sys-on-outline);
-  z-index: 3;
+  z-index: 2;
 }
 
 .toggle-description {
@@ -124,4 +124,13 @@ video {
 
 audio {
   width: 100%;
+}
+
+.media-container.fit-cover {
+  height: 100%;
+
+  .displayed-image {
+    height: 100%;
+    object-fit: cover;
+  }
 }

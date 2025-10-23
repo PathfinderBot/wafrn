@@ -4,7 +4,7 @@ import { isArray } from 'underscore'
 import sequelize from 'sequelize/lib/sequelize'
 import { Post, PostReport, User } from '../../../models/index.js'
 import { logger } from '../../logger.js'
-import sendActivationEmail from '../../sendActivationEmail.js'
+import sendEmail from '../../sendEmail.js'
 import { completeEnvironment } from '../../backendOptions.js'
 
 async function flagActivity(body: activityPubObject, remoteUser: User, user: User) {
@@ -27,9 +27,11 @@ async function flagActivity(body: activityPubObject, remoteUser: User, user: Use
         .replaceAll(`${completeEnvironment.frontendUrl}/fediverse/post/`, '')
     )
   if (reportedPostsIds.length == 0 && reportedUsersUrl.length > 0) {
-    const body = `Here you go: ${reportedPostsIds.join(', ')}, ${JSON.stringify(apObject)}`
-    const subject = `There has been a report that is directed towards an user but does not includes post`
-    await sendActivationEmail(completeEnvironment.adminEmail, '', subject, body)
+    await sendEmail({
+      email: completeEnvironment.adminEmail,
+      subject: `There has been a report that is directed towards an user but does not includes post`,
+      body: `<p>Here you go: ${reportedPostsIds.join(', ')}, ${JSON.stringify(apObject)}</p>\n`
+    })
   } else {
     const reportedPosts = await Post.findAll({
       where: {

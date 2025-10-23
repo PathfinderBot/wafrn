@@ -5,6 +5,7 @@ import { LoginService } from './login.service'
 import { DashboardService } from './dashboard.service'
 import { debounce, retry, Subject } from 'rxjs'
 import { MessageService } from './message.service'
+import { ParticleService } from './particle.service'
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +15,9 @@ export class WebsocketService {
   constructor(
     private loginService: LoginService,
     private dashboardService: DashboardService,
+    private particle: ParticleService
   ) {
-    if (loginService.loggedIn()) {
+    if (loginService.loggedIn.value) {
       this.connectSocket()
     }
   }
@@ -38,16 +40,14 @@ export class WebsocketService {
             delay: 3000
           })
         )
-        .subscribe((obs: { message: 'update_notifications', type: string }) => {
+        .subscribe((obs: { message: 'update_notifications'; type: string }) => {
           try {
             switch (obs.message) {
               case 'update_notifications': {
                 this.dashboardService.scrollEventEmitter.next('scroll')
                 console.log(obs)
-                if(obs.type == 'LIKE' && localStorage.getItem('enableConfettiRecivingLike') == 'true'){
-                  MessageService.confetti.addConfetti({
-                    emojis: ['❤️', '💚', '💙']
-                  })
+                if (obs.type == 'LIKE' && localStorage.getItem('enableConfettiRecivingLike') == 'true') {
+                  this.particle.like()
                 }
               }
             }

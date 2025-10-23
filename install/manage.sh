@@ -86,6 +86,8 @@ check_files_for_update () {
 case $1 in
   update)
     pushd "${SCRIPT_DIR}/.."
+      OLD_SHA=$(git rev-parse HEAD)
+
       git fetch
 
       check_files_for_update $2
@@ -96,10 +98,12 @@ case $1 in
         cp $COMPOSE_FILENAME docker-compose.yml
       fi
 
+      $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
+
       docker compose pull
       docker compose build
 
-      rm -rf packages/backend/cache/ && mkdir packages/backend/cache/
+      rm -rf packages/backend/cache/ && mkdir packages/backend/cache/ && touch packages/backend/cache/.gitkeep
 
       docker compose up --build -d
       docker compose logs -t -n 50 -f

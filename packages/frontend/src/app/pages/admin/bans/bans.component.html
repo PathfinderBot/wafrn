@@ -1,29 +1,47 @@
-<!--
-<div class="grid pb-6 lg:px-4 scalein  wafrn-container">
-  <div class="col-12 wafrn-post">
-    <p-card>
-      <h3>Banned users</h3>
-      <p-table
-      [value]="bannedUsers"
-      [paginator]="true"
-      [rows]="5"
-      [rowsPerPageOptions]="[5, 10, 25, 50]"
-      [loading]="!ready"
-      >
-        <ng-template pTemplate="header">
-          <tr>
-            <th>user</th>
-            <th></th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-userBanned>
-          <tr>
-            <td><img class="avatar" [src]="userBanned.avatar"> {{userBanned.url}}</td>
-            <td><button pButton label="Unban" (click)="unbanUser(userBanned.id)"></button></td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
-  </div>
+<div class="mx-3 lg:mx-4 wafrn-container-wide">
+  <h2 class="my-3 text-3xl">{{ 'menu.admin.bans' | translate }}</h2>
 </div>
--->
+<div class="mb-3 lg:mx-4 wafrn-container-wide">
+  <p>This sucks to look at so here's a second step of buttons before you see the data</p>
+  <button mat-stroked-button (click)="showBans = !showBans">Show banned users</button>
+</div>
+<mat-card [class.hidden]="!showBans" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
+  <mat-form-field class="w-full mat-form-field-no-padding">
+    <mat-label>Search</mat-label>
+    <input (input)="onChange($event)" matNativeControl spellcheck="false" />
+  </mat-form-field>
+  <div class="w-full overflow-x-auto">
+    <table mat-table matSort [dataSource]="!loading ? bannedUsers.data : placeholderData">
+      <ng-container matColumnDef="user">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>User</th>
+        <td mat-cell *matCellDef="let row">
+          @if (row) {
+            <a [routerLink]="'/blog/' + row.url">
+              <div class="flex gap-2 align-items-center">
+                <app-avatar-small [user]="row"></app-avatar-small>
+                {{ row.url }}
+              </div>
+            </a>
+          } @else {
+            <div class="flex gap-2 align-items-center">
+              <app-avatar-small [user]="undefined"></app-avatar-small>
+              <mat-progress-bar class="placeholder" mode="indeterminate"></mat-progress-bar>
+            </div>
+          }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let row">
+          @if (row) {
+            <button mat-flat-button class="primary" (click)="unban(row)">Unban</button>
+          }
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="bannedUsersColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: bannedUsersColumns"></tr>
+    </table>
+  </div>
+  <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons aria-label="Select ban list page">
+  </mat-paginator>
+</mat-card>

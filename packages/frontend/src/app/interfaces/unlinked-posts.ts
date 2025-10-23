@@ -143,7 +143,7 @@ interface QuestionPollQuestion {
 }
 
 export interface NotificationRaw {
-  notificationType: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW'
+  notificationType: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE'
   createdAt: string
   updatedAt: string
   notifiedUserId: string

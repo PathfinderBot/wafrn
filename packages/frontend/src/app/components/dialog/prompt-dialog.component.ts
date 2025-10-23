@@ -16,6 +16,7 @@ export interface PromptDialogData {
   titleSuffix?: string // Left untranslated and emphasized
   content?: string
   label?: string
+  optional?: true
   options?: {
     confirm?: string
     cancel?: string

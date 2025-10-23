@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core'
-import { CommonModule } from '@angular/common'
+import { CommonModule, DatePipe } from '@angular/common'
 import { RouterModule, Routes } from '@angular/router'
 import { ViewBlogComponent } from './view-blog.component'
 import { PostModule } from '../../components/post/post.module'
@@ -14,6 +14,8 @@ import { BlogHeaderComponent } from '../../components/blog-header/blog-header.co
 import { InfoCardComponent } from 'src/app/components/info-card/info-card.component'
 import { ForumComponent } from '../forum/forum.component'
 import { PostListComponent } from 'src/app/components/post-list/post-list.component'
+import { MatTabsModule } from '@angular/material/tabs'
+import { TranslatePipe } from '@ngx-translate/core'
 
 const routes: Routes = [
   {
@@ -51,7 +53,9 @@ const routes: Routes = [
     BlogHeaderComponent,
     InfoCardComponent,
     ForumComponent,
-    PostListComponent
+    PostListComponent,
+    MatTabsModule,
+    TranslatePipe
   ]
 })
 export class ViewBlogModule {}

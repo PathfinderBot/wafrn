@@ -10,6 +10,7 @@ import { LoaderComponent } from 'src/app/components/loader/loader.component'
 import { DashboardService } from 'src/app/services/dashboard.service'
 import { MessageService } from 'src/app/services/message.service'
 import { PostsService } from 'src/app/services/posts.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-manage-followed-hashtags',
@@ -33,8 +34,10 @@ export class ManageFollowedHashtagsComponent {
   constructor(
     public postsService: PostsService,
     private dashboardService: DashboardService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    simpleTitle: SimpleTitleService
   ) {
+    simpleTitle.set('menu.settings.followedHashtags')
     // we force update of the lists
     this.postsService.loadFollowers().then(() => {
       this.loading = false

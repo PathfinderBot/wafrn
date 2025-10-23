@@ -1,14 +1,25 @@
 @let blog = blogDetails();
-<mat-card class="mb-6 overflow-hidden wafrn-container post-card blog-header">
+@let loggedIn = loginService.loggedIn.value;
+<mat-card class="mb-3 overflow-hidden wafrn-container post-card blog-header">
   <div class="h-14rem mb-3 blog-header-image" [style.background-image]="'url(' + headerUrl + ')'"></div>
   <div class="flex flex-column gap-3 justify-content-between">
     <div class="flex flex-wrap justify-content-between gap-3">
       <div>
         <img [src]="avatarUrl()" alt="user avatar" class="blog-avatar-image" />
       </div>
-      @if (loggedIn() && !isMe && blog) {
-        @if (loggedIn()) {
+      @if (loggedIn && !isMe && blog) {
+        @if (loggedIn) {
           <div class="flex">
+            @if (!blog.isBlueskyUser) {
+              <button
+                matButton="outlined"
+                style="width: 40px; padding: 0; margin-right: 4px"
+                (click)="biteAccount(blog.id)"
+                matTooltip="{{ 'post-actions.biteUser' | translate }}"
+              >
+                <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
+              </button>
+            }
             @if (!postService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
               <button
                 mat-stroked-button
@@ -21,7 +32,7 @@
                 {{ postService.followedUserIds.indexOf(blog.id) === -1 ? 'Follow' : 'Unfollow' }}
               </button>
             }
-            @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn()) {
+            @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
               <button mat-stroked-button color="accent" class="split-button-left" (click)="unfollowUser(blog.id)">
                 Awaiting approval
               </button>
@@ -90,20 +101,20 @@
           ) {
             @if (postService.usersRewootsDisabled.includes(blog.id)) {
               <button mat-menu-item (click)="updateDisableRewoots()">
-                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-enable rewoots of this user
+                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-show rewoots made by this user
               </button>
             } @else {
               <button mat-menu-item (click)="updateDisableRewoots()">
-                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Disable rewoots of this user
+                <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Hide rewoots made by this user
               </button>
             }
             @if (postService.usersQuotesDisabled.includes(blog.id)) {
               <button mat-menu-item (click)="updateDisableQuotes()">
-                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-enable quotes for this user
+                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-hide quotes from this user
               </button>
             } @else {
               <button mat-menu-item (click)="updateDisableQuotes()">
-                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Disable quotes for this user
+                <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Hide quotes from this user
               </button>
             }
           }
@@ -174,9 +185,9 @@
     </details>
   }
   @if (blog?.url?.startsWith('@')) {
-    <app-info-card [type]="loggedIn() ? 'info' : 'caution'">
+    <app-info-card [type]="loggedIn ? 'info' : 'caution'">
       {{
-        loggedIn()
+        loggedIn
           ? 'As this user is from a remote instance, the shown information may be incomplete.'
           : 'To see external users you need to be logged in. You can view their profile on their actual instance.'
       }}

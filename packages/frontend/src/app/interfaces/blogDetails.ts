@@ -6,6 +6,7 @@ export interface BlogDetails {
   id: string
   url: string
   name: string
+  nameMarkdown: string
   createdAt: string
   description: string
   descriptionMarkdown: string

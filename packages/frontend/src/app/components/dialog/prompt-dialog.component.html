@@ -8,7 +8,7 @@
     }
     <textarea
       class="w-full"
-      required
+      [required]="data.optional !== true"
       (input)="onInput($any($event))"
       matNativeControl
       cdkTextareaAutosize
@@ -30,7 +30,7 @@
       <button
         mat-flat-button
         class="dialog-confirm-button"
-        [disabled]="inputResponse().length === 0"
+        [disabled]="data.optional !== true && inputResponse().length === 0"
         (click)="onConfirm()"
       >
         {{ textData.options.confirm | translate }}

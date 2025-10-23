@@ -6,6 +6,8 @@ import { faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 //@ts-ignore
 import Vlitejs from 'vlitejs'
 
+type FitMode = 'contain' | 'cover'
+
 @Component({
   selector: 'app-wafrn-media',
   templateUrl: './wafrn-media.component.html',
@@ -15,6 +17,8 @@ import Vlitejs from 'vlitejs'
 export class WafrnMediaComponent implements OnInit, AfterViewInit {
   data = input.required<WafrnMedia>()
   filteredWords = input<string>()
+  fitMode = input<FitMode>('contain')
+  altTextButtons = input<boolean>(true)
 
   @ViewChild('videoelement') videoElement: ElementRef<HTMLVideoElement> | undefined
   @ViewChild('audioelement') audioElement: ElementRef<HTMLAudioElement> | undefined

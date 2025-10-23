@@ -7,6 +7,7 @@
     class="media-container"
     [class.always-show-alt]="alwaysShowAlt()"
     [class.video-media]="mimeType().startsWith('video')"
+    [class.fit-cover]="fitMode() === 'cover'"
   >
     <div class="media-content-container">
       @if (
@@ -45,54 +46,56 @@
       }
     </div>
 
-    @if (data().description) {
-      @if (!alwaysShowAlt() && !mimeType().startsWith('text/html')) {
-        <button
-          class="m-2 toggle-button toggle-description"
-          mat-raised-button
-          (click)="descriptionVisible = !descriptionVisible"
-          title="Show alt text"
-          [ariaDescription]="'Show alt text'"
-        >
-          ALT
-        </button>
-      }
-      <div class="px-2 py-1 image-description" [class.visible]="descriptionVisible">
-        <p class="m-0">{{ data().description }}</p>
-      </div>
-    }
-    @if (nsfw) {
-      <div class="flex flex-column justify-content-center align-items-center image-cw-text">
-        @if (data().description === null) {
-          <p>{{ 'media.noAltText' | translate }}</p>
-        } @else if (filteredWords()) {
-          <p>{{ 'post-fragment.mutedWords' | translate }} {{ filteredWords() }}</p>
-        } @else if (originallyNsfw) {
-          <p>{{ 'media.sensitiveContent' | translate }}</p>
-        } @else {
-          <p>{{ 'media.manuallyHidden' | translate }}</p>
+    @if (altTextButtons()) {
+      @if (data().description) {
+        @if (!alwaysShowAlt() && !mimeType().startsWith('text/html')) {
+          <button
+            class="m-2 toggle-button toggle-description"
+            mat-raised-button
+            (click)="descriptionVisible = !descriptionVisible"
+            title="Show alt text"
+            [ariaDescription]="'Show alt text'"
+          >
+            ALT
+          </button>
         }
-        <button mat-raised-button (click)="showPicture()">Show media</button>
-      </div>
-    } @else {
-      @if (mimeType().startsWith('pdf')) {
-        <a [href]="displayUrl()" target="_blank">Click here to see the PDF file that is embedded in this post</a>
+        <div class="px-2 py-1 image-description" [class.visible]="descriptionVisible">
+          <p class="m-0">{{ data().description }}</p>
+        </div>
       }
+      @if (nsfw) {
+        <div class="flex flex-column justify-content-center align-items-center image-cw-text">
+          @if (data().description === null) {
+            <p>{{ 'media.noAltText' | translate }}</p>
+          } @else if (filteredWords()) {
+            <p>{{ 'post-fragment.mutedWords' | translate }} {{ filteredWords() }}</p>
+          } @else if (originallyNsfw) {
+            <p>{{ 'media.sensitiveContent' | translate }}</p>
+          } @else {
+            <p>{{ 'media.manuallyHidden' | translate }}</p>
+          }
+          <button mat-raised-button (click)="showPicture()">Show media</button>
+        </div>
+      } @else {
+        @if (mimeType().startsWith('pdf')) {
+          <a [href]="displayUrl()" target="_blank">Click here to see the PDF file that is embedded in this post</a>
+        }
 
-      @if (!hideSensitiveButton()) {
-        <button
-          class="m-2 toggle-button toggle-nsfw"
-          mat-raised-button
-          (click)="toggleNsfw()"
-          title="Hide image"
-          [ariaDescription]="'Hide image'"
-        >
-          <fa-icon [icon]="hideIcon"></fa-icon>
-        </button>
+        @if (!hideSensitiveButton()) {
+          <button
+            class="m-2 toggle-button toggle-nsfw"
+            mat-raised-button
+            (click)="toggleNsfw()"
+            title="Hide image"
+            [ariaDescription]="'Hide image'"
+          >
+            <fa-icon [icon]="hideIcon"></fa-icon>
+          </button>
+        }
       }
-    }
-    @if (errorMode) {
-      <a [href]="data().url" target="_blank"> {{ data().description + ': ' + data().url }}</a>
+      @if (errorMode) {
+        <a [href]="data().url" target="_blank"> {{ data().description + ': ' + data().url }}</a>
+      }
     }
   </div>
 }

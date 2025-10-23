@@ -188,7 +188,6 @@
           (drop)="handleDrop($event)"
           (dragenter)="handleDrag($event)"
           (dragleave)="handleDrag($event)"
-          (dragover)="$event.preventDefault()"
           rows="4"
           placeholder="{{ 'editor.wootTextPlaceholder' | translate }}"
           matNativeControl
@@ -328,10 +327,10 @@
             >
               <fa-icon size="lg" [icon]="closeIcon"></fa-icon>
             </button>
-            <div class="flex">
+            <div class="mr-6">
               <app-post-header [fragment]="data.quote"></app-post-header>
             </div>
-            <app-post-fragment [fragment]="data.quote"></app-post-fragment>
+            <app-post-fragment [fragment]="data.quote" fragmentType="quote"></app-post-fragment>
           }
         </div>
       </section>
@@ -340,10 +339,20 @@
     <div class="px-3 pt-3 bottom-information-bar">
       <div class="min-w-0">
         <div class="posting-label">{{ 'editor.usernameLabel' | translate }}</div>
-        <div class="user-info">
-          <img [src]="currentUserAvatar()" class="user-avatar" />
-          <span [innerHTML]="currentUser()?.url ?? 'No one?!'" class="user-name"></span>
-        </div>
+        @if (accountList().length > 1) {
+          <button mat-button [mat-menu-trigger-for]="accountMenu" class="user-info-button">
+            <div class="user-info">
+              <img [src]="toAvatarUrl(currentUser())" class="user-avatar" />
+              <span [innerHTML]="currentUser()?.url ?? 'No one?!'" class="user-name"></span>
+              <fa-icon [icon]="dropdownIcon" class="icon-dropdown"></fa-icon>
+            </div>
+          </button>
+        } @else {
+          <div class="user-info">
+            <img [src]="toAvatarUrl(currentUser())" class="user-avatar" />
+            <span [innerHTML]="currentUser()?.url ?? 'No one?!'" class="user-name"></span>
+          </div>
+        }
       </div>
       @if (showBlueskyOptions) {
         <div
@@ -362,6 +371,16 @@
     </div>
 
     <!-- Popup Menus -->
+    <mat-menu #accountMenu="matMenu">
+      @for (account of accountList(); track $index) {
+        <button mat-menu-item (click)="setPoster($index)">
+          <div class="user-info"
+            ><img [src]="toAvatarUrl(account.blog)" class="user-avatar" />
+            <span [innerHTML]="account.blog.url" class="user-name"></span
+          ></div>
+        </button>
+      }
+    </mat-menu>
     <mat-menu #menu="matMenu">
       @for (option of privacyOptions; track $index) {
         @if (option.level != 20) {

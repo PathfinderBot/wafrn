@@ -48,9 +48,8 @@
     {
       "name": "media",
       "urls": [
-        "${{MEDIA_DOMAIN}}/**",
-        "${{CACHE_DOMAIN}}/**"
-
+        "https://NGSW_MEDIA_DOMAIN/**",
+        "https://NGSW_CACHE_DOMAIN/**"
       ],
       "cacheConfig": {
         "strategy": "performance",

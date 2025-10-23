@@ -1,19 +1,18 @@
-import {
-  Model, Table, Column, DataType, ForeignKey, BelongsTo
-} from "sequelize-typescript";
-import { Post } from "./post.js";
+import { Model, Table, Column, DataType, ForeignKey, BelongsTo, AllowNull } from 'sequelize-typescript'
+import { Post } from './post.js'
 
 export interface QuotesAttributes {
-  id?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  quoterPostId: string;
-  quotedPostId: string;
+  id?: number
+  createdAt?: Date
+  updatedAt?: Date
+  quoterPostId: string
+  quotedPostId: string
+  authorizationUrl?: string
 }
 
 @Table({
-  tableName: "quotes",
-  modelName: "quotes",
+  tableName: 'quotes',
+  modelName: 'quotes',
   timestamps: true
 })
 export class Quotes extends Model<QuotesAttributes, QuotesAttributes> implements QuotesAttributes {
@@ -22,18 +21,25 @@ export class Quotes extends Model<QuotesAttributes, QuotesAttributes> implements
     primaryKey: true,
     type: DataType.UUID
   })
-  declare quoterPostId: string;
+  declare quoterPostId: string
 
   @ForeignKey(() => Post)
   @Column({
     primaryKey: true,
     type: DataType.UUID
   })
-  declare quotedPostId: string;
+  declare quotedPostId: string
 
-  @BelongsTo(() => Post, "quoterPostId")
-  declare quoterPost: Post;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null
+  })
+  declare authorizationUrl: string
 
-  @BelongsTo(() => Post, "quotedPostId")
-  declare quotedPost: Post;
+  @BelongsTo(() => Post, 'quoterPostId')
+  declare quoterPost: Post
+
+  @BelongsTo(() => Post, 'quotedPostId')
+  declare quotedPost: Post
 }

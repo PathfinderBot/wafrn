@@ -1,3 +1,13 @@
+.filter-entry {
+  background-color: var(--mat-sys-surface-container-low);
+  padding: 0 0.2em;
+  font-size: 0.875rem;
+  color: var(--mat-sys-on-primary-container);
+  background-color: var(--mat-sys-primary-container);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
 .avatar {
   max-height: 32px;
   max-width: 32px;
@@ -9,8 +19,39 @@
   font-size: 0.8rem;
 }
 
+.report-severity {
+  font-weight: bold;
+
+  // For theme author customization
+  --color-least-hue: 170;
+  --color-most-hue: 17;
+
+  --color-least: oklch(from var(--mat-sys-primary) l calc(c + 0.1) var(--color-least-hue));
+  --color-most: oklch(from var(--mat-sys-primary) l calc(c + 0.3) var(--color-most-hue));
+  color: color-mix(
+    in oklch,
+    var(--color-least) calc(100% - var(--severity-scale, 0%)),
+    var(--color-most) var(--severity-scale, 100%)
+  );
+}
+
 .report-description {
   max-width: 45ch;
+  line-height: 1.375;
+
+  summary {
+    // Hide the > arrow
+    display: block;
+  }
+}
+details[open] summary {
+  margin-bottom: 0.25rem;
+}
+.report-description-expander {
+  font-weight: bold;
+  details:hover & {
+    text-decoration-line: underline;
+  }
 }
 
 @media (min-width: 992px) {
@@ -19,9 +60,6 @@
   }
 }
 
-.primary {
-  --mat-button-filled-container-color: var(--mat-sys-primary);
-}
 .warn {
   --mat-button-filled-container-color: var(--mat-sys-error);
 }

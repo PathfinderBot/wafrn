@@ -36,7 +36,9 @@ import {
   faCircleInfo,
   faPlus,
   faPencil,
-  faQuestion
+  faQuestion,
+  faCaretDown,
+  faAngleDown
 } from '@fortawesome/free-solid-svg-icons'
 import { EditorData } from 'src/app/interfaces/editor-data'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
@@ -73,6 +75,7 @@ import { Router } from '@angular/router'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import Fuse from 'fuse.js'
+import { ParticleService } from 'src/app/services/particle.service'
 
 type EmojiSuggestion = {
   img: string
@@ -161,8 +164,11 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   postBeingSubmitted = false
   draggingOverTextarea = false
 
-  currentUser: Signal<BlogDetails | undefined>
-  currentUserAvatar: Signal<string>
+  // Multi user posting index of current user
+  currentUser: Signal<BlogDetails | undefined> = computed(() => this.accountList().at(this.posterAccount())?.blog)
+  posterAccount = signal(0)
+  accountList
+  toAvatarUrl // mirrored function
 
   closeIcon = faClose
   quoteIcon = faQuoteLeft
@@ -176,6 +182,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   addIcon = faPlus
   editingIcon = faPencil
   replyAskIcon = faQuestion
+  dropdownIcon = faAngleDown
 
   emojiSubscription: Subscription
   editorUpdatedSubscription: Subscription | undefined
@@ -220,8 +227,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     public postService: PostsService,
     private jwtService: JwtService,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private particle: ParticleService
   ) {
+    // Current account is assumed to be the logged in user
+    this.accountList = loginService.accountList
+    this.toAvatarUrl = dashboardService.getAvatarUrl
+
     this.data = EditorService.editorData
     this.editing = this.data?.edit == true
     this.privacy = this.loginService.getUserDefaultPostPrivacyLevel()
@@ -248,17 +260,17 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     }
 
     if (this.editing && this.data?.post) {
-      this.postCreatorForm.controls['content'].patchValue(this.data.post.markdownContent)
+      if (this.data.post.markdownContent) {
+        this.postCreatorForm.controls['content'].patchValue(this.data.post.markdownContent)
+      } else {
+        this.messages.add({ severity: 'warn', summary: 'This post is an old post and you are editing the HTML raw.' })
+        this.postCreatorForm.controls['content'].patchValue(this.data.post.content)
+      }
       this.contentWarning = this.data.post.content_warning
       this.tags = this.data.post.tags.map((tag) => tag.tagName).join(',')
       this.uploadedMedias = this.data.post.medias ? this.data.post.medias.filter((elem) => elem.mediaOrder < 9999) : []
       this.privacy = this.data.post.privacy
     }
-
-    this.currentUser = loginService.currentAccount
-    this.currentUserAvatar = computed(
-      () => (this.currentUser() && dashboardService.getAvatarUrl(<BlogDetails>this.currentUser())) || ''
-    )
   }
 
   ngOnInit() {
@@ -550,18 +562,19 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       contentWarning: this.contentWarning,
       idPostToEdit: this.editing ? this.idPostToReblog : undefined,
       idPosToQuote: this.data?.quote?.id,
-      ask: this.data?.ask
+      ask: this.data?.ask,
+      withToken: this.loginService.accountList().at(this.posterAccount())?.token
     })
     // its a great time to check notifications isnt it?
     this.dashboardService.scrollEventEmitter.emit('post')
-    if (res) {
-      const disableConfetti = localStorage.getItem('disableConfetti') == 'true'
+    const disableConfetti = localStorage.getItem('disableConfetti') == 'true'
+    if (res.success) {
       this.messages.add({
         severity: 'success',
         summary: 'Your woot has been published!',
-        confettiEmojis: disableConfetti ? [] : ['✏️', '🖍️', '✒️', '🖊️'],
         soundName: 'sendWoot'
       })
+      this.particle.emojiReact(['✏️', '🖍️', '✒️', '🖊️'])
       this.postCreatorForm.value.content = ''
       this.uploadedMedias = []
       this.tags = ''
@@ -571,6 +584,11 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       } else {
         this.closeEditor()
       }
+    } else {
+      this.messages.add({
+        severity: 'error',
+        summary: 'messages.genericError'
+      })
     }
     this.postBeingSubmitted = false
   }
@@ -689,8 +707,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   calculateBskyPostLength() {
-    // TODO do things in a better way
-    const cwText = this.contentWarning.length > 0 ? `[${this.contentWarning}]\n` : ''
+    const cwText = this.contentWarning.length > 0 ? `[${this.contentWarning.trim()}]\n` : ''
     const tagText =
       this.tags.length > 0
         ? `\n${this.tags
@@ -699,11 +716,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
             .join(' ')}`
         : ''
     const askText = this.data?.ask
-      ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked ' + this.data.ask.question + '\n'
+      ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked: ' + this.data.ask.question + '\n\n'
       : ''
-    const fediQuoteText = this.data?.quote && !this.data.quote.bskyUri ? '\nRE: ' + 'link20extracharacterssssss' : ''
-    const inputText = `${askText}${cwText}${this.removeMarkdown(this.postCreatorForm.controls['content'].value as string)}${tagText}${fediQuoteText}`
-    return inputText.length
+    const fediQuoteText = this.data?.quote && !this.data.quote.bskyUri ? '\nRE: ' + this.data?.quote.remotePostId : ''
+    const inputText = `${askText}${cwText}${this.removeMarkdown(this.postCreatorForm.controls['content'].value as string).trim()}${tagText}${fediQuoteText}`
+
+    const encoder = new TextEncoder()
+    return encoder.encode(inputText).byteLength
   }
 
   calculateBskyPostLengthPercent() {
@@ -740,14 +759,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   handlePaste(event: ClipboardEvent) {
     const items = event.clipboardData?.items
-    const files = event.clipboardData?.files
-    console.log(files)
+    // const files = event.clipboardData?.files // Does not allow us to check for firefox, might have better API though!
     if (items === undefined) return
 
-    // Choose first matching media format
     // Has to be a for loop because of evil APIs
     const mediaFormats = ['image', 'video', 'audio']
-    let item = undefined
+    const mediaItems = []
     for (let i = 0; i < items.length; i++) {
       const element = items[i]
       const itemIsMedia = mediaFormats.some((format) => element.type.includes(format))
@@ -758,35 +775,47 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         })
       }
       if (itemIsMedia) {
-        item = items[i]
-        break
+        mediaItems.push(items[i])
       }
     }
-    if (item === undefined) return
+    if (mediaItems.length === 0) return
 
-    const image = item.getAsFile()
-    if (!image) return
+    for (const item of mediaItems) {
+      const image = item.getAsFile()
+      if (!image) return
 
-    this.fileUploadComponent?.uploadFile(image)
+      this.fileUploadComponent?.uploadFile(image)
+    }
   }
 
   handleDrop(event: DragEvent) {
+    const isMedia = event.dataTransfer?.types.includes('Files')
+    if (!isMedia) return
+
     event.preventDefault()
     this.draggingOverTextarea = false
 
-    const items = event.dataTransfer?.items
-
     // Handle Firefox jank and guard for if we had to resort to dark arts
+    const items = event.dataTransfer?.items
     if (items && this.handleFirefoxJank(items)) return
 
-    const item = event.dataTransfer?.files[0]
-    if (item === undefined) return
+    // Otherwise we can just do the normal File jank...
+    const fileList: File[] = []
+    if (event.dataTransfer) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const file = event.dataTransfer.files[i]
+        const mediaFormats = ['image', 'video', 'audio']
+        const fileIsMedia = mediaFormats.some((format) => file.type.includes(format))
+        if (fileIsMedia) {
+          fileList.push(file)
+        }
+      }
+    }
+    if (fileList.length === 0) return
 
-    const mediaFormats = ['image', 'video', 'audio']
-    const itemIsMedia = mediaFormats.some((format) => item.type.includes(format))
-    if (!itemIsMedia) return
-
-    this.fileUploadComponent?.uploadFile(item)
+    for (const file of fileList) {
+      this.fileUploadComponent?.uploadFile(file)
+    }
   }
 
   // Returns true if we had to do it the evil way
@@ -810,10 +839,17 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   handleDrag(event: DragEvent) {
-    if (event.type === 'dragenter') {
-      this.draggingOverTextarea = true
-    } else {
-      this.draggingOverTextarea = false
+    const isMedia = event.dataTransfer?.types.includes('Files')
+    if (isMedia) {
+      if (event.type === 'dragenter') {
+        this.draggingOverTextarea = true
+      } else {
+        this.draggingOverTextarea = false
+      }
     }
+  }
+
+  setPoster(index: number) {
+    this.posterAccount.set(index)
   }
 }

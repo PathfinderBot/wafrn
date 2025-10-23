@@ -11,6 +11,7 @@ import { ReuseableRouteType } from 'src/app/services/routing.service'
 import { ForumComponent } from '../forum/forum.component'
 import { MatCardModule } from '@angular/material/card'
 import { PostListComponent } from 'src/app/components/post-list/post-list.component'
+import { TranslateModule } from '@ngx-translate/core'
 
 const routes: Routes = [
   {
@@ -48,7 +49,8 @@ const routes: Routes = [
     FontAwesomeModule,
     ForumComponent,
     MatCardModule,
-    PostListComponent
+    PostListComponent,
+    TranslateModule
   ]
 })
 export class DashboardModule {}

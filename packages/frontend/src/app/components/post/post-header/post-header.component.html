@@ -1,5 +1,6 @@
 @let fragment = this.fragment();
-<div class="flex justify-content-between mb-3">
+@let loggedIn = this.loginService.loggedIn.value;
+<div class="flex gap-3 justify-content-between mb-3">
   <div class="flex flex-column gap-2 min-w-0">
     <div class="flex gap-2 min-w-0">
       <div class="flex gap-2 mr-auto min-w-0">
@@ -29,13 +30,13 @@
         @if (
           !postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) &&
           !postService.followedUserIds.includes(fragment.userId) &&
-          loggedIn()
+          loggedIn
         ) {
           <button mat-button class="text-sm follow-button" style="text-wrap: nowrap" (click)="followUser(fragment)">
             {{ 'post-header.follow' | translate }}
           </button>
         }
-        @if (postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) && loggedIn()) {
+        @if (postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) && loggedIn) {
           <button mat-button class="text-sm follow-button" (click)="cancelFollowUser(fragment)">
             {{ 'post-header.awaitingApproval' | translate }}
           </button>
@@ -43,11 +44,17 @@
       </div>
     }
   </div>
-  <div>
-    <div class="flex gap-2 align-items-center">
-      @if (!simplified()) {
-        <app-post-actions [post]="fragment"></app-post-actions>
-      }
-    </div>
+  <div class="flex gap-3 h-full align-items-center flex-shrink-0">
+    @if (!simplified()) {
+      <app-post-actions [post]="fragment"></app-post-actions>
+    } @else {
+      <a
+        [href]="'/fediverse/post/' + fragment.id"
+        [routerLink]="'/fediverse/post/' + fragment.id"
+        mat-button
+        class="subtle-link text-sm quote-view-original"
+        >{{ 'post-header.viewPost' | translate }}</a
+      >
+    }
   </div>
 </div>

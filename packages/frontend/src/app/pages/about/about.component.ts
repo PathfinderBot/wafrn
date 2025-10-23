@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { SimpleSeoService } from 'src/app/services/simple-seo.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 import { UtilsService } from 'src/app/services/utils.service'
 
 @Component({
@@ -16,10 +17,13 @@ export class AboutComponent implements OnInit {
   loading = false
 
   constructor(
+    private simpleTitle: SimpleTitleService,
     private seo: SimpleSeoService,
     private utilsService: UtilsService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {
+    this.simpleTitle.set('About this instance')
+  }
 
   ngOnInit(): void {
     this.seo.setSEOTags(

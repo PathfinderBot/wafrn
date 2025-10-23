@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { Component, computed, ElementRef, input, OnChanges, OnDestroy, output, signal, viewChild } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
-import { RouterModule } from '@angular/router'
+import { Router, RouterModule } from '@angular/router'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { PollModule } from '../poll/poll.module'
@@ -25,6 +25,9 @@ import { TranslateModule } from '@ngx-translate/core'
 import { Subscription } from 'rxjs'
 import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
 import Viewer from 'viewerjs'
+import { ParticleService } from 'src/app/services/particle.service'
+
+type FragmentType = 'post' | 'quote'
 
 type EmojiReaction = {
   id: string
@@ -59,6 +62,8 @@ type EmojiReaction = {
 export class PostFragmentComponent implements OnChanges, OnDestroy {
   fragment = input.required<ProcessedPost>()
   forceExpand = output<boolean>()
+  fragmentType = input<FragmentType>('post')
+
   showSensitiveContent = signal<boolean>(false)
   emojiCollection = signal<EmojiReaction[]>([])
   isLocalUser = true
@@ -151,7 +156,8 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
     private postService: PostsService,
     private loginService: LoginService,
     private jwtService: JwtService,
-    private readonly messages: MessageService
+    private readonly messages: MessageService,
+    private particle: ParticleService
   ) {
     this.userId = this.loginService.getLoggedUserUUID()
   }
@@ -339,7 +345,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
     return ['♥️', '❤', '♥'].includes(emojiReaction)
   }
 
-  async toggleEmojiReact(emojiReaction: EmojiReaction) {
+  async toggleEmojiReact(emojiReaction: EmojiReaction, event: MouseEvent) {
     if (this.fragment().userId === this.userId) {
       this.messages.add({
         severity: 'error',
@@ -352,6 +358,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
       return
     }
 
+    const scrollPos = { x: window.scrollX, y: window.scrollY }
     this.reactionLoading.set(true)
     const reactionIsToggled = emojiReaction.users.some((usr) => usr.id === this.userId)
     if (this.isLike(emojiReaction.content)) {
@@ -359,13 +366,12 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
         await this.postService.unlikePost(postId)
       } else {
         await this.postService.likePost(postId)
-        const disableConfetti = localStorage.getItem('disableConfetti') == 'true'
         this.messages.add({
           severity: 'success',
           summary: 'You successfully liked this woot',
-          confettiEmojis: disableConfetti ? [] : ['❤️', '💚', '💙'],
           soundName: 'like'
         })
+        this.particle.like(event, scrollPos)
       }
     } else {
       let response = false
@@ -385,6 +391,12 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
             summary: `Reacted with ${emojiReaction.name} successfully`,
             soundName: 'like'
           })
+
+          if (emojiReaction.img) {
+            this.particle.imageReact(emojiReaction.img, event, scrollPos)
+          } else {
+            this.particle.emojiReact(emojiReaction.content)
+          }
         }
       }
 

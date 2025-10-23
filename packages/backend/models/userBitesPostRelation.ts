@@ -1,0 +1,53 @@
+import {
+  Model, Table, Column, DataType, ForeignKey, BelongsTo
+} from "sequelize-typescript";
+import { User } from "./user.js";
+import { Post } from "./post.js";
+
+export interface UserBitesPostRelationAttributes {
+  id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  userId: string;
+  postId: string;
+  remoteId?: string;
+  bskyPath?: string;
+}
+
+@Table({
+  tableName: "userBitesPostRelations",
+  modelName: "userBitesPostRelation",
+  timestamps: true
+})
+export class UserBitesPostRelation extends Model<UserBitesPostRelationAttributes, UserBitesPostRelationAttributes> implements UserBitesPostRelationAttributes {
+  @Column({
+    primaryKey: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4
+  })
+  declare id: string
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID
+  })
+  declare userId: string;
+
+  @ForeignKey(() => Post)
+  @Column({
+    type: DataType.UUID
+  })
+  declare postId: string;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING(768)
+  })
+  declare remoteId: string;
+
+  @BelongsTo(() => User, "userId")
+  declare user: User;
+
+  @BelongsTo(() => Post, "postId")
+  declare post: Post;
+}

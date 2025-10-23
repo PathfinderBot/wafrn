@@ -1,14 +1,15 @@
 import {
   Component,
   computed,
+  ElementRef,
   EventEmitter,
   input,
   OnDestroy,
   OnInit,
   Output,
-  Signal,
   signal,
-  viewChild
+  viewChild,
+  viewChildren
 } from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { LoginService } from 'src/app/services/login.service'
@@ -38,6 +39,7 @@ import { EnvironmentService } from 'src/app/services/environment.service'
 import { Subject, Subscription } from 'rxjs'
 import { BottomReplyBarComponent } from '../bottom-reply-bar/bottom-reply-bar.component'
 import { HotkeyAction } from 'src/app/services/hotkey.service'
+import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
 
 @Component({
   selector: 'app-post',
@@ -52,25 +54,23 @@ export class PostComponent implements OnInit, OnDestroy {
   active = input<boolean>(false)
   showFull: boolean = false
   postCanExpand = computed(() => {
-    let textLength = 0
-    if (this.post()) {
-      textLength = this.post()
-        .map((elem) => elem.content)
-        .join('').length
-      this.post()
-        .map((block) => block.content)
-        .join('').length
-    }
-    return (
-      ((textLength > 2500 || !this.showFull) && !this.expanded()) || !(this.postSliced.length === this.post().length)
-    )
+    const textLength = this.post()
+      .map((elem) => elem.content)
+      .join('').length
+
+    const textIsLong = textLength > 2500
+    const threadHasMorePosts = this.postSliced.length !== this.post().length
+
+    return (((textIsLong || !this.showFull) && !this.expanded()) || threadHasMorePosts) && !this.startExpanded()
   })
+  startExpanded = input<boolean>(false)
+  scrollToPost = input<boolean>(false)
+
   postsExpanded = EnvironmentService.environment.shortenPosts
   expanded = signal(false)
   finalPosts = computed(() => this.post().slice(-5))
   mediaBaseUrl = EnvironmentService.environment.baseMediaUrl
   cacheurl = EnvironmentService.environment.externalCacheurl
-  loggedIn: Signal<boolean>
   followedUsers: string[] = []
   notYetAcceptedFollows: string[] = []
   notes = computed(() => this.uniquePost().notes.toString())
@@ -92,6 +92,10 @@ export class PostComponent implements OnInit, OnDestroy {
       ? this.post()[this.post().length - 2]
       : this.post()[this.post().length - 1]
   )
+
+  postElemRefs = viewChildren<PostFragmentComponent, ElementRef<HTMLElement>>(PostFragmentComponent, {
+    read: ElementRef<HTMLElement>
+  })
 
   // icons
   shareIcon = faShareNodes
@@ -131,12 +135,17 @@ export class PostComponent implements OnInit, OnDestroy {
   ribbonIcon = this.replyIcon
   ribbonTime = new Date(0)
 
+  // detect is safari ios because flicker bug on webkit https://stackoverflow.com/questions/3007480/determine-if-user-navigated-from-mobile-safaris
+  ua = window.navigator.userAgent
+  iOS = !!this.ua.match(/iPad/i) || !!this.ua.match(/iPhone/i)
+  webkit = !!this.ua.match(/WebKit/i)
+  iOSSafari = this.iOS && this.webkit && !this.ua.match(/CriOS/i)
+
   constructor(
     public postService: PostsService,
     private readonly loginService: LoginService
   ) {
-    this.loggedIn = loginService.loggedIn
-    if (this.loggedIn()) {
+    if (this.loginService.loggedIn.value) {
       this.myId = loginService.getLoggedUserUUID()
     }
     this.updateFollowersSubscription = this.postService.updateFollowers.subscribe(() => {
@@ -154,13 +163,18 @@ export class PostComponent implements OnInit, OnDestroy {
     this.followedUsers = this.postService.followedUserIds
     this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
 
-    if (!this.showFull) {
+    // Do not auto-expand ultra-hell threads
+    const threadIsExtremelyLong = this.post().length - this.postsExpanded > 50
+    if (this.startExpanded() && !threadIsExtremelyLong) {
+      this.postSliced = this.post()
+    } else {
       this.postSliced = this.post().slice(0, EnvironmentService.environment.shortenPosts)
-
-      if (this.post().length === this.postSliced.length) {
-        this.showFull = true
-      }
     }
+
+    if (this.post().length === this.postSliced.length) {
+      this.showFull = true
+    }
+
     this.ribbonUser = this.uniquePost().user
     this.ribbonIcon = this.headerText() === 'replied' ? this.replyIcon : this.reblogIcon
     this.ribbonTime = this.uniquePost().createdAt
@@ -180,6 +194,19 @@ export class PostComponent implements OnInit, OnDestroy {
     })
 
     this.actionSubscription()?.subscribe((action) => this.handlePostActions(action))
+  }
+
+  ngAfterViewInit() {
+    if (this.startExpanded()) {
+      const lastPost = this.postElemRefs().at(-1)
+
+      // Scroll as component is loaded and queue up another scroll once the page is fully loaded (evil)
+      // Causes mild screen flash
+      lastPost?.nativeElement.scrollIntoView({ behavior: 'instant', block: 'center' })
+      setTimeout(() => {
+        lastPost?.nativeElement.scrollIntoView({ behavior: 'instant', block: 'center' })
+      })
+    }
   }
 
   isEmptyReblog() {

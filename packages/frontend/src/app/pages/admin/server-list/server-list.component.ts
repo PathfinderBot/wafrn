@@ -3,6 +3,7 @@ import { server } from 'src/app/interfaces/servers'
 import { AdminService } from 'src/app/services/admin.service'
 import { MatTableDataSource } from '@angular/material/table'
 import { MatPaginator } from '@angular/material/paginator'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-server-list',
@@ -19,7 +20,12 @@ export class ServerListComponent implements OnInit {
 
   dataSource!: MatTableDataSource<server, MatPaginator>
 
-  constructor(private adminService: AdminService) {
+  constructor(
+    private adminService: AdminService,
+    simpleTitle: SimpleTitleService
+  ) {
+    simpleTitle.set('menu.admin.serverList')
+
     this.adminService.getServers().then((response) => {
       this.originalServers = JSON.parse(JSON.stringify(response))
       this.ready = true

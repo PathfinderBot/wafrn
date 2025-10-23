@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, inject, model, OnDestroy, OnInit, Signal, signal } from '@angular/core'
+import { Component, inject, model, OnDestroy, OnInit, signal } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator'
@@ -26,6 +26,9 @@ import { BottomReplyBarComponent } from '../../components/bottom-reply-bar/botto
 import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
 import { snappyInject, SnappyRouter } from 'src/app/components/snappy/snappy-router.component'
 import { SnappyPostData } from 'src/app/directives/post-link/post-link.directive'
+import { Title } from '@angular/platform-browser'
+import { GlobalData } from 'src/app/services/global-data.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-forum-component',
@@ -58,7 +61,6 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   subscription!: Subscription
   updateFollowsSubscription: Subscription
   navigationStart!: Subscription
-  loggedIn: Signal<boolean>
   myId = ''
   notYetAcceptedFollows: string[] = []
   followedUsers: string[] = []
@@ -83,7 +85,8 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
     private postService: PostsService,
     private readonly dashboardService: DashboardService,
     private readonly router: Router,
-    private readonly snappy: SnappyRouter
+    private readonly snappy: SnappyRouter,
+    private simpleTitle: SimpleTitleService
   ) {
     this.followedUsers = this.postService.followedUserIds
     this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
@@ -91,7 +94,6 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
       this.followedUsers = this.postService.followedUserIds
       this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
     })
-    this.loggedIn = loginService.loggedIn
   }
 
   snOnCreate(): void {
@@ -117,22 +119,21 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
 
     this.navigationStart = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => { })
+      .subscribe(() => {})
 
-    if (this.loggedIn()) {
+    if (this.loginService.loggedIn.value) {
       this.myId = this.loginService.getLoggedUserUUID()
     }
 
     this.subscription = this.route.params.subscribe(async (data: any) => {
-      if (!data.id && !data.title)
-        data = this.route.snapshot.data;
+      if (!data.id && !data.title) data = this.route.snapshot.data
 
       this.loading = true
       if (this.hasPost && !this.postId()) {
         this.postId.set(this.post()[0].id)
       }
 
-      let title = data.title;
+      let title = data.title
 
       if (!title && data.id) {
         const UUIDRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gm
@@ -156,16 +157,22 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
       const tmpForumPosts = this.forumService.getForumThread(this.postId())
       this.forumPosts.set(await tmpForumPosts)
       this.loading = false
+
+      // Set up meta tags now that we have the post
+      const lastPost = this.post().at(-1)
+      if (lastPost) {
+        const postIsArticle = lastPost.privacy === 20
+        if (!postIsArticle) {
+          this.simpleTitle.set(`Post by ${lastPost.user.nameMarkdown ?? lastPost.user.name} (${lastPost.user.url})`)
+        }
+      }
     })
   }
+
   ngOnDestroy(): void {
     this.subscription.unsubscribe()
     this.updateFollowsSubscription.unsubscribe()
   }
-
-  followUser(id: string) { }
-
-  unfollowUser(id: string) { }
 
   scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({

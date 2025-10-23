@@ -7,7 +7,7 @@ export interface UserNotifications {
   userUrl: string
   userName: string
   date: Date
-  type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW'
+  type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE'
   emojiReact?: Emoji
   emojiName?: string
   fragment?: ProcessedPost

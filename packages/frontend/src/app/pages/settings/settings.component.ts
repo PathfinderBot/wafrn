@@ -9,6 +9,9 @@ import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons'
 import { TranslateModule } from '@ngx-translate/core'
 import { GroupedSettingData, SettingData, SettingsService, SettingValues } from 'src/app/services/settings.service'
 import { SettingsLoaderComponent } from './settings-loader/settings-loader.component'
+import { Title } from '@angular/platform-browser'
+import { GlobalData } from 'src/app/services/global-data.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 export const SETTINGS_TOKEN = new InjectionToken('settings token')
 
@@ -43,7 +46,8 @@ export class SettingsComponent {
 
   constructor(
     private settingsService: SettingsService,
-    activatedRoute: ActivatedRoute
+    activatedRoute: ActivatedRoute,
+    simpleTitle: SimpleTitleService
   ) {
     this.data = settingsService.data
     this.values = settingsService.values
@@ -66,6 +70,8 @@ export class SettingsComponent {
         this.portal = new ComponentPortal(SettingsLoaderComponent, null, injector)
       }
     })
+
+    simpleTitle.set('menu.settings.title')
   }
 
   saveSettings() {

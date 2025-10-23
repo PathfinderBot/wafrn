@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core'
+import { Injectable, signal } from '@angular/core'
 import { ProcessedPost } from '../interfaces/processed-post'
 import { RawPost } from '../interfaces/raw-post'
 import { MediaService } from './media.service'
 import { HttpClient } from '@angular/common/http'
 import sanitizeHtml from 'sanitize-html'
-import { BehaviorSubject, firstValueFrom } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, lastValueFrom } from 'rxjs'
 import { JwtService } from './jwt.service'
 import { basicPost, PostEmojiReaction, unlinkedPosts } from '../interfaces/unlinked-posts'
 import { SimplifiedUser } from '../interfaces/simplified-user'
@@ -47,7 +47,7 @@ export class PostsService {
     type: 'react'
   })
 
-  public rewootedPosts: string[] = []
+  public rewootedPosts = signal(new Set<string>(), { equal: () => false })
 
   keyboardEmojis: Emoji[] = emojis.map((emoji) => {
     return {
@@ -346,9 +346,12 @@ export class PostsService {
       avatar: '',
       url: 'ERROR',
       name: 'ERROR',
+      nameMarkdown: 'ERROR',
       id: '42'
     }
-    this.rewootedPosts = this.rewootedPosts.concat(unlinked.rewootIds)
+    unlinked.rewootIds?.forEach((id) => {
+      this.rewootedPosts().add(id)
+    })
     const user = elem ? { ...unlinked.users.find((usr) => usr.id === elem.userId) } : nonExistentUser
     const userEmojis = elem ? unlinked.emojiRelations.userEmojiRelation.filter((elem) => elem.userId === user?.id) : []
     const polls = elem ? unlinked.polls.filter((poll) => poll.postId === elem.id) : []
@@ -359,6 +362,7 @@ export class PostsService {
       : []
     if (user.name) {
       user.name = user.name.replaceAll('‏', '')
+      user.nameMarkdown = user.name
     }
     if (userEmojis && userEmojis.length && user && user.name) {
       userEmojis.forEach((usrEmoji) => {
@@ -559,6 +563,9 @@ export class PostsService {
       'tbody',
       'tfoot',
       'thead',
+      'ruby',
+      'rt',
+      'rp',
       'img' // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
     ]
   ): string {
@@ -942,6 +949,26 @@ export class PostsService {
       })
     )
     this.loadFollowers()
+    return res
+  }
+
+  async bitePost(id: string): Promise<boolean> {
+    let res = false
+    const payload = {
+      postId: id
+    }
+
+    try {
+      const response = await lastValueFrom(
+        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/bitePost`, payload)
+      )
+
+      await this.loadFollowers()
+      res = response?.success === true
+    } catch (exception) {
+      console.error(exception)
+    }
+
     return res
   }
 }

@@ -1,0 +1,57 @@
+<mat-card class="wafrn-container post-card" *ngIf="environment().enableBsky">
+  <h1>Migrate from bluesky</h1>
+
+  <marquee><h2>READ THIS ONE, ITS IMPORTANT</h2></marquee>
+  <p>This is important, it's easier than it looks tho. But you need to be aware of what is going to happen</p>
+  <p
+    >First of all, if you enabled bluesky on your wafrn account, this action will DESTROY THE BSKY ACCOUNT currently
+    asociated to your wafrn profile</p
+  >
+  <p>Second, this still requires some action on your part!</p>
+  <p>Once you press the button, the associated wafrn bsky account will be DELETED</p>
+  <p>If you already pressed it and it was deleted, its ok no worries</p>
+  @if (!code) {
+    <button [disabled]="loading" (click)="loadInviteCode()" mat-flat-button class="w-full">
+      Delete bsky associated account and get invite code
+    </button>
+  } @else {
+    <p>Your invite code is</p>
+    <p
+      ><b>{{ code }}</b></p
+    >
+  }
+
+  <p>Ok now that you have the invite code, you need to MOOVE your bluesky account to our servers</p>
+  <p>To do it, visit <a target="_blank" href="https://pdsmoover.com">pdsmoover</a></p>
+  <p>provider: {{ environment().bskyPDSUrl }}</p>
+  <p>Fill the data bearing in mind that you need to replace the invite code and the provider</p>
+  <img src="/assets/img/pdsmoover.png" />
+  <p
+    >Once you are done with the MOOVE, you need to log in into bluesky, using the new PROVIDER, and create an
+    <b>APP PASSWORD</b> in settings</p
+  >
+  <p>Now that you have a secure app password that is random, you can fill your bluesky username and password here</p>
+
+  <form [hidden]="loading" class="px-3" [formGroup]="bskyForm" (ngSubmit)="linkBskyAccount()">
+    <mat-form-field class="w-full">
+      <mat-label>New name of account (@accountName.{{environment().bskyPDSUrl}})</mat-label>
+      <input formControlName="account" type="text" matInput />
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>App Password (NOT YOUR PASSWORD, A BLUESKY APP PASSWORD)</mat-label>
+      <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
+      <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+        <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
+      </button>
+      <mat-error> Password is required </mat-error>
+    </mat-form-field>
+    <button [disabled]="!bskyForm.valid" mat-flat-button color="primary" extended class="w-full border-round-md mt-4">
+      <span class="flex gap-2">Link account</span>
+    </button>
+  </form>
+  @if(loading) {
+    <app-loader>
+    </app-loader>
+  }
+</mat-card>

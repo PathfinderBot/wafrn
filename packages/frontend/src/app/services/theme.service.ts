@@ -3,9 +3,7 @@ import { LoginService } from './login.service'
 import { HttpClient } from '@angular/common/http'
 import { debounceTime, filter, firstValueFrom, fromEvent, merge } from 'rxjs'
 import { EnvironmentService } from './environment.service'
-import { toObservable } from '@angular/core/rxjs-interop'
 import { SettingListItem, SettingsService } from './settings.service'
-import { ActivatedRoute } from '@angular/router'
 
 // !! NOTE FOR ADDING THEMES !! //
 //
@@ -186,19 +184,20 @@ export class ThemeService {
   constructor(
     private loginService: LoginService,
     private http: HttpClient,
-    private settingService: SettingsService,
-    private activatedRoute: ActivatedRoute
+    private settingService: SettingsService
   ) {
-    // Setup when logging out, completing setting sync, and also run once (yay signals)
+    // Setup when logging out and completing setting sync
     // Also watches change from other tabs
     merge(
-      toObservable(loginService.loggedIn).pipe(filter((logged) => !logged)),
-      this.settingService.settingsLoadedFromLogin.asObservable(),
+      loginService.loggedIn,
       fromEvent(window, 'storage').pipe(
         filter((event) => ['theme', 'colorScheme'].includes((<StorageEvent>event).key ?? '')),
         debounceTime(200)
       )
     ).subscribe(() => this.setup())
+
+    // Also run once initially
+    this.setup()
 
     // Load and sync user custom CSS
     this.syncCustomCSS()
@@ -292,7 +291,7 @@ export class ThemeService {
 
   async syncCustomCSS() {
     const isOwnCSS = this.customCSS() === ''
-    if (isOwnCSS && this.loginService.loggedIn()) {
+    if (isOwnCSS && this.loginService.loggedIn.value) {
       this.customCSSLinkElement().href = this.getThemeUrl(this.loginService.getLoggedUserUUID())
       return
     }

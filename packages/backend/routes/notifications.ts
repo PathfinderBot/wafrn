@@ -210,7 +210,8 @@ function notificationRoutes(app: Application) {
       await Promise.all([users, posts, asks, tags, medias])
       const awaitedPostsIds = (await posts).map((post) => post.id)
       const notificationsFiltered = notifications.filter(
-        (elem) => elem.notificationType === 'FOLLOW' || (elem.postId && awaitedPostsIds.includes(elem.postId))
+        (elem) => elem.notificationType === 'FOLLOW' || elem.notificationType === 'USERBITE'
+          || (elem.postId && awaitedPostsIds.includes(elem.postId))
       )
 
       res.send({
@@ -488,6 +489,8 @@ async function getNotificationOptions(userId: string) {
   if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
     notificationTypes.push('EMOJIREACT')
     notificationTypes.push('LIKE')
+    notificationTypes.push('POSTBITE')
+    notificationTypes.push('USERBITE')
   }
   if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
     notificationTypes.push('FOLLOW')

@@ -7,7 +7,7 @@ import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSessi
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
   let user = userInput ? ((await User.scope('full').findByPk(userInput.id)) as User) : undefined
-  if (force && user) {
+  if (true && force && user) {
     await redisCache.del('bskySession:' + user.id)
   }
   if (!force && user && user.url == completeEnvironment.adminUser) {
@@ -30,7 +30,8 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
     logger.debug({
       message: `Obtaining session for ${user.url}`
     })
-    const existingSession = force ? null : await redisCache.get('bskySession:' + user.id)
+    // disabled cache here meanwhile for testing
+    const existingSession = force ? null : null // await redisCache.get('bskySession:' + user.id)
     let loggedIn = false
     if (existingSession) {
       loggedIn = (await agent.sessionManager.resumeSession(JSON.parse(existingSession))).success

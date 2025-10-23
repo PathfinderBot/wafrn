@@ -1,5 +1,5 @@
 import { Component, Signal, WritableSignal } from '@angular/core'
-import { AdditionalStyleMode, Theme, LightDarkMode, ThemeService } from '../services/theme.service'
+import { AdditionalStyleMode, Theme, LightDarkMode, ThemeService } from '../../services/theme.service'
 
 @Component({
   selector: 'app-theme-manager',

@@ -1,5 +1,5 @@
 import { Application, Request, Response } from 'express'
-import { User, Emoji, sequelize } from '../../models/index.js'
+import { User, Emoji, sequelize, Quotes, Post } from '../../models/index.js'
 import { getCheckFediverseSignatureFunction } from '../../utils/activitypub/checkFediverseSignature.js'
 import { return404 } from '../../utils/return404.js'
 import { Queue } from 'bullmq'
@@ -11,6 +11,8 @@ import { getFollowerRemoteIds } from '../../utils/cacheGetters/getFollowerRemote
 import { checkuserAllowsThreads } from '../../utils/checkUserAllowsThreads.js'
 import { userToJSONLD } from '../../utils/activitypub/userToJSONLD.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
+import { getPostUrlForQuote } from '../../utils/activitypub/postToJSONLD.js'
 
 // we get the user from the memory cache. if does not exist we try to find it
 async function getLocalUserByUrl(url: string): Promise<any> {
@@ -335,6 +337,49 @@ function activityPubRoutes(app: Application) {
       items: await getPostReplies(req.params?.id as string)
     })
   })
+
+  app.get(
+    '/fediverse/quote_request/:id',
+    getCheckFediverseSignatureFunction(true),
+    async (req: SignedRequest, res: Response) => {
+      const quote: any = await Quotes.findOne({
+        include: [
+          {
+            model: Post,
+            as: 'quotedPost'
+          },
+          {
+            model: Post,
+            as: 'quoterPost',
+            include: [
+              {
+                model: User,
+                as: 'user'
+              }
+            ]
+          }
+        ],
+        where: {
+          quoterPostId: req.params.id
+        }
+      })
+      if (quote) {
+        let objectToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+          ],
+          actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${quote.dataValues.quoterPost.dataValues.user.url}`,
+          id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${req.params.id}`,
+          type: 'QuoteRequest',
+          object: getPostUrlForQuote(quote.dataValues.quotedPost)
+        }
+        res.send(objectToSend)
+      } else {
+        res.sendStatus(404)
+      }
+    }
+  )
 
   app.get('/fediverse/accept/:id', (req: SignedRequest, res: Response) => {
     res.sendStatus(200)

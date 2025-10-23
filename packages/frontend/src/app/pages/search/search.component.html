@@ -1,3 +1,4 @@
+@let loggedIn = loginService.loggedIn.value;
 <div class="wafrn-container">
   <!-- SEARCH FORM -->
   <div class="pb-4 lg:px-4">
@@ -49,22 +50,21 @@
     </mat-card>
   </div>
 
-  <mat-card
-    *ngIf="currentSearch && loggedIn() && !loading()"
-    class="mb-6 overflow-hidden wafrn-container post-card blog-header"
-  >
-    <button
-      (click)="followUnfollowHashtag(currentSearch)"
-      mat-flat-button
-      color="primary"
-      extended
-      class="border-round-md search-button"
-    >
-      {{ postService.followedHashtags.includes(currentSearch.toLowerCase()) ? 'Unfollow' : 'Follow' }} #{{
-        currentSearch
-      }}
-    </button>
-  </mat-card>
+  @if (currentSearch && loggedIn && !loading()) {
+    <mat-card class="mb-6 overflow-hidden wafrn-container post-card blog-header">
+      <button
+        (click)="followUnfollowHashtag(currentSearch)"
+        mat-flat-button
+        color="primary"
+        extended
+        class="border-round-md search-button"
+      >
+        {{ postService.followedHashtags.includes(currentSearch.toLowerCase()) ? 'Unfollow' : 'Follow' }} #{{
+          currentSearch
+        }}
+      </button>
+    </mat-card>
+  }
 
   <mat-tab-group color="primary">
     @if (!loading() && posts().length > 0) {
@@ -90,10 +90,10 @@
                 class="block mx-auto my-2 border-round-md"
               />
               <div class="flex-grow-1 p-2">
-                @if (followedUsers.indexOf(user.id) === -1 && loggedIn()) {
+                @if (followedUsers.indexOf(user.id) === -1 && loggedIn) {
                   <button mat-raised-button color="primary" (click)="followUser(user.id)" class="mb-4">Follow</button>
                 }
-                @if (followedUsers.indexOf(user.id) !== -1 && loggedIn()) {
+                @if (followedUsers.indexOf(user.id) !== -1 && loggedIn) {
                   <button mat-raised-button color="primary" (click)="unfollowUser(user.id)">Unfollow</button>
                 }
                 <p>{{ user.name }}</p>

@@ -8,7 +8,7 @@ import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
-import { faAt, faCheck, faHeart, faQuoteLeft, faRepeat, faUser } from '@fortawesome/free-solid-svg-icons'
+import { faAt, faCheck, faCookieBite, faHeart, faQuoteLeft, faRepeat, faUser } from '@fortawesome/free-solid-svg-icons'
 
 @Component({
   selector: 'app-single-notification',
@@ -27,10 +27,12 @@ export class SingleNotificationComponent implements OnInit {
     ['FOLLOW']: faUser,
     ['REWOOT']: faRepeat,
     ['QUOTE']: faQuoteLeft,
-    ['EMOJIREACT']: faCheck
+    ['EMOJIREACT']: faCheck,
+    ['USERBITE']: faCookieBite,
+    ['POSTBITE']: faCookieBite,
   }
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     if (this.notification.emojiReact) {

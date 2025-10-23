@@ -57,34 +57,36 @@
         <app-poll [poll]="fragment().questionPoll!"></app-poll>
       </div>
     }
-    <section
-      #mediaEnd
-      [ngClass]="{ 'media-carousel': !forceOldMediaStyle && nonLinkMediaCount > 1 }"
-      class="flex flex-column gap-3 media-gallery"
-    >
-      @for (media of fragment().medias; track $index) {
-        @if (media.mediaType != 'text/html') {
-          @if (!seenMedia.includes($index)) {
-            <app-wafrn-media
-              [ngClass]="{
-                'carousel-media': !forceOldMediaStyle && nonLinkMediaCount > 1
-              }"
-              [data]="media"
-              [filteredWords]="fragment().muted_words_cw"
-            ></app-wafrn-media>
+    @if (fragment().medias.length > 0) {
+      <section
+        #mediaEnd
+        [ngClass]="{ 'media-carousel': !forceOldMediaStyle && nonLinkMediaCount > 1 }"
+        class="flex flex-column gap-3 media-gallery"
+      >
+        @for (media of fragment().medias; track $index) {
+          @if (media.mediaType != 'text/html') {
+            @if (!seenMedia.includes($index)) {
+              <app-wafrn-media
+                [ngClass]="{
+                  'carousel-media': !forceOldMediaStyle && nonLinkMediaCount > 1
+                }"
+                [data]="media"
+                [filteredWords]="fragment().muted_words_cw"
+              ></app-wafrn-media>
+            }
           }
         }
-      }
-    </section>
-    <section #mediaEnd class="flex flex-column gap-3">
-      @for (media of fragment().medias; track $index) {
-        @if (media.mediaType == 'text/html') {
-          @if (!seenMedia.includes($index)) {
-            <app-wafrn-media [data]="media"></app-wafrn-media>
+      </section>
+      <section #mediaEnd class="flex flex-column gap-3">
+        @for (media of fragment().medias; track $index) {
+          @if (media.mediaType == 'text/html') {
+            @if (!seenMedia.includes($index)) {
+              <app-wafrn-media [data]="media"></app-wafrn-media>
+            }
           }
         }
-      }
-    </section>
+      </section>
+    }
     @if (fragment().tags && fragment().tags.length) {
       <div class="tag-list">
         @for (tag of fragment().tags; track $index) {
@@ -97,22 +99,11 @@
     @for (quote of fragment().quotes; track $index) {
       <!-- We use routerlink instead of the data because quoted posts are incomplete in the frontend!-->
       @if (quote) {
-        <div
-          [routerLink]="'/fediverse/post/' + quote.id"
-          class="quoted-post cursor-pointer"
-          [ngClass]="{ 'quote-collapsed': !expandQuotes }"
-        >
+        <div class="quoted-post" [ngClass]="{ 'quote-collapsed': !expandQuotes }">
           <div class="flex">
-            <app-post-header
-              class="w-full"
-              [fragment]="quote"
-              [simplified]="true"
-              [disableLink]="true"
-            ></app-post-header>
+            <app-post-header class="w-full" [fragment]="quote" [simplified]="true"></app-post-header>
           </div>
-          <div class="cursor-pointer">
-            <app-post-fragment [fragment]="quote"></app-post-fragment>
-          </div>
+          <app-post-fragment [fragment]="quote" fragmentType="quote"></app-post-fragment>
         </div>
       }
     }
@@ -125,11 +116,9 @@
           -->
           <div [matTooltip]="emoji.tooltip">
             <button
-              [disabled]="userCannotReact()"
-              [ngClass]="{
-                reacted: emoji.includesMe
-              }"
-              (click)="toggleEmojiReact(emoji)"
+              [disabled]="userCannotReact() || fragmentType() === 'quote'"
+              [class.reacted]="emoji.includesMe"
+              (click)="toggleEmojiReact(emoji, $event)"
               mat-raised-button
               matTooltipTouchGestures="on"
               class="emojireact-button"
@@ -159,7 +148,7 @@
           </div>
         }
       }
-      @if (!(userId === '' || userId === fragment().userId)) {
+      @if (!(userId === '' || userId === fragment().userId) && fragmentType() !== 'quote') {
         <app-emoji-react [postId]="fragment().id"></app-emoji-react>
       }
     </section>

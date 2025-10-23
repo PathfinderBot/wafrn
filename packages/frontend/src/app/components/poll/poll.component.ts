@@ -15,15 +15,12 @@ export class PollComponent implements OnInit {
   total = 0
   openPoll = false
   form = new UntypedFormGroup({})
-  loggedIn: Signal<boolean>
   alreadyVoted = true
 
   constructor(
-    loginService: LoginService,
+    protected loginService: LoginService,
     private postsService: PostsService
-  ) {
-    this.loggedIn = loginService.loggedIn
-  }
+  ) {}
 
   ngOnInit(): void {
     this.openPoll = new Date().getTime() < this.poll().endDate.getTime()
@@ -38,7 +35,7 @@ export class PollComponent implements OnInit {
           new FormControl(
             {
               value: question.questionPollAnswers.length > 0,
-              disabled: this.alreadyVoted || !this.loggedIn() || !this.openPoll
+              disabled: this.alreadyVoted || !this.loginService.loggedIn.value || !this.openPoll
             },
             Validators.required
           )
@@ -52,7 +49,7 @@ export class PollComponent implements OnInit {
         new FormControl(
           {
             value: existingReply ? existingReply.id : '',
-            disabled: this.alreadyVoted || !this.loggedIn() || !this.openPoll
+            disabled: this.alreadyVoted || !this.loginService.loggedIn.value || !this.openPoll
           },
           Validators.required
         )

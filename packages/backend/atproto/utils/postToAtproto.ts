@@ -1,4 +1,3 @@
-import { Model } from 'sequelize'
 import { BskyAgent, RichText } from '@atproto/api'
 import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
 import fs from 'fs/promises'
@@ -124,19 +123,54 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
   }
 
-  postText = removeMarkdown(postText)
-  const builder = new RichtextBuilder()
-  tokenize(postText).forEach((token) => {
-    if (token.type === 'link') builder.addLink(token.text, token.url)
-    else builder.addText(token.raw)
-  })
-  postText = builder.text
-
   const medias = await Media.findAll({
     where: {
       postId: post.id
     }
   })
+
+  let postShortened = false
+  postText = removeMarkdown(postText)
+
+  const builder = new RichtextBuilder()
+  const encoder = new TextEncoder()
+
+  const postMax = 300
+  // A bit more to account for unicode and such
+  const shortenerWithMediaLength = 31
+  const textOnlyShortenerLength = 15
+
+  const tokens = tokenize(postText)
+  for (const token of tokens) {
+    let text = builder.text
+    if (token.type === 'link') text += token.text
+    else text += token.raw
+
+    const length = encoder.encode(text).byteLength
+    if (length > postMax && medias.length && medias.length <= 4) {
+      const lengthLeft = postMax - builder.text.length - shortenerWithMediaLength
+      if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
+      else builder.addText(token.raw.slice(0, lengthLeft))
+
+      builder.addText('... ')
+      builder.addLink('see complete post', `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`)
+
+      postShortened = true
+      break
+    } else if (length > postMax) {
+      const lengthLeft = postMax - builder.text.length - textOnlyShortenerLength
+      if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
+      else builder.addText(token.raw.slice(0, lengthLeft))
+
+      builder.addText('[...]')
+      postShortened = true
+      break
+    }
+
+    if (token.type === 'link') builder.addLink(token.text, token.url)
+    else builder.addText(token.raw)
+  }
+  postText = builder.text
 
   if (contentWarning != '' || medias.some((media) => media.NSFW)) {
     labels = {
@@ -145,26 +179,12 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
   }
 
-  const tmpRichText = new RichText({ text: postText })
-  let postShortened: boolean = false
-  if (tmpRichText.length > 300 || medias.length > 4) {
-    postText =
-      // Slice a bit more to account for unicode and such
-      postText.slice(0, 290) + '[...]'
-    postShortened = true
-  }
-
   const rt = new RichText({
     text: postText
   })
   await rt.detectFacets(agent)
 
-  const encoder = new TextEncoder()
-  const byteSliceLength = encoder.encode(postText.slice(0, 150)).byteLength
   builder.facets.forEach((facet) => {
-    // Do not add facets representing links that were removed
-    if (postShortened && facet.index.byteEnd > byteSliceLength) return
-
     if (rt.facets) rt.facets.push(facet as unknown as Main)
     else rt.facets = [facet as unknown as Main]
   })
@@ -179,72 +199,73 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`
   }
 
-  if (postShortened) {
+  const bskyMediaPromises = medias.map(async (media) => {
+    let file = await fs.readFile('uploads/' + media.url)
+    const isVideo = media.mediaType?.startsWith('video/')
+
+    if (!isVideo) {
+      // yeah, 1 millon bytes is officially the limit:
+      // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
+      if (file.length > 1000000) {
+        // well this image is TOO BIG. time to convert it
+        await optimizeMedia('uploads/' + media.url, {
+          outPath: 'uploads/' + media.id + '_bsky',
+          // bluesky CDN resizes images to 2000 on the long end, try that first
+          maxSize: 2000,
+          keep: true
+        })
+        file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
+      }
+
+      if (file.length > 1000000) {
+        // still too big?! okay well let's crunch it
+        await optimizeMedia('uploads/' + media.url, {
+          outPath: 'uploads/' + media.id + '_bsky',
+          maxSize: 768,
+          keep: true
+        })
+        file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
+      }
+    }
+
+    const { data } = await agent.uploadBlob(Buffer.from(file), { encoding: media.mediaType || undefined })
+    return { media, blob: data.blob }
+  })
+
+  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4) {
+    const bskyMedias = await Promise.all(bskyMediaPromises)
+    const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
+
+    if (video) {
+      res.embed = {
+        $type: 'app.bsky.embed.video',
+        video: video.blob,
+        alt: video.media.description ? video.media.description : '',
+        labels,
+        aspectRatio: await getVideoAspectRatio('uploads/' + video.media.url)
+      }
+    } else {
+      res.embed = {
+        $type: 'app.bsky.embed.images',
+        images: bskyMedias.map((m) => ({
+          labels,
+          image: m.blob,
+          alt: m.media.description ? m.media.description : '',
+          aspectRatio: {
+            width: m.media.width,
+            height: m.media.height
+          }
+        }))
+      }
+    }
+    // Shortening when media is present is handled earlier
+  } else if (postShortened || bskyMediaPromises.length > 4) {
     res.embed = {
       $type: 'app.bsky.embed.external',
       external: {
         uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
         title: `See complete post at ${completeEnvironment.instanceUrl}`,
         description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`
-      }
-    }
-  } else {
-    const bskyMediaPromises = medias.map(async (media) => {
-      let file = await fs.readFile('uploads/' + media.url)
-      const isVideo = media.mediaType?.startsWith('video/')
-
-      if (!isVideo) {
-        // yeah, 1 millon bytes is officially the limit:
-        // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
-        if (file.length > 1000000) {
-          // well this image is TOO BIG. time to convert it
-          await optimizeMedia('uploads/' + media.url, {
-            outPath: 'uploads/' + media.id + '_bsky',
-            // bluesky CDN resizes images to 2000 on the long end, try that first
-            maxSize: 2000,
-            keep: true
-          })
-          file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
-        }
-        if (file.length > 1000000) {
-          // still too big?! okay well let's crunch it
-          await optimizeMedia('uploads/' + media.url, {
-            outPath: 'uploads/' + media.id + '_bsky',
-            maxSize: 768,
-            keep: true
-          })
-          file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
-        }
-      }
-
-      const { data } = await agent.uploadBlob(Buffer.from(file), { encoding: media.mediaType || undefined })
-      return { media, blob: data.blob }
-    })
-
-    if (bskyMediaPromises.length) {
-      const bskyMedias = await Promise.all(bskyMediaPromises)
-      const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
-      if (video) {
-        res.embed = {
-          $type: 'app.bsky.embed.video',
-          video: video.blob,
-          alt: video.media.description ? video.media.description : '',
-          labels,
-          aspectRatio: await getVideoAspectRatio('uploads/' + video.media.url)
-        }
-      } else {
-        res.embed = {
-          $type: 'app.bsky.embed.images',
-          images: bskyMedias.map((m) => ({
-            labels,
-            image: m.blob,
-            alt: m.media.description ? m.media.description : '',
-            aspectRatio: {
-              width: m.media.width,
-              height: m.media.height
-            }
-          }))
-        }
       }
     }
   }

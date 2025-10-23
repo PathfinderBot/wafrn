@@ -191,7 +191,15 @@ app-media-preview {
   margin-bottom: 0.25rem;
 }
 
+.user-info-button {
+  --mat-button-text-horizontal-padding: 8px;
+  --mat-button-text-container-height: auto;
+  margin: calc(var(--mat-button-text-horizontal-padding) * -1);
+  padding-block: 4px;
+}
+
 .user-info {
+  color: var(--mat-sys-on-surface);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -218,6 +226,10 @@ app-media-preview {
   ::ng-deep img {
     vertical-align: top;
   }
+}
+
+.icon-dropdown {
+  color: var(--mat-sys-outline);
 }
 
 .woot-tagfield {

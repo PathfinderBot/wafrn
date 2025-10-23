@@ -7,8 +7,8 @@
     <a
       [matMenuTriggerFor]="item.items ? menu : null"
       [routerLink]="parsedLink()"
-      [matBadge]="item.badge"
-      [matBadgeHidden]="item.badge === 0"
+      [matBadge]="item.badge && item.badge()"
+      [matBadgeHidden]="item.badge && item.badge() === 0"
       matBadgePosition="above after"
       mat-button
       class="mat-circle-button"
@@ -38,8 +38,8 @@
       [matMenuTriggerRestoreFocus]="false"
       #menuTrigger="matMenuTrigger"
       [routerLink]="parsedLink()"
-      [matBadge]="item.badge"
-      [matBadgeHidden]="item.badge === 0"
+      [matBadge]="item.badge && item.badge()"
+      [matBadgeHidden]="item.badge && item.badge() === 0"
       matBadgePosition="above after"
       mat-list-item
       (click)="doCommand()"

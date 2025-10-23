@@ -3,14 +3,14 @@
   [id]="'post-element-' + uniquePost().id"
   class="wafrn-container post-card"
   [class.active]="active()"
-  [ngClass]="{ 'top-bar': post.length > 1 }"
+  [ngClass]="{ 'top-bar': post.length > 1, 'post-card-ios': iOSSafari }"
 >
   @if (post.length > 1) {
     <app-post-ribbon
-      [user]="post[this.post().length - 1].user"
+      [user]="post[post.length - 1].user"
       [icon]="headerText() === 'replied' ? replyIcon : reblogIcon"
       [card]="false"
-      [time]="post[this.post().length - 1].createdAt"
+      [time]="post[post.length - 1].createdAt"
     >
       <a class="user-link user-name" [blogLink]="uniquePost().user" [innerHTML]="uniquePost().user.name"></a>
       <span class="text-sm post-action"> {{ headerText() }}</span>

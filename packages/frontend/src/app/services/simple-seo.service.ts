@@ -1,19 +1,15 @@
 import { Injectable } from '@angular/core'
-import { Meta, MetaDefinition, Title } from '@angular/platform-browser'
+import { Meta, MetaDefinition } from '@angular/platform-browser'
 import { EnvironmentService } from './environment.service'
 
 @Injectable({
   providedIn: 'root'
 })
 export class SimpleSeoService {
-  constructor(
-    private titleService: Title,
-    private metaTagService: Meta
-  ) {}
+  constructor(private metaTagService: Meta) {}
 
   setSEOTags(title: string, description: string, author: string, image: string): void {
     const sanitizedDescription = description
-    this.titleService.setTitle(title)
     const tags: MetaDefinition[] = [
       { name: 'description', content: sanitizedDescription },
       { name: 'author', content: author },

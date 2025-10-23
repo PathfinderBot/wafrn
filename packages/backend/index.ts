@@ -29,6 +29,7 @@ import followsRoutes from './routes/follows.js'
 import forumRoutes from './routes/forum.js'
 import { frontend } from './routes/frontend.js'
 import likeRoutes from './routes/like.js'
+import biteRoutes from './routes/bite.js'
 import listRoutes from './routes/lists.js'
 import mediaRoutes from './routes/media.js'
 import muteRoutes from './routes/mute.js'
@@ -47,7 +48,7 @@ import { readFile } from 'fs/promises'
 import { Worker } from 'bullmq'
 import expressWs from 'express-ws'
 import websocketRoutes from './routes/websocket.js'
-import followHashtagRoutes from './routes/followHashtags.js'
+import { followHashtagRoutes } from './routes/followHashtags.js'
 import { completeEnvironment } from './utils/backendOptions.js'
 import cron from 'node-cron'
 import { nukeBannedUsers } from './utils/maintenanceTasks/nukeBannedUsers.js'
@@ -118,6 +119,7 @@ if (completeEnvironment.cachePort == completeEnvironment.port) {
   cacheRoutes(app)
 }
 likeRoutes(app)
+biteRoutes(app)
 emojiReactRoutes(app)
 adminRoutes(app)
 muteRoutes(app)

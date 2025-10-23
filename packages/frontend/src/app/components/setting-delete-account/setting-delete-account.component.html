@@ -6,13 +6,16 @@
   <p class="mb-1 setting-description">{{ 'profile.delete.psa2' | translate }}</p>
   <mat-form-field class="block mb-3 w-full mat-form-field-no-padding" appearance="outline">
     <mat-label>{{ 'login.password' | translate }}</mat-label>
-    <input (change)="handleInput($event)" type="password" name="password" matInput />
+    <input (input)="handleInput($event)" type="password" name="password" matInput />
   </mat-form-field>
-  <div>
-    <button mat-flat-button class="request-delete-button" (click)="requestDeleteAccount()">
+  <div class="flex gap-3 align-items-center">
+    <button mat-flat-button class="request-delete-button" [disabled]="loading()" (click)="requestDeleteAccount()">
       <fa-icon [icon]="warnIcon" [fixedWidth]="true"></fa-icon>
       {{ 'profile.delete.button' | translate }}
       <fa-icon [icon]="warnIcon" [fixedWidth]="true"></fa-icon>
     </button>
+    @if (loading()) {
+      <mat-spinner diameter="24"></mat-spinner>
+    }
   </div>
 </mat-expansion-panel>

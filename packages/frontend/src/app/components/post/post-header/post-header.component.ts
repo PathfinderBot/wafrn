@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnChanges, Signal, SimpleChanges, input } from '@angular/core'
+import { Component, OnChanges, input } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { RouterModule } from '@angular/router'
@@ -58,7 +58,6 @@ export class PostHeaderComponent implements OnChanges {
   readonly simplified = input<boolean>(true)
   readonly disableLink = input<boolean>(false)
   readonly headerText = input<string>('')
-  loggedIn: Signal<boolean>
 
   // table for the icons. ATTENTION, PRIVACY 10 IS SET ON CONSTRUCTOR
   privacyOptions = [
@@ -93,12 +92,11 @@ export class PostHeaderComponent implements OnChanges {
     public postService: PostsService,
     private messages: MessageService,
     private simpleDialog: SimpleDialogService,
-    loginService: LoginService
+    protected loginService: LoginService
   ) {
     // its an array
     this.privacyOptions[10] = { level: 10, name: 'Direct Message', icon: faEnvelope }
     this.privacyOptions[20] = { level: 20, name: 'Link only', icon: faNewspaper }
-    this.loggedIn = loginService.loggedIn
   }
   ngOnChanges(): void {
     const relative = DateTime.fromJSDate(this.fragment().createdAt).setLocale('en').toRelative()

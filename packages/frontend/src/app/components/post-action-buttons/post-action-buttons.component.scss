@@ -1,0 +1,38 @@
+.menu-toggle-hidden {
+  visibility: hidden;
+  position: absolute;
+  inset: 0;
+  // evil method to break out of mat-button's relative
+  margin-inline: calc(-1 * var(--mat-button-text-horizontal-padding, 12px));
+  margin-block: calc(-1 / 2 * ((var(--mat-button-text-container-height, 40px) - 24px)));
+}
+
+.user-info {
+  color: var(--mat-sys-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-avatar {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  img {
+    background-color: var(--mat-sys-surface-container-highest);
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.user-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  ::ng-deep img {
+    vertical-align: top;
+  }
+}

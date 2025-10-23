@@ -2,7 +2,8 @@
   "common": {
     "commaSeparation": "Separated with commas",
     "characters": "characters",
-    "default": "Default"
+    "default": "Default",
+    "commit": "commit"
   },
   "login": {
     "title": "Log in",
@@ -69,6 +70,7 @@
     "switchToAlt": "Switch to account",
     "faq": "FAQ",
     "more": "More",
+    "silencedPosts": "Silenced Woots",
     "settings": {
       "title": "Settings",
       "follows": "Manage followers",
@@ -76,8 +78,8 @@
       "editProfile": "Preferences and Profile",
       "themeEditor": "Theme editor",
       "mutedUsers": "Muted users",
-      "mutedPosts": "Muted posts",
-      "bookmarkedPosts": "Bookmarked posts",
+      "mutedPosts": "Muted woots",
+      "bookmarkedPosts": "Bookmarked woots",
       "followedHashtags": "Followed hashtags",
       "myBlockedUsers": "Blocked users",
       "myBlockedServers": "Blocked servers",
@@ -110,7 +112,7 @@
     "quoteButton": "Quote a woot",
     "publishWoot": "Publish this woot",
     "directMessageWarning": "Admins of both your server and the external server can read these messages.",
-    "unlistedWarning": "Unlisted posts will get ignored by searches (TAGS INCLUDED), and will not show on explore local, but they will be shown to your followers. And if someone sends a link they will be visible, unlike followers only. Basically, for when you want to post a lot but dont want to fill explore local.",
+    "unlistedWarning": "Unlisted woots will get ignored by searches (TAGS INCLUDED), and will not show on explore local, but they will be shown to your followers. And if someone sends a link they will be visible, unlike followers only. Basically, for when you want to woot a lot but dont want to fill explore local.",
     "directMessageWithQuoteWarning": "Quoted user will be notified of this as a mention too",
     "sensitivePlaceholder": "What is sensitive about this woot?",
     "wootQuoteBoxLabel": "Paste the URL of a woot to quote it. Can be the external url or the wafrn url",
@@ -138,8 +140,12 @@
     "insertEmojiTooltip": "Insert emoji",
     "hiddenMentionsTooltip": "Other mentioned users",
     "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">the guide</a>",
-    "usernameLabel": "Posting as",
+    "usernameLabel": "Wooting as",
     "noResults": "No results."
+  },
+  "blog": {
+    "tabWoots": "Woots",
+    "tabMedia": "Media"
   },
   "profile": {
     "profile": {
@@ -181,7 +187,7 @@
       "forceClassicAudioPlayer": "Force classic audio player",
       "forceClassicMediaView": "Force classic media carousel (vertical)",
       "dontCollapseQuotes": "Do not collapse quotes",
-      "disableCwExceptMuted": "Disable CW unless post contains muted words",
+      "disableCwExceptMuted": "Disable CW unless woot contains muted words",
       "disableConfetti": "Disable confetti effects when performing some actions",
       "enableConfettiRecivingLike": "Enable confetti when you receive a like",
       "disableUiSounds": "Disable sound effects when performing some actions",
@@ -190,16 +196,16 @@
       "customCocAIne": "Custom word for AI replacement",
       "notRecommendedOptions": "Not recommended options",
       "disableNSFWFilter": "Disable NSFW images filter",
-      "automaticallyExpandAllPosts": "Automatically expand all posts",
-      "displayMentionsOfBlockedUsersFromOtherUsers": "Do not hide posts containing mentions to blocked users",
+      "automaticallyExpandAllPosts": "Automatically expand all woots",
+      "displayMentionsOfBlockedUsersFromOtherUsers": "Do not hide woots containing mentions to blocked users",
       "hideNoDescriptionMedia": "Automatically CW media with no alt text"
     },
     "privacy": {
-      "defaultPostPrivacy": "Default post privacy",
+      "defaultPostPrivacy": "Default woot privacy",
       "asks": "Asks",
       "disableEmailNotifications": "Disable email notifications",
       "hideFollows": "Hide my follows and followers",
-      "hideProfileNotLoggedInDescription": "Hide profile to not logged in users and search (this will only apply to your profile IN this wafrn, not to\nyour posts nor other fedi instances or bluesky)",
+      "hideProfileNotLoggedInDescription": "Hide profile to not logged in users and search (this will only apply to your profile IN this wafrn, not to\nyour woots nor other fedi instances or bluesky)",
       "rssOptions": "Enable RSS and microfront for my blog page"
     },
     "security": {
@@ -232,8 +238,8 @@
     },
     "other": {
       "movingFromAccount": "'Moving from a different account (without the @)'",
-      "wordsThatWillAutoCwPosts": "Words that will add cw to post",
-      "superMutedWords": "Phrases that will not show a post with them (BE CAREFUL WITH THESE)",
+      "wordsThatWillAutoCwPosts": "Words that will add cw to woot",
+      "superMutedWords": "Phrases that will not show a woot with them (BE CAREFUL WITH THESE)",
       "availableEmoji": "Available emojis",
       "rollToCrash": "Roll a dice to crash your browser",
       "rollSurvived": "Survived!",
@@ -341,11 +347,11 @@
       "dashboard": "Dashboard",
       "exploreLocal": "Explore Local"
     },
-    "automaticallyExpandPosts": "Automatically expand all posts",
+    "automaticallyExpandPosts": "Automatically expand all woots",
     "expandQuotes": "Do not collapse quotes",
     "atprotoLinkDestination": "Atproto link destination",
-    "atprotoLinkDestinationDescription": "Atproto site to view posts externally. Default is 'bsky.app'.",
-    "disableCW": "Disable CW unless post contains muted words",
+    "atprotoLinkDestinationDescription": "Atproto site to view woots externally. Default is 'bsky.app'.",
+    "disableCW": "Disable CW unless woot contains muted words",
     "disableNSFWFilter": "Disable NSFW images filter",
     "hideNoDescriptionMedia": "Automatically CW media with no alt text",
     "disableForceAltText": "Allow uploading media without alt text",
@@ -354,45 +360,50 @@
     "enableAsks": "Enable asks",
     "enableAnonymousAsks": "Enable anonymous asks",
     "hideProfileNotLoggedIn": "Hide profile to users who are not logged in",
-    "hideProfileNotLoggedInDescription": "Only applies to your profile in this wafrn, not to your posts nor other fedi instances or bluesky.",
+    "hideProfileNotLoggedInDescription": "Only applies to your profile in this wafrn, not to your woots nor other fedi instances or bluesky.",
     "hideFollows": "Hide my follows and followers",
-    "displayMentionsOfBlockedUsersFromOtherUsers": "Show posts containing mentions to blocked users",
-    "defaultPostEditorPrivacy": "Default Post Editor Privacy",
+    "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
+    "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
       "instanceOnly": "Instance Only",
       "unlisted": "Unlisted"
     },
+    "disableRewootsExploreLocal": "Disable rewoots in Explore local feed",
     "mutedWords": "Muted words",
-    "mutedWordsDescription": "One word per line. Posts with these phrases will be placed behind a CW.",
+    "mutedWordsDescription": "One word per line. Woots with these phrases will be placed behind a CW.",
     "superMutedWords": "Blocked words",
-    "superMutedWordsDescription": "One word per line. Posts with these phrases will be entierely hidden.",
+    "superMutedWordsDescription": "One word per line. Woots with these phrases will be entierely hidden.",
     "hideQuotes": "Hide Quotes",
     "hideQuotesOptions": {
-      "cwDisabledQuotesUsers": "CW quote posts from users you disabled quotes for",
-      "cwUnfollowedOrDisabledQuotesUsers": "CW quote posts from anyone you don't follow",
-      "hidePostsDisabledQuotesUsers": "Block quote posts from users you don't follow"
+      "cwDisabledQuotesUsers": "CW quote woots from users you disabled quotes for",
+      "cwUnfollowedOrDisabledQuotesUsers": "CW quote woots from anyone you don't follow",
+      "hidePostsDisabledQuotesUsers": "Block quote woots from users you don't follow"
     },
     "replaceAIWithCocaine": "Replace AI with a custom word",
     "replaceAIWord": "Word to replace AI with",
-    "postReplyBarOrder": "Post reply bar icon order",
-    "postReplyBarOrderDescription": "Some items are shown depending on you are the poster",
-    "postReplyBarOrderOptions": {
-      "quote": "Quote",
-      "rewoot": "Rewoot",
-      "reply": "Reply",
-      "bookmark": "Bookmark",
-      "like": "Like",
-      "edit": "Edit",
-      "delete": "Delete"
-    },
-    "postActionsButtonBarOrder": "Post actions menu button icon order",
-    "postActionsButtonBarOrderDescription": "Items show in the post actions menu. Some items are shown depending on you are the poster."
+    "postReplyBarOrder": "Woot reply bar icon order",
+    "postReplyBarOrderDescription": "Some items are shown depending on whether you are the wooter",
+    "postActionsButtonBarOrder": "Woot actions menu button icon order",
+    "postActionsButtonBarOrderDescription": "Items show in the woot actions menu. Some items are shown depending on whether you are the wooter.",
+    "confettiOptions": "Confetti",
+    "confettiMultiplier": "Confetti multiplier",
+    "confettiMultiplierDescription": "Multiplies confetti amount. High amounts can freeze your browser!",
+    "flatConfetti": "Flat confetti",
+    "flatConfettiDescription": "Disables the 3D effect of confetti.",
+    "confettiTestAreaDescription": "Test confetti of various interactions:",
+    "confettiType": "Interaction type",
+    "confettiTestLocational": "Under Mouse",
+    "confettiTestGeneric": "Screen sides"
   },
   "dialog": {
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "bluesky": {
+      "generateInviteCodeWarningTitle": "Attention",
+      "generateInviteCodeWarning": "Generating an invite code will delete IRREVERSIBLY any associated bsky account"
+    },
     "admin": {
       "requireExtraStepsTitle": "Require extra steps from user",
       "requireExtraStepsDescription": "User will be sent an email with additional steps.",
@@ -405,20 +416,29 @@
       "confirmBanContentBluesky": "Bluesky user will be permanently banned.",
       "confirmBanContentFedi": "User will be permanently banned for reason:",
       "confirmNSFWTitle": "Confirm muting",
-      "confirmNSFWContent": "All posts by this user will be content warned.",
+      "confirmNSFWContent": "All woots by this user will be content warned.",
       "confirmIgnoreTitle": "Confirm ignoring report of",
-      "confirmIgnoreContent": "Post was reported for reason:"
+      "confirmIgnoreContent": "Woot was reported for reason:",
+      "confirmUnbanTitle": "Confirm unbanning",
+      "confirmUnbanContent": "We do not yet store ban information but it will be here eventually:",
+      "confirmReopenTitle": "Confirm reopening report"
     },
     "post-header": {
       "followTitle": "Follow user",
-      "silenceInteractionsTitle": "Silence post",
-      "silenceInteractionsDescription": "Silence notifications from likes, rewoots, and reacts of this post.",
-      "silenceReplyTitle": "Silence post and replies",
-      "silenceReplyDescription": "Silence notifications from likes, rewoots, reacts, and replies of this post.",
+      "silenceInteractionsTitle": "Silence woot",
+      "silenceInteractionsDescription": "Silence notifications from likes, rewoots, and reacts of this woot.",
+      "silenceReplyTitle": "Silence woot and replies",
+      "silenceReplyDescription": "Silence notifications from likes, rewoots, reacts, and replies of this woot.",
       "muteAccountTitle": "Mute account",
-      "muteAccountDescription": "Hide posts and replies by this user. They will still be able to interact with your posts.",
+      "muteAccountDescription": "Hide woots and replies by this user. They will still be able to interact with your woots.",
       "blockAccountTitle": "Block account",
-      "blockAccountDescription": "Hide posts and replies by this user or posts and replies mentioning this user. They will not be able to interact with your posts."
+      "muteAccountLabel": "Reason (optional)",
+      "unmuteAccountTitle": "Unmute account",
+      "unmuteAccountDescription": "Woots and replies by this user will be shown again.",
+      "blockAccountDescription": "Hide woots and replies by this user or woots and replies mentioning this user. They will not be able to interact with your woots.",
+      "blockAccountLabel": "Reason (optional)",
+      "unblockAccountTitle": "Unblock account",
+      "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots."
     },
     "blog": {
       "customThemeTitle": "Custom Styles",
@@ -431,7 +451,7 @@
     },
     "report": {
       "reportUserTitle": "Report User",
-      "reportPostTitle": "Report Post",
+      "reportPostTitle": "Report Woot",
       "reportTypeLabel": "Report Type",
       "reportTypeOptions": {
         "spam": "Spam"
@@ -466,9 +486,11 @@
     "unmuteUserSuccess": "You unmuted this user.",
     "blockServerSuccess": "You blocked this server.",
     "reportUserSuccess": "The user was successfully reported.",
-    "reportPostSuccess": "The post was successfully reported.",
+    "reportPostSuccess": "The woot was successfully reported.",
     "genericError": "Something went wrong! Check your internet connectivity and try again.",
-    "notRewootableError": "The woot was not rebloggeable as requested by the user."
+    "notRewootableError": "The woot was not rewootable as requested by the user.",
+    "bitePostSuccess": "You successfully bit this woot.",
+    "biteUserSuccess": "You successfully bit this user!"
   },
   "keyboard-shortcuts": {
     "keyboardShortcuts": "Keyboard Shortcuts",
@@ -477,13 +499,13 @@
     "scrollUp": "Scroll up",
     "scrollDownPage": "Scroll a page down",
     "scrollUpPage": "Scroll a page up",
-    "nextPost": "Next post",
-    "previousPost": "Previous post",
-    "groupPostAction": "Post Actions",
-    "likePost": "Like post",
-    "rewootPost": "Rewoot post",
-    "replyPost": "Reply to post",
-    "quotePost": "Quote post",
+    "nextPost": "Next woot",
+    "previousPost": "Previous woot",
+    "groupPostAction": "Woot Actions",
+    "likePost": "Like woot",
+    "rewootPost": "Rewoot woot",
+    "replyPost": "Reply to woot",
+    "quotePost": "Quote woot",
     "groupMisc": "Miscellaneous",
     "openEditor": "Open editor",
     "viewKeyboardShortcuts": "View keyboard shortcuts",
@@ -495,34 +517,39 @@
     "shareUrl": "Copy link",
     "shareExternalUrl": "Copy remote link",
     "viewOnAtproto": "View on Atproto",
-    "forceRefederate": "Force refederate post",
-    "viewOriginalPost": "View original post",
-    "replyPost": "Reply to post",
-    "rewootPost": "Rewoot post",
+    "forceRefederate": "Force refederate woot",
+    "viewOriginalPost": "View original woot",
+    "replyPost": "Reply to woot",
+    "rewootPost": "Rewoot woot",
     "deleteRewootPost": "Delete rewoot",
-    "quotePost": "Quote post",
-    "bookmarkPost": "Bookmark post",
-    "unbookmarkPost": "Unbookmark post",
-    "likePost": "Like post",
-    "dislikePost": "Dislike post",
-    "reportPost": "Report post",
-    "editPost": "Edit post",
-    "deletePost": "Delete post",
-    "silenceInteractions": "Silence post",
-    "silenceReplyNotifications": "Silence post and replies",
-    "unsilenceReplyNotifications": "Unsilence post",
+    "quotePost": "Quote woot",
+    "bookmarkPost": "Bookmark woot",
+    "unbookmarkPost": "Unbookmark woot",
+    "likePost": "Like woot",
+    "dislikePost": "Remove woot",
+    "reportPost": "Report woot",
+    "editPost": "Edit woot",
+    "deletePost": "Delete woot",
+    "silenceInteractions": "Silence woot",
+    "silenceReplyNotifications": "Silence woot and replies",
+    "unsilenceReplyNotifications": "Unsilence woot",
     "muteUser": "Mute user",
     "unmuteUser": "Unmute user",
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
-    "reportUser": "Report user"
+    "reportUser": "Report user",
+    "bitePost": "Bite post",
+    "biteUser": "Bite user"
   },
   "post-header": {
     "follow": "Follow",
-    "awaitingApproval": "Awaiting approval"
+    "awaitingApproval": "Awaiting approval",
+    "viewPost": "View woot"
   },
   "post-fragment": {
-    "mutedWords": "Post contains muted words:",
+    "mutedWords": "Woot contains muted words:",
+    "mediaContentWarning": "Woot has content warning:",
+    "mediaNsfw": "Media is NSFW",
     "replyingTo": "mentions: "
   },
   "media": {
@@ -540,6 +567,12 @@
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
       "userUsedVPN": "User used VPN"
+    },
+    "reportList": {
+      "ignoreReport": "Ignore report",
+      "forceNSFW": "Mark user as NSFW",
+      "banUser": "Ban user",
+      "reopenReport": "Reopen report"
     }
   },
   "page-not-found": {

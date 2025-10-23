@@ -5,7 +5,15 @@
 import { Application, Response } from 'express'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { FederatedHost, Post, PostMentionsUserRelation, PostTag, sequelize, User } from '../models/index.js'
+import {
+  FederatedHost,
+  Post,
+  PostMentionsUserRelation,
+  PostTag,
+  sequelize,
+  User,
+  UserOptions
+} from '../models/index.js'
 import { Op } from 'sequelize'
 import getStartScrollParam from '../utils/getStartScrollParam.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
@@ -40,6 +48,17 @@ export default function dashboardRoutes(app: Application) {
       }
       switch (level) {
         case 2: {
+          let hideReblogs = false
+          const dbOptiondisableRewootsExploreLocal = await UserOptions.findOne({
+            where: {
+              userId: posterId,
+              optionName: 'wafrn.disableRewootsExploreLocal'
+            }
+          })
+
+          if (dbOptiondisableRewootsExploreLocal?.optionValue === 'true') {
+            hideReblogs = true
+          }
           const followedUsers = getFollowedsIds(posterId, true)
           const nonFollowedUsers = getNonFollowedLocalUsersIds(posterId)
           whereObject = {
@@ -66,7 +85,10 @@ export default function dashboardRoutes(app: Application) {
                   [Op.ne]: Privacy.DirectMessage
                 }
               }
-            ]
+            ],
+            isReblog: {
+              [Op.in]: hideReblogs ? [false, null] : [true, false, null]
+            }
           }
           break
         }

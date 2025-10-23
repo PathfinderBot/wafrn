@@ -77,7 +77,10 @@ export function getPostHtml(
     'mark',
     'tbody',
     'tfoot',
-    'thead'
+    'thead',
+    'ruby',
+    'rt',
+    'rp'
   ]
 ): string {
   const content = post.content

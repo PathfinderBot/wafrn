@@ -3,6 +3,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic'
 
 import { AppModule } from './app/app.module'
 import { environment } from './environments/environment'
+import selfXssWarning from './environments/selfXssWarning'
 
 if (environment.production) {
   enableProdMode()
@@ -19,3 +20,5 @@ if (document.readyState === 'complete') {
 } else {
   document.addEventListener('DOMContentLoaded', bootstrap)
 }
+
+selfXssWarning()

@@ -11,12 +11,15 @@ export default function blockRoutes(app: Application) {
     try {
       const posterId = req.jwtData?.userId
       const userBlocker = await User.findByPk(posterId)
-      if (req.body?.userId && req.body.userId != req.jwtData?.userId && userBlocker) {
+      if (req.jwtData?.userId && req.body?.userId && req.body.userId != req.jwtData?.userId && userBlocker) {
         const userToBeBlocked = await User.findByPk(req.body.userId)
         if (userToBeBlocked) {
-          userToBeBlocked.addBlocker(userBlocker)
           userToBeBlocked.removeFollowed(userBlocker)
           userBlocker.removeFollowed(userToBeBlocked)
+          const reason: string | undefined = req.body.reason
+
+          const block = new Blocks({ blockerId: req.jwtData?.userId, blockedId: req.body.userId, reason: reason })
+          await block.save()
         }
 
         success = true

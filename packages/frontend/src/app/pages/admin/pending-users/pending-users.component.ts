@@ -7,6 +7,7 @@ import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
 import { AdminService } from 'src/app/services/admin.service'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-pending-users',
@@ -20,8 +21,11 @@ export class PendingUsersComponent {
 
   constructor(
     private adminService: AdminService,
-    private simpleDialog: SimpleDialogService
+    private simpleDialog: SimpleDialogService,
+    simpleTitle: SimpleTitleService
   ) {
+    simpleTitle.set('menu.admin.awaitingAproval')
+
     this.reloadList()
   }
 

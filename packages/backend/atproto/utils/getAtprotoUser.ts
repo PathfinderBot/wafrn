@@ -89,7 +89,7 @@ async function getAtprotoUser(
       url: '@' + (data.handle === 'handle.invalid' ? `handle.invalid${data.did}` : data.handle),
       name: data.displayName ? data.displayName : data.handle,
       avatar: avatarString,
-      description: data.description as string,
+      description: data.description ? data.description as string : "",
       followingCount: data.followsCount as number,
       followerCount: data.followersCount as number,
       headerImage: data.banner as string,
@@ -146,8 +146,10 @@ async function internalGetDBUser(did: string, url: string) {
   } else {
     // OH WOW SOMETHING OFF
     foundUsers.forEach(async (usr) => {
-      usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`
-      await usr.save()
+      if (!usr.email) {
+        usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`
+        await usr.save()
+      }
     })
     return foundUsers.find((elem) => elem.bskyDid === did)
   }

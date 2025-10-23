@@ -18,7 +18,9 @@ export class ForumService {
     const response: unlinkedPosts = await firstValueFrom(
       this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/forum/' + id)
     )
-    this.postService.rewootedPosts = this.postService.rewootedPosts.concat(response.rewootIds)
+    response.rewootIds?.forEach((id) => {
+      this.postService.rewootedPosts().add(id)
+    })
 
     let processed = this.postService.processPostNew(response)
     processed = processed.filter((post) => !this.postService.postContainsBlockedOrMuted(post, false))

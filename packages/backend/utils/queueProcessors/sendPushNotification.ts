@@ -94,6 +94,8 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
       if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
         notificationTypes.push('EMOJIREACT')
         notificationTypes.push('LIKE')
+        notificationTypes.push('POSTBITE')
+        notificationTypes.push('USERBITE')
       }
       if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
         notificationTypes.push('FOLLOW')

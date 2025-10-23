@@ -18,6 +18,57 @@ export type UserReport = {
   post: string
   reportedUserId: string
   reportedUser: SimplifiedUser
+  createdAt: string
+}
+
+export type AdminUserBlock = {
+  blockedId: string
+  blocked: {
+    avatar: string
+    url: string
+  }
+  blockerId: string
+  blocker: {
+    avatar: string
+    url: string
+  }
+  bskyPath: string | null
+  remoteBlockId: string | null
+  reason: string | null
+  createdAt: string
+}
+
+export type ServerBlock = {
+  blockedServerId: string
+  blockedServer: {
+    displayName: string
+  }
+  userBlockerId: string
+  userBlocker: {
+    avatar: string
+    url: string
+  }
+  createdAt: string
+}
+
+export type UserBan = {
+  id: string | null
+  avatar: string | null
+  url: string | null
+}
+
+export type AdminUserBlocks = {
+  userBlocks: AdminUserBlock[]
+  userServerBlocks: ServerBlock[]
+}
+
+// Either a block or a mute (same type)
+export type UserBlockMute = {
+  avatar: string
+  id: string
+  reason: string
+  url: string
+  createdAt: string
 }
 
 @Injectable({
@@ -65,11 +116,19 @@ export class AdminService {
     return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceNSFWUser`, { id: id }))
   }
 
-  async banList() {
-    return firstValueFrom(this.http.get(`${EnvironmentService.environment.baseUrl}/admin/getBannedUsers`))
+  async reopenReport(id: number): Promise<any> {
+    return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/reopenReport`, { id: id }))
   }
-  async pardonUser(id: string) {
-    return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/unbanUser`, { id: id }))
+
+  async banList() {
+    return firstValueFrom(
+      this.http.get<{ users: UserBan[] }>(`${EnvironmentService.environment.baseUrl}/admin/getBannedUsers`)
+    )
+  }
+  async unbanUser(id: string) {
+    return firstValueFrom(
+      this.http.post<{ users: UserBan[] }>(`${EnvironmentService.environment.baseUrl}/admin/unbanUser`, { id: id })
+    )
   }
 
   async getPendingActivationUsers(): Promise<SimplifiedUser[]> {

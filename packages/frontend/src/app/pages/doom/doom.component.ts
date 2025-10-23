@@ -1,5 +1,6 @@
 import { Component, ElementRef, viewChild } from '@angular/core'
 import { Title } from '@angular/platform-browser'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-doom',
@@ -10,8 +11,8 @@ import { Title } from '@angular/platform-browser'
 export class DoomComponent {
   doomFrame = viewChild<ElementRef<HTMLIFrameElement>>('doom')
 
-  constructor(private titleService: Title) {
-    this.titleService.setTitle('Wafrn - the social network with DOOM!')
+  constructor(simpleTitle: SimpleTitleService) {
+    simpleTitle.set('the social network with DOOM!')
   }
 
   snOnHide() {

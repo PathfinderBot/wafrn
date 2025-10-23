@@ -4,14 +4,16 @@ import { Meta, Title } from '@angular/platform-browser'
 import { NavigationSkipped, Router } from '@angular/router'
 import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons'
 import { GlobalData } from 'src/app/services/global-data.service'
-import { Subscription } from 'rxjs'
-import { filter } from 'rxjs/operators'
+import { asyncScheduler, Subject, Subscription } from 'rxjs'
+import { filter, throttleTime } from 'rxjs/operators'
 import { SnappyCreate, SnappyHide, SnappyShow } from 'src/app/components/snappy/snappy-life'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { DashboardService } from 'src/app/services/dashboard.service'
 import { JwtService } from 'src/app/services/jwt.service'
 import { MessageService } from 'src/app/services/message.service'
 import { PostsService } from 'src/app/services/posts.service'
+import { TranslateService } from '@ngx-translate/core'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
   selector: 'app-dashboard',
@@ -28,11 +30,13 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   currentPage = 0
   level = 1
   timestamp = new Date().getTime()
-  title = ''
+  title = 'menu.dashboard'
   updateFollowersSubscription?: Subscription
   navigationSubscription!: Subscription
   scroll = 0
   hideQuotesLevel = localStorage.getItem('hideQuotes') ? parseInt(localStorage.getItem('hideQuotes') as string) : 1
+
+  rateLimitLoadSubject = new Subject<void>()
 
   // I don't think this is actually needed, but just in case!
   // Would like to have this a bit more cleanly integrated though
@@ -44,11 +48,12 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     private router: Router,
     private postService: PostsService,
     private messages: MessageService,
-    private titleService: Title,
     private metaTagService: Meta,
-    private readonly viewportScroller: ViewportScroller
+    private readonly viewportScroller: ViewportScroller,
+    private simpleTitle: SimpleTitleService
   ) {
-    this.titleService.setTitle(GlobalData.appDefaultTitle)
+    simpleTitle.set('menu.dashboard')
+
     this.metaTagService.addTags([
       {
         name: 'description',
@@ -59,7 +64,14 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
         content: 'Explore the posts in wafrn and if it looks cool join us!'
       }
     ])
+
+    this.rateLimitLoadSubject
+      .pipe(throttleTime(5000, asyncScheduler, { leading: true, trailing: true }))
+      .subscribe(() => {
+        this.loadPosts(this.currentPage)
+      })
   }
+
   snOnHide(): void {
     this.snActive = false
   }
@@ -68,24 +80,25 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     const purePath = this.router.url.split('?')[0]
     if (purePath.endsWith('explore')) {
       this.level = 0
-      this.title = 'Wafrn and friends'
+      this.title = 'menu.exploreFediverse'
     }
     if (purePath.endsWith('exploreLocal')) {
       this.level = 2
-      this.title = 'Explore WAFRN'
+      this.title = 'menu.exploreWafrn'
     }
     if (purePath.endsWith('private')) {
       this.level = 10
-      this.title = 'Private messages'
+      this.title = 'menu.privateMessages'
     }
     if (purePath.endsWith('silencedPosts')) {
       this.level = 25
-      this.title = 'My silenced posts'
+      this.title = 'menu.siencedPosts'
     }
     if (purePath.endsWith('bookmarkedPosts')) {
       this.level = 50
-      this.title = 'My bookmarked posts'
+      this.title = 'menu.bookmarkedPosts'
     }
+    this.simpleTitle.set(this.title)
   }
 
   snOnShow(): void {
@@ -98,6 +111,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   }
 
   ngOnInit(): void {
+    this.simpleTitle.set(this.title)
     // If the user clicks on the explore button while already on the page,
     // reload posts.
     this.navigationSubscription = this.router.events
@@ -137,7 +151,13 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     this.loadPosts(this.currentPage)
   }
 
+  rateLimitLoadPosts() {
+    this.loadingPosts = true
+    this.rateLimitLoadSubject.next()
+  }
+
   async loadPosts(page: number) {
+    console.log('loading')
     this.currentPage += 1
     this.loadingPosts = true
     let scrollDate = new Date(this.timestamp)

@@ -6,7 +6,7 @@ export interface MenuItem {
   icon?: IconDefinition
   image?: string
   visible: () => boolean
-  badge?: number
+  badge?: () => number
   items?: MenuItem[]
   routerLink?: string
   routerLinkDynamic?: () => string

@@ -26,7 +26,7 @@ const sendPushNotificationQueue = new Queue<PushNotificationPayload>('sendPushNo
 export type NotificationBody = {
   notifiedUserId: string
   userId: string
-  notificationType: 'FOLLOW' | 'LIKE' | 'REWOOT' | 'MENTION' | 'QUOTE' | 'EMOJIREACT'
+  notificationType: 'FOLLOW' | 'LIKE' | 'REWOOT' | 'MENTION' | 'QUOTE' | 'EMOJIREACT' | 'USERBITE' | 'POSTBITE'
   postId?: string
   emojiReactionId?: string
   createdAt?: Date
@@ -71,8 +71,9 @@ export async function bulkCreateNotifications(notifications: NotificationBody[],
 export async function createNotification(notification: NotificationBody, context?: NotificationContext) {
   const localUserIds = await getAllLocalUserIds()
   if (localUserIds.includes(notification.notifiedUserId)) {
-    if (notification.postId && notification.notificationType != 'EMOJIREACT') {
-      // lets avoid double existing notifications. Ok may break things with emojireacts
+    if (notification.postId && notification.notificationType != 'EMOJIREACT'
+      && notification.notificationType != 'USERBITE' && notification.notificationType != 'POSTBITE') {
+      // lets avoid double existing notifications. Ok may break things with emojireacts and bites
       const existingNotifications = await Notification.count({
         where: {
           userId: notification.userId,
@@ -93,9 +94,9 @@ export async function createNotification(notification: NotificationBody, context
     const sendNotification =
       timeDiff < 3600 * 1000
         ? sendPushNotificationQueue.add('sendPushNotification', {
-            notifications: [notification],
-            context
-          })
+          notifications: [notification],
+          context
+        })
         : null
     await Promise.all([Notification.create(notification), sendNotification])
   }
@@ -120,12 +121,18 @@ const verbMap = {
   REWOOT: 'rewooted',
   MENTION: 'replied to',
   QUOTE: 'quoted',
-  EMOJIREACT: 'reacted to'
+  EMOJIREACT: 'reacted to',
+  USERBITE: 'bit',
+  POSTBITE: 'bit'
 }
 
 export function getNotificationTitle(notification: NotificationBody, context?: NotificationContext) {
   if (notification.notificationType === 'FOLLOW') {
     return 'New user followed you'
+  }
+
+  if (notification.notificationType === 'USERBITE') {
+    return `${context?.userUrl || 'someone'} bit you`
   }
 
   if (notification.notificationType === 'EMOJIREACT' && context?.emoji) {
@@ -136,7 +143,7 @@ export function getNotificationTitle(notification: NotificationBody, context?: N
 }
 
 export function getNotificationBody(notification: NotificationBody, context?: NotificationContext) {
-  if (notification.notificationType === 'FOLLOW') {
+  if (notification.notificationType === 'FOLLOW' || notification.notificationType === 'USERBITE') {
     return context?.userUrl ? `@${context?.userUrl.replace(/^@/, '')}` : ''
   }
 

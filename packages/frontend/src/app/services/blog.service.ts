@@ -10,7 +10,7 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class BlogService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   async getFollowers(url: string, followed = false): Promise<followsResponse[]> {
     const res = await firstValueFrom(
@@ -50,5 +50,11 @@ export class BlogService {
       })
     )
     return res
+  }
+
+  async biteUser(userId: string) {
+    return await firstValueFrom(
+      this.http.post(EnvironmentService.environment.baseUrl + `/bite`, { userId: userId })
+    )
   }
 }

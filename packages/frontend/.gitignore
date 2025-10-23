@@ -46,6 +46,7 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+buildData.json
 
 # System Files
 .DS_Store

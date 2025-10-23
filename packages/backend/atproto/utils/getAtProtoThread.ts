@@ -210,7 +210,7 @@ async function processSinglePost(
       delete newData.parentId
     }
 
-    if ((await getAllLocalUserIds()).includes(newData.userId)) {
+    if ((await getAllLocalUserIds()).includes(newData.userId) && !forceUpdate) {
       // dirty as hell but this should stop the duplication
       await wait(10000)
     }
@@ -506,4 +506,4 @@ function getPostInteractionLevels(
   }
 }
 
-export { getAtProtoThread }
+export { getAtProtoThread, getQuotedPostUri }

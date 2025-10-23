@@ -1,22 +1,58 @@
-import { Component, computed, ElementRef, input, output, signal, viewChild, viewChildren } from '@angular/core'
+import {
+  afterRenderEffect,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  output,
+  signal,
+  viewChild,
+  viewChildren
+} from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { PostModule } from '../post/post.module'
 import { LoaderComponent } from '../loader/loader.component'
 import { HotkeyAction, HotkeyService } from 'src/app/services/hotkey.service'
 import { fromEvent, Subject, take, throttleTime } from 'rxjs'
 import { PostComponent } from '../post/post.component'
+import { MatGridListModule } from '@angular/material/grid-list'
+import { DatePipe } from '@angular/common'
+import { WafrnMediaModule } from '../wafrn-media/wafrn-media.module'
+import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
+import { TranslatePipe } from '@ngx-translate/core'
+import { GlobalData } from 'src/app/services/global-data.service'
+import { Tag } from 'src/app/interfaces/tag'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { faPhotoFilm } from '@fortawesome/free-solid-svg-icons'
+
+export type DisplayMode = 'card' | 'grid'
 
 @Component({
   selector: 'app-post-list',
-  imports: [PostModule, LoaderComponent],
+  imports: [
+    PostModule,
+    LoaderComponent,
+    MatGridListModule,
+    WafrnMediaModule,
+    FontAwesomeModule,
+    PostLinkModule,
+    TranslatePipe,
+    DatePipe
+  ],
   templateUrl: './post-list.component.html',
   styleUrl: './post-list.component.scss'
 })
 export class PostListComponent {
+  displayMode = input<DisplayMode>('card')
   posts = input.required<ProcessedPost[][]>()
   visible = input<boolean>(true) // Disables keybinds, required due to SnappyRouter so we do not act off screen
   loading = input.required<boolean>()
   loadPosts = output<void>()
+
+  // Evil way of doing this because signals and jank
+  visiblePreviousState: boolean = false
+  loadingPreviousState: boolean = false
+  loadedPageCount = 0
 
   bottomPageElementRef = viewChild<ElementRef<HTMLElement>>('bottom')
   bottomPageElement = computed(() => this.bottomPageElementRef()?.nativeElement)
@@ -27,15 +63,53 @@ export class PostListComponent {
   postIsActive = signal<boolean>(false)
 
   selectedPost: number = 0
-
   postActionSubject = new Subject<HotkeyAction>()
 
-  constructor(hotkeyService: HotkeyService) {
+  colCount: number
+
+  videoIcon = faPhotoFilm
+
+  constructor(
+    hotkeyService: HotkeyService,
+    private globalData: GlobalData
+  ) {
     hotkeyService.hotkeySubscription.subscribe((type) => this.handleHotkeys(type))
+
+    this.colCount = this.calculateMediaColumns()
+    fromEvent(window, 'resize')
+      .pipe(throttleTime(50))
+      .subscribe(() => {
+        this.colCount = this.calculateMediaColumns()
+      })
+
+    // Reload if loading finished but the observer is still visible
+    afterRenderEffect(() => {
+      const becameVisible = !this.visible() && this.visiblePreviousState
+      this.visiblePreviousState = this.visible()
+      if (!this.visible() || becameVisible) return
+
+      const finishedLoading = !this.loading() && this.loadingPreviousState
+      this.loadingPreviousState = this.loading()
+      if (!finishedLoading) return
+
+      this.loadedPageCount += 1
+      if (this.loadedPageCount === 1) return
+
+      const rect = this.bottomPageElement()?.getBoundingClientRect()
+      if (!rect) return
+      const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight)
+      if (rect.bottom < 0 || rect.top - viewHeight >= 0) return
+
+      this.loadPosts.emit()
+    })
   }
 
   ngOnInit() {
+    this.visiblePreviousState = this.visible()
+    this.loadingPreviousState = this.loading()
+
     this.bottomPageObserver = new IntersectionObserver((entries) => {
+      if (!this.visible()) return
       const entry = entries[0]
 
       // Do not send the signal if we're already loading or just loaded
@@ -140,5 +214,16 @@ export class PostListComponent {
 
   afterPostScroll() {
     this.postIsActive.set(true)
+  }
+
+  calculateMediaColumns() {
+    if (this.globalData.mobile()) {
+      return Math.max(2, Math.floor(window.innerWidth / 200))
+    }
+    return 4
+  }
+
+  mapTags(tagList: Tag[]): string {
+    return tagList.map((tag) => `#${tag.tagName}`).join(' ')
   }
 }

@@ -35,7 +35,7 @@ import { SettingChangePasswordComponent } from '../components/setting-change-pas
 import { SettingDropListComponent } from '../components/setting-drop-list/setting-drop-list.component'
 import { SETTINGS_TOKEN } from '../pages/settings/settings.component'
 import { replyBarItems } from '../components/post-action-buttons/post-action-buttons.component'
-import { toObservable } from '@angular/core/rxjs-interop'
+import { SettingConfettiComponent } from '../components/setting-confetti/setting-confetti.component'
 
 // All setting keys for use throughout the app
 const settingKeyVariants = [
@@ -79,7 +79,10 @@ const settingKeyVariants = [
   'replaceAIWord',
   'postReplyBarOrder',
   'postActionsButtonBarOrder',
-  'atprotoLinkDestination'
+  'atprotoLinkDestination',
+  'confettiMultiplier',
+  'flatConfetti',
+  'disableRewootsExploreLocal'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -387,6 +390,14 @@ export class SettingsService {
         true: 'settings.defaultDashboardOptions.exploreLocal'
       }
     },
+    disableRewootsExploreLocal: {
+      key: 'disableRewootsExploreLocal',
+      translationKey: 'settings.disableRewootsExploreLocal',
+      serverKey: 'wafrn.disableRewootsExploreLocal',
+      localStorageKey: 'disableRewootsExploreLocal',
+      type: 'checkbox',
+      default: false
+    },
     automaticallyExpandPosts: {
       key: 'automaticallyExpandPosts',
       translationKey: 'settings.automaticallyExpandPosts',
@@ -425,7 +436,8 @@ export class SettingsService {
       localStorageKey: 'public.asks',
       type: 'checkbox',
       default: false,
-      convertFromStorage: (val) => val === '2'
+      convertFromStorage: (val) => val === '1',
+      convertToStorage: () => this.convertAsksTo()
     },
     displayMentionsOfBlockedUsersFromOtherUsers: {
       key: 'displayMentionsOfBlockedUsersFromOtherUsers',
@@ -497,13 +509,13 @@ export class SettingsService {
       type: 'list',
       default: this.convertToOrderListDefault([...replyBarItems]),
       dropListData: {
-        quote: { icon: faQuoteLeft, translationKey: 'settings.postReplyBarOrderOptions.quote' },
-        rewoot: { icon: faRepeat, translationKey: 'settings.postReplyBarOrderOptions.rewoot' },
-        reply: { icon: faReply, translationKey: 'settings.postReplyBarOrderOptions.reply' },
-        bookmark: { icon: faBookmark, translationKey: 'settings.postReplyBarOrderOptions.bookmark' },
-        like: { icon: faHeart, translationKey: 'settings.postReplyBarOrderOptions.like' },
-        edit: { icon: faPen, translationKey: 'settings.postReplyBarOrderOptions.edit' },
-        delete: { icon: faTrash, translationKey: 'settings.postReplyBarOrderOptions.delete' }
+        quote: { icon: faQuoteLeft, translationKey: 'post-actions.quotePost' },
+        rewoot: { icon: faRepeat, translationKey: 'post-actions.rewootPost' },
+        reply: { icon: faReply, translationKey: 'post-actions.replyPost' },
+        bookmark: { icon: faBookmark, translationKey: 'post-actions.bookmarkPost' },
+        like: { icon: faHeart, translationKey: 'post-actions.likePost' },
+        edit: { icon: faPen, translationKey: 'post-actions.editPost' },
+        delete: { icon: faTrash, translationKey: 'post-actions.deletePost' }
       },
       convertFromStorage: this.convertListFrom,
       convertToStorage: this.convertListTo
@@ -518,13 +530,13 @@ export class SettingsService {
       default: this.convertToOrderListDefault([...replyBarItems]),
       dropListData: {
         // Duplicate from above
-        quote: { icon: faQuoteLeft, translationKey: 'settings.postReplyBarOrderOptions.quote' },
-        rewoot: { icon: faRepeat, translationKey: 'settings.postReplyBarOrderOptions.rewoot' },
-        reply: { icon: faReply, translationKey: 'settings.postReplyBarOrderOptions.reply' },
-        bookmark: { icon: faBookmark, translationKey: 'settings.postReplyBarOrderOptions.bookmark' },
-        like: { icon: faHeart, translationKey: 'settings.postReplyBarOrderOptions.like' },
-        edit: { icon: faPen, translationKey: 'settings.postReplyBarOrderOptions.edit' },
-        delete: { icon: faTrash, translationKey: 'settings.postReplyBarOrderOptions.delete' }
+        quote: { icon: faQuoteLeft, translationKey: 'post-actions.quotePost' },
+        rewoot: { icon: faRepeat, translationKey: 'post-actions.rewootPost' },
+        reply: { icon: faReply, translationKey: 'post-actions.replyPost' },
+        bookmark: { icon: faBookmark, translationKey: 'post-actions.bookmarkPost' },
+        like: { icon: faHeart, translationKey: 'post-actions.likePost' },
+        edit: { icon: faPen, translationKey: 'post-actions.editPost' },
+        delete: { icon: faTrash, translationKey: 'post-actions.deletePost' }
       },
       convertFromStorage: this.convertListFrom,
       convertToStorage: this.convertListTo
@@ -539,6 +551,23 @@ export class SettingsService {
       default: 'bsky.app',
       convertFromStorage: this.convertStringFrom,
       convertToStorage: this.convertStringTo
+    },
+    confettiMultiplier: {
+      key: 'confettiMultiplier',
+      translationKey: 'settings.confettiMultiplier',
+      translationDescriptionKey: 'settings.confettiMultiplierDescription',
+      serverKey: 'wafrn.confettiMultiplier',
+      type: 'input',
+      default: '1'
+    },
+    flatConfetti: {
+      key: 'flatConfetti',
+      translationKey: 'settings.flatConfetti',
+      translationDescriptionKey: 'settings.flatConfettiDescription',
+      serverKey: 'wafrn.flatConfetti',
+      localStorageKey: 'flatConfetti',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -613,8 +642,10 @@ export class SettingsService {
         { type: 'key', value: 'forceClassicMediaView' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.animationsAndSounds' },
-        { type: 'key', value: 'disableConfetti' },
-        { type: 'key', value: 'enableConfettiReceivingLike' },
+        {
+          type: 'component',
+          value: new ComponentPortal(SettingConfettiComponent)
+        },
         { type: 'key', value: 'disableSounds' }
       ]
     },
@@ -626,6 +657,7 @@ export class SettingsService {
       values: [
         { type: 'header', value: 'settings.header.dashboardBehavior' },
         { type: 'key', value: 'defaultDashboard' },
+        { type: 'key', value: 'disableRewootsExploreLocal' },
         { type: 'key', value: 'automaticallyExpandPosts' },
         { type: 'key', value: 'expandQuotes' },
         { type: 'key', value: 'atprotoLinkDestination' },
@@ -746,7 +778,7 @@ export class SettingsService {
           try {
             this.fediAttachments.length = 0
             this.fediAttachments.push(...JSON.parse(rawAttachments.optionValue))
-          } catch (error) {}
+          } catch (error) { }
 
           if (this.fediAttachments.length === 0) {
             this.fediAttachments.push({ name: '', value: '' })
@@ -756,12 +788,10 @@ export class SettingsService {
     }
 
     // Update settings when logging in (and notify everyone)
-    toObservable(loginService.loggedIn)
-      .pipe(filter((logged) => logged))
-      .subscribe(() => {
-        this.values = Object.assign(this.getDefaultSettings(), this.getLocalStorageValues())
-        this.settingsLoadedFromLogin.next()
-      })
+    loginService.loggedIn.pipe(filter((logged) => logged)).subscribe(() => {
+      this.values = Object.assign(this.getDefaultSettings(), this.getLocalStorageValues())
+      this.settingsLoadedFromLogin.next()
+    })
 
     // Update settings on other tabs change
     fromEvent(window, 'storage')
@@ -921,7 +951,7 @@ export class SettingsService {
     }
 
     // Write options to the server
-    if (this.loginService.loggedIn()) {
+    if (this.loginService.loggedIn.value) {
       const options: { name: string; value: string }[] = this.getSettingsAsOptions()
       const res = await lastValueFrom(
         this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/editOptions`, { options }).pipe(

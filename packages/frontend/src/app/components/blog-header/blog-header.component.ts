@@ -16,7 +16,8 @@ import {
   faUsers,
   faTriangleExclamation,
   faRepeat,
-  faQuoteRight
+  faQuoteRight,
+  faCookieBite
 } from '@fortawesome/free-solid-svg-icons'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import { BlocksService } from 'src/app/services/blocks.service'
@@ -30,6 +31,7 @@ import { faBluesky } from '@fortawesome/free-brands-svg-icons'
 import { ReportService } from 'src/app/services/report.service'
 import { TranslatePipe } from '@ngx-translate/core'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { BlogService } from 'src/app/services/blog.service'
 
 @Component({
   selector: 'app-blog-header',
@@ -56,10 +58,9 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     return blog.url.startsWith('@')
       ? EnvironmentService.environment.externalCacheurl + encodeURIComponent(blog.avatar)
       : EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(EnvironmentService.environment.baseMediaUrl + blog.avatar)
+      encodeURIComponent(EnvironmentService.environment.baseMediaUrl + blog.avatar)
   })
   headerUrl = ''
-  loggedIn: Signal<boolean>
   isMe = false
   expandDownIcon = faChevronDown
   muteUserIcon = faVolumeMute
@@ -73,6 +74,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   usersIcon = faUsers
   blockUserIcon = faUserSlash
   unblockServerIcon = faServer
+  biteUserIcon = faCookieBite
   allowAsk = false
   allowRemoteAsk = false
   isBlueskyUser = false
@@ -89,7 +91,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   })
 
   constructor(
-    private loginService: LoginService,
+    protected loginService: LoginService,
     public postService: PostsService,
     private messages: MessageService,
     public blockService: BlocksService,
@@ -97,23 +99,22 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     public activatedRoute: ActivatedRoute,
     public environmentService: EnvironmentService,
     public reportService: ReportService,
-    public simpleDialog: SimpleDialogService
-  ) {
-    this.loggedIn = loginService.loggedIn
-  }
+    public simpleDialog: SimpleDialogService,
+    public blogService: BlogService
+  ) { }
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails()
     if (blog === undefined) return
     this.headerUrl = blog.url.startsWith('@')
       ? EnvironmentService.environment.externalCacheurl + encodeURIComponent(blog.headerImage)
       : EnvironmentService.environment.externalCacheurl +
-        encodeURIComponent(EnvironmentService.environment.baseMediaUrl + blog.headerImage)
+      encodeURIComponent(EnvironmentService.environment.baseMediaUrl + blog.headerImage)
     const askLevelOption = blog.publicOptions.find((elem) => elem.optionName == 'wafrn.public.asks')
     let askLevel = askLevelOption ? parseInt(askLevelOption.optionValue) : 2
     if (blog.url.startsWith('@')) {
       askLevel = 3
     }
-    this.allowAsk = this.loginService.loggedIn() ? [1, 2].includes(askLevel) : askLevel == 1
+    this.allowAsk = this.loginService.loggedIn.value ? [1, 2].includes(askLevel) : askLevel == 1
     this.allowAsk = this.allowAsk && this.loginService.getLoggedUserUUID() != blog.id
     this.allowRemoteAsk = askLevel != 3 && this.loginService.getLoggedUserUUID() != blog.id
     this.isMe = blog.id == this.loginService.getLoggedUserUUID()
@@ -131,7 +132,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     this.headerHTML = parsedAsHTML.documentElement.innerHTML
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void { }
 
   async unfollowUser(id: string) {
     const response = await this.postService.unfollowUser(id)
@@ -169,62 +170,55 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   }
 
   async muteAccount() {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.post-header.muteAccountTitle',
-      content: 'dialog.post-header.muteAccountDescription'
-    })
-
-    if (!confirm) return
-
     const blog = this.blogDetails()
     if (blog) {
-      blog.muted = (await this.blockService.muteUser(blog.id)) === true
+      blog.muted = (await this.blockService.promptMuteUser(blog.id)) === true
     }
   }
 
   async unmuteAccount() {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.post-header.unmuteAccountTitle',
-      content: 'dialog.post-header.unmuteAccountDescription'
-    })
-
-    if (!confirm) return
-
     const blog = this.blogDetails()
     if (blog) {
       // very silly API
-      const res = await this.blockService.unmuteUser(blog.id)
-      blog.muted = res !== undefined && res.length !== 0
+      const res = await this.blockService.promptUnmuteUser(blog.id)
+      if (res !== undefined) {
+        blog.muted = res !== undefined && res.length !== 0
+      }
     }
   }
 
   async blockAccount() {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.post-header.blockAccountTitle',
-      content: 'dialog.post-header.blockAccountDescription'
-    })
-
-    if (!confirm) return
-
     const blog = this.blogDetails()
     if (blog) {
-      blog.blocked = (await this.blockService.blockUser(blog.id)) === true
+      blog.blocked = (await this.blockService.promptBlockUser(blog.id)) === true
     }
   }
 
   async unblockAccount() {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.post-header.unblockAccountTitle',
-      content: 'dialog.post-header.unblockAccountDescription'
-    })
-
-    if (!confirm) return
-
     const blog = this.blogDetails()
     if (blog) {
       // very silly API
-      const res = await this.blockService.unblockUser(blog.id)
-      blog.blocked = res !== undefined && res.length !== 0
+      const res = await this.blockService.promptUnblockUser(blog.id)
+      if (res !== undefined) {
+        blog.blocked = res !== undefined && res.length !== 0
+      }
+    }
+  }
+
+  async biteAccount(id: string) {
+    const response = await this.blogService.biteUser(id)
+    if (response) {
+      this.messages.add({
+        severity: 'success',
+        summary: 'messages.biteUserSuccess',
+        translate: true,
+      })
+    } else {
+      this.messages.add({
+        severity: 'error',
+        summary: 'messages.genericError',
+        translate: true
+      })
     }
   }
 

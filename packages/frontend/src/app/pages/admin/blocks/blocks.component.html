@@ -1,52 +1,109 @@
-<!--
-<div class="grid pb-6 lg:px-4 scalein  wafrn-container">
-  <div class="col-12 wafrn-post">
-    <p-card>
-      <h3>Per user blocks</h3>
-      <p-table
-      [value]="userBlocks"
-      [paginator]="true"
-      [rows]="5"
-      [rowsPerPageOptions]="[5, 10, 25, 50]"
-      [loading]="!ready"
-      >
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Blocker</th>
-            <th>Blocked</th>
-            <th></th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-userBlock>
-          <tr>
-            <td><img class="avatar" [src]="userBlock.blocker.avatar"> {{userBlock.blocker.url}}</td>
-            <td><img class="avatar" [src]="userBlock.blocked.avatar"> {{userBlock.blocked.url}}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-      <h3>Per user server blocks</h3>
-      <p-table
-      [value]="serverBlocks"
-      [paginator]="true"
-      [rows]="5"
-      [rowsPerPageOptions]="[5, 10, 25, 50]"
-      [loading]="!ready"
-      >
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Blocker</th>
-            <th>Server</th>
-            <th></th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-serverBlock>
-          <tr>
-            <td><img class="avatar" [src]="serverBlock.userBlocker.avatar"> {{serverBlock.userBlocker.url}}</td>
-            <td>{{serverBlock.blockedServer.displayName}}</td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
+<div class="mx-3 lg:mx-4 wafrn-container-wide">
+  <h2 class="my-3 text-3xl">{{ 'menu.admin.blocklist' | translate }}</h2>
+</div>
+<div class="mb-3 lg:mx-4 wafrn-container-wide">
+  <p>This sucks to look at so here's a second step of buttons before you see the data</p>
+  <div class="flex gap-3">
+    <button mat-stroked-button (click)="showUserBlocks = !showUserBlocks">Show users blocked by users</button>
+    <button mat-stroked-button (click)="showUserServerBlocks = !showUserServerBlocks"
+      >Show servers blocked by users</button
+    >
   </div>
 </div>
--->
+<mat-card [class.hidden]="!showUserBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
+  <h2>Per user user blocks</h2>
+  <mat-form-field class="w-full mat-form-field-no-padding">
+    <mat-label>Search</mat-label>
+    <input (input)="onUserBlockChange($event)" matNativeControl spellcheck="false" />
+  </mat-form-field>
+  <div class="w-full overflow-x-auto">
+    <table mat-table matSort #userBlocksSort="matSort" [dataSource]="userBlocks">
+      <ng-container matColumnDef="blocker">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Blocker</th>
+        <td mat-cell *matCellDef="let row">
+          <a [routerLink]="'/blog/' + row.blocker.url">
+            <div class="flex gap-2 align-items-start">
+              <app-avatar-small [user]="row.blocker"></app-avatar-small>
+              {{ row.blocker.url }}
+            </div>
+          </a>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="blocked">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Blocked</th>
+        <td mat-cell *matCellDef="let row">
+          <a [routerLink]="'/blog/' + row.blocked.url">
+            <div class="flex gap-2 align-items-start">
+              <app-avatar-small [user]="row.blocked"></app-avatar-small>
+              {{ row.blocked.url }}
+            </div>
+          </a>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="reason">
+        <th mat-header-cell *matHeaderCellDef>Reason</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.reason }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.createdAt | date: 'M/d/yy, h:mm:ss a' }}
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="userBlocksColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: userBlocksColumns"></tr>
+    </table>
+  </div>
+  <mat-paginator
+    #userBlocksPaginator
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    showFirstLastButtons
+    aria-label="Select user block list page"
+  >
+  </mat-paginator>
+</mat-card>
+<mat-card [class.hidden]="!showUserServerBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
+  <h2>Per user server blocks</h2>
+  <mat-form-field class="w-full mat-form-field-no-padding">
+    <mat-label>Search</mat-label>
+    <input (input)="onUserServerBlockChange($event)" matNativeControl spellcheck="false" />
+  </mat-form-field>
+  <div class="w-full overflow-x-auto">
+    <table mat-table matSort #userServerBlocksSort="matSort" [dataSource]="userServerBlocks">
+      <ng-container matColumnDef="userBlocker">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>User blocker</th>
+        <td mat-cell *matCellDef="let row">
+          <a [routerLink]="'/blog/' + row.userBlocker.url">
+            <div class="flex gap-2 align-items-start">
+              <app-avatar-small [user]="row.userBlocker"></app-avatar-small>
+              {{ row.userBlocker.url }}
+            </div>
+          </a>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="blockedServer">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Server</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.blockedServer.displayName }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.createdAt | date: 'M/d/yy, h:mm:ss a' }}
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="userServerBlocksColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: userServerBlocksColumns"></tr>
+    </table>
+  </div>
+  <mat-paginator
+    #userServerBlocksPaginator
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    showFirstLastButtons
+    aria-label="Select server block list page"
+  >
+  </mat-paginator>
+</mat-card>

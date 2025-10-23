@@ -35,10 +35,13 @@ import { UserOptions } from './userOptions.js'
 import { afterCreate, beforeBulkCreate, beforeBulkUpdate, beforeCreate, beforeUpdate } from './hierarchy/hierarchy.js'
 import { UnifiedPushData } from './unifiedPushData.js'
 import { UserFollowHashtags } from './userFollowHashtag.js'
+import { UserBitesPostRelation } from './userBitesPostRelation.js'
+import { Bites } from './bites.js'
 
 sequelize.addModels([
   Ask,
   Blocks,
+  Bites,
   BskyInviteCodes,
   Emoji,
   EmojiCollection,
@@ -68,6 +71,7 @@ sequelize.addModels([
   UserBookmarkedPosts,
   UserEmojiRelation,
   UserLikesPostRelations,
+  UserBitesPostRelation,
   UserOptions,
   UnifiedPushData,
   UserFollowHashtags
@@ -83,6 +87,7 @@ export {
   sequelize,
   Ask,
   Blocks,
+  Bites,
   BskyInviteCodes,
   Emoji,
   EmojiCollection,
@@ -112,6 +117,7 @@ export {
   UserBookmarkedPosts,
   UserEmojiRelation,
   UserLikesPostRelations,
+  UserBitesPostRelation,
   UserOptions,
   UnifiedPushData,
   UserFollowHashtags

@@ -1,10 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Injectable } from '@angular/core'
-
-import { Follower } from '../interfaces/follower'
-import { Reblog } from '../interfaces/reblog'
+import { computed, Injectable, signal } from '@angular/core'
 import { JwtService } from './jwt.service'
-import { firstValueFrom } from 'rxjs'
+import { filter, firstValueFrom } from 'rxjs'
 import { SimplifiedUser } from '../interfaces/simplified-user'
 import { EmojiRelations, Media, NotificationRaw, Quote, Tag, basicPost } from '../interfaces/unlinked-posts'
 import { UserNotifications } from '../interfaces/user-notifications'
@@ -14,74 +11,92 @@ import { EnvironmentService } from './environment.service'
 import { Emoji } from '../interfaces/emoji'
 import { Ask } from '../interfaces/ask'
 import sanitize from 'sanitize-html'
+import { LoginService } from './login.service'
+import { SettingsService } from './settings.service'
+import { AudioService } from './audio.service'
+
+// Copied from backend interface
+export type NotificationData = {
+  notifications: number
+  followsAwaitingApproval: number
+  reports: number
+  usersAwaitingApproval: number
+  asks: number
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationsService {
   uniqueDate = new Date()
-  likesDate = new Date()
-  followsDate = new Date()
-  reblogsDate = new Date()
-  mentionsDate = new Date()
-  emojiReactionDate = new Date()
-  quotesDate = new Date()
 
   emojiMap = new Map<string, Emoji>()
   userMap = new Map<string, SimplifiedUser>()
   postMap = new Map<string, ProcessedPost>()
 
+  // Data for other components to subscribe to
+  public notifications = signal(0)
+  public reports = signal(0)
+  public followsAwaitingApproval = signal(0)
+  public usersAwaitingApproval = signal(0)
+  public asks = signal(0)
+
+  totalNotifications = computed(
+    () =>
+      this.notifications() +
+      this.reports() +
+      this.followsAwaitingApproval() +
+      this.usersAwaitingApproval() +
+      this.asks()
+  )
+
   constructor(
     private http: HttpClient,
     private jwt: JwtService,
-    private postService: PostsService
-  ) {}
+    private postService: PostsService,
+    private settings: SettingsService,
+    private audioService: AudioService,
+    private loginService: LoginService
+  ) {
+    // Initial notifications load when logging in
+    loginService.loggedIn.pipe(filter((logged) => logged)).subscribe(() => {
+      this.updateCount()
+    })
+  }
 
-  async getUnseenNotifications(): Promise<{
-    notifications: number
-    reports: number
-    usersAwaitingApproval: number
-    followsAwaitingApproval: number
-    asks: number
-  }> {
-    let res: {
-      notifications: number
-      reports: number
-      usersAwaitingApproval: number
-      followsAwaitingApproval: number
-      asks: number
-    } = {
+  /**
+   * @description Gets the number of notifications from the server if the user is logged in.
+   *
+   * The server does not mark notifications as read when checked this way.
+   */
+  async updateCount(): Promise<void> {
+    if (!this.loginService.loggedIn.value) return
+
+    let res: NotificationData = {
       notifications: 0,
       reports: 0,
       followsAwaitingApproval: 0,
       usersAwaitingApproval: 0,
       asks: 0
     }
-    try {
-      const lastTimeCheckedString = localStorage.getItem('lastTimeCheckNotifications')
-      const lastTimeChecked = lastTimeCheckedString ? new Date(lastTimeCheckedString) : new Date(1)
-      let petitionData: HttpParams = new HttpParams()
-      petitionData = petitionData.set('startScroll', lastTimeChecked.getTime().toString())
-      const notifications = await firstValueFrom(
-        this.http.get<{
-          notifications: number
-          reports: number
-          usersAwaitingApproval: number
-          followsAwaitingApproval: number
-          asks: number
-        }>(`${EnvironmentService.environment.baseUrl}/v2/notificationsCount`, {
-          params: petitionData
-        })
-      )
-      res = notifications ? notifications : res
-    } catch (error) {
-      console.warn({
-        message: 'error processing notifications',
-        error: error
-      })
-    }
 
-    return res
+    const notifications = await firstValueFrom(
+      this.http.get<NotificationData>(`${EnvironmentService.environment.baseUrl}/v2/notificationsCount`)
+    )
+    res = notifications ? notifications : res
+
+    const previousCount = this.totalNotifications()
+
+    this.notifications.set(res.notifications)
+    this.reports.set(res.reports)
+    this.followsAwaitingApproval.set(res.followsAwaitingApproval)
+    this.usersAwaitingApproval.set(res.usersAwaitingApproval)
+    this.asks.set(res.asks)
+
+    // Check for any notification changes to play the audio
+    if (previousCount < this.totalNotifications() && this.settings.values.disableSounds !== true) {
+      this.audioService.playSound('notification')
+    }
   }
 
   async getNotificationsScrollV2(page: number): Promise<UserNotifications[]> {
@@ -162,13 +177,13 @@ export class NotificationsService {
         }
         const emoji = notification.emojiReactionId
           ? this.emojiMap.get(
-              petition.emojiRelations.postEmojiReactions.find((elem) => elem.id == notification.emojiReactionId)
-                ?.emojiId as string
-            )
+            petition.emojiRelations.postEmojiReactions.find((elem) => elem.id == notification.emojiReactionId)
+              ?.emojiId as string
+          )
           : undefined
         let notificationProcessed: UserNotifications = {
           type: notification.notificationType,
-          url: notification.notificationType === 'FOLLOW' ? `/blog/${usr.url}` : `/post/${notification.postId}`,
+          url: notification.notificationType === 'FOLLOW' || 'USERBITE' ? `/blog/${usr.url}` : `/post/${notification.postId}`,
           avatar: usr.avatar,
           userUrl: usr.url,
           userName: usr.name,
@@ -179,7 +194,7 @@ export class NotificationsService {
             ? emoji.name
             : notification.notificationType === 'EMOJIREACT'
               ? petition.emojiRelations.postEmojiReactions.find((elem) => elem.id == notification.emojiReactionId)
-                  ?.content
+                ?.content
               : undefined
         }
         return notificationProcessed

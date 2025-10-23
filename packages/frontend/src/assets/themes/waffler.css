@@ -56,7 +56,7 @@ Source repo: https://git.gay/freeplay/UserStyles/src/branch/wah/wafrn
 		/** sidebar */
 		mat-drawer {
 			order: -1; /* make sure sidebar is before divider */
-			--mat-list-active-indicator-shape: 100px;;
+			--mat-list-active-indicator-shape: 100px;
 			--mat-sys-on-surface: var(--mat-sys-outline) !important;
 			.mat-drawer-inner-container {
 				padding-inline: 16px !important;
@@ -430,7 +430,12 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	.emoji-reactions {
 		gap: 4px !important;
 		--mat-button-protected-container-height: 40px;
-		--mat-button-text-container-height: 40px !important;
+		.post-emoji {
+			min-width: 1.5em;
+			max-width: 4em;
+			height: 1.5em;
+			object-fit: contain !important;
+		}
 	}
 	.emoji-reactions.emoji-reactions button {
 		border-radius: 100px;
@@ -494,17 +499,18 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
 		transition: height .4s cubic-bezier(.7,0,0,1);
-		&::before {
-			content: "";
-			position: absolute;
-			inset: 0px;
-			background: inherit;
-			z-index: -1;
-			background-size: 1px 1px;
-			filter: blur(10px);
-			transform: scale(1.5);
-			background-repeat: repeat;
-			opacity: .4;
+		@media (min-width: 800px) {
+			&::before {
+				content: "";
+				position: absolute;
+				inset: 0px;
+				background: inherit;
+				z-index: -1;
+				background-size: 1px 1px;
+				filter: blur(5px);
+				background-repeat: repeat;
+				opacity: .4;
+			}
 		}
 	}
 	.flex {

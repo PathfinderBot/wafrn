@@ -1,3 +1,74 @@
 .visibility-hidden {
   visibility: hidden;
 }
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(160px, 0%), 1fr));
+  gap: 0.5rem;
+}
+
+.video-icon {
+  color: var(--mat-sys-outline);
+}
+
+@media screen and (max-width: 992px) {
+  .media-grid {
+    & .media-grid-footer,
+    & .media-grid-header {
+      opacity: 1;
+    }
+  }
+}
+
+.media-grid-tile {
+  aspect-ratio: 1/1;
+  border-radius: var(--mat-sys-corner-small);
+  background: var(--mat-sys-surface-container);
+  box-shadow: var(--mat-sys-level1);
+  position: relative;
+  overflow: clip;
+
+  &:hover .media-grid-header {
+    opacity: 1;
+  }
+  &:hover .media-grid-footer {
+    opacity: 1;
+    height: calc(100% - 48px);
+  }
+}
+
+.media-grid-footer,
+.media-grid-header {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 0.25rem 1rem;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.35);
+  color: #fff;
+
+  opacity: 0.5;
+  z-index: 1;
+  transition:
+    opacity 100ms ease-out,
+    height 100ms ease-out;
+}
+
+.media-grid-header {
+  top: 0;
+}
+
+.media-grid-footer {
+  bottom: 0;
+}
+
+.grid-alt-text {
+  color: var(--mat-sys-on-surface);
+}
+
+.content-warning-text {
+  color: var(--mat-sys-outline);
+}

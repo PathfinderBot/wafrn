@@ -11,6 +11,7 @@ import { getKey } from '../cacheGetters/getKey.js'
 import { SignedRequest } from '../../interfaces/fediverse/signedRequest.js'
 import { getRemoteActor } from './getRemoteActor.js'
 import { LdSignature } from './rsa2017.js'
+import { getAdminUser } from '../getAdminAndDeletedUser.js'
 
 function getCheckFediverseSignatureFunction(force = false) {
   return async function checkFediverseSignature(req: SignedRequest, res: Response, next: NextFunction) {
@@ -19,11 +20,7 @@ function getCheckFediverseSignatureFunction(force = false) {
       ? `petition without sighead ${req.header('user-agent')}`
       : 'somewhere not specified'
     let remoteUserUrl = ''
-    const adminUser = User.findOne({
-      where: {
-        url: completeEnvironment.adminUser
-      }
-    })
+    const adminUser = getAdminUser()
     try {
       const headersToValidate = ['(request-target)', 'host', 'date']
       if (req.method === 'POST') {
@@ -99,7 +96,7 @@ function getCheckFediverseSignatureFunction(force = false) {
           return
         } else {
           // ok you cornered me. forced to fetch the remote actor
-          const tmpUser = await getRemoteActor(remoteUserUrl, await adminUser as User)
+          const tmpUser = await getRemoteActor(remoteUserUrl, (await adminUser) as User)
           remoteKeyData = await getKey(remoteUserUrl, await adminUser)
           if (remoteKeyData) {
             remoteKey = remoteKeyData.key
@@ -133,7 +130,7 @@ function getCheckFediverseSignatureFunction(force = false) {
           } else if (req.body.signature && req.body.signature.type === 'RsaSignature2017') {
             // Mastodon allows two kind of signatures on POST bodys, if the http one fails we can check if there's a JSON-LD one, and if it is valid we pass it
             const signature = req.body.signature
-            const remoteActor = await getRemoteActor(signature.creator.split('#')[0], await adminUser as User)
+            const remoteActor = await getRemoteActor(signature.creator.split('#')[0], (await adminUser) as User)
             const jsonld = new LdSignature()
 
             if (
@@ -148,11 +145,9 @@ function getCheckFediverseSignatureFunction(force = false) {
               success = true
             } else {
               logger.debug(`POST Signature verifications failed for ${hostUrl}: ${remoteUserUrl}`)
-              getRemoteActor(remoteUserUrl, await adminUser as User, true)
-                .catch(() => {
-                })
-                .then(() => {
-                })
+              getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
+                .catch(() => {})
+                .then(() => {})
             }
           } else {
             logger.debug(`No valid POST signatures found ${hostUrl}: ${remoteUserUrl}`)
@@ -170,11 +165,9 @@ function getCheckFediverseSignatureFunction(force = false) {
         const now = new Date()
         if (now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000) {
           // while we will still fail this request, we do initiate an async forced update, so if the client retries it'll likely have an updated signature by that time
-          getRemoteActor(remoteUserUrl, await adminUser as User, true)
-            .catch(() => {
-            })
-            .then(() => {
-            })
+          getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
+            .catch(() => {})
+            .then(() => {})
         }
       }
 
@@ -185,7 +178,7 @@ function getCheckFediverseSignatureFunction(force = false) {
       }
     } catch (error: any) {
       req.fediData = { fediHost: hostUrl, valid: false }
-      await getRemoteActor(remoteUserUrl, await adminUser as User, true)
+      await getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
       if (force) {
         success = false
         logger.debug({
@@ -201,7 +194,7 @@ function getCheckFediverseSignatureFunction(force = false) {
       //logger.debug(`fail signature ${hostUrl}: ${remoteUserUrl}`)
       res.sendStatus(401)
       // we failed to get the remote user, we force an update
-      await getRemoteActor(remoteUserUrl, await adminUser as User, true)
+      await getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
       return
     } else {
       next()

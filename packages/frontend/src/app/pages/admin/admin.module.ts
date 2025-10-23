@@ -9,7 +9,7 @@ const routes: Route[] = [
   },
   {
     path: 'user-blocks',
-    loadChildren: () => import('./blocks/blocks.module').then((m) => m.BlocksModule)
+    loadComponent: () => import('./blocks/blocks.component').then((c) => c.BlocksComponent)
   },
   {
     path: 'user-reports',
@@ -17,7 +17,7 @@ const routes: Route[] = [
   },
   {
     path: 'bans',
-    loadChildren: () => import('./bans/bans.module').then((m) => m.BansModule)
+    loadComponent: () => import('./bans/bans.component').then((c) => c.BansComponent)
   },
   {
     path: 'activate-users',

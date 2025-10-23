@@ -1,21 +1,46 @@
+@let loggedIn = this.loginService.loggedIn.value;
 @if (!loading() && !found) {
   <app-pagenotfound />
+} @else {
+  <app-blog-header class="block" [blogDetails]="blogDetails()"></app-blog-header>
+  <mat-tab-group
+    [dynamicHeight]="true"
+    [preserveContent]="true"
+    [mat-stretch-tabs]="true"
+    (selectedTabChange)="handleTabChange($event)"
+  >
+    <mat-tab [label]="'blog.tabWoots' | translate">
+      <ng-template matTabContent>
+        <app-post-list
+          [posts]="posts"
+          [visible]="postsVisible"
+          [loading]="loading() && !noMorePosts"
+          (loadPosts)="rateLimitLoadPosts()"
+        >
+        </app-post-list>
+      </ng-template>
+    </mat-tab>
+    <mat-tab [label]="'blog.tabMedia' | translate">
+      <ng-template matTabContent>
+        <app-post-list
+          displayMode="grid"
+          [posts]="mediaFilteredPosts()"
+          [visible]="mediaVisible"
+          [loading]="loading() && !noMorePosts"
+          (loadPosts)="rateLimitLoadPosts()"
+        ></app-post-list>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
 }
-<app-blog-header [blogDetails]="blogDetails()"></app-blog-header>
-<app-post-list
-  [posts]="posts"
-  [visible]="postsVisible"
-  [loading]="loading() && !noMorePosts"
-  (loadPosts)="loadPosts(currentPage)"
-></app-post-list>
-<footer class="p-4 text-center wafrn-container">
-  @if (noMorePosts) {
+@if (noMorePosts) {
+  <footer class="p-4 text-center wafrn-container">
     <div>
       <p class="mb-4 text-lg">No more posts...</p>
       @if (blogDetails()?.url?.startsWith('@')) {
-        <app-info-card [type]="loggedIn() ? 'info' : 'caution'">
+        <app-info-card [type]="loggedIn ? 'info' : 'caution'">
           {{
-            loggedIn()
+            loggedIn
               ? 'As this user is from a remote instance, the shown information may be incomplete.'
               : 'To see external users you need to be logged in. You can check the user in their original instance'
           }}
@@ -31,5 +56,5 @@
         </app-info-card>
       }
     </div>
-  }
-</footer>
+  </footer>
+}
