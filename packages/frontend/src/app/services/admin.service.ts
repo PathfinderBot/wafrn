@@ -116,6 +116,10 @@ export class AdminService {
     return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceNSFWUser`, { id: id }))
   }
 
+  async reopenReport(id: number): Promise<any> {
+    return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/reopenReport`, { id: id }))
+  }
+
   async banList() {
     return firstValueFrom(
       this.http.get<{ users: UserBan[] }>(`${EnvironmentService.environment.baseUrl}/admin/getBannedUsers`)

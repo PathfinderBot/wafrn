@@ -121,6 +121,8 @@
               <button mat-flat-button class="warn" (click)="forceNSFW(element)">Mark user as NSFW</button>
               <button mat-flat-button class="warn" (click)="ban(element)">Ban user</button>
             </div>
+          } @else {
+            <button mat-stroked-button (click)="reopen(element)">Reopen report</button>
           }
         </td>
       </ng-container>

@@ -420,7 +420,8 @@
       "confirmIgnoreTitle": "Confirm ignoring report of",
       "confirmIgnoreContent": "Woot was reported for reason:",
       "confirmUnbanTitle": "Confirm unbanning",
-      "confirmUnbanContent": "We do not yet store ban information but it will be here eventually:"
+      "confirmUnbanContent": "We do not yet store ban information but it will be here eventually:",
+      "confirmReopenTitle": "Confirm reopening report"
     },
     "post-header": {
       "followTitle": "Follow user",

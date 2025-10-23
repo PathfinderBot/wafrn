@@ -130,6 +130,17 @@ export class ReportListComponent implements OnInit {
     this.loadReports()
   }
 
+  async reopen(report: UserReport) {
+    const confirm = await this.simpleDialog.createConfirmDialog({
+      title: 'dialog.admin.confirmReopenTitle'
+    })
+
+    if (!confirm) return
+
+    await this.adminService.reopenReport(report.id)
+    this.loadReports()
+  }
+
   updateMode(event: Event) {
     const target = event.target
     if (!target || !(target instanceof HTMLInputElement)) return

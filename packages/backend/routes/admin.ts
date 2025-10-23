@@ -288,6 +288,20 @@ export default function adminRoutes(app: Application) {
       )
     )
   })
+  app.post('/api/admin/reopenReport', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    res.send(
+      await PostReport.update(
+        {
+          resolved: false
+        },
+        {
+          where: {
+            id: req.body.id
+          }
+        }
+      )
+    )
+  })
 
   async function getBannedUsers() {
     return await User.scope('full').findAll({
