@@ -92,12 +92,27 @@
       <ng-container matColumnDef="report">
         <th mat-header-cell *matHeaderCellDef>Report</th>
         <td mat-cell *matCellDef="let row">
-          <div class="report-description"
-            ><span class="report-severity" style="--severity-scale: {{ mapSeverity(row.severity) * 100 }}%"
-              >{{ mapReport(row.severity) }}:</span
-            >
-            {{ row.description }}</div
-          >
+          <div class="report-description">
+            @if (mapReport(row.severity).length + row.description.length < 90) {
+              <span class="report-severity" style="--severity-scale: {{ mapSeverity(row.severity) * 100 }}%"
+                >{{ mapReport(row.severity) }}:</span
+              >
+              {{ row.description }}
+            } @else {
+              <details>
+                <summary
+                  ><span class="report-severity" style="--severity-scale: {{ mapSeverity(row.severity) * 100 }}%"
+                    >{{ mapReport(row.severity) }}:
+                  </span>
+                  {{ row.description.substring(0, 70 - mapReport(row.severity).length) }}&hellip;
+                  <span class="report-description-expander"
+                    >[{{ row.description.length }} {{ 'common.characters' | translate }}]</span
+                  ></summary
+                >
+                {{ row.description }}
+              </details>
+            }
+          </div>
         </td>
       </ng-container>
       <ng-container matColumnDef="solved">

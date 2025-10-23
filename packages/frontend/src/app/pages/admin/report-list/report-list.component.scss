@@ -37,6 +37,21 @@
 
 .report-description {
   max-width: 45ch;
+  line-height: 1.375;
+
+  summary {
+    // Hide the > arrow
+    display: block;
+  }
+}
+details[open] summary {
+  margin-bottom: 0.25rem;
+}
+.report-description-expander {
+  font-weight: bold;
+  details:hover & {
+    text-decoration-line: underline;
+  }
 }
 
 @media (min-width: 992px) {
