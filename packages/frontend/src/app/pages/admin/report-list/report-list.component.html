@@ -99,7 +99,11 @@
       <ng-container matColumnDef="solved">
         <th mat-header-cell *matHeaderCellDef>Resolved</th>
         <td mat-cell *matCellDef="let row">
-          <mat-checkbox [disabled]="true" [checked]="row.resolved"></mat-checkbox>
+          @if (row.resolved) {
+            ✅
+          } @else {
+            ❌
+          }
         </td>
       </ng-container>
       <ng-container matColumnDef="date">
