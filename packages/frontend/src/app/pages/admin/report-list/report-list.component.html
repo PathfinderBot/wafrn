@@ -4,12 +4,17 @@
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container-wide">
   <mat-form-field class="pb-1 mat-form-field-no-padding w-full">
-    <mat-label>Reports Filter</mat-label>
+    <mat-label
+      >Reports Filter
+      @if (advancedSearch()) {
+        <strong>(Advanced)</strong>
+      }
+    </mat-label>
     <input matInput class="w-full" [(ngModel)]="reportDataSource.filter" (input)="updateMode($event)" />
   </mat-form-field>
   @if (advancedSearch()) {
     <div
-      >Advanced Search: Report
+      >Report
       @for (filter of mapFilters(searchFilters()); track $index) {
         @if ($index !== 0) {
           and
