@@ -54,7 +54,7 @@ export class ConfirmDialogComponent {
   inputResponse = signal('')
 
   constructor(@Inject(MAT_DIALOG_DATA) protected data: ConfirmDialogData) {
-    this.textData = Object.assign(data, this.defaultTextData)
+    this.textData = Object.assign(this.defaultTextData, data)
   }
 
   onInput(event: InputEvent): void {
