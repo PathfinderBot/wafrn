@@ -117,6 +117,7 @@ export const baseEnvironment: Environment = {
     externalCacheurl: '/api/cache?media=',
     shortenPosts: 3,
     disablePWA: false,
-    maintenance: false
+    maintenance: false,
+    enableRawOutput: true
   }
 }

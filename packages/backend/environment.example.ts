@@ -120,6 +120,7 @@ export const baseEnvironment: Environment = {
     externalCacheurl: '${{FRONTEND_CACHE_URL}}',
     shortenPosts: ${{FRONTEND_SHORTEN_POSTS:-3}},
     disablePWA: ${{FRONTEND_DISABLE_PWA:-false}},
-    maintenance: ${{FRONTEND_MAINTENANCE:-false}}
+    maintenance: ${{FRONTEND_MAINTENANCE:-false}},
+    enableRawOutput: ${{ENABLE_RAW_OUTPUT:-false}}
   }
 }
