@@ -17,13 +17,15 @@ import {
   faTriangleExclamation,
   faRepeat,
   faQuoteRight,
-  faCookieBite
+  faCookieBite,
+  faCode
 } from '@fortawesome/free-solid-svg-icons'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import { BlocksService } from 'src/app/services/blocks.service'
 import { LoginService } from 'src/app/services/login.service'
 import { MessageService } from 'src/app/services/message.service'
 import { PostsService } from 'src/app/services/posts.service'
+import { UtilsService } from 'src/app/services/utils.service'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { InfoCardComponent } from '../info-card/info-card.component'
@@ -32,6 +34,7 @@ import { ReportService } from 'src/app/services/report.service'
 import { TranslatePipe } from '@ngx-translate/core'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
 import { BlogService } from 'src/app/services/blog.service'
+import { RawJsonDialogComponent } from '../raw-json-dialog/raw-json-dialog.component'
 
 @Component({
   selector: 'app-blog-header',
@@ -68,6 +71,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   reportUserIcon = faTriangleExclamation
   disableRewootIcon = faRepeat
   disableQuotesIcon = faQuoteRight
+  rawJsonIcon = faCode
 
   userIcon = faUser
   bskyIcon = faBluesky
@@ -79,6 +83,8 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   allowRemoteAsk = false
   isBlueskyUser = false
   headerHTML: string | undefined
+
+  rawOutputEnabled = EnvironmentService.environment.enableRawOutput
 
   fediComp = computed<{ name: string; value: string }[]>(() => {
     const fediAttachment = this.blogDetails()?.publicOptions.find(
@@ -100,7 +106,8 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     public environmentService: EnvironmentService,
     public reportService: ReportService,
     public simpleDialog: SimpleDialogService,
-    public blogService: BlogService
+    public blogService: BlogService,
+    public utilsService: UtilsService
   ) { }
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails()
@@ -220,6 +227,19 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
         translate: true
       })
     }
+  }
+
+  async getRawJsonComponent(): Promise<typeof RawJsonDialogComponent> {
+    const { RawJsonDialogComponent } = await import('../raw-json-dialog/raw-json-dialog.component')
+    return RawJsonDialogComponent
+  }
+
+  async getRawJson(id: string) {
+    const raw = await this.utilsService.getRawJsonUser(id);
+    this.dialogService.open(await this.getRawJsonComponent(), {
+      data: raw,
+      width: '800px'
+    })
   }
 
   async getAskDialogComponent(): Promise<typeof AskDialogContentComponent> {

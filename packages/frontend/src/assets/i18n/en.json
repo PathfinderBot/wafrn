@@ -400,6 +400,7 @@
   "dialog": {
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "close": "Close",
     "bluesky": {
       "generateInviteCodeWarningTitle": "Attention",
       "generateInviteCodeWarning": "Generating an invite code will delete IRREVERSIBLY any associated bsky account"
@@ -459,6 +460,9 @@
       "reportDescription": "Description",
       "reportBlockUser": "Block this user",
       "reportConfirm": "Report"
+    },
+    "common": {
+      "rawData": "Raw JSON data"
     }
   },
   "ask-dialog-content": {

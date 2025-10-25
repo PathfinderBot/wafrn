@@ -12,7 +12,8 @@ import { checkuserAllowsThreads } from '../../utils/checkUserAllowsThreads.js'
 import { userToJSONLD } from '../../utils/activitypub/userToJSONLD.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
-import { getPostUrlForQuote } from '../../utils/activitypub/postToJSONLD.js'
+import { getPostUrlForQuote, postToJSONLD } from '../../utils/activitypub/postToJSONLD.js'
+import { getPostAndUserFromPostId } from '../../utils/cacheGetters/getPostAndUserFromPostId.js'
 
 // we get the user from the memory cache. if does not exist we try to find it
 async function getLocalUserByUrl(url: string): Promise<any> {
@@ -116,14 +117,12 @@ function activityPubRoutes(app: Application) {
               orderedItems: itemsToSend
             }
             if (page > 1) {
-              response['prev'] = `${
-                completeEnvironment.frontendUrl
-              }/fediverse/blog/${user.url.toLowerCase()}/following?page=${page - 1}`
+              response['prev'] = `${completeEnvironment.frontendUrl
+                }/fediverse/blog/${user.url.toLowerCase()}/following?page=${page - 1}`
             }
             if (followedUsers.length > pageSize * page) {
-              response['next'] = `${
-                completeEnvironment.frontendUrl
-              }/fediverse/blog/${user.url.toLowerCase()}/following?page=${page + 1}`
+              response['next'] = `${completeEnvironment.frontendUrl
+                }/fediverse/blog/${user.url.toLowerCase()}/following?page=${page + 1}`
             }
           } else {
             response = {
@@ -174,22 +173,19 @@ function activityPubRoutes(app: Application) {
             const itemsToSend = followers.slice((page - 1) * pageSize, page * pageSize)
             response = {
               '@context': 'https://www.w3.org/ns/activitystreams',
-              id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}/followers?page=${
-                req.query.page
-              }`,
+              id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}/followers?page=${req.query.page
+                }`,
               type: 'OrderedCollectionPage',
               orderedItems: itemsToSend,
               totalItems: followersNumber
             }
             if (page > 1) {
-              response['prev'] = `${
-                completeEnvironment.frontendUrl
-              }/fediverse/blog/${user.url.toLowerCase()}/followers?page=${page - 1}`
+              response['prev'] = `${completeEnvironment.frontendUrl
+                }/fediverse/blog/${user.url.toLowerCase()}/followers?page=${page - 1}`
             }
             if (followers.length > pageSize * page) {
-              response['next'] = `${
-                completeEnvironment.frontendUrl
-              }/fediverse/blog/${user.url.toLowerCase()}/followers?page=${page + 1}`
+              response['next'] = `${completeEnvironment.frontendUrl
+                }/fediverse/blog/${user.url.toLowerCase()}/followers?page=${page + 1}`
             }
           } else {
             response = {
@@ -329,6 +325,22 @@ function activityPubRoutes(app: Application) {
       res.sendStatus(404)
     }
   })
+
+  if (completeEnvironment.frontendEnvironment.enableRawOutput) {
+    app.get('/fediverse/post/:id/raw', async (req: Request, res: Response) => {
+      const id = req.params.id;
+      const jsonLd = await postToJSONLD(id)
+      if (jsonLd) {
+        res
+          .set({
+            'content-type': 'application/activity+json'
+          })
+          .send(jsonLd)
+      } else {
+        return404(res)
+      }
+    })
+  }
 
   app.get('/fediverse/post/:id/replies', async (req: Request, res: Response) => {
     res.send({

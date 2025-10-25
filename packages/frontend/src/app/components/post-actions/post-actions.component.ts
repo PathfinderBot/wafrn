@@ -25,7 +25,8 @@ import {
   faPaperPlane,
   faUserSlash,
   faVolumeMute,
-  faCookieBite
+  faCookieBite,
+  faCode
 } from '@fortawesome/free-solid-svg-icons'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
@@ -44,6 +45,7 @@ import { SettingsService } from 'src/app/services/settings.service'
 import { PostActionButtonsComponent } from '../post-action-buttons/post-action-buttons.component'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
 import { BlocksService } from 'src/app/services/blocks.service'
+import { MatDialog } from '@angular/material/dialog'
 
 @Component({
   selector: 'app-post-actions',
@@ -93,6 +95,9 @@ export class PostActionsComponent implements OnChanges {
   muteIcon = faVolumeMute
   blockIcon = faUserSlash
   biteIcon = faCookieBite
+  rawJsonIcon = faCode
+
+  rawOutputEnabled = EnvironmentService.environment.enableRawOutput
 
   constructor(
     private messages: MessageService,
@@ -102,6 +107,7 @@ export class PostActionsComponent implements OnChanges {
     private utilsService: UtilsService,
     private settingsService: SettingsService,
     private simpleDialog: SimpleDialogService,
+    public dialogService: MatDialog,
     private blockService: BlocksService
   ) {
     if (loginService.loggedIn.value) {
@@ -202,6 +208,19 @@ export class PostActionsComponent implements OnChanges {
         translate: true
       })
     }
+  }
+
+  async getRawJsonComponent(): Promise<typeof RawJsonDialogComponent> {
+    const { RawJsonDialogComponent } = await import('../raw-json-dialog/raw-json-dialog.component')
+    return RawJsonDialogComponent
+  }
+
+  async getRawJson(id: string) {
+    const raw = await this.utilsService.getRawJsonPost(id);
+    this.dialogService.open(await this.getRawJsonComponent(), {
+      data: raw,
+      width: '800px'
+    })
   }
 
   // Dangerous options

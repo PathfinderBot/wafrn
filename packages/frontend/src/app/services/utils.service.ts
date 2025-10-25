@@ -11,7 +11,7 @@ export class UtilsService {
   constructor(
     private postsService: PostsService,
     private http: HttpClient
-  ) {}
+  ) { }
 
   objectToFormData(obj: any): FormData {
     const res = new FormData()
@@ -31,5 +31,27 @@ export class UtilsService {
     )
     let result = servers.map((elem) => elem.displayName.toLowerCase().trim()).filter((elem) => elem != '')
     return result.sort()
+  }
+
+  async getRawJsonUser(id: string): Promise<object> {
+    const raw = await firstValueFrom(
+      this.http.get(`${EnvironmentService.environment.frontUrl}/fediverse/blog/${id}`, {
+        headers: {
+          Accept: 'application/json'
+        }
+      })
+    )
+    return raw
+  }
+
+  async getRawJsonPost(id: string): Promise<object> {
+    const raw = await firstValueFrom(
+      this.http.get(`${EnvironmentService.environment.frontUrl}/fediverse/post/${id}/raw`, {
+        headers: {
+          Accept: 'application/json'
+        }
+      })
+    )
+    return raw
   }
 }

@@ -87,6 +87,7 @@ export class PostActionButtonsComponent implements OnChanges {
   bookmarkIcon = faBookmark
   unbookmarkIcon = faBookBookmark
 
+
   // Ordering
   buttonList: SettingListItem[] = []
 

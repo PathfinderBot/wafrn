@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "cheerio": "^1.1.0",
+    "nxt-json-view": "^20.0.0",
     "tsx": "^4.19.1"
   }
 }
