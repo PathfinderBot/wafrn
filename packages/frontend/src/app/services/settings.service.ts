@@ -575,6 +575,7 @@ export class SettingsService {
     confirmOpenCw: {
       key: 'confirmOpenCw',
       translationKey: 'settings.confirmOpenCw',
+      translationDescriptionKey: 'settings.confirmOpenCwDescription',
       serverKey: 'wafrn.confirmOpenCw',
       localStorageKey: 'confirmOpenCw',
       type: 'checkbox',
@@ -586,10 +587,11 @@ export class SettingsService {
       serverKey: 'wafrn.confirmOpenCwAnnoyance',
       localStorageKey: 'confirmOpenCwAnnoyance',
       type: 'select',
-      default: '1',
+      default: Annoyance.none,
       variants: {
         [Annoyance.none]: 'settings.confirmOpenCwAnnoyanceOptions.none',
-        [Annoyance.timeout]: 'settings.confirmOpenCwAnnoyanceOptions.timeout'
+        [Annoyance.timeout]: 'settings.confirmOpenCwAnnoyanceOptions.timeout',
+        [Annoyance.fifteen]: 'settings.confirmOpenCwAnnoyanceOptions.fifteen'
       }
     }
   }

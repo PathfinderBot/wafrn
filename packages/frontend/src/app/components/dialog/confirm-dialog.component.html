@@ -12,6 +12,19 @@
         <strong class="dialog-content-suffix">{{ textData.contentSuffix | translate }}</strong>
       </p>
     }
+    @if (data.annoying === Annoyance.fifteen) {
+      <hr />
+      <p>{{ 'dialog.post-fragment.annoyances.puzzleWarning' | translate }}</p>
+      <div class="game flex justify-content-center">
+        <app-fifteen-game
+          [options]="{
+            width: 3,
+            height: 3
+          }"
+          (won)="winAnnoyance()"
+        ></app-fifteen-game>
+      </div>
+    }
   </mat-dialog-content>
 }
 <mat-dialog-actions>

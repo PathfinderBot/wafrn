@@ -400,10 +400,12 @@
     "confettiTestLocational": "Under Mouse",
     "confettiTestGeneric": "Screen sides",
     "confirmOpenCw": "Show dialog before opening content warnings",
-    "confirmOpenCwDescription": "Level of annoyance can be customized",
+    "confirmOpenCwDescription": "If you open CWs without thinking.",
+    "confirmOpenCwAnnoyance": "Type of additional annoyance",
     "confirmOpenCwAnnoyanceOptions": {
-      "none": "None",
-      "timeout": "2 second timeout"
+      "none": "Just the dialog",
+      "timeout": "2 second timeout",
+      "fifteen": "Solve a game of 3x3 Fifteen (EVIL)"
     }
   },
   "dialog": {
@@ -451,7 +453,10 @@
     },
     "post-fragment": {
       "confirmOpenCwTitle": "Confirm opening content warning",
-      "confirmOpenCwContent": "Post has the content warnings and muted words:"
+      "confirmOpenCwContent": "Post has the content warnings and muted words:",
+      "annoyances": {
+        "puzzleWarning": "Solve this to prove you aren't making a bad decision:"
+      }
     },
     "blog": {
       "customThemeTitle": "Custom Styles",
@@ -595,5 +600,15 @@
     "subtitle": "Looks like there isn't anything here.",
     "couldNotFind": "does not lead to a page",
     "returnHome": "Go Home"
+  },
+  "games": {
+    "common": {
+      "moves": "Moves"
+    },
+    "fifteen": {
+      "title": "Fifteen",
+      "newBoard": "New board",
+      "resetBoard": "Reset board"
+    }
   }
 }

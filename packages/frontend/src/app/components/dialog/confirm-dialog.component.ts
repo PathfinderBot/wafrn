@@ -10,11 +10,14 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { TranslatePipe } from '@ngx-translate/core'
-import { timer } from 'rxjs'
+import { Subject, timer } from 'rxjs'
+import { FifteenGameComponent } from '../fifteen-game/fifteen-game.component'
+import { ParticleService } from 'src/app/services/particle.service'
 
 export enum Annoyance {
   none = '0',
-  timeout = '1'
+  timeout = '1',
+  fifteen = '2'
 }
 
 export interface ConfirmDialogData {
@@ -39,6 +42,7 @@ export type ConfirmDialogResult = boolean
     MatDialogContent,
     MatFormFieldModule,
     MatInputModule,
+    FifteenGameComponent,
     TranslatePipe
   ],
   templateUrl: './confirm-dialog.component.html'
@@ -51,6 +55,9 @@ export class ConfirmDialogComponent {
   textData: ConfirmDialogData
   confirmButtonEnabled: boolean
 
+  // Annoyance data
+  annoyanceComplete = new Subject<void>()
+
   // Defaults for the buttons
   defaultTextData = {
     options: {
@@ -61,16 +68,33 @@ export class ConfirmDialogComponent {
 
   inputResponse = signal('')
 
-  constructor(@Inject(MAT_DIALOG_DATA) protected data: ConfirmDialogData) {
+  // Type mirroring for component
+  Annoyance = Annoyance
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA) protected data: ConfirmDialogData,
+    private particle: ParticleService
+  ) {
     this.textData = Object.assign(this.defaultTextData, data)
-    this.confirmButtonEnabled = data.annoying !== Annoyance.timeout
+
+    // Disable button if there's additional conditions
+    this.confirmButtonEnabled = data.annoying !== undefined && data.annoying === Annoyance.none
+    this.annoyanceComplete.subscribe(() => {
+      this.confirmButtonEnabled = true
+    })
 
     // Various annoyances
+
     if (data.annoying === Annoyance.timeout) {
       timer(2000).subscribe(() => {
-        this.confirmButtonEnabled = true
+        this.annoyanceComplete.next()
       })
     }
+  }
+
+  winAnnoyance() {
+    this.particle.genericConfetti()
+    this.annoyanceComplete.next()
   }
 
   onInput(event: InputEvent): void {

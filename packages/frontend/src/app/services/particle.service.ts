@@ -123,4 +123,14 @@ export class ParticleService {
       }
     })
   }
+
+  genericConfetti() {
+    this.confetti({
+      config: {
+        shapes: ['star'],
+        colors: ['#d2849c', '#70b07d', '#73a1dc'],
+        scalar: 2
+      }
+    })
+  }
 }
