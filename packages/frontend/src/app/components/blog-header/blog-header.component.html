@@ -1,6 +1,6 @@
 @let blog = blogDetails();
 @let loggedIn = loginService.loggedIn.value;
-<mat-card class="mb-3 overflow-hidden wafrn-container post-card blog-header">
+<mat-card appearance="outlined" class="mb-3 overflow-hidden wafrn-container post-card blog-header">
   <div class="h-14rem mb-3 blog-header-image" [style.background-image]="'url(' + headerUrl + ')'"></div>
   <div class="flex flex-column gap-3 justify-content-between">
     <div class="flex flex-wrap justify-content-between gap-3">

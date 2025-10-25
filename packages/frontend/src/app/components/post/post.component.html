@@ -4,6 +4,7 @@
   class="wafrn-container post-card"
   [class.active]="active()"
   [ngClass]="{ 'top-bar': post.length > 1, 'post-card-ios': iOSSafari }"
+  appearance="outlined"
 >
   @if (post.length > 1) {
     <app-post-ribbon

@@ -233,7 +233,7 @@ app-media-preview {
 }
 
 .woot-tagfield {
-  background-color: var(--mat-sys-surface-variant);
+  background-color: var(--mat-sys-surface-container-low);
 
   ::ng-deep .mat-mdc-floating-label {
     overflow: unset;
@@ -241,8 +241,8 @@ app-media-preview {
 
   mat-label {
     display: inline-block;
-    background-color: var(--mat-sys-surface-variant);
-    outline: 4px solid var(--mat-sys-surface-variant);
+    background-color: var(--mat-sys-surface-container-low);
+    outline: 4px solid var(--mat-sys-surface-container-low);
   }
 }
 
