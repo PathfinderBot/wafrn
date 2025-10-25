@@ -32,7 +32,7 @@
       content.questionPoll?.questionPollQuestions ||
       (content.medias && content.medias.length > 0)
     ) {
-      <mat-card [id]="'post-' + content.id" class="wafrn-container post-card">
+      <mat-card appearance="outlined" [id]="'post-' + content.id" class="wafrn-container post-card">
         <app-post-header [fragment]="content" [simplified]="false"></app-post-header>
         <app-post-fragment [fragment]="content"></app-post-fragment>
         <hr />

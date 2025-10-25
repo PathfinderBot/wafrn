@@ -448,3 +448,9 @@ mat-tab-header {
 .vertical-rule {
   border-right: 1px solid var(--mat-sys-outline-variant);
 }
+
+mat-drawer {
+  background: transparent!important;
+  border-right: 1px solid var(--mat-sys-outline-variant)!important;
+  box-shadow: none!important;
+}
