@@ -1,0 +1,5 @@
+<h1 mat-dialog-title>{{ 'dialog.common.rawData' | translate }}</h1>
+<div class="raw-dialog-data" mat-dialog-content>
+    <nxt-json-view [data]="data" [levelOpen]="0"></nxt-json-view>
+</div>
+<button mat-flat-button (click)="closeDialog()" class="w-full">{{ 'dialog.close' | translate }}</button>
