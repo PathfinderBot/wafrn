@@ -58,7 +58,7 @@ import { EditorService } from 'src/app/services/editor.service'
 import { LoginService } from 'src/app/services/login.service'
 import { PostsService } from 'src/app/services/posts.service'
 import { EmojiCollection } from 'src/app/interfaces/emoji-collection'
-import { from, debounceTime, Subscription } from 'rxjs'
+import { from, debounceTime, Subscription, BehaviorSubject, Subject } from 'rxjs'
 import { JwtService } from 'src/app/services/jwt.service'
 import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
 import { MatCheckboxModule } from '@angular/material/checkbox'
@@ -187,6 +187,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   emojiSubscription: Subscription
   editorUpdatedSubscription: Subscription | undefined
   httpMentionPetitionSubscription: Subscription | undefined
+  scrollSubject = new Subject<void>()
+  scrollSubscription: Subscription
 
   mentionedUsers: SimplifiedUser[] = []
   showMentionedUsersList = true
@@ -271,6 +273,10 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       this.uploadedMedias = this.data.post.medias ? this.data.post.medias.filter((elem) => elem.mediaOrder < 9999) : []
       this.privacy = this.data.post.privacy
     }
+
+    this.scrollSubscription = this.scrollSubject.pipe(debounceTime(500)).subscribe(() => {
+      this.doUpdateMentionsPanelPosition()
+    })
   }
 
   ngOnInit() {
@@ -288,6 +294,10 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scroll')
   updateMentionsPanelPosition() {
+    this.scrollSubject.next();
+  }
+
+  doUpdateMentionsPanelPosition() {
     if (this.editorUpdatedSubscription) {
       const screenWidth = window.innerWidth
       const screenHeight = window.innerHeight
@@ -386,6 +396,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.emojiSubscription.unsubscribe()
     this.editorUpdatedSubscription?.unsubscribe()
     this.httpMentionPetitionSubscription?.unsubscribe()
+    this.scrollSubscription.unsubscribe()
   }
 
   get privacyOption() {
@@ -670,7 +681,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.httpMentionPetitionSubscription = undefined
   }
   editorFocusedIn() {
-    this.editorUpdatedSubscription = this.postCreatorForm.controls['content'].valueChanges.subscribe((newValue) =>
+    this.editorUpdatedSubscription = this.postCreatorForm.controls['content'].valueChanges.pipe(
+      debounceTime(500)
+    ).subscribe((newValue) =>
       this.editorUpdateProcess(newValue)
     )
   }
