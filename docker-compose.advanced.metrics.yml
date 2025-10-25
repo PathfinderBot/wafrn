@@ -69,6 +69,8 @@ services:
       FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
 
       FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
+
+      ENABLE_RAW_OUTPUT: ${ENABLE_RAW_OUTPUT:-}
     deploy:
       mode: replicated
       replicas: 3

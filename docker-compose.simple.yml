@@ -68,6 +68,8 @@ services:
       FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
 
       FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
+
+      ENABLE_RAW_OUTPUT: ${ENABLE_RAW_OUTPUT:-}
     volumes:
       - ./packages/backend/uploads:/app/packages/backend/uploads
       - ./packages/backend/cache:/app/packages/backend/cache
