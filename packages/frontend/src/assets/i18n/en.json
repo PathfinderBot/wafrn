@@ -1,7 +1,10 @@
 {
   "common": {
     "commaSeparation": "Separated with commas",
+    "words": "words",
+    "word": "word",
     "characters": "characters",
+    "character": "character",
     "default": "Default",
     "commit": "commit"
   },
@@ -550,7 +553,9 @@
     "mutedWords": "Woot contains muted words:",
     "mediaContentWarning": "Woot has content warning:",
     "mediaNsfw": "Media is NSFW",
-    "replyingTo": "mentions: "
+    "replyingTo": "mentions: ",
+    "show": "Show",
+    "hide": "Hide"
   },
   "media": {
     "noAltText": "Media does not have alt text",

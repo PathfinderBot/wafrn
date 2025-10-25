@@ -13,13 +13,13 @@
     }
     <button class="toggle-cw-button" mat-raised-button (click)="cwClick()" class="w-full my-2">
       @if (showSensitiveContent()) {
-        Hide
+        {{ 'post-fragment.hide' | translate }}
       } @else {
-        Show
+        {{ 'post-fragment.show' | translate }}
         <span class="text-xs"
-          >({{ wordCount() }} word{{ wordCount() === 1 ? '' : 's' }}, {{ characterCount() }} character{{
-            characterCount() === 1 ? '' : 's'
-          }})</span
+          >({{ wordCount() }} {{ (wordCount() > 1 ? 'common.words' : 'common.word') | translate }},
+          {{ characterCount() }}
+          {{ (characterCount() > 1 ? 'common.characters' : 'common.character') | translate }})</span
         >
       }
     </button>
