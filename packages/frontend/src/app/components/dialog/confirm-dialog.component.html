@@ -22,7 +22,13 @@
       </button>
     }
     @if (textData.options.confirm) {
-      <button mat-flat-button class="dialog-confirm-button" (click)="onConfirm()" cdkFocusInitial>
+      <button
+        mat-flat-button
+        class="dialog-confirm-button"
+        (click)="onConfirm()"
+        [disabled]="!confirmButtonEnabled"
+        cdkFocusInitial
+      >
         {{ textData.options.confirm | translate }}
       </button>
     }

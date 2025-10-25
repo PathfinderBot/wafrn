@@ -36,6 +36,7 @@ import { SettingDropListComponent } from '../components/setting-drop-list/settin
 import { SETTINGS_TOKEN } from '../pages/settings/settings.component'
 import { replyBarItems } from '../components/post-action-buttons/post-action-buttons.component'
 import { SettingConfettiComponent } from '../components/setting-confetti/setting-confetti.component'
+import { Annoyance } from '../components/dialog/confirm-dialog.component'
 
 // All setting keys for use throughout the app
 const settingKeyVariants = [
@@ -82,7 +83,9 @@ const settingKeyVariants = [
   'atprotoLinkDestination',
   'confettiMultiplier',
   'flatConfetti',
-  'disableRewootsExploreLocal'
+  'disableRewootsExploreLocal',
+  'confirmOpenCw',
+  'confirmOpenCwAnnoyance'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -568,6 +571,26 @@ export class SettingsService {
       localStorageKey: 'flatConfetti',
       type: 'checkbox',
       default: false
+    },
+    confirmOpenCw: {
+      key: 'confirmOpenCw',
+      translationKey: 'settings.confirmOpenCw',
+      serverKey: 'wafrn.confirmOpenCw',
+      localStorageKey: 'confirmOpenCw',
+      type: 'checkbox',
+      default: false
+    },
+    confirmOpenCwAnnoyance: {
+      key: 'confirmOpenCwAnnoyance',
+      translationKey: 'settings.confirmOpenCwAnnoyance',
+      serverKey: 'wafrn.confirmOpenCwAnnoyance',
+      localStorageKey: 'confirmOpenCwAnnoyance',
+      type: 'select',
+      default: '1',
+      variants: {
+        [Annoyance.none]: 'settings.confirmOpenCwAnnoyanceOptions.none',
+        [Annoyance.timeout]: 'settings.confirmOpenCwAnnoyanceOptions.timeout'
+      }
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -664,6 +687,8 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.cwBehavior' },
         { type: 'key', value: 'disableCW' },
+        { type: 'key', value: 'confirmOpenCw' },
+        { type: 'key', value: 'confirmOpenCwAnnoyance' },
         { type: 'key', value: 'disableNSFWFilter' },
         { type: 'key', value: 'hideNoDescriptionMedia' },
         { type: 'key', value: 'disableForceAltText' }
@@ -778,7 +803,7 @@ export class SettingsService {
           try {
             this.fediAttachments.length = 0
             this.fediAttachments.push(...JSON.parse(rawAttachments.optionValue))
-          } catch (error) { }
+          } catch (error) {}
 
           if (this.fediAttachments.length === 0) {
             this.fediAttachments.push({ name: '', value: '' })

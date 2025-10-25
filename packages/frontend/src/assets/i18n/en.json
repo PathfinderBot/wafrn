@@ -398,7 +398,13 @@
     "confettiTestAreaDescription": "Test confetti of various interactions:",
     "confettiType": "Interaction type",
     "confettiTestLocational": "Under Mouse",
-    "confettiTestGeneric": "Screen sides"
+    "confettiTestGeneric": "Screen sides",
+    "confirmOpenCw": "Show dialog before opening content warnings",
+    "confirmOpenCwDescription": "Level of annoyance can be customized",
+    "confirmOpenCwAnnoyanceOptions": {
+      "none": "None",
+      "timeout": "2 second timeout"
+    }
   },
   "dialog": {
     "confirm": "Confirm",
@@ -442,6 +448,10 @@
       "blockAccountLabel": "Reason (optional)",
       "unblockAccountTitle": "Unblock account",
       "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots."
+    },
+    "post-fragment": {
+      "confirmOpenCwTitle": "Confirm opening content warning",
+      "confirmOpenCwContent": "Post has the content warnings and muted words:"
     },
     "blog": {
       "customThemeTitle": "Custom Styles",
