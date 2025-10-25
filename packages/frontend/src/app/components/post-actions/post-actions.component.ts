@@ -95,7 +95,6 @@ export class PostActionsComponent implements OnChanges {
   muteIcon = faVolumeMute
   blockIcon = faUserSlash
   biteIcon = faCookieBite
-  rawJsonIcon = faCode
 
   rawOutputEnabled = EnvironmentService.environment.enableRawOutput
 

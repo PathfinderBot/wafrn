@@ -7,119 +7,123 @@
       <div>
         <img [src]="avatarUrl()" alt="user avatar" class="blog-avatar-image" />
       </div>
-      @if (rawOutputEnabled && blog) {
-      <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="getRawJson(blog.url)"
-        matTooltip="{{ 'dialog.common.rawData' | translate }}">
-        <fa-icon [fixedWidth]="true" [icon]="rawJsonIcon"></fa-icon>
-      </button>
-      }
-      @if (loggedIn && !isMe && blog) {
-      @if (loggedIn) {
       <div class="flex">
-
-        @if (!blog.isBlueskyUser) {
-        <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="biteAccount(blog.id)"
-          matTooltip="{{ 'post-actions.biteUser' | translate }}">
-          <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
-        </button>
-        }
-        @if (!postService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
-        <button mat-stroked-button [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
-          class="split-button-left" (click)="
+        <div>
+          @if (rawOutputEnabled && blog) {
+          <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="getRawJson(blog.url)"
+            matTooltip="{{ 'dialog.common.rawData' | translate }}">
+            <fa-icon [fixedWidth]="true" [icon]="rawJsonIcon"></fa-icon>
+          </button>
+          }
+        </div>
+        @if (loggedIn && !isMe && blog) {
+        @if (loggedIn) {
+        <div>
+          @if (!blog.isBlueskyUser) {
+          <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="biteAccount(blog.id)"
+            matTooltip="{{ 'post-actions.biteUser' | translate }}">
+            <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
+          </button>
+          }
+          @if (!postService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
+          <button mat-stroked-button [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
+            class="split-button-left" (click)="
                   postService.followedUserIds.indexOf(blog.id) === -1 ? followUser(blog.id) : unfollowUser(blog.id)
                 ">
-          {{ postService.followedUserIds.indexOf(blog.id) === -1 ? 'Follow' : 'Unfollow' }}
-        </button>
+            {{ postService.followedUserIds.indexOf(blog.id) === -1 ? 'Follow' : 'Unfollow' }}
+          </button>
+          }
+          @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
+          <button mat-stroked-button color="accent" class="split-button-left" (click)="unfollowUser(blog.id)">
+            Awaiting approval
+          </button>
+          }
+          <button aria-label="More options" [matMenuTriggerFor]="menu" mat-stroked-button
+            [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
+            class="split-button-right">
+            <fa-icon [icon]="expandDownIcon"></fa-icon>
+          </button>
+        </div>
         }
-        @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
-        <button mat-stroked-button color="accent" class="split-button-left" (click)="unfollowUser(blog.id)">
-          Awaiting approval
-        </button>
+        <mat-menu #menu="matMenu" xPosition="before">
+          @if (!blog.muted) {
+          <button (click)="muteAccount()" mat-menu-item class="dangerous-option">
+            <span class="flex gap-2">
+              <fa-icon [fixedWidth]="true" [icon]="muteUserIcon"></fa-icon>
+              {{ 'post-actions.muteUser' | translate }}
+            </span>
+          </button>
+          } @else {
+          <button (click)="unmuteAccount()" mat-menu-item class="dangerous-option">
+            <span class="flex gap-2">
+              <fa-icon [fixedWidth]="true" [icon]="unmuteUserIcon"></fa-icon>
+              {{ 'post-actions.unmuteUser' | translate }}
+            </span>
+          </button>
+          }
+          @if (!blog.blocked) {
+          <button (click)="blockAccount()" mat-menu-item class="dangerous-option">
+            <span class="flex gap-2">
+              <fa-icon [fixedWidth]="true" [icon]="blockUserIcon"></fa-icon>
+              {{ 'post-actions.blockUser' | translate }}
+            </span>
+          </button>
+          } @else {
+          <button (click)="unblockAccount()" mat-menu-item class="dangerous-option">
+            <span class="flex gap-2">
+              <fa-icon [fixedWidth]="true" [icon]="userIcon"></fa-icon>
+              {{ 'post-actions.unblockUser' | translate }}
+            </span>
+          </button>
+          }
+          @if (blog.url.startsWith('@')) {
+          @if (!blog.isBlueskyUser) {
+          @if (!blog.serverBlocked) {
+          <button mat-menu-item (click)="blockService.blockServer(blog.id)">
+            <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>Block server
+          </button>
+          } @else {
+          @if (blog.federatedHost) {
+          <button mat-menu-item (click)="blockService.unblockServer(blog.federatedHost!.id)">
+            <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>Unblock server
+          </button>
+          }
+          }
+          }
+          }
+          @if (
+          !isMe &&
+          (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) ||
+          postService.followedUserIds.includes(blog.id))
+          ) {
+          @if (postService.usersRewootsDisabled.includes(blog.id)) {
+          <button mat-menu-item (click)="updateDisableRewoots()">
+            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-show rewoots made by this user
+          </button>
+          } @else {
+          <button mat-menu-item (click)="updateDisableRewoots()">
+            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Hide rewoots made by this user
+          </button>
+          }
+          @if (postService.usersQuotesDisabled.includes(blog.id)) {
+          <button mat-menu-item (click)="updateDisableQuotes()">
+            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-hide quotes from this user
+          </button>
+          } @else {
+          <button mat-menu-item (click)="updateDisableQuotes()">
+            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Hide quotes from this user
+          </button>
+          }
+          }
+          <button (click)="reportService.report(blog.id)" mat-menu-item class="dangerous-option">
+            <span class="flex gap-2">
+              <fa-icon [fixedWidth]="true" [icon]="reportUserIcon"></fa-icon>
+              {{ 'post-actions.reportUser' | translate }}
+            </span>
+          </button>
+        </mat-menu>
         }
-        <button aria-label="More options" [matMenuTriggerFor]="menu" mat-stroked-button
-          [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'" class="split-button-right">
-          <fa-icon [icon]="expandDownIcon"></fa-icon>
-        </button>
       </div>
-      }
-      <mat-menu #menu="matMenu" xPosition="before">
-        @if (!blog.muted) {
-        <button (click)="muteAccount()" mat-menu-item class="dangerous-option">
-          <span class="flex gap-2">
-            <fa-icon [fixedWidth]="true" [icon]="muteUserIcon"></fa-icon>
-            {{ 'post-actions.muteUser' | translate }}
-          </span>
-        </button>
-        } @else {
-        <button (click)="unmuteAccount()" mat-menu-item class="dangerous-option">
-          <span class="flex gap-2">
-            <fa-icon [fixedWidth]="true" [icon]="unmuteUserIcon"></fa-icon>
-            {{ 'post-actions.unmuteUser' | translate }}
-          </span>
-        </button>
-        }
-        @if (!blog.blocked) {
-        <button (click)="blockAccount()" mat-menu-item class="dangerous-option">
-          <span class="flex gap-2">
-            <fa-icon [fixedWidth]="true" [icon]="blockUserIcon"></fa-icon>
-            {{ 'post-actions.blockUser' | translate }}
-          </span>
-        </button>
-        } @else {
-        <button (click)="unblockAccount()" mat-menu-item class="dangerous-option">
-          <span class="flex gap-2">
-            <fa-icon [fixedWidth]="true" [icon]="userIcon"></fa-icon>
-            {{ 'post-actions.unblockUser' | translate }}
-          </span>
-        </button>
-        }
-        @if (blog.url.startsWith('@')) {
-        @if (!blog.isBlueskyUser) {
-        @if (!blog.serverBlocked) {
-        <button mat-menu-item (click)="blockService.blockServer(blog.id)">
-          <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>Block server
-        </button>
-        } @else {
-        @if (blog.federatedHost) {
-        <button mat-menu-item (click)="blockService.unblockServer(blog.federatedHost!.id)">
-          <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>Unblock server
-        </button>
-        }
-        }
-        }
-        }
-        @if (
-        !isMe &&
-        (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) ||
-        postService.followedUserIds.includes(blog.id))
-        ) {
-        @if (postService.usersRewootsDisabled.includes(blog.id)) {
-        <button mat-menu-item (click)="updateDisableRewoots()">
-          <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-show rewoots made by this user
-        </button>
-        } @else {
-        <button mat-menu-item (click)="updateDisableRewoots()">
-          <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Hide rewoots made by this user
-        </button>
-        }
-        @if (postService.usersQuotesDisabled.includes(blog.id)) {
-        <button mat-menu-item (click)="updateDisableQuotes()">
-          <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-hide quotes from this user
-        </button>
-        } @else {
-        <button mat-menu-item (click)="updateDisableQuotes()">
-          <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Hide quotes from this user
-        </button>
-        }
-        }
-        <button (click)="reportService.report(blog.id)" mat-menu-item class="dangerous-option">
-          <span class="flex gap-2">
-            <fa-icon [fixedWidth]="true" [icon]="reportUserIcon"></fa-icon>
-            {{ 'post-actions.reportUser' | translate }}
-          </span>
-        </button>
-      </mat-menu>
-      }
     </div>
     <div class="min-w-0">
       <p [innerHTML]="blog?.name ?? '-'" class="m-0 text-xl font-medium line-height-3"></p>
