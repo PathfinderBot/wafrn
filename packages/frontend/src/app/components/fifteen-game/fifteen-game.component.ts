@@ -23,8 +23,8 @@ export class FifteenGameComponent {
   // just in case we make this not fifteen but w*h-1
   opts: FifteenOptions
   defaultOptions = {
-    width: 3,
-    height: 3,
+    width: 4,
+    height: 4,
     scrambleCount: 101
   }
 
