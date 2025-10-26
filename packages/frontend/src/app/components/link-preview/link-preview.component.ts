@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common'
   selector: 'app-link-preview',
   imports: [CommonModule, MatCardModule],
   templateUrl: './link-preview.component.html',
-  styleUrl: './link-preview.component.scss',
+  styleUrl: './link-preview.component.scss'
 })
 export class LinkPreviewComponent implements OnChanges {
   private mediaService = inject(MediaService)
@@ -20,6 +20,7 @@ export class LinkPreviewComponent implements OnChanges {
   title = ''
   description = ''
   img = ''
+  favicon: string | undefined = ''
   forceTenorGif = false
   forceYoutube = false
 
@@ -34,9 +35,13 @@ export class LinkPreviewComponent implements OnChanges {
       }
       this.loading = true
       const linkToGet = this.link.startsWith(EnvironmentService.environment.externalCacheurl)
-      this.url = linkToGet ? (new URL(this.link, EnvironmentService.environment.frontUrl).searchParams.get('media') as string) : this.link
+      this.url = linkToGet
+        ? (new URL(this.link, EnvironmentService.environment.frontUrl).searchParams.get('media') as string)
+        : this.link
       this.hostname = new URL(this.url).hostname
       this.mediaService.getLinkPreview(this.url).then((data) => {
+        this.favicon = data.favicons.at(0)
+        console.log('dayda', data, this.favicon)
         this.loading = false
         if (data.images && data.images.length) {
           this.img = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.images[0])

@@ -5,27 +5,29 @@
 }
 
 .embed-container {
+  position: relative;
   background: var(--mat-sys-surface-container);
   border-radius: var(--mat-sys-corner-extra-small);
-  cursor: pointer !important;
+  cursor: pointer;
   border: 1px solid var(--mat-sys-outline-variant);
   overflow: hidden;
-  display: grid;
-  grid-template-columns: auto 1fr;
 }
 
 .embed-image-container {
-  max-height: 100%;
-  max-width: 6.5em;
-  display: flex;
+  position: absolute;
+  aspect-ratio: 1/1;
+  width: 100px;
+  object-fit: cover;
 }
 
 .embed-image {
-  max-width: 100%; max-height: 100%; margin: auto
+  max-width: 100%;
 }
 
-
 .embed-text {
+  position: relative;
+  left: 100px;
+  width: calc(100% - 100px);
   padding: 0.75em 1em;
 
   .embed-image-container + & {
@@ -39,12 +41,16 @@
   }
 }
 
-.embed-title {
+// evil way to override font size
+.embed-title.embed-title {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1.5rem;
   font-weight: bold;
   line-height: 1.2;
   margin-bottom: 0.375rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .embed-description {
@@ -52,6 +58,15 @@
   font-size: 0.85em;
   line-height: 1.2;
   margin-bottom: 0.375rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.embed-favicon {
+  display: inline;
+  height: 1em;
+  vertical-align: bottom;
 }
 
 .embed-url {
@@ -59,4 +74,7 @@
   font-size: 0.9em;
   line-height: 1.2;
   color: var(--mat-sys-outline);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
