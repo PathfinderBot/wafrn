@@ -29,6 +29,35 @@ function frontend(app: Application) {
     }
   }
 
+  app.get('/api/health', async (req, res) => {
+  const health = {
+    uptime: process.uptime(),
+    timestamp: Date.now(),
+    status: 'ok',
+    checks: {
+      database: 'unknown',
+      redis: 'unknown',
+    }
+  }
+
+  try {
+    await sequelize.authenticate()
+    health.checks.database = 'ok'
+  } catch (error) {
+    health.checks.database = 'error'
+    health.status = 'degraded'
+  }
+
+  try {
+    await redisCache.ping()
+    health.checks.redis = 'ok'
+  } catch (error) {
+    health.checks.redis = 'error'
+    health.status = 'degraded'
+  }
+
+  res.status(health.status === 'ok' ? 200 : 503).json(health)
+})
   app.get('/api/disableEmailNotifications/:id/:code', async (req: Request, res: Response) => {
     let result = false
     let userId = req.params.id
