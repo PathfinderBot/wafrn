@@ -212,17 +212,16 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
         .map((user) => user.url)
     }
 
-    this.initializeContent()
+    // Ensure disable CW checks if there are muted words before opening it as setting says
+    const disableCW = localStorage.getItem('disableCW') === 'true'
+    if (disableCW && this.fragment().muted_words_cw === undefined) {
+      this.showSensitiveContent.set(disableCW)
+    }
   }
 
   ngOnChanges(): void {
     this.initializeEmojis()
     this.nonLinkMediaCount = this.fragment().medias.filter((elem) => elem.mediaType != 'text/html').length
-  }
-
-  initializeContent() {
-    const disableCW = localStorage.getItem('disableCW') === 'true'
-    this.showSensitiveContent.set(disableCW)
   }
 
   initializeEmojis() {

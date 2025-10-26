@@ -563,6 +563,7 @@ export class SettingsService {
       translationKey: 'settings.confettiMultiplier',
       translationDescriptionKey: 'settings.confettiMultiplierDescription',
       serverKey: 'wafrn.confettiMultiplier',
+      localStorageKey: 'confettiMultiplier',
       type: 'input',
       default: '1'
     },
