@@ -1,0 +1,17 @@
+<div class="game">
+  <p>{{ 'games.typing.instructions' | translate }}</p>
+  <p class="text-xl font-bold text-center verify-text">
+    @for (letter of prompt; track $index) {
+      <span
+        [class.correct]="letterValid()[$index]"
+        [class.incorrect]="letterValid()[$index] === false"
+        [class.current]="$index === typed().length"
+        >{{ letter }}</span
+      >
+    }
+  </p>
+  <mat-form-field class="w-full mat-form-field-no-padding" appearance="outline">
+    <mat-label>{{ 'games.typing.verifyLabel' | translate }}</mat-label>
+    <input matNativeControl (input)="handleInput($event)" />
+  </mat-form-field>
+</div>

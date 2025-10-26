@@ -3,12 +3,13 @@
 @let settingTranslationDescription = setting().translationDescriptionKey;
 @switch (settingData.type) {
   @case ('checkbox') {
-    @let settingValues = values[setting().key];
-    <div class="mb-2">
+    @let settingValues = values()[setting().key];
+    <div [class.has-dependency]="hasDependency()" [class.has-description]="settingTranslationDescription">
       <mat-checkbox
         [class.mat-checkbox-top]="settingTranslationDescription !== undefined"
         (change)="updateCheckbox(setting().key, $event)"
         [checked]="(settingValues ?? setting().default) === true"
+        [disabled]="isDisabled()"
         >{{ settingTranslation | translate }}
         @if (settingTranslationDescription) {
           <div class="setting-description">{{ settingTranslationDescription | translate }}</div>
@@ -18,9 +19,13 @@
   }
   @case ('select') {
     @if (settingData.variants) {
-      <mat-form-field class="block mb-3 w-full mat-form-field-no-padding">
+      <mat-form-field class="block mb-3 w-full mat-form-field-no-padding" [class.has-dependency]="hasDependency()">
         <mat-label>{{ settingTranslation | translate }}</mat-label>
-        <mat-select [(value)]="values[setting().key]" (selectionChange)="updateSelect(setting().key, $event)">
+        <mat-select
+          [(value)]="values()[setting().key]"
+          (selectionChange)="updateSelect(setting().key, $event)"
+          [disabled]="isDisabled()"
+        >
           @for (variant of settingData.variants | KeyValue; track $index) {
             <mat-option [value]="variant.key">{{ variant.value | translate }}</mat-option>
           }
@@ -34,13 +39,14 @@
     }
   }
   @case ('input') {
-    <div class="mb-3">
+    <div class="mb-3" [class.has-dependency]="hasDependency()">
       <mat-form-field class="w-full mat-form-field-no-padding">
         <mat-label>{{ settingTranslation | translate }}</mat-label>
         <input
           matNativeControl
-          [value]="values[setting().key]"
+          [value]="values()[setting().key]"
           (input)="updateInput(setting().key, $event)"
+          [disabled]="isDisabled()"
           spellcheck="false"
         />
       </mat-form-field>
@@ -50,13 +56,14 @@
     </div>
   }
   @case ('textarea') {
-    <div class="mb-3">
+    <div class="mb-3" [class.has-dependency]="hasDependency()">
       <mat-form-field class="w-full mat-form-field-no-padding">
         <mat-label>{{ settingTranslation | translate }}</mat-label>
         <textarea
           matNativeControl
-          [value]="values[setting().key]"
+          [value]="values()[setting().key]"
           (input)="updateInput(setting().key, $event)"
+          [disabled]="isDisabled()"
           spellcheck="false"
           cdkTextareaAutosize
           cdkAutosizeMinRows="5"

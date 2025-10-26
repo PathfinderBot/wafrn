@@ -126,7 +126,7 @@ export class PostActionButtonsComponent implements OnChanges {
   }
 
   ngOnInit(): void {
-    this.buttonList = this.settingsService.values[this.settingKey()] as SettingListItem[]
+    this.buttonList = this.settingsService.values()[this.settingKey()] as SettingListItem[]
     this.bookmarked.set(this.fragment().bookmarkers.includes(this.myId))
   }
 

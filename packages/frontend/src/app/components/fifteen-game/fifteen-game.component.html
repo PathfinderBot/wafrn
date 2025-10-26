@@ -1,0 +1,23 @@
+<div class="game">
+  <div class="header flex justify-content-between">
+    <p class="mb-0 game-name">{{ 'games.fifteen.title' | translate }}</p>
+    <div class="moves">{{ moves }} {{ 'games.common.moves' | translate }}</div>
+  </div>
+  <div class="board mb-1" style="--grid-width: {{ opts.width }};">
+    @for (tile of board; track $index) {
+      @if (tile === 0) {
+        <div class="tile blank"></div>
+      } @else {
+        <button class="tile" (click)="handleTile($index)" [disabled]="!tileClickable($index)">{{ tile }}</button>
+      }
+    }
+  </div>
+  <div class="footer flex gap-2 justify-content-between">
+    <button mat-flat-button class="game-button mat-small-button" (click)="newBoard()">{{
+      'games.fifteen.newBoard' | translate
+    }}</button>
+    <button mat-stroked-button class="game-button mat-small-button" (click)="resetBoard()">{{
+      'games.fifteen.resetBoard' | translate
+    }}</button>
+  </div>
+</div>

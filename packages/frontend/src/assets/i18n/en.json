@@ -1,7 +1,10 @@
 {
   "common": {
     "commaSeparation": "Separated with commas",
+    "words": "words",
+    "word": "word",
     "characters": "characters",
+    "character": "character",
     "default": "Default",
     "commit": "commit"
   },
@@ -395,7 +398,16 @@
     "confettiTestAreaDescription": "Test confetti of various interactions:",
     "confettiType": "Interaction type",
     "confettiTestLocational": "Under Mouse",
-    "confettiTestGeneric": "Screen sides"
+    "confettiTestGeneric": "Screen sides",
+    "confirmOpenCw": "Show dialog before opening content warnings",
+    "confirmOpenCwDescription": "If you open CWs without thinking.",
+    "confirmOpenCwAnnoyance": "Type of additional annoyance",
+    "confirmOpenCwAnnoyanceOptions": {
+      "none": "Just the dialog",
+      "timeout": "2 second timeout",
+      "typing": "Type an English phrase (EVIL)",
+      "fifteen": "Solve a game of 3x3 Fifteen (EXTREMELY EVIL)"
+    }
   },
   "dialog": {
     "confirm": "Confirm",
@@ -440,6 +452,13 @@
       "blockAccountLabel": "Reason (optional)",
       "unblockAccountTitle": "Unblock account",
       "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots."
+    },
+    "post-fragment": {
+      "confirmOpenCwTitle": "Confirm opening content warning",
+      "confirmOpenCwContent": "Post has the content warnings and muted words:",
+      "annoyances": {
+        "puzzleWarning": "Solve this to prove you aren't making a bad decision:"
+      }
     },
     "blog": {
       "customThemeTitle": "Custom Styles",
@@ -554,7 +573,9 @@
     "mutedWords": "Woot contains muted words:",
     "mediaContentWarning": "Woot has content warning:",
     "mediaNsfw": "Media is NSFW",
-    "replyingTo": "mentions: "
+    "replyingTo": "mentions: ",
+    "show": "Show",
+    "hide": "Hide"
   },
   "media": {
     "noAltText": "Media does not have alt text",
@@ -584,5 +605,19 @@
     "subtitle": "Looks like there isn't anything here.",
     "couldNotFind": "does not lead to a page",
     "returnHome": "Go Home"
+  },
+  "games": {
+    "common": {
+      "moves": "Moves"
+    },
+    "fifteen": {
+      "title": "Fifteen",
+      "newBoard": "New board",
+      "resetBoard": "Reset board"
+    },
+    "typing": {
+      "instructions": "Type the following phrase:",
+      "verifyLabel": "Verify..."
+    }
   }
 }

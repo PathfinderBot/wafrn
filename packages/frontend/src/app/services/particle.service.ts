@@ -13,12 +13,12 @@ export class ParticleService {
     location?: { event?: MouseEvent; scroll?: { x: number; y: number } }
     config?: RecursivePartial<ConfettiOptions>
   }) {
-    if (this.settings.values.disableConfetti === true) return
+    if (this.settings.values().disableConfetti === true) return
 
     const defaultConfig: ConfettiOptions = {
       zIndex: 1000,
       scalar: 8,
-      flat: (this.settings.values.flatConfetti as boolean | undefined) ?? false
+      flat: (this.settings.values().flatConfetti as boolean | undefined) ?? false
     }
 
     // Attempt to place the confetti on the clicked location
@@ -38,7 +38,7 @@ export class ParticleService {
         const confettiConfig = Object.assign(
           defaultConfig,
           {
-            particleCount: Math.floor(10 * Number(this.settings.values.confettiMultiplier ?? 1)),
+            particleCount: Math.floor(10 * Number(this.settings.values().confettiMultiplier ?? 1)),
             spread: 360,
             startVelocity: 20,
             origin: {
@@ -57,7 +57,7 @@ export class ParticleService {
     const conf = Object.assign(
       defaultConfig,
       {
-        particleCount: Math.floor(10 * Number(this.settings.values.confettiMultiplier ?? 1)),
+        particleCount: Math.floor(10 * Number(this.settings.values().confettiMultiplier ?? 1)),
         spread: 60,
         startVelocity: 60
       },
@@ -120,6 +120,16 @@ export class ParticleService {
           image: [{ src: image, width: 32, height: 32 }]
         },
         scalar: 5
+      }
+    })
+  }
+
+  genericConfetti() {
+    this.confetti({
+      config: {
+        shapes: ['star'],
+        colors: ['#d2849c', '#70b07d', '#73a1dc'],
+        scalar: 2
       }
     })
   }

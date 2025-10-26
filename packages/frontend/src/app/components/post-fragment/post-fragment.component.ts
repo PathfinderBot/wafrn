@@ -26,6 +26,8 @@ import { Subscription } from 'rxjs'
 import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
 import Viewer from 'viewerjs'
 import { ParticleService } from 'src/app/services/particle.service'
+import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { SettingsService } from 'src/app/services/settings.service'
 
 type FragmentType = 'post' | 'quote'
 
@@ -157,7 +159,9 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
     private loginService: LoginService,
     private jwtService: JwtService,
     private readonly messages: MessageService,
-    private particle: ParticleService
+    private particle: ParticleService,
+    private simpleDialog: SimpleDialogService,
+    private settingsService: SettingsService
   ) {
     this.userId = this.loginService.getLoggedUserUUID()
   }
@@ -416,7 +420,24 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
     return emoji.users.some((usr) => usr.id === this.userId)
   }
 
-  cwClick() {
+  async cwClick() {
+    // Confirmation dialog when opening
+    if (!this.showSensitiveContent() && this.settingsService.values().confirmOpenCw) {
+      const annoyance = this.settingsService.values().confirmOpenCwAnnoyance
+      if (typeof annoyance !== 'string' && annoyance !== undefined) return
+
+      const confirm = await this.simpleDialog.createConfirmDialog({
+        title: 'dialog.post-fragment.confirmOpenCwTitle',
+        content: 'dialog.post-fragment.confirmOpenCwContent',
+        contentSuffix:
+          `${this.fragment().content_warning}` +
+          (this.fragment().muted_words_cw !== undefined ? `; ${this.fragment().muted_words_cw}` : ''),
+        annoying: annoyance
+      })
+
+      if (!confirm) return
+    }
+
     this.forceExpand.emit(true)
     this.showSensitiveContent.set(!this.showSensitiveContent())
   }

@@ -10,6 +10,17 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { TranslatePipe } from '@ngx-translate/core'
+import { Subject, timer } from 'rxjs'
+import { FifteenGameComponent } from '../fifteen-game/fifteen-game.component'
+import { ParticleService } from 'src/app/services/particle.service'
+import { TypingGameComponent } from '../typing-game/typing-game.component'
+
+export enum Annoyance {
+  none = '0',
+  timeout = '1',
+  typing = '2',
+  fifteen = '3'
+}
 
 export interface ConfirmDialogData {
   title: string
@@ -20,6 +31,7 @@ export interface ConfirmDialogData {
     confirm?: string
     cancel?: string
   }
+  annoying?: string
 }
 export type ConfirmDialogResult = boolean
 
@@ -32,6 +44,8 @@ export type ConfirmDialogResult = boolean
     MatDialogContent,
     MatFormFieldModule,
     MatInputModule,
+    FifteenGameComponent,
+    TypingGameComponent,
     TranslatePipe
   ],
   templateUrl: './confirm-dialog.component.html'
@@ -42,6 +56,10 @@ export class ConfirmDialogComponent {
   )
 
   textData: ConfirmDialogData
+  confirmButtonEnabled: boolean
+
+  // Annoyance data
+  annoyanceComplete = new Subject<void>()
 
   // Defaults for the buttons
   defaultTextData = {
@@ -53,8 +71,33 @@ export class ConfirmDialogComponent {
 
   inputResponse = signal('')
 
-  constructor(@Inject(MAT_DIALOG_DATA) protected data: ConfirmDialogData) {
-    this.textData = Object.assign(data, this.defaultTextData)
+  // Type mirroring for component
+  Annoyance = Annoyance
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA) protected data: ConfirmDialogData,
+    private particle: ParticleService
+  ) {
+    this.textData = Object.assign(this.defaultTextData, data)
+
+    // Disable button if there's additional conditions
+    this.confirmButtonEnabled = data.annoying !== undefined && data.annoying === Annoyance.none
+    this.annoyanceComplete.subscribe(() => {
+      this.confirmButtonEnabled = true
+    })
+
+    // Various annoyances
+
+    if (data.annoying === Annoyance.timeout) {
+      timer(2000).subscribe(() => {
+        this.annoyanceComplete.next()
+      })
+    }
+  }
+
+  winAnnoyance() {
+    this.particle.genericConfetti()
+    this.annoyanceComplete.next()
   }
 
   onInput(event: InputEvent): void {
