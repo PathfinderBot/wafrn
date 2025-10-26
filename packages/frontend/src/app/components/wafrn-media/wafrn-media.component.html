@@ -65,7 +65,7 @@
       }
       @if (nsfw) {
         <div class="flex flex-column justify-content-center align-items-center image-cw-text">
-          @if (data().description === null) {
+          @if (hideNoDescriptionMedia() && data().description === null) {
             <p>{{ 'media.noAltText' | translate }}</p>
           } @else if (filteredWords()) {
             <p>{{ 'post-fragment.mutedWords' | translate }} {{ filteredWords() }}</p>

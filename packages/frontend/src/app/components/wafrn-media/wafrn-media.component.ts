@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, computed, ElementRef, input, OnInit, ViewChild } from '@angular/core'
+import { AfterViewInit, Component, computed, ElementRef, input, OnInit, Signal, ViewChild } from '@angular/core'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { EnvironmentService } from '../../services/environment.service'
 import { MediaService } from '../../services/media.service'
 import { faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 //@ts-ignore
 import Vlitejs from 'vlitejs'
+import { SettingsService } from 'src/app/services/settings.service'
 
 type FitMode = 'contain' | 'cover'
 
@@ -49,7 +50,7 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
   )
 
   disableNSFWFilter: boolean
-  hideNoDescriptionMedia: boolean
+  hideNoDescriptionMedia: Signal<boolean>
 
   originallyNsfw = true
   nsfw = true
@@ -59,16 +60,19 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
   readonly hideIcon = faEyeSlash
 
   errorMode = false
-  constructor(private mediaService: MediaService) {
+  constructor(
+    private mediaService: MediaService,
+    settingsService: SettingsService
+  ) {
     this.disableNSFWFilter = mediaService.checkNSFWFilterDisabled()
-    this.hideNoDescriptionMedia = (localStorage.getItem('hideNoDescriptionMedia') ?? 'false') === 'true'
+    this.hideNoDescriptionMedia = computed(() => settingsService.values().hideNoDescriptionMedia === true)
   }
 
   ngOnInit(): void {
     const noDescription = this.data().description === null
     const hasFilteredWords = this.filteredWords() !== undefined
     this.nsfw =
-      (this.data().NSFW || (noDescription && this.hideNoDescriptionMedia) || hasFilteredWords) &&
+      (this.data().NSFW || (noDescription && this.hideNoDescriptionMedia()) || hasFilteredWords) &&
       !this.disableNSFWFilter
     this.originallyNsfw = this.nsfw
   }
