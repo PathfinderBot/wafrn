@@ -5,24 +5,29 @@
   }
 
   @if (!forceTenorGif && !forceYoutube) {
-    @let t = (loading) ? '...' : title;
-    @let d = (loading) ? '...' : description;
+    @let t = loading ? '...' : title;
+    @let d = loading ? '...' : description;
     <a target="_blank" [href]="url" class="embed-link">
       <div class="media-container embed-container">
         @if (img !== '') {
           <div class="embed-image-container">
-            <img [alt]="'Embed image for link'" aria-hidden="true" [src]="img" class="embed-image" />
+            <img alt="Embed image for link" aria-hidden="true" [src]="img" class="embed-image" />
           </div>
         }
-        <div class="embed-text">
-          <h2 class="embed-title">{{ t | slice: 0 : 64 }}{{ t.length > 63 ? '...' : '' }}</h2>
+        <article class="embed-text">
+          <header>
+            <h1 class="embed-title">{{ t | slice: 0 : 64 }}{{ t.length > 63 ? '...' : '' }}</h1>
+          </header>
           @if (d) {
-            <p class="embed-description">
-              {{ d | slice: 0 : 128 }}{{ d.length > 127 ? '...' : '' }}
-            </p>
+            <p class="embed-description">{{ d | slice: 0 : 128 }}{{ d.length > 127 ? '...' : '' }}</p>
           }
-          <p class="embed-url">{{ (hostname | slice: 0 : 64) + (hostname.length > 63 ? '...' : '') }}</p>
-        </div>
+          <p class="embed-url">
+            @if (favicon) {
+              <img [src]="favicon" class="embed-favicon" />
+            }
+            {{ (hostname | slice: 0 : 64) + (hostname.length > 63 ? '...' : '') }}</p
+          >
+        </article>
       </div>
     </a>
   }
