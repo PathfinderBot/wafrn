@@ -17,11 +17,12 @@
   position: absolute;
   aspect-ratio: 1/1;
   width: 100px;
-  object-fit: cover;
 }
 
 .embed-image {
-  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .embed-text {
