@@ -1,7 +1,7 @@
 import { Component, computed, signal, Signal } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SettingEntryComponent } from 'src/app/components/setting-entry/setting-entry.component'
-import { FediAttachment, SettingData, SettingsService, SettingValues } from 'src/app/services/settings.service'
+import { FediAttachment, SettingData, SettingsService } from 'src/app/services/settings.service'
 import { MatCardModule } from '@angular/material/card'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import { LoginService } from 'src/app/services/login.service'
@@ -37,7 +37,7 @@ import { ImageCropperService } from 'src/app/services/image-cropper.service'
 })
 export class SettingsProfileComponent {
   data: SettingData
-  values: SettingValues
+  values
   fediAttachments: FediAttachment[]
 
   newHeaderImage = signal<string | null>(null)
@@ -45,21 +45,19 @@ export class SettingsProfileComponent {
 
   blog: Signal<BlogDetails | undefined>
   avatarUrl = computed<string>(() => {
-      if (this.newAvatarImage() != null) return this.newAvatarImage()!
-      return this.blog()
-        ? EnvironmentService.environment.externalCacheurl +
+    if (this.newAvatarImage() != null) return this.newAvatarImage()!
+    return this.blog()
+      ? EnvironmentService.environment.externalCacheurl +
           encodeURIComponent(EnvironmentService.environment.baseMediaUrl + this.blog()?.avatar)
-        : ''
-    }
-  )
+      : ''
+  })
   headerUrl = computed<string>(() => {
-      if (this.newHeaderImage() != null) return this.newHeaderImage()!
-      return this.blog()
-        ? EnvironmentService.environment.externalCacheurl +
+    if (this.newHeaderImage() != null) return this.newHeaderImage()!
+    return this.blog()
+      ? EnvironmentService.environment.externalCacheurl +
           encodeURIComponent(EnvironmentService.environment.baseMediaUrl + this.blog()?.headerImage)
-        : ''
-    }
-  )
+      : ''
+  })
 
   imageIcon = faImage
   addIcon = faPlus

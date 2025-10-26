@@ -1,4 +1,4 @@
-import { Component, computed, input, OnChanges, Signal } from '@angular/core'
+import { Component, computed, input, OnChanges } from '@angular/core'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { MessageService } from '../../services/message.service'
 
@@ -33,11 +33,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { LoginService } from '../../services/login.service'
 
 import { ReportService } from '../../services/report.service'
-import { DeletePostService } from '../../services/delete-post.service'
 import { PostsService } from '../../services/posts.service'
 import { UtilsService } from '../../services/utils.service'
 import { EnvironmentService } from '../../services/environment.service'
-import { firstValueFrom } from 'rxjs'
 import { faBluesky } from '@fortawesome/free-brands-svg-icons'
 import { TranslateModule } from '@ngx-translate/core'
 import { SettingsService } from 'src/app/services/settings.service'
@@ -64,7 +62,7 @@ export class PostActionsComponent implements OnChanges {
     if (!bskyUri) return ''
     const parts = bskyUri.split('/app.bsky.feed.post/')
     const userDid = parts[0].split('at://')[1]
-    return `https://${this.settingsService.values.atprotoLinkDestination || 'bsky.app'}/profile/${userDid}/post/${parts[1]}`
+    return `https://${this.settingsService.values().atprotoLinkDestination || 'bsky.app'}/profile/${userDid}/post/${parts[1]}`
   })
   externalUrl = computed<string>(() => (this.post().bskyUri ? this.bskyUrl() : this.post().remotePostId))
 

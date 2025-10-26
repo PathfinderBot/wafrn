@@ -1,4 +1,4 @@
-import { computed, Injectable, Injector, signal } from '@angular/core'
+import { computed, Injectable, Injector, signal, WritableSignal } from '@angular/core'
 import { DashboardService } from './dashboard.service'
 import { JwtService } from './jwt.service'
 import {
@@ -114,6 +114,7 @@ export interface SettingDataEntry {
   dropListData?: DropListData // For type 'list'
   convertFromStorage?: (stored: string) => SettingValueType
   convertToStorage?: (value: SettingValueType) => string
+  enableIfSetting?: (s: SettingValues) => boolean
 }
 
 // Data on each setting to generate form controls
@@ -440,7 +441,8 @@ export class SettingsService {
       type: 'checkbox',
       default: false,
       convertFromStorage: (val) => val === '1',
-      convertToStorage: () => this.convertAsksTo()
+      convertToStorage: () => this.convertAsksTo(),
+      enableIfSetting: (s) => s.enableAsks === true
     },
     displayMentionsOfBlockedUsersFromOtherUsers: {
       key: 'displayMentionsOfBlockedUsersFromOtherUsers',
@@ -592,7 +594,8 @@ export class SettingsService {
         [Annoyance.none]: 'settings.confirmOpenCwAnnoyanceOptions.none',
         [Annoyance.timeout]: 'settings.confirmOpenCwAnnoyanceOptions.timeout',
         [Annoyance.fifteen]: 'settings.confirmOpenCwAnnoyanceOptions.fifteen'
-      }
+      },
+      enableIfSetting: (s) => s.confirmOpenCw === true
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -690,7 +693,10 @@ export class SettingsService {
         { type: 'header', value: 'settings.header.cwBehavior' },
         { type: 'key', value: 'disableCW' },
         { type: 'key', value: 'confirmOpenCw' },
-        { type: 'key', value: 'confirmOpenCwAnnoyance' },
+        {
+          type: 'key',
+          value: 'confirmOpenCwAnnoyance'
+        },
         { type: 'key', value: 'disableNSFWFilter' },
         { type: 'key', value: 'hideNoDescriptionMedia' },
         { type: 'key', value: 'disableForceAltText' }
@@ -765,7 +771,7 @@ export class SettingsService {
       ]
     }
   ]
-  public values: SettingValues
+  public values: WritableSignal<SettingValues>
 
   public fediAttachments: FediAttachment[] = [{ name: '', value: '' }] // Only shown before load completes
   public avatar: File | undefined // Only set when updating
@@ -785,18 +791,20 @@ export class SettingsService {
     private jwtService: JwtService
   ) {
     // Set defaults from local storage over global defaults
-    this.values = Object.assign(this.getDefaultSettings(), this.getLocalStorageValues())
+    // Uses an evil hack on the equal property to allow for "deep" checks (manually calling update) to notify dependents
+    // Svelte has this by default :(
+    this.values = signal(Object.assign(this.getDefaultSettings(), this.getLocalStorageValues()), { equal: () => false })
 
     // Load blog details
     const userBlog = this.jwtService.getTokenData()
     if (userBlog) {
       this.dashboardService.getBlogDetails(userBlog.url, true).then((blogDetails) => {
-        this.values.name = blogDetails.name
-        this.values.description = blogDetails.descriptionMarkdown
-        this.values.manuallyAcceptsFollows = blogDetails.manuallyAcceptsFollows
-        this.values.hideFollows = blogDetails.hideFollows
-        this.values.hideProfileNotLoggedIn = blogDetails.hideProfileNotLoggedIn
-        this.values.disableEmailNotifications = blogDetails.disableEmailNotifications
+        this.values().name = blogDetails.name
+        this.values().description = blogDetails.descriptionMarkdown
+        this.values().manuallyAcceptsFollows = blogDetails.manuallyAcceptsFollows
+        this.values().hideFollows = blogDetails.hideFollows
+        this.values().hideProfileNotLoggedIn = blogDetails.hideProfileNotLoggedIn
+        this.values().disableEmailNotifications = blogDetails.disableEmailNotifications
 
         const rawAttachments = blogDetails.publicOptions?.find(
           (elem) => elem.optionName === 'fediverse.public.attachment'
@@ -816,7 +824,7 @@ export class SettingsService {
 
     // Update settings when logging in (and notify everyone)
     loginService.loggedIn.pipe(filter((logged) => logged)).subscribe(() => {
-      this.values = Object.assign(this.getDefaultSettings(), this.getLocalStorageValues())
+      this.values.set(Object.assign(this.getDefaultSettings(), this.getLocalStorageValues()))
       this.settingsLoadedFromLogin.next()
     })
 
@@ -824,7 +832,7 @@ export class SettingsService {
     fromEvent(window, 'storage')
       .pipe(debounceTime(500))
       .subscribe(() => {
-        this.values = Object.assign(this.getDefaultSettings(), this.getLocalStorageValues())
+        this.values.set(Object.assign(this.getDefaultSettings(), this.getLocalStorageValues()))
       })
   }
 
@@ -886,12 +894,12 @@ export class SettingsService {
     const payload = {
       avatar: this.avatar,
       headerImage: this.headerImage,
-      name: this.values.name,
-      description: this.values.description,
-      manuallyAcceptsFollows: this.values.manuallyAcceptsFollows,
-      hideFollows: this.values.hideFollows,
-      hideProfileNotLoggedIn: this.values.hideProfileNotLoggedIn,
-      disableEmailNotifications: this.values.disableEmailNotifications,
+      name: this.values().name,
+      description: this.values().description,
+      manuallyAcceptsFollows: this.values().manuallyAcceptsFollows,
+      hideFollows: this.values().hideFollows,
+      hideProfileNotLoggedIn: this.values().hideProfileNotLoggedIn,
+      disableEmailNotifications: this.values().disableEmailNotifications,
       options: JSON.stringify(options)
     }
 
@@ -927,7 +935,7 @@ export class SettingsService {
   }
 
   private getSettingValueAsString(key: SettingKey): string {
-    const value = this.values[key]
+    const value = this.values()[key]
     if (value === undefined) return ''
     if (this.data[key].convertToStorage) {
       return this.data[key].convertToStorage(value)
@@ -970,7 +978,7 @@ export class SettingsService {
     if (updateLocalStorage) {
       keyList.forEach((key) => {
         const localStorageKey = this.data[key].localStorageKey
-        const newValue = this.values[key]
+        const newValue = this.values()[key]
         if (localStorageKey && newValue !== undefined) {
           localStorage.setItem(localStorageKey, this.getSettingValueAsString(key))
         }
@@ -1054,9 +1062,9 @@ export class SettingsService {
   }
 
   convertAsksTo(): string {
-    if (this.values.enableAsks && this.values.enableAnonymousAsks) {
+    if (this.values().enableAsks && this.values().enableAnonymousAsks) {
       return '1'
-    } else if (this.values.enableAsks) {
+    } else if (this.values().enableAsks) {
       return '2'
     } else {
       return '3'

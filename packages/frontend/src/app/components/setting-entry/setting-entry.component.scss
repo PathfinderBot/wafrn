@@ -1,0 +1,9 @@
+.has-dependency {
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--mat-sys-outline-variant);
+}
+
+.has-description ::ng-deep label {
+  margin-block: 0.375rem;
+}

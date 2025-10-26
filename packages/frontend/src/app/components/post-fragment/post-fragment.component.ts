@@ -422,8 +422,8 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
 
   async cwClick() {
     // Confirmation dialog when opening
-    if (!this.showSensitiveContent() && this.settingsService.values.confirmOpenCw) {
-      const annoyance = this.settingsService.values.confirmOpenCwAnnoyance
+    if (!this.showSensitiveContent() && this.settingsService.values().confirmOpenCw) {
+      const annoyance = this.settingsService.values().confirmOpenCwAnnoyance
       if (typeof annoyance !== 'string' && annoyance !== undefined) return
 
       const confirm = await this.simpleDialog.createConfirmDialog({

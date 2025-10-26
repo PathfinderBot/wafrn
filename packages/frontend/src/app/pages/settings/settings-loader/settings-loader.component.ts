@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SettingEntryComponent } from 'src/app/components/setting-entry/setting-entry.component'
-import { GroupedSettingData, SettingData, SettingsService, SettingValues } from 'src/app/services/settings.service'
+import { GroupedSettingData, SettingData, SettingsService } from 'src/app/services/settings.service'
 import { SETTINGS_TOKEN } from '../settings.component'
 import { RouterModule } from '@angular/router'
 import { CdkPortalOutlet, Portal } from '@angular/cdk/portal'
@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button'
 })
 export class SettingsLoaderComponent {
   data: SettingData
-  values: SettingValues
+  values
   group: GroupedSettingData | undefined
   portal: Portal<any> | undefined
 
