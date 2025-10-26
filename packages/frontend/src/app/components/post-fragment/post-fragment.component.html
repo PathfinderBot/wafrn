@@ -77,15 +77,17 @@
           }
         }
       </section>
-      <section #mediaEnd class="flex flex-column gap-3">
-        @for (media of fragment().medias; track $index) {
-          @if (media.mediaType == 'text/html') {
-            @if (!seenMedia.includes($index)) {
-              <app-wafrn-media [data]="media"></app-wafrn-media>
+      @if (settingsService.values().disableLinkPreviews === false && postHasLinkPreview()) {
+        <section #mediaEnd class="flex flex-column gap-3">
+          @for (media of fragment().medias; track $index) {
+            @if (media.mediaType == 'text/html') {
+              @if (!seenMedia.includes($index)) {
+                <app-wafrn-media [data]="media"></app-wafrn-media>
+              }
             }
           }
-        }
-      </section>
+        </section>
+      }
     }
     @if (fragment().tags && fragment().tags.length) {
       <div class="tag-list">

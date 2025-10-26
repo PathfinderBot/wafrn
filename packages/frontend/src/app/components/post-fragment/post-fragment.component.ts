@@ -144,6 +144,10 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
 
   seenMedia: number[] = []
 
+  postHasLinkPreview = computed<boolean>(
+    () => this.fragment().medias.find((media) => media.mediaType === 'text/html') !== undefined
+  )
+
   readonly inlineMediaElement = viewChild<ElementRef<HTMLElement>>('mediaInline')
   readonly endMediaElement = viewChild<ElementRef<HTMLElement>>('mediaEnd')
   viewerInline: Viewer | undefined
@@ -161,7 +165,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
     private readonly messages: MessageService,
     private particle: ParticleService,
     private simpleDialog: SimpleDialogService,
-    private settingsService: SettingsService
+    protected settingsService: SettingsService
   ) {
     this.userId = this.loginService.getLoggedUserUUID()
   }

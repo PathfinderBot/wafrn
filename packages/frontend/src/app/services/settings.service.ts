@@ -85,7 +85,8 @@ const settingKeyVariants = [
   'flatConfetti',
   'disableRewootsExploreLocal',
   'confirmOpenCw',
-  'confirmOpenCwAnnoyance'
+  'confirmOpenCwAnnoyance',
+  'disableLinkPreviews'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -597,6 +598,15 @@ export class SettingsService {
         [Annoyance.fifteen]: 'settings.confirmOpenCwAnnoyanceOptions.fifteen'
       },
       enableIfSetting: (s) => s.confirmOpenCw === true
+    },
+    disableLinkPreviews: {
+      key: 'disableLinkPreviews',
+      translationKey: 'settings.disableLinkPreviews',
+      translationDescriptionKey: 'settings.disableLinkPreviewsDescription',
+      serverKey: 'wafrn.disableLinkPreviews',
+      localStorageKey: 'disableLinkPreviews',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -689,6 +699,7 @@ export class SettingsService {
         { type: 'key', value: 'disableRewootsExploreLocal' },
         { type: 'key', value: 'automaticallyExpandPosts' },
         { type: 'key', value: 'expandQuotes' },
+        { type: 'key', value: 'disableLinkPreviews' },
         { type: 'key', value: 'atprotoLinkDestination' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.cwBehavior' },

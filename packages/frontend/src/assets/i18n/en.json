@@ -407,7 +407,9 @@
       "timeout": "2 second timeout",
       "typing": "Type an English phrase (EVIL)",
       "fifteen": "Solve a game of 3x3 Fifteen (EXTREMELY EVIL)"
-    }
+    },
+    "disableLinkPreviews": "Disable link previews",
+    "disableLinkPreviewsDescription": "Hides the link preview cards below messages that have links."
   },
   "dialog": {
     "confirm": "Confirm",
