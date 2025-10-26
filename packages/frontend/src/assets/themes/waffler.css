@@ -4,26 +4,30 @@ Source repo: https://git.gay/freeplay/UserStyles/src/branch/wah/wafrn
 */
 
 :root {
+	/* Message unreated to Wafrn codebase: SOME OF THESE CHANGED IN STYLUS-SPECIFIC SECTION */
 	--mat-sidenav-container-width: 260px !important;
 	--avatar-size: 44px !important;
+	--avatar-radius: 50%;
 	--mat-sys-corner-medium: 8px;
 	--mat-sys-corner-small: 4px;
 	--timeline-width: 625px;
+	--post-padding: 14px;
 }
 
 /*** LAYOUT */
 @media (min-width: 993px) {
-	.wafrn-container {
+	.wafrn-content, .wafrn-container {
 		max-width: var(--timeline-width);
 	}
 	app-root:not([data-additional-style-modes*="horizontalMenu"]) {
-		mat-drawer {
+		.mat-drawer {
 			position: sticky !important;
 			height: 100vh;
 			margin-block: -100vh; /* for overscroll */
 			top: 0;
 			background: none !important;
 			box-shadow: none !important;
+			border: 0 !important;
 		}
 	}
 	mat-drawer {
@@ -112,13 +116,19 @@ Source repo: https://git.gay/freeplay/UserStyles/src/branch/wah/wafrn
 
 /*** CARDS */
 app-avatar-small:not(.ask-avatar) .avatar {
-	border-radius: 100px !important;
+	border-radius: var(--avatar-radius) !important;
 	background-size: cover !important;
 }
+.mat-mdc-card {
+	background: var(--mat-card-elevated-container-color, var(--mat-sys-surface-container-low));
+	border: 0;
+	box-shadow: var(--mat-card-outlined-container-elevation, var(--mat-sys-level1));
+}
 .post-card.post-card {
-	padding: 14px !important;
+	padding: var(--post-padding) !important;
 	hr {
-		margin-block: 14px !important;
+		margin-block: var(--post-padding) !important;
+		margin-inline: calc(0px - var(--post-padding));
 	}
 	/* card headers */
 	app-post-ribbon, app-post-header {
@@ -135,6 +145,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 			margin: 0 !important;
 			justify-content: flex-end !important;
 			align-items: flex-end;
+			z-index: 2;
 			fa-icon {
 				display: flex;
 				background: #000;
@@ -198,13 +209,14 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		z-index: 2;
 		.ribbon-container {
 			display: grid !important;
-			grid-template-columns: calc(var(--avatar-size) + 12px) minmax(0, max-content) 1fr;
+			grid-template-columns: auto minmax(0, max-content) 1fr;
 			grid-template-rows: auto auto;
 			gap: 0 !important;
 			white-space: nowrap;
 			margin: 0 !important;
 			app-avatar-small {
 				grid-row: 1 / span 2;
+				width: calc(var(--avatar-size) + 12px);
 				&, a {
 					pointer-events: none;
 				}
@@ -248,7 +260,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 			gap: 4px;
 			> div:first-child {
 				display: grid !important;
-				grid-template-columns: calc(var(--avatar-size) + 12px) minmax(0, max-content) 1fr;
+				grid-template-columns: auto minmax(0, max-content) 1fr;
 				grid-template-rows: auto auto;
 				gap: 0 !important;
 				height: max-content !important;
@@ -259,6 +271,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 				app-avatar-small {
 					grid-row: 1 / span 2;
 					grid-column: 1;
+					width: calc(var(--avatar-size) + 12px);
 				}
 				.user-name {
 					grid-column: 2 / span 3;
@@ -276,6 +289,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 				}
 				.date-line {
 					grid-row: 2;
+					grid-column: 3;
 					white-space: nowrap;
 					z-index: -1;
 					align-self: flex-start;
@@ -311,7 +325,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		&::before {
 			content: "";
 			position: absolute;
-			inset: -14px;
+			inset: calc(0px - var(--post-padding));
 			z-index: -1;
 			opacity: .5;
 		}
@@ -330,18 +344,18 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	/** CONTENT */
 	.shortened-post, .notification-content-shortened {
 		/* fix clipping */
-		margin-inline: -14px;
-		padding-inline: 14px;
-		margin-top: -14px;
-		padding-top: 14px;
+		margin-inline: calc(0px - var(--post-padding));
+		padding-inline: var(--post-padding);
+		margin-top: calc(0px - var(--post-padding));
+		padding-top: var(--post-padding);
 	}
 	/** URL Previews */
 	section.gap-3:has(app-link-preview) {
 		display: flex !important;
 		flex-direction: row !important;
 		overflow: auto hidden;
-		margin: -14px;
-		padding: 14px;
+		margin: calc(0px - var(--post-padding));
+		padding: var(--post-padding);
 		app-wafrn-media, app-link-preview {
 			display: contents;
 		}
@@ -373,7 +387,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	.shortened-post ~ hr ~ button {
 		height: 0;
 		padding: 25px;
-		margin: -14px !important;
+		margin: calc(0px - var(--post-padding)) !important;
 		margin-bottom: 10px !important;
 		margin-top: -50px !important;
 		border-radius: 0;
@@ -397,7 +411,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 
 	/* MEDIA */
 	.media-gallery {
-		margin-inline: -14px;
+		margin-inline: calc(0px - var(--post-padding));
 	}
 	.media-container {
 		border-radius: 0;
@@ -434,7 +448,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 			min-width: 1.5em;
 			max-width: 4em;
 			height: 1.5em;
-			object-fit: contain !important;
+			object-fit: contain;
 		}
 	}
 	.emoji-reactions.emoji-reactions button {
@@ -470,11 +484,15 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	mat-drawer-content:has(app-view-blog:not(.snappy-hide)) {
 		position: relative;
 		margin-block: 14px !important;
-		border-radius: 12px !important;
+		border-radius: calc(var(--mat-sys-corner-medium) + 6px) !important;
 		border: 0;
 		margin-inline: 20px !important;
 		background-color: var(--mat-sys-surface-container-highest);
 	}
+}
+.mat-mdc-tab-body-wrapper {
+	/* don't indent posts */
+	margin-inline: 0;
 }
 .mat-drawer-content {
 	overflow: hidden;
@@ -494,8 +512,8 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		height: 80px !important;
 		align-self: stretch;
 		border-radius: inherit;
-		margin-inline: -14px;
-		margin-top: -14px;
+		margin-inline: calc(0px - var(--post-padding));
+		margin-top: calc(0px - var(--post-padding));
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
 		transition: height .4s cubic-bezier(.7,0,0,1);
@@ -516,7 +534,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	.flex {
 		justify-content: center;
 	}
-	.blog-header-image:not([style$='media=");']):not([style$='media=null");']):not([style$='"");']) {
+	.blog-header-image:not([style*='media="']):not([style*='media=null"']):not([style*='""']) {
 		height: 326.25px !important;
 	}
 	/* buttons */
@@ -557,7 +575,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	.w-full.overflow-hidden.flex.flex-column.gap-2 {
 		padding-block: 15px;
 		border-block: 1px solid var(--mat-sys-outline-variant);
-		width: calc(100% + 28px) !important;
+		width: calc(100% + (var(--post-padding) * 2)) !important;
 		p {
 			position: absolute;
 			contain: strict;
@@ -598,12 +616,11 @@ app-avatar-small:not(.ask-avatar) .avatar {
 	}
 }
 
-
 /*** COLORS */
 @media (prefers-color-scheme: dark) and (prefers-contrast: no-preference) {
 	[data-theme="auto"] {
 		--mat-sys-surface: black;
 		--mat-sys-background: black;
-		--mat-sys-outline-variant: rgb(255,255,255,0.13) !important;
+		--mat-sys-outline-variant: rgba(255,255,255,0.13) !important;
 	}
 }
