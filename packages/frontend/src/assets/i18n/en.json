@@ -6,7 +6,8 @@
     "characters": "characters",
     "character": "character",
     "default": "Default",
-    "commit": "commit"
+    "commit": "commit",
+    "buildDate": "Build time"
   },
   "login": {
     "title": "Log in",

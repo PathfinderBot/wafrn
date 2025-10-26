@@ -1,64 +1,47 @@
 <mat-drawer-container>
-  <mat-drawer
-    style="position: fixed"
-    class="side-menu"
-    [class.keyboard-active]="keyboardActive"
-    [mode]="mobile() ? 'over' : 'side'"
-    [opened]="menuVisible || !mobile()"
-    [disableClose]="!horizontalMenuMode() && !mobile()"
-    (closed)="hideMenu()"
-  >
+  <mat-drawer style="position: fixed" class="side-menu" [class.keyboard-active]="keyboardActive"
+    [mode]="mobile() ? 'over' : 'side'" [opened]="menuVisible || !mobile()"
+    [disableClose]="!horizontalMenuMode() && !mobile()" (closed)="hideMenu()">
     <header class="mb-4">
       <a [href]="'/'" class="block" (click)="hideMenu()">
-        <img
-          [src]="logo"
-          class="instance-logo block mx-auto"
-          alt="instance logo"
-          width="200"
-          height="150"
-          style="object-fit: contain"
-        />
+        <img [src]="logo" class="instance-logo block mx-auto" alt="instance logo" width="200" height="150"
+          style="object-fit: contain" />
       </a>
     </header>
     <nav aria-label="Navigation menu">
       <mat-nav-list class="side-menu-nav-list">
         @for (link of menuItems; track $index) {
-          @if (link.visible()) {
-            @if (link.divider) {
-              <hr />
-            } @else {
-              <app-menu-item [item]="link"></app-menu-item>
-            }
-          }
+        @if (link.visible()) {
+        @if (link.divider) {
+        <hr />
+        } @else {
+        <app-menu-item [item]="link"></app-menu-item>
+        }
+        }
         }
         @if (loginService.loggedIn.value) {
-          <a
-            class="my-4 new-woot-button"
-            routerLink="/editor"
-            mat-list-item
-            (click)="hideMenu(); openEditor()"
-            tabIndex="0"
-          >
-            <div class="flex align-items-center justify-content-start">
-              <span class="new-woot-icon">
-                <fa-icon [icon]="pencilIcon" [fixedWidth]="true"></fa-icon>
-              </span>
-              <span class="ml-3 mr-1 menu-item-content">
-                {{ 'menu.writeWoot' | translate }}
-              </span>
-            </div>
-          </a>
+        <a class="my-4 new-woot-button" routerLink="/editor" mat-list-item (click)="hideMenu(); openEditor()"
+          tabIndex="0">
+          <div class="flex align-items-center justify-content-start">
+            <span class="new-woot-icon">
+              <fa-icon [icon]="pencilIcon" [fixedWidth]="true"></fa-icon>
+            </span>
+            <span class="ml-3 mr-1 menu-item-content">
+              {{ 'menu.writeWoot' | translate }}
+            </span>
+          </div>
+        </a>
         }
       </mat-nav-list>
     </nav>
     <div class="drawer-footer">
       <div class="px-2 text-sm footer-links">
         @for (item of menuLinks; track $index) {
-          @if (item.routerLink) {
-            <a class="subtle-link" [routerLink]="item.routerLink">{{ item.label | translate }} </a>
-          } @else {
-            <a class="subtle-link" [href]="item.url" target="_blank">{{ item.label | translate }}</a>
-          }
+        @if (item.routerLink) {
+        <a class="subtle-link" [routerLink]="item.routerLink">{{ item.label | translate }} </a>
+        } @else {
+        <a class="subtle-link" [href]="item.url" target="_blank">{{ item.label | translate }}</a>
+        }
         }
       </div>
       <hr />
@@ -66,22 +49,16 @@
         <app-color-scheme-switcher></app-color-scheme-switcher>
         <div class="text-xs flex flex-column gap-1 align-items-end version-text">
           @if (!buildData.version.endsWith('-DEV')) {
-            <a
-              class="subtle-link"
-              [href]="'https://codeberg.org/wafrn/wafrn/releases/tag/' + buildData.version"
-              target="_blank"
-              >v{{ buildData.version }}</a
-            >
+          <a class="subtle-link" [href]="'https://codeberg.org/wafrn/wafrn/releases/tag/' + buildData.version"
+            target="_blank">v{{ buildData.version }}</a>
           } @else {
-            <span>v{{ buildData.version }}</span>
+          <span>v{{ buildData.version }}</span>
           }
-          @if (buildData.git.fullHash) {
-            <a
-              class="subtle-link"
-              [href]="'https://codeberg.org/wafrn/wafrn/commit/' + buildData.git.fullHash"
-              target="_blank"
-              >{{ 'common.commit' | translate }} {{ buildData.git.hash }}</a
-            >
+          @if (false && buildData.git.fullHash) {
+          <a class="subtle-link" [href]="'https://codeberg.org/wafrn/wafrn/commit/' + buildData.git.fullHash"
+            target="_blank">{{ 'common.commit' | translate }} {{ buildData.git.hash }}</a>
+          } @else {
+          <span class="subtle-link"> {{'common.buildDate' | translate}} {{buildData.timestamp}}</span>
           }
         </div>
       </div>
@@ -90,44 +67,32 @@
   <mat-drawer-content>
     <mat-toolbar class="wafrn-toolbar" *ngIf="mobile()">
       @for (section of menuItemsMobile; track $index) {
-        <div class="wafrn-toolbar-section">
-          @for (link of section; track $index) {
-            @if (link.visible()) {
-              @if (link.divider) {
-                <span class="mx-1 vertical-rule"></span>
-              } @else {
-                <app-menu-item [button]="true" [item]="link"></app-menu-item>
-              }
-            }
-          }
-        </div>
+      <div class="wafrn-toolbar-section">
+        @for (link of section; track $index) {
+        @if (link.visible()) {
+        @if (link.divider) {
+        <span class="mx-1 vertical-rule"></span>
+        } @else {
+        <app-menu-item [button]="true" [item]="link"></app-menu-item>
+        }
+        }
+        }
+      </div>
       }
     </mat-toolbar>
     @if (mobile() && pwaPage) {
-      <button
-        (click)="historyBack()"
-        mat-mini-fab
-        color="default"
-        aria-label="Previous page"
-        class="floating-button previous-page-button"
-        [class.offset-for-toolbar]="offsetTopArea()"
-      >
-        <fa-icon [icon]="backIcon" />
-      </button>
+    <button (click)="historyBack()" mat-mini-fab color="default" aria-label="Previous page"
+      class="floating-button previous-page-button" [class.offset-for-toolbar]="offsetTopArea()">
+      <fa-icon [icon]="backIcon" />
+    </button>
     }
-    <button
-      (click)="refresh()"
-      mat-mini-fab
-      color="default"
-      aria-label="Refresh"
-      class="floating-button refresh-button"
-      [class.offset-for-toolbar]="offsetTopArea()"
-    >
+    <button (click)="refresh()" mat-mini-fab color="default" aria-label="Refresh" class="floating-button refresh-button"
+      [class.offset-for-toolbar]="offsetTopArea()">
       <fa-icon [icon]="reloadIcon" />
     </button>
     <main id="main-content" class="wafrn-content" [class.offset-for-toolbar]="offsetTopArea()">
       @if (maintenanceMode) {
-        <div [innerHtml]="maintenanceMessage"></div>
+      <div [innerHtml]="maintenanceMessage"></div>
       }
       <snappy-router> </snappy-router>
     </main>
