@@ -1,4 +1,10 @@
 {
+    "common": {
+    "commaSeparation": "Разделены запятыми",
+    "characters": "символов",
+    "default": "По-умолчанию",
+    "commit": "commit"
+  },
   "login": {
     "welcomeBack": "С возвращением!",
     "exploreWithoutAccount": "Нажмите здесь, чтобы просмотреть сайт без аккаунта!",
@@ -7,17 +13,34 @@
     "checkSpam": "Если есть проблемы, проверьте папку спама!",
     "email": "Электронная почта",
     "password": "Пароль",
+    "mfaNextStep": "Ещё немного..."
     "mfaToken": "Токен",
     "mfaTokenEnter": "Введите токен с вашего приложения-аутентификатора",
     "forgottenPassword": "Забыли пароль? Нажмите сюда!",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",
     "loginButton": "Войти в аккаунт"
+    "checkEmail": "Пожалуйста, проверьте вашу почту",
+    "checkEmailLine1": "Мы прислали вам письмо на почту. Пожалуйста, проверьте вашу почту и папку спама",
+    "checkEmailLine2": "Если у вас есть проблемы, напишите админинстрации инстанции, чью почту вы можете найти <a href=\"/about\">здесь</a>",
+    "alreadyLoggedIn": "Вы уже вошли в аккаунт с этой учётной записью"
+  },
+  "register": {
+    "title": "Регистрация",
+    "welcome": "Добро пожаловать в Wafrn!",
+    "manualReviewInfo": "Администратор проверит ваш профиль, прежде чем вы сможете присоединиться. Этот процесс может занять несколько часов.",
+    "registerButton": "Зарегистрироваться"
   },
   "notifications": {
     "loadingMore": "Загрузка остальных уведомлений",
     "refresh": "Обновить"
   },
+    "asks": {
+    "title": "Вопросы",
+    "noAsks": "Больше вопросов не найдено",
+    "nobodyAsked": "Никто не спросил..."
+  },
+
   "menu": {
     "login": "Войти в аккаунт",
     "register": "Зарегистрироваться",
@@ -27,17 +50,23 @@
     "notifications": "Уведомления",
     "explore": "Обзор",
     "exploreWafrn": "Обзор WAFRN",
-    "exploreFediverse": "Wafrn и друзья",
+    "exploreFediverse": "WAFRN и друзья",
     "unansweredAsks": "Неотвеченные вопросы",
     "privateMessages": "Личные сообщения",
     "search": "Поиск",
+    "profile": "Профиль",
     "myBlog": "Мой блог",
     "about": "Описание",
     "privacy": "Политика конфиденциальности",
-    "source": "Просмотреть источник!",
+    "source": "Источник",
     "patreon": "Patreon",
     "kofi": "Ko-fi",
+    "inbox": "Входящие",
+    "otherAccounts": "Другие аккаунты",
+    "addAccount": "Добавить аккаунт",
     "logout": "Выйти из аккаунта",
+    "viewBlog": "Просмотреть блог",
+    "switchToAlt": "Сменить аккаунт",
     "faq": "Часто задаваемые вопросы",
     "settings": {
       "title": "Настройки",
@@ -64,7 +93,17 @@
       "awaitingAproval": "Ожидание подтверждения"
     }
   },
+  "theme-editor": {
+    "title": "Редактор темы",
+    "templateNote": "Вы можете найти шаблон и некоторые советы в",
+    "themeTextLabel": "Редактировать CSS тему",
+    "themeTextPlaceholder": "Напишите ваш css...",
+    "themeGuideName": "Гайд по Темам",
+    "updateButton": "Обновить тему"
+  },
   "editor": {
+    "editingLabel": "Редактирование вута",
+    "askReplyLabel": "Отвечая на вопрос",
     "inReplyTo": "В ответ на:",
     "quoteButton": "Цитировать вут",
     "publishWoot": "Опубликовать вут",
@@ -77,12 +116,17 @@
     "wootQuoteConfirmButton": "Добавить вут как цитату",
     "wootTextLabel": "Текст вута",
     "wootTextPlaceholder": "Начните писать...",
+    "uploadMediaIndicator": "Перенесите сюда, чтобы загрузить файл",
+    "bskyLengthWarning": "Текст длиной более 300 символов будет обрезан, и вместо него будет показана ссылка на wafrn",
+    "bskyLengthNotice": "Это влияет только на Bluesky, в настоящий момент символы подсчитываются только приблизительно!",
+    "bskyLengthLabel": "Лимит символов на Bluesky",
     "altTextFieldLabel": "Описание изображения",
+    "altTextFieldLabelVideo": "Описание видео",
     "altTextFieldPlaceholder": "Описание. Заполните это, ПОЖАЛУЙСТА",
     "isNSFWToggle": "NSFW",
-    "mediaCountMastodonWarning": "ВНИМАНИЕ! ВСЕ СЛЕДУЮЩИЕ ЗАГРУЖЕННЫЕ МЕДИА НЕ БУДУТ ОТОБРАЖЕНЫ В МАСТОДОНЕ",
+    "mediaCountMastodonWarning": "ВНИМАНИЕ! ВСЕ ПОСЛЕДУЮЩИЕ МЕДИА НЕ БУДУТ ОТОБРАЖЕНЫ В МАСТОДОНЕ",
     "altTextWarning": "Пожалуйста, заполните все описания медиа. Если вы хотите отключить эту проверку, вы можете это сделать в настройках.",
-    "quoteTitle": "Цитата:",
+    "quoteTitle": "Цитирование:",
     "tagFieldLabel": "Теги",
     "tagSeparationNotice": "Разделены запятыми",
     "ariaLabelWootPrivacy": "Настройки приватности вута",
@@ -91,9 +135,21 @@
     "contentWarningTooltip": "Предупреждение о содержании",
     "insertEmojiTooltip": "Вставить эмоджи",
     "hiddenMentionsTooltip": "Другие упомянутые пользователи",
-    "editorGuide": "Сомневаетесь насчет форматирования текста или не знаете, с чего начать? Посмотрите <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">этот гайд</a>"
+    "editorGuide": "Сомневаетесь насчет форматирования текста или не знаете, с чего начать? Посмотрите <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">этот гайд</a>",
+    "usernameLabel": "Вутить как",
+    "noResults": "Нет результатов."
   },
   "profile": {
+    "profile": {
+      "chooseAvatar": "Выбрать новый аватар",
+      "chooseHeader": "Выбрать новый баннер",
+      "changeDisplayName": "Отображаемое имя (может содержать в себе эмоджи код)",
+      "changeBio": "Your bio/description. You can put emoji codes here too. You can use markdown here",
+      "extraInfoHead": "Extra information (Fediverse exclusive)",
+      "addAttachment": "Add attachment",
+      "fieldPropertyName": "Property name",
+      "fieldPropertyValue": "Property value"
+    },
     "security": {
       "header": "Настройки безопасности",
       "passwordChange": "Сбросить пароль",
@@ -138,3 +194,5 @@
     "replyingTo": "ответ к: "
   }
 }
+
+
