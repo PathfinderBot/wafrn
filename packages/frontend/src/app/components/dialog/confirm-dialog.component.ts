@@ -93,6 +93,11 @@ export class ConfirmDialogComponent {
         this.annoyanceComplete.next()
       })
     }
+    
+    if(!data.annoying || data.annoying == Annoyance.none ) {
+      this.confirmButtonEnabled = true;
+    }
+
   }
 
   winAnnoyance() {
