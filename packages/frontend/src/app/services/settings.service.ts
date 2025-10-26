@@ -593,6 +593,7 @@ export class SettingsService {
       variants: {
         [Annoyance.none]: 'settings.confirmOpenCwAnnoyanceOptions.none',
         [Annoyance.timeout]: 'settings.confirmOpenCwAnnoyanceOptions.timeout',
+        [Annoyance.typing]: 'settings.confirmOpenCwAnnoyanceOptions.typing',
         [Annoyance.fifteen]: 'settings.confirmOpenCwAnnoyanceOptions.fifteen'
       },
       enableIfSetting: (s) => s.confirmOpenCw === true

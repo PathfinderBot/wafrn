@@ -12,18 +12,26 @@
         <strong class="dialog-content-suffix">{{ textData.contentSuffix | translate }}</strong>
       </p>
     }
-    @if (data.annoying === Annoyance.fifteen) {
+    @if ($any([Annoyance.fifteen, Annoyance.typing]).includes(data.annoying)) {
       <hr />
       <p>{{ 'dialog.post-fragment.annoyances.puzzleWarning' | translate }}</p>
-      <div class="game flex justify-content-center">
-        <app-fifteen-game
-          [options]="{
-            width: 3,
-            height: 3
-          }"
-          (won)="winAnnoyance()"
-        ></app-fifteen-game>
-      </div>
+    }
+    @switch (data.annoying) {
+      @case (Annoyance.fifteen) {
+        <div class="game flex justify-content-center">
+          <app-fifteen-game
+            [options]="{
+              width: 3,
+              height: 3
+            }"
+            (won)="winAnnoyance()"
+          ></app-fifteen-game>
+        </div>
+      }
+      @case (Annoyance.typing) {
+        <div class="game flex justify-content-center"> </div>
+        <app-typing-game (won)="winAnnoyance()"></app-typing-game>
+      }
     }
   </mat-dialog-content>
 }

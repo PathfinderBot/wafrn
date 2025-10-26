@@ -405,7 +405,8 @@
     "confirmOpenCwAnnoyanceOptions": {
       "none": "Just the dialog",
       "timeout": "2 second timeout",
-      "fifteen": "Solve a game of 3x3 Fifteen (EVIL)"
+      "typing": "Type an English phrase (EVIL)",
+      "fifteen": "Solve a game of 3x3 Fifteen (EXTREMELY EVIL)"
     }
   },
   "dialog": {
@@ -609,6 +610,10 @@
       "title": "Fifteen",
       "newBoard": "New board",
       "resetBoard": "Reset board"
+    },
+    "typing": {
+      "instructions": "Type the following phrase:",
+      "verifyLabel": "Verify..."
     }
   }
 }

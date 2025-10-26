@@ -13,11 +13,13 @@ import { TranslatePipe } from '@ngx-translate/core'
 import { Subject, timer } from 'rxjs'
 import { FifteenGameComponent } from '../fifteen-game/fifteen-game.component'
 import { ParticleService } from 'src/app/services/particle.service'
+import { TypingGameComponent } from '../typing-game/typing-game.component'
 
 export enum Annoyance {
   none = '0',
   timeout = '1',
-  fifteen = '2'
+  typing = '2',
+  fifteen = '3'
 }
 
 export interface ConfirmDialogData {
@@ -43,6 +45,7 @@ export type ConfirmDialogResult = boolean
     MatFormFieldModule,
     MatInputModule,
     FifteenGameComponent,
+    TypingGameComponent,
     TranslatePipe
   ],
   templateUrl: './confirm-dialog.component.html'
