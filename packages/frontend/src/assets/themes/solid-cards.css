@@ -1,0 +1,7 @@
+:root {
+  --mat-card-outlined-container-color: var(--mat-sys-surface-container-low);
+  /* --mat-card-outlined-container-shape: ; */
+  --mat-card-outlined-outline-width: 0;
+  /* --mat-card-outlined-outline-color: ; */
+  --mat-card-outlined-container-elevation: var(--mat-sys-level1);
+}

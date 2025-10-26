@@ -144,7 +144,8 @@ const additionalStyleModeVariants = [
   'horizontalMenu',
   'lowContrastSidebar',
   'oldTags',
-  'colorfulTags'
+  'colorfulTags',
+  'solidCards'
 ] as const
 type AdditionalStyleModeTuple = typeof additionalStyleModeVariants
 export type AdditionalStyleMode = AdditionalStyleModeTuple[number]
@@ -161,7 +162,8 @@ export const additionalStyleModesData: AdditionalStyleModeData = {
   horizontalMenu: { name: 'Horizontal Menu' },
   lowContrastSidebar: { name: 'Low Contrast Sidebar' },
   oldTags: { name: 'Old Tags' },
-  colorfulTags: { name: 'Colorful Tags' }
+  colorfulTags: { name: 'Colorful Tags' },
+  solidCards: { name: 'Solid style cards' }
 }
 
 @Injectable({
@@ -176,7 +178,8 @@ export class ThemeService {
     horizontalMenu: signal(false),
     lowContrastSidebar: signal(false),
     oldTags: signal(false),
-    colorfulTags: signal(false)
+    colorfulTags: signal(false),
+    solidCards: signal(false)
   }
   public customCSS = signal<string>('') // Empty string is own theme, otherwise is the theme of the viewed blog
   public customCSSEnabled = signal(true) // Allows pages to disable it and re-enable on snappy hide
