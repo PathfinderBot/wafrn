@@ -42,7 +42,7 @@ function authenticateToken(req: Request, res: Response, next: NextFunction) {
       })
       if (user) {
         // a ban can take up to 5 minutes on some view only routes
-        await redisCache.set('auth:' + jwtData.userId, 't', 'EX', 300)
+        await redisCache.set('auth:' + jwtData.userId, 't', 'EX', 30)
         ;(req as AuthorizedRequest).jwtData = jwtData
         next()
       } else {
