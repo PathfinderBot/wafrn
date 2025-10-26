@@ -207,17 +207,17 @@ export class ThemeService {
   }
 
   setup() {
-    const theme = this.settingService.values.theme
+    const theme = this.settingService.values().theme
     if (typeof theme === 'string' && isTheme(theme)) {
       this.setTheme(theme)
     }
 
-    const darkLightMode = this.settingService.values.lightDarkMode
+    const darkLightMode = this.settingService.values().lightDarkMode
     if (typeof darkLightMode === 'string' && isLightDarkMode(darkLightMode)) {
       this.setLightDarkMode(darkLightMode)
     }
 
-    const settingAdditionalStyleModes = this.settingService.values.additionalStyleModes
+    const settingAdditionalStyleModes = this.settingService.values().additionalStyleModes
     if (Array.isArray(settingAdditionalStyleModes) && isAdditionalStyleMode(settingAdditionalStyleModes)) {
       additionalStyleModeVariants.forEach((mode) => {
         const enabled = settingAdditionalStyleModes.includes(mode)
@@ -235,7 +235,8 @@ export class ThemeService {
 
   public setTheme = async (theme: Theme, doNotSavePreference = false) => {
     this.theme.set(theme)
-    this.settingService.values.theme = theme
+    this.settingService.values().theme = theme
+    this.settingService.values.update((v) => v)
 
     // Forced lightDarkMode
     if (themeData[theme]?.compatibility === 'light') await this.setLightDarkMode('light')
@@ -246,7 +247,8 @@ export class ThemeService {
 
   public setLightDarkMode = async (lightDarkMode: LightDarkMode, doNotSavePreference = false) => {
     this.lightDarkMode.set(lightDarkMode)
-    this.settingService.values.lightDarkMode = lightDarkMode
+    this.settingService.values().lightDarkMode = lightDarkMode
+    this.settingService.values.update((v) => v)
 
     document.documentElement.setAttribute('data-theme', lightDarkMode)
     this.settingService.forceUpdateValue('lightDarkMode', !doNotSavePreference)
@@ -272,7 +274,8 @@ export class ThemeService {
       .filter(([_, enabled]) => enabled())
       .map(([val, _]) => val)
 
-    this.settingService.values.additionalStyleModes = modes
+    this.settingService.values().additionalStyleModes = modes
+    this.settingService.values.update((v) => v)
   }
 
   public async toggleAdditionalStyleMode(mode: AdditionalStyleMode, doNotSavePreference = false) {
@@ -297,7 +300,7 @@ export class ThemeService {
     }
 
     // Someone else's CSS, check if we want to use it and if it exists
-    if (this.settingService.values.useOtherUserCustomThemes !== true) return
+    if (this.settingService.values().useOtherUserCustomThemes !== true) return
 
     const themeExists = await this.themeExists(this.customCSS())
     if (!themeExists) return

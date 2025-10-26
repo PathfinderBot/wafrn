@@ -1,0 +1,20 @@
+.game {
+  padding: 8px;
+  background-color: var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface-container-highest);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.verify-text {
+  color: var(--mat-sys-outline);
+}
+.correct {
+  color: var(--mat-sys-on-surface);
+}
+.incorrect {
+  color: var(--mat-sys-error);
+  text-decoration: line-through;
+}
+.current {
+  text-decoration: underline;
+}

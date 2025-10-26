@@ -50,7 +50,7 @@ export class SettingDropListComponent {
     this.dropListDataEntry = this.data[this.settingKey].dropListData
 
     this.defaultOrder = this.data[this.settingKey].default as SettingListItem[]
-    this.itemList = settingsService.values[this.settingKey] as SettingListItem[]
+    this.itemList = settingsService.values()[this.settingKey] as SettingListItem[]
 
     // Reset if no value or new values
     if (this.itemList.length === 0 || this.itemList.length !== this.defaultOrder.length) {
@@ -82,7 +82,8 @@ export class SettingDropListComponent {
 
   syncList() {
     this.itemList = [...this.itemList] // update DOM hack
-    this.settingsService.values[this.settingKey] = this.itemList
+    this.settingsService.values()[this.settingKey] = this.itemList
+    this.settingsService.values.update((v) => v)
     this.settingsService.settingsModified.set(true)
   }
 

@@ -6,7 +6,7 @@ import { MatSelectChange, MatSelectModule } from '@angular/material/select'
 import { TranslateModule } from '@ngx-translate/core'
 import { KeyValueTypedPipe } from 'src/app/pipes/keyvaluetyped.pipe'
 import { ParticleService } from 'src/app/services/particle.service'
-import { SettingData, SettingsService, SettingValues } from 'src/app/services/settings.service'
+import { SettingData, SettingsService } from 'src/app/services/settings.service'
 import { SettingEntryComponent } from '../setting-entry/setting-entry.component'
 
 const confettiTypeVariants = ['like', 'rewoot', 'edit', 'bookmark'] as const
@@ -28,7 +28,7 @@ type ConfettiType = (typeof confettiTypeVariants)[number]
 })
 export class SettingConfettiComponent {
   data: SettingData
-  values: SettingValues
+  values
 
   confettiType: ConfettiType = 'like'
   confettiTypeData: Record<ConfettiType, string> = {
@@ -47,10 +47,10 @@ export class SettingConfettiComponent {
     this.values = settingsService.values
   }
 
-  updateMultiplider(event: Event) {
+  updateMultiplier(event: Event) {
     const target = event.target
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-      this.values.confettiMultiplier = target.value
+      this.values().confettiMultiplier = target.value
       this.settingsService.settingsModified.set(true)
     }
   }

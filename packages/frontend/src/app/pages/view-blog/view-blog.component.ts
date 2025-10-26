@@ -1,6 +1,6 @@
-import { Component, computed, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core'
+import { Component, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core'
 import { Meta } from '@angular/platform-browser'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ActivatedRoute } from '@angular/router'
 import {
   faArrowUpRightFromSquare,
   faClockRotateLeft,
@@ -17,7 +17,6 @@ import { DashboardService } from 'src/app/services/dashboard.service'
 import { LoginService } from 'src/app/services/login.service'
 import { ThemeService } from 'src/app/services/theme.service'
 
-import { MatDialog } from '@angular/material/dialog'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
@@ -186,13 +185,13 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     if (!userHasCustomTheme || userIsSelf) return
 
     // Easiest case, they want custom CSS
-    if (this.settingService.values.useOtherUserCustomThemes) {
+    if (this.settingService.values().useOtherUserCustomThemes) {
       this.themeService.customCSS.set(blogDetails.id)
       return
     }
 
     // Check if we should ask
-    if (!this.settingService.values.askToUseOtherUserCustomThemes) return
+    if (!this.settingService.values().askToUseOtherUserCustomThemes) return
 
     const res = await this.simpleDialog.createCustomOptionDialog({
       title: 'dialog.blog.customThemeTitle',
@@ -205,12 +204,12 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     })
 
     if (res === 'confirm') {
-      this.settingService.values.useOtherUserCustomThemes = true
+      this.settingService.values().useOtherUserCustomThemes = true
       this.settingService.forceUpdateValue('useOtherUserCustomThemes')
       this.themeService.customCSS.set(blogDetails.id)
     }
     if (res === 'cancelRemember') {
-      this.settingService.values.askToUseOtherUserCustomThemes = false
+      this.settingService.values().askToUseOtherUserCustomThemes = false
       this.settingService.forceUpdateValue('askToUseOtherUserCustomThemes')
     }
   }

@@ -58,6 +58,13 @@
   pointer-events: none;
 }
 
+// Add small button style
+:root .mat-small-button {
+  height: unset;
+  padding-inline: 4px;
+  border-radius: var(--mat-sys-corner-small);
+}
+
 // Fix drawer border radius without requiring themes to use !important, though uses 0 2 0 specificity
 :root .mat-drawer {
   border-top-right-radius: 0;

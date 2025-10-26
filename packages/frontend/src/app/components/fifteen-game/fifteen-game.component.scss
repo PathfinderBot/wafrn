@@ -1,0 +1,42 @@
+.game {
+  padding: 8px;
+  background-color: var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface-container-highest);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.game-name {
+  font-weight: bold;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-width), 1fr);
+  gap: 2px;
+  padding: 2px;
+  background-color: var(--mat-sys-outline);
+  font-size: 1.25rem;
+}
+
+.tile {
+  padding: 0;
+  aspect-ratio: 1/1;
+  background-color: var(--mat-sys-surface-container-highest);
+  color: inherit;
+  border: unset;
+  box-shadow:
+    4px 4px 4px 2px var(--mat-sys-background) inset,
+    -4px -4px 8px -6px var(--mat-sys-shadow) inset;
+  cursor: pointer;
+  font-size: inherit;
+  user-select: none;
+}
+
+.blank,
+.tile[disabled] {
+  cursor: unset;
+}
+
+.blank {
+  box-shadow: unset;
+}

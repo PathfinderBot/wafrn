@@ -62,7 +62,7 @@ export class PromptDialogComponent {
   inputResponse = signal('')
 
   constructor(@Inject(MAT_DIALOG_DATA) protected data: PromptDialogData) {
-    this.textData = Object.assign(data, this.defaultTextData)
+    this.textData = Object.assign(this.defaultTextData, data)
     console.log(this.textData)
   }
 

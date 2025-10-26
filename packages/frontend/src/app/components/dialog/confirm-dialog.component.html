@@ -12,6 +12,27 @@
         <strong class="dialog-content-suffix">{{ textData.contentSuffix | translate }}</strong>
       </p>
     }
+    @if ($any([Annoyance.fifteen, Annoyance.typing]).includes(data.annoying)) {
+      <hr />
+      <p>{{ 'dialog.post-fragment.annoyances.puzzleWarning' | translate }}</p>
+    }
+    @switch (data.annoying) {
+      @case (Annoyance.fifteen) {
+        <div class="game flex justify-content-center">
+          <app-fifteen-game
+            [options]="{
+              width: 3,
+              height: 3
+            }"
+            (won)="winAnnoyance()"
+          ></app-fifteen-game>
+        </div>
+      }
+      @case (Annoyance.typing) {
+        <div class="game flex justify-content-center"> </div>
+        <app-typing-game (won)="winAnnoyance()"></app-typing-game>
+      }
+    }
   </mat-dialog-content>
 }
 <mat-dialog-actions>
@@ -22,7 +43,13 @@
       </button>
     }
     @if (textData.options.confirm) {
-      <button mat-flat-button class="dialog-confirm-button" (click)="onConfirm()" cdkFocusInitial>
+      <button
+        mat-flat-button
+        class="dialog-confirm-button"
+        (click)="onConfirm()"
+        [disabled]="!confirmButtonEnabled"
+        cdkFocusInitial
+      >
         {{ textData.options.confirm | translate }}
       </button>
     }

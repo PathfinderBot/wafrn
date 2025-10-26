@@ -94,7 +94,7 @@ export class NotificationsService {
     this.asks.set(res.asks)
 
     // Check for any notification changes to play the audio
-    if (previousCount < this.totalNotifications() && this.settings.values.disableSounds !== true) {
+    if (previousCount < this.totalNotifications() && this.settings.values().disableSounds !== true) {
       this.audioService.playSound('notification')
     }
   }
@@ -177,13 +177,16 @@ export class NotificationsService {
         }
         const emoji = notification.emojiReactionId
           ? this.emojiMap.get(
-            petition.emojiRelations.postEmojiReactions.find((elem) => elem.id == notification.emojiReactionId)
-              ?.emojiId as string
-          )
+              petition.emojiRelations.postEmojiReactions.find((elem) => elem.id == notification.emojiReactionId)
+                ?.emojiId as string
+            )
           : undefined
         let notificationProcessed: UserNotifications = {
           type: notification.notificationType,
-          url: notification.notificationType === 'FOLLOW' || 'USERBITE' ? `/blog/${usr.url}` : `/post/${notification.postId}`,
+          url:
+            notification.notificationType === 'FOLLOW' || 'USERBITE'
+              ? `/blog/${usr.url}`
+              : `/post/${notification.postId}`,
           avatar: usr.avatar,
           userUrl: usr.url,
           userName: usr.name,
@@ -194,7 +197,7 @@ export class NotificationsService {
             ? emoji.name
             : notification.notificationType === 'EMOJIREACT'
               ? petition.emojiRelations.postEmojiReactions.find((elem) => elem.id == notification.emojiReactionId)
-                ?.content
+                  ?.content
               : undefined
         }
         return notificationProcessed
