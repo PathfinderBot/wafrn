@@ -30,7 +30,7 @@ import optimizeMedia from '../utils/optimizeMedia.js'
 import uploadHandler from '../utils/uploads.js'
 import { generateKeyPairSync } from 'crypto'
 import { logger } from '../utils/logger.js'
-import { createAccountLimiter, loginRateLimiter } from '../utils/rateLimiters.js'
+import { createAccountLimiter, loginRateLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
 import fs from 'fs/promises'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
@@ -241,7 +241,7 @@ function userRoutes(app: Application) {
     }
   )
 
-  app.post('/api/updateCSS', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+  app.post('/api/updateCSS', authenticateToken, navigationRateLimiter, async (req: AuthorizedRequest, res: Response) => {
     const posterId = req.jwtData?.userId
     const cssContent = req.body.css ? req.body.css.trim() : undefined
     if (req.body.css) {
