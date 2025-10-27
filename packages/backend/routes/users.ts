@@ -1601,7 +1601,7 @@ It is slow because we have to send every fedi server that has ever seen a post o
           const aliasList = isArray(petitionData.alsoKnownAs)
             ? petitionData.alsoKnownAs.map((elem: string) => elem.toLowerCase())
             : [petitionData.alsoKnownAs.toLowerCase()]
-          if (aliasList.includes(`${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url}`)) {
+          if (aliasList.includes(`${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url}`.toLowerCase())) {
             // TIME TO MOVE OUT
             // FIRST STEP: followers. send message to each follower. a move object
             const followerIds = await Follows.findAll({
