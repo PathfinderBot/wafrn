@@ -42,10 +42,10 @@ async function getAtProtoThread(
   const postExisting = forceUpdate
     ? undefined
     : await Post.findOne({
-        where: {
-          bskyUri: uri
-        }
-      })
+      where: {
+        bskyUri: uri
+      }
+    })
   if (postExisting) {
     return postExisting.id
   }
@@ -148,7 +148,13 @@ async function processSinglePost(
     let mentions: string[] = []
     let record = post.record as any
     let postText = record.text
-    if (record.facets && record.facets.length > 0) {
+    let federatedWoot = false
+    if (record.fullText || record.bridgyOriginalText) {
+      federatedWoot = true
+      tags = record.fullTags?.split('\n') ?? [] // also detect full tags
+      postText = record.fullText ?? record.bridgyOriginalText
+    }
+    if (record.facets && record.facets.length > 0 && !federatedWoot) {
       // lets get mentions
       const mentionedDids = record.facets
         .flatMap((elem: any) => elem.features)

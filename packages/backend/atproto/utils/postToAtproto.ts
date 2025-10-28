@@ -1,7 +1,7 @@
 import { BskyAgent, RichText } from '@atproto/api'
 import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
 import fs from 'fs/promises'
-import { getPostUrlForQuote } from '../../utils/activitypub/postToJSONLD.js'
+import { getPostUrlForQuote, postToJSONLD } from '../../utils/activitypub/postToJSONLD.js'
 import RichtextBuilder from '@atcute/bluesky-richtext-builder'
 import { Main } from '@atproto/api/dist/client/types/app/bsky/richtext/facet.js'
 import { tokenize } from '@atcute/bluesky-richtext-parser'
@@ -61,7 +61,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
 
   const contentWarning = post.content_warning ? `[${post.content_warning.trim()}]\n` : ''
-  const tags = (await post.getPostTags()).map((elem) => `#${elem.tagName.trim().replaceAll(' ', '-')}`).join(' ')
+  const tags = (await post.getPostTags()).map((elem) => elem.tagName).join('\n');
   let postText: string = dompurify.sanitize(
     (contentWarning + (post.markdownContent ? post.markdownContent.trim() : post.content.trim()) + ' ' + tags).trim(),
     {
@@ -189,12 +189,13 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     else rt.facets = [facet as unknown as Main]
   })
 
-  const sanitizedText = dompurify.sanitize(post.content, { ALLOWED_TAGS: [] })
+  const jsonLd = await postToJSONLD(post.id);
+  const fullText = jsonLd?.object?.content ?? post.content;
   let res: any = {
     text: rt.text,
     facets: rt.facets,
     createdAt: new Date(post.createdAt).toISOString(),
-    fullText: sanitizedText,
+    fullText: fullText,
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`
   }
