@@ -1,5 +1,6 @@
 import { Op } from 'sequelize'
 import {
+  Bites,
   Blocks,
   EmojiReaction,
   FederatedHost,
@@ -9,6 +10,7 @@ import {
   PostMentionsUserRelation,
   PostReport,
   User,
+  UserBitesPostRelation,
   UserBookmarkedPosts,
   UserEmojiRelation,
   UserFollowHashtags,
@@ -244,14 +246,57 @@ async function nukeBannedUsers() {
         }
       }
     )
+    logger.debug(`--- Nuking bites ---`)
+    await Bites.destroy({
+      where: {
+        [Op.or] : [
+          {
+            biterId: {
+              [Op.in]: usersToNukeIds
+            }
+          },
+          {
+            bittenId: {
+              [Op.in]: usersToNukeIds
+            }
+          }
+        ]
+      }
+    })
+
+    await UserBitesPostRelation.destroy({
+      where: {
+        userId: {
+          [Op.in]: usersToNukeIds
+        }
+      }
+    })
+    
     logger.debug(`--- Nuking posts Completed ---`)
-    await User.destroy({
+    await User.update({
+      banned: true
+    }, {
       where: {
         id: {
           [Op.in]: usersToNukeIds
         }
       }
     })
+    try {
+      await User.destroy({
+        where: {
+          id: {
+            [Op.in]: usersToNukeIds
+          }
+        }
+      })
+    } catch (error) {
+      logger.error({
+        message: `Error nuking users in db`,
+        error: error
+      })
+    }
+    
     logger.debug('--- Nuking users complete ---')
   }
 }
