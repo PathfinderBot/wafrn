@@ -173,7 +173,7 @@ cron.schedule('0 2 * * *', () => {
   sequelize.query('VACUUM ANALYZE').then(() => {
     logger.info(`postgres vacuum analyze executed`)
   })
-  nukeBannedUsers().then(() => {
-    logger.info(`NukeBannedUsers Done`)
-  })
+  // nukeBannedUsers().then(() => {
+  //   logger.info(`NukeBannedUsers Done`)
+  // })
 })
