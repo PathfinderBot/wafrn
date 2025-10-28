@@ -48,6 +48,12 @@ ${{DOMAIN_NAME}} {
         # Cache-Control: no-cache, no-store, must-revalidate
     }
 
+    @websocket path /api/notifications/socket
+
+    handle @websocket {
+        reverse_proxy ${{WEBSOCKET_HOST:-backend:9000}}
+    }
+
     @api path /api* /fediverse* /contexts* /post* /blog* /.well-known*
 
     handle @api {
