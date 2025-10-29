@@ -229,11 +229,9 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
           return {
             type: 'Document',
             mediaType: media.mediaType,
-            url: media.external
-              ? media.url
-              : media.url.startsWith('?cid')
-                ? completeEnvironment.externalCacheurl + encodeURIComponent(media.url)
-                : completeEnvironment.mediaUrl + media.url,
+            url:  (media.url.startsWith('?cid') || media.external) ?
+              completeEnvironment.externalCacheurl + encodeURIComponent(media.url) :
+              (completeEnvironment.mediaUrl + media.url),
             sensitive: media.NSFW ? true : false,
             name: media.description
           }
