@@ -10,6 +10,7 @@ import optimizeMedia from '../../utils/optimizeMedia.js'
 import dompurify from 'isomorphic-dompurify'
 import ffmpeg from 'fluent-ffmpeg'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { getPostAndUserFromPostId } from '../../utils/cacheGetters/getPostAndUserFromPostId.js'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -29,6 +30,14 @@ export async function getVideoAspectRatio(fileName: string) {
       }
     })
   })
+}
+
+function getUserName(user?: { url: string }): string {
+  let res = user ? '@' + user.url + '@' + completeEnvironment.instanceUrl : 'anonymous'
+  if (user?.url.startsWith('@')) {
+    res = user.url
+  }
+  return res
 }
 
 async function postToAtproto(post: Post, agent: BskyAgent) {
@@ -185,13 +194,26 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   })
   await rt.detectFacets(agent)
 
+  const cacheData = await getPostAndUserFromPostId(post.id)
+  const userAsker = cacheData.data.ask?.asker
+
   builder.facets.forEach((facet) => {
     if (rt.facets) rt.facets.push(facet as unknown as Main)
     else rt.facets = [facet as unknown as Main]
   })
 
-  const jsonLd = await postToJSONLD(post.id);
-  const fullText = jsonLd?.object?.content ?? post.content;
+  let processedContent = post.content
+  const wafrnMediaRegex =
+    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm
+
+  // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
+  processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
+  if (ask) {
+    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
+      }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+  }
+
+  const fullText = processedContent ?? post.content;
   let res: any = {
     text: rt.text,
     facets: rt.facets,
