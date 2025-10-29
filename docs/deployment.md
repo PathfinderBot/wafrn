@@ -11,7 +11,7 @@ Prerequisites:
 
 To set up wafrn you have three options:
 
-1. Use the automated scripts that set up wafrn on Oracle Cloud's Always Free infrastructure automatically. Also it's free<sup>\*<sup>
+1. Use the automated scripts that set up wafrn on Oracle Cloud's Always Free infrastructure automatically. It may be free, BUT THEY ARE KNOWN TO TERMINATE ACCOUNTS ON A WHIM
 2. Already have a Debian / Ubuntu based computer in the cloud, and use the installer script to set up wafrn
 3. Have a modern Linux based box lying around somewhere and you want to install wafrn on it manually
 

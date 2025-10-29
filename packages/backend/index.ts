@@ -133,7 +133,6 @@ emojiRoutes(app)
 pollRoutes(app)
 followHashtagRoutes(app)
 // just websocket things
-websocketRoutes(server)
 frontend(app)
 
 server.listen(PORT, completeEnvironment.listenIp, () => {
@@ -165,15 +164,4 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
       await worker.pause()
     })
   }
-})
-
-// CRON TASKS
-cron.schedule('0 2 * * *', () => {
-  // maintenance tasks
-  sequelize.query('VACUUM ANALYZE').then(() => {
-    logger.info(`postgres vacuum analyze executed`)
-  })
-  nukeBannedUsers().then(() => {
-    logger.info(`NukeBannedUsers Done`)
-  })
 })
