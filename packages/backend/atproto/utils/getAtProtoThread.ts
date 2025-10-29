@@ -151,7 +151,7 @@ async function processSinglePost(
     let federatedWoot = false
     if (record.fullText || record.bridgyOriginalText) {
       federatedWoot = true
-      tags = record.fullTags?.split('\n') ?? [] // also detect full tags
+      tags = record.fullTags?.split('\n').filter((x: string) => !!x) ?? [] // also detect full tags
       postText = record.fullText ?? record.bridgyOriginalText
     }
     if (record.facets && record.facets.length > 0 && !federatedWoot) {
