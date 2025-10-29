@@ -195,7 +195,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   await rt.detectFacets(agent)
 
   const cacheData = await getPostAndUserFromPostId(post.id)
-  const userAsker = cacheData.data.ask?.asker
+  const userAsker = cacheData.data?.ask?.asker
 
   builder.facets.forEach((facet) => {
     if (rt.facets) rt.facets.push(facet as unknown as Main)
