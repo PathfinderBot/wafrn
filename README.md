@@ -36,5 +36,5 @@ The backend uses [GNU AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
 
 ## Sponsors
 <a href="https://upcloud.com/">
-  <img src="https://app.wafrn.net/assets/sponsors/upcloud.webp" alt="Upcloud banner" width="88"/>
+  <img src="https://app.wafrn.net/assets/sponsors/upcloud.gif" alt="Upcloud banner" width="176" style="image-rendering: pixelated;" />
 </a>
