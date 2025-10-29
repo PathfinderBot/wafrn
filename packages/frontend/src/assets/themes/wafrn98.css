@@ -1,4 +1,3 @@
-
  /*
 theme by vv0ltz
 https://app.wafrn.net/blog/vv0ltz
@@ -745,6 +744,11 @@ div.fragment-content-warning button {}
 
 */
     /* TAGS */
+    .woot-tagfield, .woot-tagfield mat-label {
+        background-color: var(--element-bgcolor) !important;
+        outline: none !important;
+    }
+    
     .tag-list {
         gap: 0.25rem;
         padding-inline: 6px;
