@@ -27,7 +27,7 @@
     "@peertube/http-signature": "^1.7.0",
     "@rushstack/ts-command-line": "^5.0.0",
     "@skyware/firehose": "^0.3.2",
-    "@skyware/jetstream": "^0.2.0",
+    "@skyware/jetstream": "^0.2.5",
     "@types/archiver": "^6.0.3",
     "@types/bcrypt": "5.0.0",
     "@types/body-parser": "^1.19.5",
