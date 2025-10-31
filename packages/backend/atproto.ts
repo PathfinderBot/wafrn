@@ -14,7 +14,7 @@ let cachedDids = await getCacheAtDids(true)
 // })
 
 const jetstream = new Jetstream({
-  endpoint: 'wss://jetstream.sprk.so/subscribe'
+  endpoint: 'wss://jetstream.fire.hose.cam/subscribe'
 })
 
 const firehoseQueue = new Queue('firehoseQueue', {
@@ -38,8 +38,9 @@ jetstream.on('commit', async (event) => {
     const data = {
       repo: event.did,
       operation: {
-        ...(commit as any).record,
+        ...(commit as any),
         action: commit.operation,
+        collection: commit.collection,
         path: `${commit.collection}/${commit.rkey}`
       }
     }
