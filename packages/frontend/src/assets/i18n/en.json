@@ -470,7 +470,11 @@
         "yes": "Yes",
         "cancel": "No",
         "cancelRemember": "No, don't ask again"
-      }
+      },
+      "hideRewoots": "Hide rewoots made by this user",
+      "unhideRewoots": "Unhide rewoots made by this user",
+      "unhideQuotes": "Unhide quotes from this user",
+      "hideQuotes": "Hide quotes from this user"
     },
     "report": {
       "reportUserTitle": "Report User",
