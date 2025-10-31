@@ -14,7 +14,16 @@ let cachedDids = await getCacheAtDids(true)
 // })
 
 const jetstream = new Jetstream({
-  endpoint: 'wss://jetstream.fire.hose.cam/subscribe'
+  endpoint: 'wss://jetstream.fire.hose.cam/subscribe',
+  wantedCollections: [
+    'net.wafrn.feed.bite',
+    'app.bsky.feed.like',
+    'app.bsky.feed.post',
+    'app.bsky.feed.repost',
+    'app.bsky.graph.follow',
+    'app.bsky.graph.block',
+    'app.bsky.feed.threadgate'
+  ]
 })
 
 const firehoseQueue = new Queue('firehoseQueue', {
