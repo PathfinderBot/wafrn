@@ -8,7 +8,9 @@ import {
   PostTag,
   Media,
   Notification,
-  Blocks
+  Blocks,
+  UserBitesPostRelation,
+  Bites
 } from '../../models/index.js'
 import { Op, Model } from 'sequelize'
 import { logger } from '../../utils/logger.js'
@@ -33,7 +35,58 @@ async function processFirehose(job: Job) {
     switch (operation.action) {
       case 'create': {
         const record = operation.record as any
-        switch (record['$type']) {
+        switch ((operation as any).collection) {
+          case 'net.wafrn.feed.bite': {
+            let subject = record.subject as string
+            if (subject.includes('app.bsky.feed.post')) {
+              // this is a bluesky post
+              const postId = await getAtProtoThread(subject)
+              if (postId) {
+                const post = await Post.findByPk(postId);
+                if (post) {
+                  await UserBitesPostRelation.create({
+                    userId: remoteUser.id,
+                    postId: postId
+                  })
+
+                  await createNotification(
+                    {
+                      notificationType: 'POSTBITE',
+                      notifiedUserId: post.userId,
+                      userId: remoteUser.id,
+                      postId: postId
+                    },
+                    {
+                      postContent: post?.content,
+                      userUrl: remoteUser.url
+                    }
+                  )
+                }
+              }
+            } else {
+              // this is a bluesky user
+              const user = await getAtprotoUser(subject.replace('at://', ''), (await adminUser) as User);
+              if (user) {
+                await Bites.create({
+                  biterId: user.id,
+                  bittenId: remoteUser.id
+                })
+
+                await createNotification(
+                  {
+                    notificationType: 'USERBITE',
+                    notifiedUserId: user.id,
+                    userId: remoteUser.id
+                  },
+                  {
+                    userUrl: remoteUser.url
+                  }
+                )
+              }
+            }
+
+            break
+          }
           case 'app.bsky.feed.like': {
             let user = undefined
             let likedPostId = undefined
@@ -125,7 +178,11 @@ async function processFirehose(job: Job) {
             break
           }
           case 'app.bsky.feed.repost': {
-            // we do not need to get all the replies, making this operation a lot faster for big threads
+            // we do not need to get all the replies, making this operation a lrecordot faster for big threads
+            if (!record.subject) {
+              logger.error(record)
+              break
+            }
             const postToBeRewooted = await getAtProtoThread(record.subject.uri, false, false)
             if (postToBeRewooted) {
               try {
@@ -219,7 +276,7 @@ async function processFirehose(job: Job) {
             break
           }
           default: {
-            logger.warn({ message: `Bsky create type not implemented: ${record['$type']}`, record: record })
+            logger.warn({ message: `Bsky create type not implemented: ${operation.action}`, record: record })
           }
         }
         break
