@@ -41,7 +41,6 @@ export class LinkPreviewComponent implements OnChanges {
       this.hostname = new URL(this.url).hostname
       this.mediaService.getLinkPreview(this.url).then((data) => {
         this.favicon = data.favicons.at(0)
-        console.log('dayda', data, this.favicon)
         this.loading = false
         if (data.images && data.images.length) {
           this.img = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.images[0])
