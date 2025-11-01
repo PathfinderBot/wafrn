@@ -99,9 +99,15 @@ export default function cacheRoutes(app: Application) {
                 encodeURIComponent(cid)
               mediaUrl = url
             } else if (did.startsWith('did:web')) {
+              // get did doc first
+              const docRes = await fetch(`https://${did.split('did:web:')[1]}/.well-known/did.json`);
+              const didDoc = await docRes.json();
+              const atProtoServer = didDoc.service.find(x => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer');
+              if (!atProtoServer) {
+                return res.sendStatus(500)
+              }
               const url =
-                'https://' +
-                did.split('did:web:')[1] +
+                atProtoServer.serviceEndpoint +
                 '/xrpc/com.atproto.sync.getBlob?did=' +
                 encodeURIComponent(did) +
                 '&cid=' +
@@ -124,11 +130,11 @@ export default function cacheRoutes(app: Application) {
         let media = true
           ? undefined
           : await Media.findOne({
-              where: sequelize.where(
-                sequelize.fn('md5', sequelize.col('url')),
-                crypto.createHash('md5').update(dbMediaUrl).digest('hex')
-              )
-            })
+            where: sequelize.where(
+              sequelize.fn('md5', sequelize.col('url')),
+              crypto.createHash('md5').update(dbMediaUrl).digest('hex')
+            )
+          })
         if (media) {
           altText = media.description
         }
@@ -157,7 +163,7 @@ export default function cacheRoutes(app: Application) {
           followRedirects: 'follow',
           headers: { 'User-Agent': completeEnvironment.instanceUrl }
         })
-      } catch (error) {}
+      } catch (error) { }
       // we cache the url 24 hours if success, 5 minutes if not
       await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(result), 'EX', result ? 3600 * 24 : 300)
       res.send(result)
