@@ -98,20 +98,20 @@
           ) {
           @if (postService.usersRewootsDisabled.includes(blog.id)) {
           <button mat-menu-item (click)="updateDisableRewoots()">
-            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ blog.unhideRewoots | translate }}
+            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ 'blog.unhideRewoots' | translate }}
           </button>
           } @else {
           <button mat-menu-item (click)="updateDisableRewoots()">
-            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ blog.hideRewoots | translate }}
+            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ 'blog.hideRewoots' | translate }}
           </button>
           }
           @if (postService.usersQuotesDisabled.includes(blog.id)) {
           <button mat-menu-item (click)="updateDisableQuotes()">
-            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ blog.unhideQuotes | translate }}
+            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ 'blog.unhideQuotes' | translate }}
           </button>
           } @else {
           <button mat-menu-item (click)="updateDisableQuotes()">
-            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ blog.hideQuotes | translate }}
+            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ 'blog.hideQuotes' | translate }}
           </button>
           }
           }
