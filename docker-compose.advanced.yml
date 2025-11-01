@@ -113,7 +113,7 @@ services:
       FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
       CACHE_HOST: "cache:9000"
       BACKEND_HOST: "wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000"
-      WEBSOCKET_HOST: "websocket:9000"
+      WEBSOCKET_HOST: "wafrn-websocket-1:9000"
     volumes:
       - "caddy:/data"
       - "frontend:/var/www/html/frontend"
