@@ -194,7 +194,7 @@ async function processSinglePost(
       }
       postText = text
     }
-    postText = postText.replaceAll('\n', '<br>')
+    if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
 
     const labels = getPostLabels(post)
     let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
