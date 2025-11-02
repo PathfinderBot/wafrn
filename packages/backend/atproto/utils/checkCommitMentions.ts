@@ -10,7 +10,7 @@ import { Commit, Collection, CommitBase, CommitType, CommitCreate } from '@skywa
 // Preemptive checks to see if
 function checkCommitMentions(
   did: string,
-  commit: Commit<Collection>,
+  commit: Commit<"app.bsky.feed.threadgate" | "app.bsky.feed.like" | "app.bsky.feed.post" | "app.bsky.feed.repost" | "app.bsky.graph.block" | "app.bsky.graph.follow" | "net.wafrn.feed.bite">,
   cacheData: {
     followedDids: Set<string>
     localUserDids: Set<string>
@@ -76,33 +76,25 @@ function checkCommitMentions(
     }
   }
   // second one first approach: is post being replied on db? if so we store it.
-  // const fullUrisToCheck: string[] = commit.ops
-  //   .filter((op) => op.action === 'create' && op.path.startsWith('app.bsky.feed.post') && (op.record as any)?.reply)
-  //   .map((op) => {
-  //     return { parent: (op as any).record.reply.parent.uri, root: (op as any).record.reply.root.uri }
-  //   })
-  //   .map((elem) => [elem.parent, elem.root])
-  //   .flat()
+  let record = (commit as CommitCreate<"app.bsky.feed.post">).record
+  if (record && record.reply) {
+    const root = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
+    const parent = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
+    res =
+      cacheData.followedDids.has(root) || cacheData.followedDids.has(parent) ||
+      cacheData.localUserDids.has(root) || cacheData.followedDids.has(parent)
 
-  // if (quotedPostUri) {
-  //   fullUrisToCheck.concat(quotedPostUri)
-  // }
-  // const urisToCheck = fullUrisToCheck
-  //   .map((elem) => elem.split('at://')[1])
-  //   .map((elem) => elem.split('/app.bsky.feed')[0])
-  // let postsFounds = 0
+    if (res) return res;
+  }
 
-  // if (urisToCheck.length > 0) {
-  //   // TODO oh no lets lower the thing a bit
-  //   // postsFounds = urisToCheck.some((elem) => didsToCheck.has(elem)) ? 1 : postsFounds
-  //   postsFounds = urisToCheck.some((elem) => cacheData.followedDids.has(elem) || cacheData.localUserDids.has(elem))
-  //     ? 1
-  //     : postsFounds
-  // }
+  if (record && record.embed && (record.embed.$type === 'app.bsky.embed.record' || record.embed.$type === 'app.bsky.embed.recordWithMedia')) {
+    const uri = (record.embed.record as { uri: string }).uri.replace('at://', '').split('/app.bsky.feed')[0]
+    res =
+      cacheData.followedDids.has(uri) || cacheData.localUserDids.has(uri)
 
-  // if (postsFounds > 0) {
-  //   res = true
-  // }
+    if (res) return res;
+  }
+
   return res
 }
 
