@@ -1,4 +1,10 @@
 {
+  "common": {
+    "commaSeparation": "rozdzielone przecinkami",
+    "characters": "znaków",
+    "default": "Domyślne",
+    "commit": "commit"
+  },
   "login": {
     "welcomeBack": "Witaj z powrotem!",
     "exploreWithoutAccount": "Kliknij tutaj, by przejrzeć Gofra bez konta!",
@@ -12,13 +18,29 @@
     "forgottenPassword": "Zapomniałoś hasła? Kliknij tutaj!",
     "loginButton": "Zaloguj się"
   },
+  "register": {
+    "title": "Zarejestruj się teraz!",
+    "welcome": "Witaj w Wafrn!",
+    "manualReviewInfo": "Administracja zewalułuje twój profil po rejestracji. Może to potrwać kilka godzin",
+    "registerButton": "Zarejestruj się"
+  },
+  "notifications": {
+    "title": "Powiadomienia",
+    "loadingMore": "Ładowanie więcej powiadomień",
+    "refresh": "Odśwież"
+  },
+  "asks": {
+    "title": "Zapytania",
+    "noAsks": "Nie ma więcej zapytań",
+    "nobodyAsked": "Nikt nie pytał..."
+  },
   "menu": {
     "dashboard": "Oś czasu",
     "dashboardHover": "Zobacz oś czasu",
-    "writeWoot": "Stwórz woota",
+    "writeWoot": "Stwórz Woota",
     "notifications": "Powiadomienia",
     "explore": "Eksploruj",
-    "exploreWafrn": "Eksploruj Gofra",
+    "exploreWafrn": "Eksploruj Wafrn",
     "exploreFediverse": "Eksploruj Fediwersum",
     "unansweredAsks": "Pytania bez odpowiedzi",
     "privateMessages": "Wiadomości prywatne",
@@ -30,6 +52,7 @@
     "patreon": "Patreon",
     "kofi": "Ko-fi",
     "logout": "Wyloguj się",
+    "bookmarkedPosts": "Zapisane wooty",
     "settings": {
       "title": "Ustawienia",
       "follows": "Zarządzaj obserwującymi",
@@ -38,11 +61,11 @@
       "themeEditor": "Edytor motywu",
       "mutedUsers": "Wyciszeni użytkownicy",
       "mutedPosts": "Wyciszone posty",
-      "bookmarkedPosts": "Bookmarked posts [TRANSLATION PENDING]",
+      "bookmarkedPosts": "Zapisane wooty",
       "myBlockedUsers": "Zablokowani użytkownicy",
       "myBlockedServers": "Zablokowane serwery",
       "importFollows": "Importuj obserwujących",
-      "superSecretMenu": "Seekretne Menu"
+      "superSecretMenu": "Sekretne menu"
     },
     "admin": {
       "title": "Administracja",
@@ -54,6 +77,14 @@
       "stats": "Statystyki",
       "awaitingAproval": "Oczekujący na akceptację"
     }
+  },
+  "theme-editor": {
+    "title": "Edytor Motywów",
+    "templateNote": "Możesz zobaczyć przykłady i kilka wskazówek w",
+    "themeTextLabel": "Edytuj własny motyw CSS",
+    "themeTextPlaceholder": "Wpisz tutaj własny motyw CSS...",
+    "themeGuideName": "Samouczku Motywów",
+    "updateButton": "Zaktualizuj Motyw"
   },
   "editor": {
     "inReplyTo": "W odpowiedzi do:",
@@ -80,6 +111,10 @@
     "uploadMediaTooltip": "Dodaj media",
     "contentWarningTooltip": "Ostrzeżenie o treściach wrażliwych"
   },
+  "blog": {
+    "tabWoots": "Wooty",
+    "tabMedia": "Multimedia"
+  },
   "profile": {
     "security": {
       "header": "Bezpieczeństwo",
@@ -97,13 +132,13 @@
         "installInstructions": "Jeśli nie masz aplikacji uwierzytelniającej, zalecamy użycie <a href=\"https://getaegis.app/\" target=\"_blank\">Aegis</a> (Android) lub <a href=\"https://2fas.com/\" target=\"_blank\">2FAS</a> (iOS/Android)",
         "imageAltSecret": "Sekretny kod do uwierzytelnienia to '{{ secret }}'",
         "secretFallback": "Jeśli nie możesz zeskanować kodu QR, użyj sekretnego kodu '{{ secret }}' w swojej aplikacji",
-        "confirmDeleteMessage": "Czy napewno chcesz usunąć ten token? Uwaga: Usunięcie wszystkich tokenów wyłączy MFA na twoim koncie",
+        "confirmDeleteMessage": "Czy na pewno chcesz usunąć ten token? Uwaga: Usunięcie wszystkich tokenów wyłączy MFA na twoim koncie",
         "deleteSuccess": "Token usunięty",
         "verifySuccess": "Gratulacje, MFA zostało włączone na twoim koncie",
         "verifyFailed": "Weryfikacja nieudana. Sprawdź swój token, a jeśli dalej masz problem, skontaktuj się z administracją",
         "errorMessageGeneric": "Wystąpił błąd. Spróbuj ponownie, lub poproś administrację o pomoc",
         "noMfa": "MFA nie jest włączone na twoim koncie",
-        "mfaList": "Ustawiłoś poniższe tokeny:",
+        "mfaList": "Ustawione zostały poniższe tokeny:",
         "type": {
           "totpLabel": "Token"
         }
@@ -116,9 +151,58 @@
       "misc": "Inne"
     }
   },
-  "ask-dialog-content": {
-    "askAnonymously": "Anonimowe pytanie",
-    "askFormLabel": "Pytanie",
-    "askButtonText": "Zapytaj"
+  "dialog": {
+    "confirm": "Potwierdź",
+    "cancel": "Anuluj"
+  },
+  "post-actions": {
+    "shareUrl": "Skopjuj link",
+    "shareExternalUrl": "Skopjuj link zewnętzrzny",
+    "viewOnAtproto": "Zobacz na Atproto",
+    "forceRefederate": "Wymuś ponowną federację",
+    "viewOriginalPost": "Zobacz orginał",
+    "replyPost": "Odpowiedz na woota",
+    "rewootPost": "Podbij woota",
+    "deleteRewootPost": "Cofnij Podbicie",
+    "quotePost": "Cytuj woota",
+    "bookmarkPost": "Zapisz woota",
+    "unbookmarkPost": "Usuń z zapisanych",
+    "likePost": "Polub woota",
+    "dislikePost": "Cofnij polubienie",
+    "reportPost": "Zgłoś woota",
+    "editPost": "Edytuj woota",
+    "deletePost": "Usuń woota",
+    "silenceInteractions": "Wycisz powiadomienia",
+    "silenceReplyNotifications": "Wycisz odpowiedzi",
+    "unsilenceReplyNotifications": "Odcisz odpowiedzi",
+    "muteUser": "Wycisz użytkownika",
+    "unmuteUser": "Odcisz użytkownika",
+    "blockUser": "Zablokuj użytkownika",
+    "unblockUser": "Odblokuj użytkownika",
+    "reportUser": "Zgłoś użytkownika",
+    "bitePost": "Ugryź woota",
+    "biteUser": "Ugryź użytkownika"
+  },
+  "post-header": {
+    "follow": "Obserwuj",
+    "awaitingApproval": "Oczekiwanie na akceptację",
+    "viewPost": "Wyświetl woot"
+  },
+  "post-fragment": {
+    "mutedWords": "Woot zawiera zablokowane słowa:",
+    "mediaContentWarning": "Woot zawiera ostrzerzenie:",
+    "mediaNsfw": "Multimedia oznaczone są jako nieprzyzwoite",
+    "replyingTo": "Wzmianki: "
+  },
+  "media": {
+    "noAltText": "Brak tekstu alternatywnego",
+    "sensitiveContent": "Te multimedia zawierają niestosowne treści",
+    "manuallyHidden": "Multimedia zostały ręcznie ukryte"
+  },
+  "page-not-found": {
+    "title": "404: Nie znaleziono strony",
+    "subtitle": "Niczego tutaj nie ma.",
+    "couldNotFind": "nie prowadzi do poprawnej strony",
+    "returnHome": "Wróć do osi czasu"
   }
 }
