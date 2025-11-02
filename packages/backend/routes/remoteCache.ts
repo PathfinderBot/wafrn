@@ -102,7 +102,7 @@ export default function cacheRoutes(app: Application) {
               // get did doc first
               const docRes = await fetch(`https://${did.split('did:web:')[1]}/.well-known/did.json`);
               const didDoc = await docRes.json();
-              const atProtoServer = didDoc.service.find(x => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer');
+              const atProtoServer = didDoc.service.find((x: any) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer');
               if (!atProtoServer) {
                 return res.sendStatus(500)
               }
