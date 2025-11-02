@@ -557,7 +557,7 @@
     "bookmarkPost": "Bookmark woot",
     "unbookmarkPost": "Unbookmark woot",
     "likePost": "Like woot",
-    "dislikePost": "Remove woot",
+    "dislikePost": "Remove like",
     "reportPost": "Report woot",
     "editPost": "Edit woot",
     "deletePost": "Delete woot",
@@ -569,7 +569,7 @@
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
     "reportUser": "Report user",
-    "bitePost": "Bite post",
+    "bitePost": "Bite woot",
     "biteUser": "Bite user"
   },
   "post-header": {
