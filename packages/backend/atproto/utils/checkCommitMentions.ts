@@ -88,7 +88,7 @@ function checkCommitMentions(
   }
 
   if (record && record.embed && (record.embed.$type === 'app.bsky.embed.record' || record.embed.$type === 'app.bsky.embed.recordWithMedia')) {
-    const uri = (record.embed.record as { uri: string }).uri.replace('at://', '').split('/app.bsky.feed')[0]
+    const uri = (record.embed.record as { uri: string | undefined }).uri?.replace('at://', '').split('/app.bsky.feed')[0] ?? ''
     res =
       cacheData.followedDids.has(uri) || cacheData.localUserDids.has(uri)
 
