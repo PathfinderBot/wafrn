@@ -59,8 +59,13 @@ export default function searchRoutes(app: Application) {
       }
     }
     try {
-      urlString = new URL(searchTerm).href
-    } catch (error) {}
+      const url = new URL(searchTerm);
+      // remove search params and hashes
+      url.search = "";
+      url.hash = "";
+
+      urlString = url.href;
+    } catch (error) { }
     if (urlString && !page) {
       // we force fetch said remote post. Nothing eslse!
       const userPoster = await User.findByPk(posterId)
@@ -68,12 +73,13 @@ export default function searchRoutes(app: Application) {
         if (
           completeEnvironment.enableBsky &&
           userPoster.enableBsky &&
-          urlString.toLowerCase().startsWith('https://bsky.app/profile/') &&
+          urlString.toLowerCase().includes('/profile/') &&
           urlString.toLowerCase().includes('/post/')
         ) {
-          // BSKY POST
+          // try resolving as bsky post
           try {
-            const profileAndPost = urlString.split('https://bsky.app/profile/')[1].split('/post/')
+            urlString = decodeURIComponent(urlString); // done this due to red dwarf
+            const profileAndPost = urlString.split('/profile/')[1].split('/post/')
             let bskyProfile = profileAndPost[0]
             let bskyUri = profileAndPost[1]
             if (!bskyProfile.startsWith('did:')) {
@@ -88,24 +94,24 @@ export default function searchRoutes(app: Application) {
             }
           } catch (error) {
             logger.debug({
-              message: `Error in search obtaining bsky post ${searchTerm}`,
+              message: `Error in search obtaining bsky post ${searchTerm}, trying fedi`,
               error
             })
           }
-        } else if (!urlString.toLowerCase().startsWith('https://bsky.app/profile/')) {
-          // ok fedi post probably
-          try {
-            const remotePost = await getPostThreadRecursive(userPoster, urlString)
-            if (remotePost) {
-              await getPostThreadRecursive(userPoster, urlString, undefined, remotePost.id)
-              postsIds = [remotePost.id]
-            }
-          } catch (error) {
-            logger.debug({
-              message: `Error in search obtaining fedi post ${searchTerm}`,
-              error
-            })
+        }
+
+        // else, fedi post
+        try {
+          const remotePost = await getPostThreadRecursive(userPoster, urlString)
+          if (remotePost) {
+            await getPostThreadRecursive(userPoster, urlString, undefined, remotePost.id)
+            postsIds = [remotePost.id]
           }
+        } catch (error) {
+          logger.debug({
+            message: `Error in search obtaining fedi post ${searchTerm}`,
+            error
+          })
         }
       }
     } else {
