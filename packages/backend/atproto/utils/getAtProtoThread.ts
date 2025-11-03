@@ -218,7 +218,7 @@ async function processSinglePost(
 
     if ((await getAllLocalUserIds()).includes(newData.userId) && !forceUpdate) {
       // dirty as hell but this should stop the duplication
-      await wait(10000)
+      await wait(1500)
     }
     let [postToProcess, created] = await Post.findOrCreate({ where: { bskyUri: post.uri }, defaults: newData })
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
