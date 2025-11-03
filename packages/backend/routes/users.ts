@@ -1227,6 +1227,11 @@ function userRoutes(app: Application) {
     if (user && bskyUrl && pasword) {
       const localIds = await getAllLocalUserIds()
       const bskyUser = await getAtprotoUser(bskyUrl, await getAdminUser())
+      if (bskyUser && bskyUser.url === user.url) {
+        return res.send({
+          success: true
+        })
+      }
       if (bskyUser && bskyUser.bskyDid && !localIds.includes(bskyUser.id)) {
         const serviceUrl = completeEnvironment.bskyPds.startsWith('http')
           ? completeEnvironment.bskyPds
