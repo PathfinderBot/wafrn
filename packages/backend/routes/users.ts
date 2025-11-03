@@ -1159,6 +1159,13 @@ function userRoutes(app: Application) {
       })
     }
 
+    if(user && user.url === completeEnvironment.adminUser) {
+      return res.status(500).send({
+        error: true,
+        message: `The main admin account is required and nuking its bluesky account will destroy this wafrn instance`
+      })
+    }
+
     if (!user) {
       return res.status(404).send({
         error: true,
@@ -1213,7 +1220,6 @@ function userRoutes(app: Application) {
         message: `This instance does not have bluesky enabled at this moment`
       })
     }
-
     const userId = req.jwtData?.userId as string
     const user = await User.scope('full').findByPk(userId)
     const bskyUrl = req.body.url
