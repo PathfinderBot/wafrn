@@ -186,7 +186,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
     if (token.type === 'link') {
       builder.addLink(token.text, token.url)
-    } else if (token.type === 'autolink' && !('embed' in res)) {
+    } else if (token.type === 'autolink' && medias.length === 0) {
       // only add a embed if theres no embed, bsky only supports 1 embed
       builder.addLink(token.url, token.url)
       const shasum = crypto.createHash('sha1')
