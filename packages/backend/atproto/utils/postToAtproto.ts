@@ -194,11 +194,19 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       const urlHash = shasum.digest('hex')
       let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
       if (!linkPreview?.title) {
-        linkPreview = await getLinkPreview(token.url, {
+        try {
+          linkPreview = await getLinkPreview(token.url, {
           followRedirects: 'follow',
           headers: { 'User-Agent': completeEnvironment.instanceUrl }
         }) as { url: string; title: string; description: string } | undefined;
         await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+        } catch (error) {
+          logger.trace({
+            message: `Error obtaining link ${token.url}`,
+            error: error
+          })
+        }
+        
       }
 
       if (linkPreview?.title) {
