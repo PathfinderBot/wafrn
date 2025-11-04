@@ -156,7 +156,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
   const tokens = tokenize(postText)
 
-  let res: any;
+  let res: any = {};
 
   for (const token of tokens) {
     let text = builder.text
