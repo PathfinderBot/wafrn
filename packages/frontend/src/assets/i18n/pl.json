@@ -199,7 +199,7 @@
       "articles": "Artykuły (opcja w budowie)",
       "all": "Wszystko"
     },
-    "alsoKnownAs": "Poprzednia nazwa",
+    "alsoKnownAs": "[FIXME] Znany też jako",
     "requestAccountDeletion": "Rozwiń aby usunąć konto",
     "alsoKnownAsDescription": "Migracja z innego konta (nie pisz @)",
     "theme": "Motyw",
@@ -261,6 +261,53 @@
     "askFormLabel": "Pytanie",
     "askButtonText": "Zapytaj"
   },
+  "messages": {
+    "deleteRewootSuccess": "Podbicie zostało usunięte.",
+    "likePostSuccess": "Woot został polubiony.",
+    "unlikePostSuccess": "Polubienie zostało usunięte.",
+    "bookmarkPostSuccess": "Woot został zapisany.",
+    "unbookmarkPostSuccess": "Woot został usunięty z zapisanych.",
+    "rewootPostSuccess": "Woot został podbity.",
+    "followMessageSuccess": "Obserwujesz tego użytkownika.",
+    "cancelFollowMessageSuccess": "Anulowano prośbę o obserwację użytkownika.",
+    "unfollowMessageSuccess": "Nie obserwujesz już tego użytkownika.",
+    "copyLocalLinkSuccess": "Skopiowano link do schowka.",
+    "copyRemoteLinkSuccess": "Skopiowano link zewnętrzny do schowka.",
+    "silencePostSuccess": "Wyciszono powiadomienia dla tego woota.",
+    "unsilencePostSuccess": "Będziesz otrzymywać powiadomienia dla tego woota.",
+    "blockUserSuccess": "Zablokowano tego użytkownika.",
+    "unblockUserSuccess": "Odblokowano tego użytkownika.",
+    "muteUserSuccess": "Wyciszono tego użytkownika.",
+    "unmuteUserSuccess": "Odciszono użytkownika.",
+    "blockServerSuccess": "Zablokowano server.",
+    "reportUserSuccess": "Stworzono raport dla tego użytkownika.",
+    "reportPostSuccess": "Stworzono raport dla tego woota.",
+    "genericError": "Coś poszło nie tak! Sprawdź czy masz połączenie internetowe. ",
+    "notRewootableError": "Nie udało się podbić woota, podbicia wyłączone przez autora.",
+    "bitePostSuccess": "Woot został ugryziony!",
+    "biteUserSuccess": "Użytkownik został ugryziony!"
+  },
+  "keyboard-shortcuts": {
+    "keyboardShortcuts": "Skróty Klawiszowe",
+    "groupNavigation": "Nawigacja",
+    "scrollDown": "Przewiń w dół",
+    "scrollUp": "Przewiń w górę",
+    "scrollDownPage": "Przewiń w dół o stronę",
+    "scrollUpPage": "Przewiń w górę o stronę",
+    "nextPost": "Następny woot",
+    "previousPost": "Poprzedni woot",
+    "groupPostAction": "Akcje Wootów",
+    "likePost": "Polub woot",
+    "rewootPost": "Podbij woot",
+    "replyPost": "Odpowiedz na woot",
+    "quotePost": "Zacytuj woota",
+    "groupMisc": "Inne",
+    "openEditor": "Otwórz edytor",
+    "viewKeyboardShortcuts": "Zobacz skróty klawiszowe",
+    "unbound": "nieprzypisany",
+    "additionalOptions": "Dodatkowe Opcje",
+    "smoothScroll": "Płynne przewijanie"
+  },
   "post-actions": {
     "shareUrl": "Skopjuj link",
     "shareExternalUrl": "Skopjuj link zewnętzrzny",
@@ -310,5 +357,19 @@
     "subtitle": "Niczego tutaj nie ma.",
     "couldNotFind": "nie prowadzi do poprawnej strony",
     "returnHome": "Wróć do strony głównej"
+  },
+  "games": {
+    "common": {
+      "moves": "Ruchów"
+    },
+    "fifteen": {
+      "title": "Piętnastka",
+      "newBoard": "Nowa Plansza",
+      "resetBoard": "Zresetuj Planszę"
+    },
+    "typing": {
+      "instructions": "Wpisz podaną frazę:",
+      "verifyLabel": "Tutaj..."
+    }
   }
 }
