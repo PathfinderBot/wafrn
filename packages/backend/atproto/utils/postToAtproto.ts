@@ -14,6 +14,7 @@ import { getPostAndUserFromPostId } from '../../utils/cacheGetters/getPostAndUse
 import { getLinkPreview } from 'link-preview-js'
 import crypto from 'crypto'
 import { redisCache } from '../../utils/redis.js'
+import { logger } from '../../utils/logger.js'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -185,27 +186,30 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
     if (token.type === 'link') {
       builder.addLink(token.text, token.url)
-      if (!res.embed) {
-        const shasum = crypto.createHash('sha1')
-        shasum.update(token.url.toLowerCase())
-        const urlHash = shasum.digest('hex')
-        let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
-        if (!linkPreview?.title) {
-          linkPreview = await getLinkPreview(token.url, {
-            followRedirects: 'follow',
-            headers: { 'User-Agent': completeEnvironment.instanceUrl }
-          }) as { url: string; title: string; description: string } | undefined;
-          await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
-        }
+    }
 
-        if (linkPreview?.title) {
-          res.embed = {
-            $type: 'app.bsky.embed.external',
-            external: {
-              uri: linkPreview.url,
-              title: linkPreview.title,
-              description: linkPreview.description
-            }
+    // only add a embed if theres no embed, bsky only supports 1 embed
+    if (token.type === 'autolink' && !('embed' in res)) {
+      builder.addLink(token.url, token.url)
+      const shasum = crypto.createHash('sha1')
+      shasum.update(token.url.toLowerCase())
+      const urlHash = shasum.digest('hex')
+      let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
+      if (!linkPreview?.title) {
+        linkPreview = await getLinkPreview(token.url, {
+          followRedirects: 'follow',
+          headers: { 'User-Agent': completeEnvironment.instanceUrl }
+        }) as { url: string; title: string; description: string } | undefined;
+        await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+      }
+
+      if (linkPreview?.title) {
+        res.embed = {
+          $type: 'app.bsky.embed.external',
+          external: {
+            uri: linkPreview.url,
+            title: linkPreview.title,
+            description: linkPreview.description
           }
         }
       }
