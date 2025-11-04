@@ -109,6 +109,56 @@ const deletePostQueue = new Queue('deletePostQueue', {
   }
 })
 
+
+const slurs = [
+    "chinaman",
+    "chinamen",
+    "chink",
+    "coolie",
+    "coon",
+    "eskimo",
+    "golliwog",
+    "gook",
+    "gyp",
+    "gypsy",
+    "half-breed",
+    "halfbreed",
+    "heeb",
+    "jap",
+    "kaffer",
+    "kaffir",
+    "kaffir",
+    "kaffre",
+    "kafir",
+    "kike",
+    "kraut",
+    "negress",
+    "negro",
+    "nig",
+    "nig-nog",
+    "nigga",
+    "nigger",
+    "nigguh",
+    "pajeet",
+    "paki",
+    "pickaninnie",
+    "pickaninny",
+    "raghead",
+    "retard",
+    "sambo",
+    "shemale",
+    "soyboy",
+    "spade",
+    "sperg",
+    "spic",
+    "squaw",
+    "tard",
+    "wetback",
+    "wigger",
+    "wop",
+    "yid",
+]
+
 function userRoutes(app: Application) {
   app.post(
     '/api/register',
@@ -122,7 +172,9 @@ function userRoutes(app: Application) {
           req.body?.email &&
           req.body.url &&
           req.body.url.match(/^[a-z0-9_A-Z]+([\_-]+[a-z0-9_A-Z]+)*$/i) &&
-          validateEmail(req.body.email)
+          validateEmail(req.body.email) &&
+          !slurs.includes(req.body.url.toLowerCase() &&
+          slurs.every(elem => !req.body.url.includes(elem)))
         ) {
           const birthDate = new Date(req.body.birthDate)
           const minimumAge = new Date()
@@ -1418,6 +1470,12 @@ function userRoutes(app: Application) {
     // a bit dirty innit
     if (req.body.anonymous) {
       req.jwtData = undefined
+    }
+    if(req.body.question) {
+      if(slurs.includes(req.body.question.toLowerCase()) || req.body.question.toLowerCase().includes('kill yourself')) {
+        res.status(400)
+        return res.send({error: true, message: 'Your ask seems to be harmful. Fuck you.'})
+      }
     }
     const lastHourAsks = await Ask.count({
       where: {
