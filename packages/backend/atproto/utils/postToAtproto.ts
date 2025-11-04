@@ -188,189 +188,196 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       builder.addLink(token.text, token.url)
     } else if (token.type === 'autolink' && !('embed' in res)) {
       // only add a embed if theres no embed, bsky only supports 1 embed
-      try {
-        builder.addLink(token.url, token.url)
-        const shasum = crypto.createHash('sha1')
-        shasum.update(token.url.toLowerCase())
-        const urlHash = shasum.digest('hex')
-        let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
-        if (!linkPreview?.title) {
+      builder.addLink(token.url, token.url)
+      const shasum = crypto.createHash('sha1')
+      shasum.update(token.url.toLowerCase())
+      const urlHash = shasum.digest('hex')
+      let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
+      if (!linkPreview?.title) {
+        try {
           linkPreview = await getLinkPreview(token.url, {
             followRedirects: 'follow',
             headers: { 'User-Agent': completeEnvironment.instanceUrl }
           }) as { url: string; title: string; description: string } | undefined;
           await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+        } catch (error) {
+          logger.trace({
+            message: `Error obtaining link ${token.url}`,
+            error: error
+          })
         }
 
-        if (linkPreview?.title) {
-          res.embed = {
-            $type: 'app.bsky.embed.external',
-            external: {
-              uri: linkPreview.url,
-              title: linkPreview.title,
-              description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
-            }
+      }
+
+      if (linkPreview?.title) {
+        res.embed = {
+          $type: 'app.bsky.embed.external',
+          external: {
+            uri: linkPreview.url,
+            title: linkPreview.title,
+            description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
           }
         }
-      } catch { }
-    }
+      }
+    } catch { }
+  }
     else builder.addText(token.raw)
-  }
-  postText = builder.text
+}
+postText = builder.text
 
-  if (contentWarning != '' || medias.some((media) => media.NSFW)) {
-    labels = {
-      $type: 'com.atproto.label.defs#selfLabels',
-      values: [{ val: 'graphic-media' }]
+if (contentWarning != '' || medias.some((media) => media.NSFW)) {
+  labels = {
+    $type: 'com.atproto.label.defs#selfLabels',
+    values: [{ val: 'graphic-media' }]
+  }
+}
+
+const rt = new RichText({
+  text: postText
+})
+await rt.detectFacets(agent)
+
+const cacheData = await getPostAndUserFromPostId(post.id)
+const userAsker = cacheData.data?.ask?.asker
+
+builder.facets.forEach((facet) => {
+  if (rt.facets) rt.facets.push(facet as unknown as Main)
+  else rt.facets = [facet as unknown as Main]
+})
+
+let processedContent = post.content
+const wafrnMediaRegex =
+  /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm
+
+// we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
+processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
+if (ask) {
+  processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
+    }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+}
+
+const fullText = processedContent ?? post.content;
+res = {
+  ...res,
+  text: rt.text,
+  facets: rt.facets,
+  createdAt: new Date(post.createdAt).toISOString(),
+  fullText: fullText,
+  fullTags: tags,
+  fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`
+}
+
+const bskyMediaPromises = medias.map(async (media) => {
+  let file = await fs.readFile('uploads/' + media.url)
+  const isVideo = media.mediaType?.startsWith('video/')
+
+  if (!isVideo) {
+    // yeah, 1 millon bytes is officially the limit:
+    // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
+    if (file.length > 1000000) {
+      // well this image is TOO BIG. time to convert it
+      await optimizeMedia('uploads/' + media.url, {
+        outPath: 'uploads/' + media.id + '_bsky',
+        // bluesky CDN resizes images to 2000 on the long end, try that first
+        maxSize: 2000,
+        keep: true
+      })
+      file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
+    }
+
+    if (file.length > 1000000) {
+      // still too big?! okay well let's crunch it
+      await optimizeMedia('uploads/' + media.url, {
+        outPath: 'uploads/' + media.id + '_bsky',
+        maxSize: 768,
+        keep: true
+      })
+      file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
     }
   }
 
-  const rt = new RichText({
-    text: postText
-  })
-  await rt.detectFacets(agent)
+  const { data } = await agent.uploadBlob(Buffer.from(file), { encoding: media.mediaType || undefined })
+  return { media, blob: data.blob }
+})
 
-  const cacheData = await getPostAndUserFromPostId(post.id)
-  const userAsker = cacheData.data?.ask?.asker
+if (bskyMediaPromises.length && bskyMediaPromises.length <= 4) {
+  const bskyMedias = await Promise.all(bskyMediaPromises)
+  const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
 
-  builder.facets.forEach((facet) => {
-    if (rt.facets) rt.facets.push(facet as unknown as Main)
-    else rt.facets = [facet as unknown as Main]
-  })
-
-  let processedContent = post.content
-  const wafrnMediaRegex =
-    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm
-
-  // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
-  processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
-  if (ask) {
-    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
-      }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
-  }
-
-  const fullText = processedContent ?? post.content;
-  res = {
-    ...res,
-    text: rt.text,
-    facets: rt.facets,
-    createdAt: new Date(post.createdAt).toISOString(),
-    fullText: fullText,
-    fullTags: tags,
-    fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`
-  }
-
-  const bskyMediaPromises = medias.map(async (media) => {
-    let file = await fs.readFile('uploads/' + media.url)
-    const isVideo = media.mediaType?.startsWith('video/')
-
-    if (!isVideo) {
-      // yeah, 1 millon bytes is officially the limit:
-      // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
-      if (file.length > 1000000) {
-        // well this image is TOO BIG. time to convert it
-        await optimizeMedia('uploads/' + media.url, {
-          outPath: 'uploads/' + media.id + '_bsky',
-          // bluesky CDN resizes images to 2000 on the long end, try that first
-          maxSize: 2000,
-          keep: true
-        })
-        file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
-      }
-
-      if (file.length > 1000000) {
-        // still too big?! okay well let's crunch it
-        await optimizeMedia('uploads/' + media.url, {
-          outPath: 'uploads/' + media.id + '_bsky',
-          maxSize: 768,
-          keep: true
-        })
-        file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
-      }
-    }
-
-    const { data } = await agent.uploadBlob(Buffer.from(file), { encoding: media.mediaType || undefined })
-    return { media, blob: data.blob }
-  })
-
-  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4) {
-    const bskyMedias = await Promise.all(bskyMediaPromises)
-    const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
-
-    if (video) {
-      res.embed = {
-        $type: 'app.bsky.embed.video',
-        video: video.blob,
-        alt: video.media.description ? video.media.description : '',
-        labels,
-        aspectRatio: await getVideoAspectRatio('uploads/' + video.media.url)
-      }
-    } else {
-      res.embed = {
-        $type: 'app.bsky.embed.images',
-        images: bskyMedias.map((m) => ({
-          labels,
-          image: m.blob,
-          alt: m.media.description ? m.media.description : '',
-          aspectRatio: {
-            width: m.media.width,
-            height: m.media.height
-          }
-        }))
-      }
-    }
-    // Shortening when media is present is handled earlier
-  } else if (postShortened || bskyMediaPromises.length > 4) {
+  if (video) {
     res.embed = {
-      $type: 'app.bsky.embed.external',
-      external: {
-        uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
-        title: `See complete post at ${completeEnvironment.instanceUrl}`,
-        description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`
-      }
+      $type: 'app.bsky.embed.video',
+      video: video.blob,
+      alt: video.media.description ? video.media.description : '',
+      labels,
+      aspectRatio: await getVideoAspectRatio('uploads/' + video.media.url)
+    }
+  } else {
+    res.embed = {
+      $type: 'app.bsky.embed.images',
+      images: bskyMedias.map((m) => ({
+        labels,
+        image: m.blob,
+        alt: m.media.description ? m.media.description : '',
+        aspectRatio: {
+          width: m.media.width,
+          height: m.media.height
+        }
+      }))
     }
   }
-
-  if (post.parentId) {
-    // ok this post is in reply to something
-    const parent = await Post.findByPk(post.parentId)
-    const ancestors = await post.getAncestors({
-      where: {
-        hierarchyLevel: 1
-      }
-    })
-
-    const rootPost = ancestors[0]
-    res.reply = {
-      root: {
-        uri: rootPost.bskyUri,
-        cid: rootPost.bskyCid
-      },
-      parent: {
-        uri: parent?.bskyUri,
-        cid: parent?.bskyCid
-      }
+  // Shortening when media is present is handled earlier
+} else if (postShortened || bskyMediaPromises.length > 4) {
+  res.embed = {
+    $type: 'app.bsky.embed.external',
+    external: {
+      uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
+      title: `See complete post at ${completeEnvironment.instanceUrl}`,
+      description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`
     }
   }
+}
 
-  if (bskyQuote) {
-    // OK oK so turns out that posting video/images and quoting a post needs more consideration!
-    if (res.embed) {
-      res.embed = {
-        $type: 'app.bsky.embed.recordWithMedia',
-        media: res.embed,
-        record: bskyQuote
-      }
-    } else {
-      res.embed = bskyQuote
+if (post.parentId) {
+  // ok this post is in reply to something
+  const parent = await Post.findByPk(post.parentId)
+  const ancestors = await post.getAncestors({
+    where: {
+      hierarchyLevel: 1
+    }
+  })
+
+  const rootPost = ancestors[0]
+  res.reply = {
+    root: {
+      uri: rootPost.bskyUri,
+      cid: rootPost.bskyCid
+    },
+    parent: {
+      uri: parent?.bskyUri,
+      cid: parent?.bskyCid
     }
   }
+}
 
-  if (labels) {
-    res.labels = labels
+if (bskyQuote) {
+  // OK oK so turns out that posting video/images and quoting a post needs more consideration!
+  if (res.embed) {
+    res.embed = {
+      $type: 'app.bsky.embed.recordWithMedia',
+      media: res.embed,
+      record: bskyQuote
+    }
+  } else {
+    res.embed = bskyQuote
   }
+}
 
-  return res
+if (labels) {
+  res.labels = labels
+}
+
+return res
 }
 
 export { postToAtproto }
