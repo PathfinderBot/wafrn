@@ -625,7 +625,7 @@
     },
     "typing": {
       "instructions": "Type the following phrase:",
-      "verifyLabel": "Verify..."
+      "verifyLabel": "Here..."
     }
   }
 }
