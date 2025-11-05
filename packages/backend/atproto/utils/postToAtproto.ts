@@ -196,17 +196,17 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       if (!linkPreview?.title) {
         try {
           linkPreview = await getLinkPreview(token.url, {
-          followRedirects: 'follow',
-          headers: { 'User-Agent': completeEnvironment.instanceUrl }
-        }) as { url: string; title: string; description: string } | undefined;
-        await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+            followRedirects: 'follow',
+            headers: { 'User-Agent': completeEnvironment.instanceUrl }
+          }) as { url: string; title: string; description: string } | undefined;
+          await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
         } catch (error) {
           logger.trace({
             message: `Error obtaining link ${token.url}`,
             error: error
           })
         }
-        
+
       }
 
       if (linkPreview?.title) {
@@ -215,12 +215,11 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
           external: {
             uri: linkPreview.url,
             title: linkPreview.title,
-            description: linkPreview.description
+            description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
           }
         }
       }
-    }
-    else builder.addText(token.raw)
+    } else builder.addText(token.raw)
   }
   postText = builder.text
 
