@@ -188,29 +188,31 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       builder.addLink(token.text, token.url)
     } else if (token.type === 'autolink' && !('embed' in res)) {
       // only add a embed if theres no embed, bsky only supports 1 embed
-      builder.addLink(token.url, token.url)
-      const shasum = crypto.createHash('sha1')
-      shasum.update(token.url.toLowerCase())
-      const urlHash = shasum.digest('hex')
-      let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
-      if (!linkPreview?.title) {
-        linkPreview = await getLinkPreview(token.url, {
-          followRedirects: 'follow',
-          headers: { 'User-Agent': completeEnvironment.instanceUrl }
-        }) as { url: string; title: string; description: string } | undefined;
-        await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
-      }
+      try {
+        builder.addLink(token.url, token.url)
+        const shasum = crypto.createHash('sha1')
+        shasum.update(token.url.toLowerCase())
+        const urlHash = shasum.digest('hex')
+        let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
+        if (!linkPreview?.title) {
+          linkPreview = await getLinkPreview(token.url, {
+            followRedirects: 'follow',
+            headers: { 'User-Agent': completeEnvironment.instanceUrl }
+          }) as { url: string; title: string; description: string } | undefined;
+          await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+        }
 
-      if (linkPreview?.title) {
-        res.embed = {
-          $type: 'app.bsky.embed.external',
-          external: {
-            uri: linkPreview.url,
-            title: linkPreview.title,
-            description: linkPreview.description
+        if (linkPreview?.title) {
+          res.embed = {
+            $type: 'app.bsky.embed.external',
+            external: {
+              uri: linkPreview.url,
+              title: linkPreview.title,
+              description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
+            }
           }
         }
-      }
+      } catch { }
     }
     else builder.addText(token.raw)
   }
