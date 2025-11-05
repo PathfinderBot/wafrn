@@ -75,6 +75,7 @@
     "faq": "FAQ",
     "more": "More",
     "silencedPosts": "Silenced Woots",
+    "bookmarkedPosts": "Bookmarked woots",
     "settings": {
       "title": "Settings",
       "follows": "Manage followers",
@@ -556,7 +557,7 @@
     "bookmarkPost": "Bookmark woot",
     "unbookmarkPost": "Unbookmark woot",
     "likePost": "Like woot",
-    "dislikePost": "Remove woot",
+    "dislikePost": "Remove like",
     "reportPost": "Report woot",
     "editPost": "Edit woot",
     "deletePost": "Delete woot",
@@ -568,7 +569,7 @@
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
     "reportUser": "Report user",
-    "bitePost": "Bite post",
+    "bitePost": "Bite woot",
     "biteUser": "Bite user"
   },
   "post-header": {
@@ -624,7 +625,7 @@
     },
     "typing": {
       "instructions": "Type the following phrase:",
-      "verifyLabel": "Verify..."
+      "verifyLabel": "Here..."
     }
   }
 }
