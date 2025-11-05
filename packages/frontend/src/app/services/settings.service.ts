@@ -84,6 +84,7 @@ const settingKeyVariants = [
   'confettiMultiplier',
   'flatConfetti',
   'disableRewootsExploreLocal',
+  'disableRewootsDashboard',
   'disableReplies',
   'confirmOpenCw',
   'confirmOpenCwAnnoyance',
@@ -404,6 +405,14 @@ export class SettingsService {
       type: 'checkbox',
       default: false
     },
+    disableRewootsDashboard: {
+      key: 'disableRewootsDashboard',
+      translationKey: 'settings.disableRewootsDashboard',
+      serverKey: 'wafrn.disableRewootsDashboard',
+      localStorageKey: 'disableRewootsDashboard',
+      type: 'checkbox',
+      default: false
+    },
     disableReplies: {
       key: 'disableReplies',
       translationKey: 'settings.disableReplies',
@@ -707,6 +716,7 @@ export class SettingsService {
         { type: 'header', value: 'settings.header.dashboardBehavior' },
         { type: 'key', value: 'defaultDashboard' },
         { type: 'key', value: 'disableRewootsExploreLocal' },
+        { type: 'key', value: 'disableRewootsDashboard' },
         { type: 'key', value: 'disableReplies' },
         { type: 'key', value: 'automaticallyExpandPosts' },
         { type: 'key', value: 'expandQuotes' },

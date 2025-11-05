@@ -131,7 +131,16 @@ export default function dashboardRoutes(app: Application) {
             }
           ]
 
+          const dbOptionDisableRewootsDashboard = await UserOptions.findOne({
+            where: {
+              userId: posterId,
+              optionName: 'wafrn.disableRewootsDashboard'
+            }
+          })
+
+          const hideReblogs = dbOptionDisableRewootsDashboard?.optionValue === 'true'
           const subscribedTags = await getFollowedHashtags(posterId)
+
           if (subscribedTags && subscribedTags.length > 0) {
             // query: get posts with hashtag thing
             postsWithTags = PostTag.findAll({
@@ -179,6 +188,9 @@ export default function dashboardRoutes(app: Application) {
 
           whereObject = {
             privacy: { [Op.in]: [Privacy.Public, Privacy.FollowersOnly, Privacy.LocalOnly, Privacy.Unlisted] },
+            isReblog: {
+              [Op.in]: hideReblogs ? [false, null] : [true, false, null]
+            },
             [Op.and]: and
           }
 

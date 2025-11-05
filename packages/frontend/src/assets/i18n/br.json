@@ -371,6 +371,7 @@
       "unlisted": "Não Listado"
     },
     "disableRewootsExploreLocal": "Desabilitar rewoots no feed Explorar Local",
+    "disableRewootsDashboard": "Desabilitar rewoots na Linha do Tempo",
     "disableReplies": "Desabilitar respostas nos feeds",
     "mutedWords": "Palavras silenciadas",
     "mutedWordsDescription": "Uma por linha. Woots com estas frases serão escondidos por trás de um aviso de conteúdo.",
