@@ -350,7 +350,8 @@ export class LoginService {
       hideQuotes: 'wafrn.hideQuotes',
       displayMentionsOfBlockedUsersFromOtherUsers: 'wafrn.displayMentionsOfBlockedUsersFromOtherUsers',
       hideNoDescriptionMedia: 'wafrn.hideNoDescriptionMedia',
-      disableRewootsExploreLocal: 'wafrn.disableRewootsExploreLocal'
+      disableRewootsExploreLocal: 'wafrn.disableRewootsExploreLocal',
+      disableReplies: 'wafrn.disableReplies'
     }
 
     try {

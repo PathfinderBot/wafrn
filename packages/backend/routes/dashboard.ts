@@ -46,6 +46,24 @@ export default function dashboardRoutes(app: Application) {
       let whereObject: any = {
         privacy: Privacy.Public
       }
+
+      const dbOptiondisableReplies = await UserOptions.findOne({
+        where: {
+          userId: posterId,
+          optionName: 'wafrn.disableReplies'
+        }
+      })
+
+      const disableReplies = dbOptiondisableReplies?.optionValue === 'true'
+      const disableRepliesOr = [
+        {
+          isReblog: true
+        },
+        {
+          parentId: null
+        }
+      ]
+
       switch (level) {
         case 2: {
           let hideReblogs = false
@@ -61,35 +79,49 @@ export default function dashboardRoutes(app: Application) {
           }
           const followedUsers = getFollowedsIds(posterId, true)
           const nonFollowedUsers = getNonFollowedLocalUsersIds(posterId)
+
+          const and: any = [
+            {
+              [Op.or]: [
+                {
+                  privacy: {
+                    [Op.in]: [Privacy.Public, Privacy.FollowersOnly, Privacy.LocalOnly]
+                  },
+                  userId: {
+                    [Op.in]: await followedUsers
+                  }
+                },
+                {
+                  privacy: {
+                    [Op.in]: req.jwtData?.userId ? [Privacy.Public, Privacy.LocalOnly] : [Privacy.Public] // only display public if not logged in
+                  },
+                  userId: {
+                    [Op.in]: await nonFollowedUsers
+                  }
+                },
+                {
+                  userId: posterId,
+                  privacy: {
+                    [Op.ne]: Privacy.DirectMessage
+                  }
+                }
+              ]
+            }
+          ]
+
+          if (disableReplies) {
+            and.push({
+              [Op.or]: disableRepliesOr
+            })
+          }
+
           whereObject = {
-            [Op.or]: [
-              {
-                privacy: {
-                  [Op.in]: [Privacy.Public, Privacy.FollowersOnly, Privacy.LocalOnly]
-                },
-                userId: {
-                  [Op.in]: await followedUsers
-                }
-              },
-              {
-                privacy: {
-                  [Op.in]: req.jwtData?.userId ? [Privacy.Public, Privacy.LocalOnly] : [Privacy.Public] // only display public if not logged in
-                },
-                userId: {
-                  [Op.in]: await nonFollowedUsers
-                }
-              },
-              {
-                userId: posterId,
-                privacy: {
-                  [Op.ne]: Privacy.DirectMessage
-                }
-              }
-            ],
+            [Op.and]: and,
             isReblog: {
               [Op.in]: hideReblogs ? [false, null] : [true, false, null]
             }
           }
+
           break
         }
         case 1: {
@@ -98,6 +130,7 @@ export default function dashboardRoutes(app: Application) {
               userId: { [Op.in]: await getFollowedsIds(posterId) }
             }
           ]
+
           const subscribedTags = await getFollowedHashtags(posterId)
           if (subscribedTags && subscribedTags.length > 0) {
             // query: get posts with hashtag thing
@@ -131,10 +164,24 @@ export default function dashboardRoutes(app: Application) {
               order: [['createdAt', 'DESC']]
             })
           }
+
+          const and: any = [
+            {
+              [Op.or]: orConditions
+            }
+          ]
+
+          if (disableReplies) {
+            and.push({
+              [Op.or]: disableRepliesOr
+            })
+          }
+
           whereObject = {
             privacy: { [Op.in]: [Privacy.Public, Privacy.FollowersOnly, Privacy.LocalOnly, Privacy.Unlisted] },
-            [Op.or]: orConditions
+            [Op.and]: and
           }
+
           break
         }
         case 0: {
@@ -153,6 +200,10 @@ export default function dashboardRoutes(app: Application) {
               }
             ]
           }
+
+          if (disableReplies)
+            whereObject.parentId = null
+
           break
         }
         case 10: {

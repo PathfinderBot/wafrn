@@ -370,6 +370,8 @@
       "instanceOnly": "Somente Local",
       "unlisted": "Não Listado"
     },
+    "disableRewootsExploreLocal": "Desabilitar rewoots no feed Explorar Local",
+    "disableReplies": "Desabilitar respostas nos feeds",
     "mutedWords": "Palavras silenciadas",
     "mutedWordsDescription": "Uma por linha. Woots com estas frases serão escondidos por trás de um aviso de conteúdo.",
     "superMutedWords": "Palavras bloqueadas",

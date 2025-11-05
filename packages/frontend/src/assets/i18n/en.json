@@ -376,6 +376,7 @@
       "unlisted": "Unlisted"
     },
     "disableRewootsExploreLocal": "Disable rewoots in Explore local feed",
+    "disableReplies": "Disable replies in feeds",
     "mutedWords": "Muted words",
     "mutedWordsDescription": "One word per line. Woots with these phrases will be placed behind a CW.",
     "superMutedWords": "Blocked words",
