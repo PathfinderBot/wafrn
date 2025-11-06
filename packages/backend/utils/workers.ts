@@ -99,7 +99,7 @@ const workerProcessFirehose = completeEnvironment.enableBsky
       metrics: {
         maxDataPoints: MetricsTime.ONE_WEEK * 2
       },
-      concurrency: completeEnvironment.workers.low,
+      concurrency: completeEnvironment.workers.medium,
       // up to one minute
       lockDuration: 60000
     })
