@@ -442,10 +442,11 @@ function getPostLabels(post: PostView) {
 
 async function getPostThreadSafe(options: any) {
   let res;
+  let retryCount = 3;
+  while ( retryCount > 0 && !res){
   try {
-    logger.debug({message: 'Petition to bluesky: ' + options.uri})
     const agent = await getAdminAtprotoSession()
-    res =  agent.getPostThread(options)
+    res =  await agent.getPostThread(options)
   } catch (error) {
     logger.debug({
       message: `Error trying to get atproto thread`,
@@ -454,6 +455,9 @@ async function getPostThreadSafe(options: any) {
     })
     await wait(2500)
   }
+    retryCount --;
+  }
+  
 
   return res;
 }
