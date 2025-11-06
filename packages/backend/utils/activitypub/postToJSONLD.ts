@@ -97,9 +97,8 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
   if (ask) {
-    processedContent = `<p>${getUserName(userAsker)} <a href="${
-      completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
-    }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
+      }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id)
   const fediMentions: fediverseTag[] = []
@@ -208,7 +207,11 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       published: new Date(post.createdAt).toISOString(),
       updated: new Date(post.updatedAt).toISOString(),
       url: post.bskyUri
-        ? [`${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`, post.bskyUri]
+        ? [`${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`, {
+          type: "Link",
+          rel: "alternate",
+          href: post.bskyUri
+        }]
         : `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
       attributedTo: `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`,
       to: usersToSend.to,
@@ -218,7 +221,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       inReplyToAtomUri: parentPostString,
       quote: misskeyQuoteURL,
       quoteUrl: misskeyQuoteURL,
-      _missksey_quote: misskeyQuoteURL,
+      _misskey_quote: misskeyQuoteURL,
       quoteUri: misskeyQuoteURL,
       // conversation: conversationString,
       content: (processedContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, ''),
@@ -229,7 +232,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
           return {
             type: 'Document',
             mediaType: media.mediaType,
-            url:  (media.url.startsWith('?cid') || media.external) ?
+            url: (media.url.startsWith('?cid') || media.external) ?
               completeEnvironment.externalCacheurl + encodeURIComponent(media.url) :
               (completeEnvironment.mediaUrl + media.url),
             sensitive: media.NSFW ? true : false,
@@ -314,7 +317,7 @@ function getToAndCC(
       break
     }
     default: {
-      ;((to = mentionedUsers), (cc = []))
+      ; ((to = mentionedUsers), (cc = []))
     }
   }
   return {
