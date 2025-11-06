@@ -37,7 +37,7 @@
       </span>
     </a>
     }
-    @if (isExternalPost && externalUrl() !== bskyUrl()) {
+    @if (isExternalPost && (externalUrl() !== bskyUrl())) {
     <a [href]="externalUrl()" target="_blank" mat-menu-item>
       <span class="post-actions-menu-span-content">
         {{ 'post-actions.viewOriginalPost' | translate }}

@@ -59,14 +59,14 @@ export class PostActionsComponent implements OnChanges {
   bookmarked = computed(() => this.post().bookmarkers.includes(this.myId))
 
   bskyUrl = computed<string>(() => {
-    this.settingsService.settingsModified() // evil fix to update correctly
+    this.settingsService.settingsModified() // evil fix to update correctly    if (!bskyUri) return ''
     const bskyUri = this.post().bskyUri
     if (!bskyUri) return ''
     const parts = bskyUri.split('/app.bsky.feed.post/')
     const userDid = parts[0].split('at://')[1]
     return `https://${this.settingsService.values().atprotoLinkDestination || 'bsky.app'}/profile/${userDid}/post/${parts[1]}`
   })
-  externalUrl = computed<string>(() => (this.post().bskyUri ? this.bskyUrl() : this.post().remotePostId))
+  externalUrl = computed<string>(() => (this.post().remotePostId ?? this.bskyUrl()))
 
   // icons
   shareIcon = faLink
