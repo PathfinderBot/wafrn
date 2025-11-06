@@ -441,25 +441,16 @@ function getPostLabels(post: PostView) {
 }
 
 async function getPostThreadSafe(options: any) {
-  let res;
-  let retryCount = 3;
-  while ( retryCount > 0 && !res){
   try {
     const agent = await getAdminAtprotoSession()
-    res =  await agent.getPostThread(options)
+    return await agent.getPostThread(options)
   } catch (error) {
     logger.debug({
       message: `Error trying to get atproto thread`,
       options: options,
       error: error
     })
-    await wait(2500)
   }
-    retryCount --;
-  }
-  
-
-  return res;
 }
 
 function getPostInteractionLevels(
