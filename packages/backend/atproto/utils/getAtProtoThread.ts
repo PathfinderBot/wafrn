@@ -441,16 +441,21 @@ function getPostLabels(post: PostView) {
 }
 
 async function getPostThreadSafe(options: any) {
+  let res;
   try {
+    logger.debug({message: 'Petition to bluesky: ' + options.uri})
     const agent = await getAdminAtprotoSession()
-    return await agent.getPostThread(options)
+    res =  agent.getPostThread(options)
   } catch (error) {
     logger.debug({
       message: `Error trying to get atproto thread`,
       options: options,
       error: error
     })
+    await wait(2500)
   }
+
+  return res;
 }
 
 function getPostInteractionLevels(
