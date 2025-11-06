@@ -19,14 +19,14 @@ export async function userToJSONLD(user: User) {
     let alsoKnownAsList = userOptions.find((elem) => elem.optionName === 'fediverse.public.alsoKnownAs')
     if (alsoKnownAsList?.optionValue) {
       try {
-        const parsedValue = JSON.parse(alsoKnownAsList?.optionValue)
+        const parsedValue = alsoKnownAsList?.optionValue
         if (typeof parsedValue === 'string') {
           for (let elem of parsedValue.split(',')) {
             let url = new URL(elem)
             alsoKnownAs.push(url.toString())
           }
         }
-      } catch (_) {}
+      } catch (_) { }
     }
     if (user.bskyDid) {
       alsoKnownAs.push(`at://${user.bskyDid}`)
@@ -69,21 +69,21 @@ export async function userToJSONLD(user: User) {
       },
       ...(user.avatar
         ? {
-            icon: {
-              type: 'Image',
-              mediaType: 'image/webp',
-              url: completeEnvironment.mediaUrl + user.avatar
-            }
+          icon: {
+            type: 'Image',
+            mediaType: 'image/webp',
+            url: completeEnvironment.mediaUrl + user.avatar
           }
+        }
         : undefined),
       ...(user.headerImage
         ? {
-            image: {
-              type: 'Image',
-              mediaType: 'image/webp',
-              url: completeEnvironment.mediaUrl + user.headerImage
-            }
+          image: {
+            type: 'Image',
+            mediaType: 'image/webp',
+            url: completeEnvironment.mediaUrl + user.headerImage
           }
+        }
         : undefined),
       publicKey: {
         id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#main-key`,

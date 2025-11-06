@@ -75,6 +75,7 @@
     "faq": "FAQ",
     "more": "More",
     "silencedPosts": "Silenced Woots",
+    "bookmarkedPosts": "Bookmarked woots",
     "settings": {
       "title": "Settings",
       "follows": "Manage followers",
@@ -375,6 +376,8 @@
       "unlisted": "Unlisted"
     },
     "disableRewootsExploreLocal": "Disable rewoots in Explore local feed",
+    "disableRewootsDashboard": "Disable rewoots in Dashboard",
+    "disableReplies": "Disable replies in feeds",
     "mutedWords": "Muted words",
     "mutedWordsDescription": "One word per line. Woots with these phrases will be placed behind a CW.",
     "superMutedWords": "Blocked words",
@@ -556,7 +559,7 @@
     "bookmarkPost": "Bookmark woot",
     "unbookmarkPost": "Unbookmark woot",
     "likePost": "Like woot",
-    "dislikePost": "Remove woot",
+    "dislikePost": "Remove like",
     "reportPost": "Report woot",
     "editPost": "Edit woot",
     "deletePost": "Delete woot",
@@ -568,7 +571,7 @@
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
     "reportUser": "Report user",
-    "bitePost": "Bite post",
+    "bitePost": "Bite woot",
     "biteUser": "Bite user"
   },
   "post-header": {
@@ -624,7 +627,7 @@
     },
     "typing": {
       "instructions": "Type the following phrase:",
-      "verifyLabel": "Verify..."
+      "verifyLabel": "Here..."
     }
   }
 }
