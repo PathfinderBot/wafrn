@@ -46,7 +46,6 @@ const processPostQueue = new Queue<{ post: PostView, parentId?: string, forceUpd
 const processPostQueueEvents = new QueueEvents('processSinglePost', {
   connection: completeEnvironment.bullmqConnection,
 });
-processPostQueueEvents.setMaxListeners(completeEnvironment.workers.high)
 
 async function processSinglePost(
   post: PostView,
@@ -54,7 +53,7 @@ async function processSinglePost(
   forceUpdate?: boolean
 ): Promise<string | undefined> {
   const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate })
-  const finished = await job.waitUntilFinished(processPostQueueEvents).catch((err) => {
+  const finished = await job.waitUntilFinished(processPostQueueEvents.setMaxListeners(completeEnvironment.workers.high), 60000).catch((err) => {
     logger.debug(err, "Error occured while getting atproto post")
   });
   return finished ?? undefined
