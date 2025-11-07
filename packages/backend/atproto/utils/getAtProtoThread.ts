@@ -42,12 +42,12 @@ const processPostQueue = new Queue<{ post: PostView, parentId?: string, forceUpd
     removeOnFail: false
   }
 })
-processPostQueue.setMaxListeners(100);
+processPostQueue.setMaxListeners(0);
 
 const processPostQueueEvents = new QueueEvents('processSinglePost', {
   connection: completeEnvironment.bullmqConnection,
 });
-processPostQueueEvents.setMaxListeners(100);
+processPostQueueEvents.setMaxListeners(0);
 
 async function processSinglePost(
   post: PostView,
