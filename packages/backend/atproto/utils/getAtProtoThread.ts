@@ -53,7 +53,7 @@ async function processSinglePost(
   forceUpdate?: boolean
 ): Promise<string | undefined> {
   const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate })
-  const finished = await job.waitUntilFinished(processPostQueueEvents.setMaxListeners(completeEnvironment.workers.high), 60000).catch((err) => {
+  const finished = await job.waitUntilFinished(processPostQueueEvents.setMaxListeners(100), 60000).catch((err) => {
     logger.debug(err, "Error occured while getting atproto post")
   });
   return finished ?? undefined
