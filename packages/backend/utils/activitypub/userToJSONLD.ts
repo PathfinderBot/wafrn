@@ -48,7 +48,7 @@ export async function userToJSONLD(user: User) {
     userForFediverse = {
       '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
       id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
-      type: 'Person',
+      type: user.isBot ? 'Service' : 'Person',
       attachment: attachments,
       following: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}/following`,
       followers: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}/followers`,
