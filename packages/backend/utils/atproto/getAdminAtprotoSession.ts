@@ -8,7 +8,7 @@ let lastTimeSessionCreated = new Date(0)
 
 async function getAdminAtprotoSession(): Promise<AtpAgent> {
   const currentDate = new Date()
-  if (!adminSession || currentDate.getTime() - lastTimeSessionCreated.getTime() >= 3600000) {
+  if (!adminSession || currentDate.getTime() - lastTimeSessionCreated.getTime() >= 300000) {
     adminSession = await getAtProtoSession(await getAdminUser(), true)
     lastTimeSessionCreated = new Date()
     logger.info('Force getting new admin bsky session')
