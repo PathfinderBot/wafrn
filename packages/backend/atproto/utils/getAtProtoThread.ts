@@ -54,13 +54,22 @@ async function processSinglePost(
   parentId?: string,
   forceUpdate?: boolean
 ): Promise<string | undefined> {
-  const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate }, {
+  if(post) {
+    const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate }, {
           jobId: post.uri.replaceAll(':', '_').replaceAll('/', '_')
         })
-  const finished = await job.waitUntilFinished(processPostQueueEvents, 60000).catch((err) => {
+    const finished = await job.waitUntilFinished(processPostQueueEvents, 60000).catch((err) => {
     logger.debug(err, "Error occured while getting atproto post")
   });
   return finished ?? undefined
+  } else {
+    logger.info({
+      message: 'Invalid atproto thread',
+      post, parentId, forceUpdate
+    })
+    return undefined;
+  }
+  
 }
 
 async function getAtProtoThread(
