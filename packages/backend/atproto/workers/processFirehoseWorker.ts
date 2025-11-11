@@ -174,7 +174,7 @@ async function processFirehose(job: Job) {
           }
           case 'app.bsky.feed.post': {
             const postBskyUri = `at://${job.data.repo}/${operation.path}`
-            logger.debug(`Post request ${record.subject.uri}`)
+            logger.debug(`Post request ${postBskyUri}`)
             await getAtProtoThread(postBskyUri)
             logger.debug(`Post request ${postBskyUri} complete`)
 
