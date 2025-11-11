@@ -53,6 +53,7 @@ jetstream.on('commit', async (event) => {
         path: `${commit.collection}/${commit.rkey}`
       }
     }
+    logger.debug(`Adding firehose data`)
     await firehoseQueue.add('processFirehoseQueue', data)
   }
 })
