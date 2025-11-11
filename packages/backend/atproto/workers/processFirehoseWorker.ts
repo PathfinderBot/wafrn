@@ -174,7 +174,10 @@ async function processFirehose(job: Job) {
           }
           case 'app.bsky.feed.post': {
             const postBskyUri = `at://${job.data.repo}/${operation.path}`
+            logger.debug(`Post request ${record.subject.uri}`)
             await getAtProtoThread(postBskyUri)
+            logger.debug(`Post request ${postBskyUri} complete`)
+
             break
           }
           case 'app.bsky.feed.repost': {
@@ -183,6 +186,7 @@ async function processFirehose(job: Job) {
               logger.error(record)
               break
             }
+            logger.debug(`Rewoot requests ${record.subject.uri}`)
             const postToBeRewooted = await getAtProtoThread(record.subject.uri, false, false)
             if (postToBeRewooted) {
               try {
@@ -229,6 +233,8 @@ async function processFirehose(job: Job) {
                 })
               }
             }
+            logger.debug(`Rewoot requests ${record.subject.uri} completed`)
+
             break
           }
           case 'app.bsky.graph.follow': {

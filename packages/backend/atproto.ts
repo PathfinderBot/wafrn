@@ -53,7 +53,6 @@ jetstream.on('commit', async (event) => {
         path: `${commit.collection}/${commit.rkey}`
       }
     }
-    logger.debug(`Adding firehose data`)
     await firehoseQueue.add('processFirehoseQueue', data)
   }
 })
@@ -63,7 +62,8 @@ const workerForceUpdateAtDidCache = new Worker(
   'forceUpdateDids',
   async (job: Job) => {
     logger.info(`Atproto force update of dids`)
-    cachedDids = await getCacheAtDids(true)
+    const tmp = await getCacheAtDids(true)
+    cachedDids = tmp
   },
   {
     connection: completeEnvironment.bullmqConnection,
