@@ -10,6 +10,18 @@ import { logger } from '../logger.js'
 import { Privacy } from '../../models/post.js'
 import { redisCache } from '../redis.js'
 import { htmlToMfm } from './htmlToMfm.js'
+import showdown from 'showdown'
+
+const markdownConverter = new showdown.Converter({
+  simplifiedAutoLink: true,
+  literalMidWordUnderscores: true,
+  strikethrough: true,
+  simpleLineBreaks: true,
+  openLinksInNewWindow: true,
+  emoji: true,
+  encodeEmails: false
+})
+
 
 async function postToJSONLD(postId: string): Promise<activityPubObject | undefined> {
   let resFromCacheString = await redisCache.get('postToJsonLD:' + postId)
@@ -100,7 +112,8 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
 
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
-  const misskeyContent = processedContent;
+  const misskeyContent = markdownConverter.makeHtml(post.markdownContent);
+
   let misskeyAskContent = '';
 
   if (ask) {
@@ -167,6 +180,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       })
     }
     if (!misskeyContent.includes(user.url)) misskeyMentions.push(url);
+    logger.info(url, user);
   }
 
   const misskeyMentionContent = misskeyMentions.length > 0 ? `<small>${misskeyMentions.join(' ')}</small>\n\n` : ''
