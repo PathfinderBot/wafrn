@@ -84,7 +84,7 @@ function rehypeToMfm() {
           case 'h3': return `${schild}\n\n`
           case 'blockquote': return `> ${schild}`
           case 'ul':
-          case 'ol': return Array.from(node.child || []).map(nodeToMfm).join('') + '\n'
+          case 'ol': return Array.from(node.children || []).map(nodeToMfm).join('')
           case 'li': return `- ${schild}\n`
           default:
             return schild
