@@ -112,7 +112,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
 
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
-  const misskeyContent = markdownConverter.makeHtml(post.markdownContent);
+  const misskeyContent = markdownConverter.makeHtml(post.markdownContent) || '';
 
   let misskeyAskContent = '';
 
