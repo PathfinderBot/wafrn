@@ -9,6 +9,7 @@ import { getPostAndUserFromPostId } from '../cacheGetters/getPostAndUserFromPost
 import { logger } from '../logger.js'
 import { Privacy } from '../../models/post.js'
 import { redisCache } from '../redis.js'
+import { htmlToMfm } from './htmlToMfm.js'
 
 async function postToJSONLD(postId: string): Promise<activityPubObject | undefined> {
   let resFromCacheString = await redisCache.get('postToJsonLD:' + postId)
@@ -17,6 +18,9 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
   }
   const cacheData = await getPostAndUserFromPostId(postId)
   const post = cacheData.data
+  if (!post) {
+    return undefined;
+  }
   const localUser = post.user
   const userAsker = post.ask?.asker
   const ask = post.ask
@@ -96,11 +100,17 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
 
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
+  const misskeyContent = processedContent;
+  let misskeyAskContent = '';
+
   if (ask) {
     processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
       }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+    misskeyAskContent = `$[border.style=double,width=4 <small>${getUserName(userAsker)} ?[asked](${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id}):</small>
+> ${ask.question.replaceAll('\n', '\n> ')}]\n\n`
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id)
+  const misskeyMentions: string[] = [];
   const fediMentions: fediverseTag[] = []
   const fediTags: fediverseTag[] = []
   let tagsAndQuotes = '<br>'
@@ -156,7 +166,10 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
         href: remoteId
       })
     }
+    if (!misskeyContent.includes(user.url)) misskeyMentions.push(url);
   }
+
+  const misskeyMentionContent = misskeyMentions.length > 0 ? `<small>${misskeyMentions.join(' ')}</small>\n\n` : ''
 
   let contentWarning = false
   postMedias.forEach((media: any) => {
@@ -183,6 +196,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
 
   const usersToSend = getToAndCC(post.privacy, mentionedUsers, stringMyFollowers)
   const actorUrl = `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`
+  const misskeyMarkdown = misskeyMentionContent + misskeyAskContent + await htmlToMfm((misskeyContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, ''))
   let misskeyQuoteURL = quotedPostString
   if (misskeyQuoteURL?.startsWith('https://bsky.app/')) {
     misskeyQuoteURL = null
@@ -206,6 +220,11 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       inReplyTo: parentPostString,
       published: new Date(post.createdAt).toISOString(),
       updated: new Date(post.updatedAt).toISOString(),
+      '_misskey_content': misskeyMarkdown,
+      source: {
+        content: misskeyMarkdown,
+        mediaType: "text/x.misskeymarkdown"
+      },
       url: post.bskyUri
         ? [`${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`, {
           type: "Link",
@@ -219,7 +238,6 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       sensitive: !!post.content_warning || contentWarning,
       atomUri: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
       inReplyToAtomUri: parentPostString,
-      quote: misskeyQuoteURL,
       quoteUrl: misskeyQuoteURL,
       _misskey_quote: misskeyQuoteURL,
       quoteUri: misskeyQuoteURL,
