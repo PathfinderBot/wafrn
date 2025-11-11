@@ -1,7 +1,7 @@
 // returns the post id
 import { getAtProtoSession } from './getAtProtoSession.js'
 import { QueryParams } from '@atproto/sync/dist/firehose/lexicons.js'
-import { Media, Notification, Post, PostMentionsUserRelation, PostTag, Quotes, User } from '../../models/index.js'
+import { EmojiReaction, Media, Notification, Post, PostAncestor, PostMentionsUserRelation, PostReport, PostTag, QuestionPoll, Quotes, RemoteUserPostView, SilencedPost, User, UserBitesPostRelation, UserBookmarkedPosts, UserLikesPostRelations } from '../../models/index.js'
 import { Model, Op } from 'sequelize'
 import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
 import { getAtprotoUser } from './getAtprotoUser.js'
@@ -18,6 +18,8 @@ import { completeEnvironment } from '../../utils/backendOptions.js'
 import { include } from 'underscore'
 import { MediaAttributes } from '../../models/media.js'
 import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSession.js'
+import { getPostThreadRecursive } from '../../utils/activitypub/getPostThreadRecursive.js'
+import { Queue, QueueEvents } from 'bullmq'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -28,11 +30,36 @@ const markdownConverter = new showdown.Converter({
   emoji: true
 })
 
-const adminUser = User.findOne({
-  where: {
-    url: completeEnvironment.adminUser
+const processPostQueue = new Queue<{ post: PostView, parentId?: string, forceUpdate?: boolean }, string | undefined>('processSinglePost', {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 6,
+    backoff: {
+      type: 'exponential',
+      delay: 25000
+    },
+    removeOnFail: false
   }
 })
+processPostQueue.setMaxListeners(0);
+
+const processPostQueueEvents = new QueueEvents('processSinglePost', {
+  connection: completeEnvironment.bullmqConnection,
+});
+processPostQueueEvents.setMaxListeners(0);
+
+async function processSinglePost(
+  post: PostView,
+  parentId?: string,
+  forceUpdate?: boolean
+): Promise<string | undefined> {
+  const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate })
+  const finished = await job.waitUntilFinished(processPostQueueEvents, 60000).catch((err) => {
+    logger.debug(err, "Error occured while getting atproto post")
+  });
+  return finished ?? undefined
+}
 
 async function getAtProtoThread(
   uri: string,
@@ -99,319 +126,6 @@ async function processParents(thread: ThreadViewPost): Promise<string | undefine
   return await processSinglePost(thread.post, parentId)
 }
 
-async function processSinglePost(
-  post: PostView,
-  parentId?: string,
-  forceUpdate?: boolean
-): Promise<string | undefined> {
-  if (!post || !completeEnvironment.enableBsky) {
-    return undefined
-  }
-  if (!forceUpdate) {
-    const existingPost = await Post.findOne({
-      where: {
-        bskyUri: post.uri
-      }
-    })
-    if (existingPost) {
-      return existingPost.id
-    }
-  }
-  let postCreator: User | undefined
-  try {
-    postCreator = await getAtprotoUser(post.author.did, (await adminUser) as User, post.author)
-  } catch (error) {
-    logger.debug({
-      message: `Problem obtaining user from post`,
-      post,
-      parentId,
-      forceUpdate,
-      error
-    })
-  }
-  if (!postCreator || !post) {
-    const usr = postCreator ? postCreator : await User.findOne({ where: { url: completeEnvironment.deletedUser } })
-
-    const invalidPost = await Post.create({
-      userId: usr?.id,
-      content: `Failed to get atproto post`,
-      parentId: parentId,
-      isDeleted: true,
-      createdAt: new Date(0),
-      updatedAt: new Date(0)
-    })
-    return invalidPost.id
-  }
-  if (postCreator) {
-    const medias = getPostMedias(post)
-    let tags: string[] = []
-    let mentions: string[] = []
-    let record = post.record as any
-    let postText = record.text
-    let federatedWoot = false
-    if (record.fullText || record.bridgyOriginalText) {
-      federatedWoot = true
-      tags = record.fullTags?.split('\n').filter((x: string) => !!x) ?? [] // also detect full tags
-      postText = record.fullText ?? record.bridgyOriginalText
-    }
-    if (record.facets && record.facets.length > 0 && !federatedWoot) {
-      // lets get mentions
-      const mentionedDids = record.facets
-        .flatMap((elem: any) => elem.features)
-        .map((elem: any) => elem.did)
-        .filter((elem: any) => elem)
-      if (mentionedDids && mentionedDids.length > 0) {
-        const mentionedUsers = await User.findAll({
-          where: {
-            bskyDid: {
-              [Op.in]: mentionedDids
-            }
-          }
-        })
-        mentions = mentionedUsers.map((elem) => elem.id)
-      }
-
-      const rt = new RichText({
-        text: postText,
-        facets: record.facets
-      })
-      let text = ''
-
-      for (const segment of rt.segments()) {
-        if (segment.isLink()) {
-          const href = segment.link?.uri
-          text += `<a href="${href}" target="_blank">${href}</a>`
-        } else if (segment.isMention()) {
-          const href = `${completeEnvironment.frontendUrl}/blog/${segment.mention?.did}`
-          text += `<a href="${href}" target="_blank">${segment.text}</a>`
-        } else if (segment.isTag()) {
-          const href = `${completeEnvironment.frontendUrl}/dashboard/search/${segment.text.substring(1)}`
-          text += `<a href="${href}" target="_blank">${segment.text}</a>`
-          tags.push(segment.text.substring(1))
-        } else {
-          text += segment.text
-        }
-      }
-      postText = text
-    }
-    if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
-
-    const labels = getPostLabels(post)
-    let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
-    if (!cw && postCreator.NSFW) {
-      cw = 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
-    }
-    const newData = {
-      userId: postCreator.id,
-      bskyCid: post.cid,
-      bskyUri: post.uri,
-      content: postText,
-      createdAt: new Date((post.record as any).createdAt),
-      privacy: Privacy.Public,
-      parentId: parentId,
-      content_warning: cw,
-      ...getPostInteractionLevels(post, parentId)
-    }
-    if (!parentId) {
-      delete newData.parentId
-    }
-
-    if ((await getAllLocalUserIds()).includes(newData.userId) && !forceUpdate) {
-      // dirty as hell but this should stop the duplication
-      await wait(1500)
-    }
-    let [postToProcess, created] = await Post.findOrCreate({ where: { bskyUri: post.uri }, defaults: newData })
-    // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
-    if (!(await getAllLocalUserIds()).includes(postToProcess.userId) || created) {
-      if (!created) {
-        postToProcess.set(newData)
-        await postToProcess.save()
-      }
-      if (medias) {
-        await Media.destroy({
-          where: {
-            postId: postToProcess.id
-          }
-        })
-        await Media.bulkCreate(
-          medias.map((media: any) => {
-            return { ...media, postId: postToProcess.id }
-          })
-        )
-      }
-      if (parentId) {
-        const ancestors = await postToProcess.getAncestors({
-          attributes: ['userId'],
-          where: {
-            hierarchyLevel: {
-              [Op.gt]: postToProcess.hierarchyLevel - 5
-            }
-          }
-        })
-        mentions = mentions.concat(ancestors.map((elem) => elem.userId))
-      }
-      mentions = [...new Set(mentions)]
-      if (mentions.length > 0) {
-        await Notification.destroy({
-          where: {
-            notificationType: 'MENTION',
-            postId: postToProcess.id
-          }
-        })
-        await PostMentionsUserRelation.destroy({
-          where: {
-            postId: postToProcess.id
-          }
-        })
-        await bulkCreateNotifications(
-          mentions.map((mnt) => ({
-            notificationType: 'MENTION',
-            postId: postToProcess.id,
-            notifiedUserId: mnt,
-            userId: postToProcess.userId,
-            createdAt: new Date(postToProcess.createdAt)
-          })),
-          {
-            ignoreDuplicates: true,
-            postContent: postText,
-            userUrl: postCreator.url
-          }
-        )
-        await PostMentionsUserRelation.bulkCreate(
-          mentions.map((mnt) => {
-            return {
-              userId: mnt,
-              postId: postToProcess.id
-            }
-          }),
-          { ignoreDuplicates: true }
-        )
-      }
-      if (tags.length > 0) {
-        await PostTag.destroy({
-          where: {
-            postId: postToProcess.id
-          }
-        })
-        await PostTag.bulkCreate(
-          tags.map((tag) => {
-            return {
-              postId: postToProcess.id,
-              tagName: tag
-            }
-          })
-        )
-      }
-      const quotedPostUri = getQuotedPostUri(post)
-      if (quotedPostUri) {
-        const quotedPostId = await getAtProtoThread(quotedPostUri)
-        if (quotedPostId) {
-          const quotedPost = await Post.findByPk(quotedPostId)
-          if (quotedPost) {
-            await createNotification(
-              {
-                notificationType: 'QUOTE',
-                notifiedUserId: quotedPost.userId,
-                userId: postToProcess.userId,
-                postId: postToProcess.id
-              },
-              {
-                postContent: postToProcess.content,
-                userUrl: postCreator?.url
-              }
-            )
-            await Quotes.findOrCreate({
-              where: {
-                quoterPostId: postToProcess.id,
-                quotedPostId: quotedPostId
-              }
-            })
-          }
-        }
-      }
-    }
-
-    return postToProcess.id
-  }
-}
-
-function getPostMedias(post: PostView) {
-  let res: MediaAttributes[] = []
-  const labels = getPostLabels(post)
-  const embed = (post.record as any).embed
-  if (embed) {
-    if (embed.external) {
-      res = res.concat([
-        {
-          mediaType: !embed.external.uri.startsWith('https://media.ternor.com/') ? 'text/html' : 'image/gif',
-          description: embed.external.title,
-          url: embed.external.uri,
-          mediaOrder: 0,
-          external: true
-        }
-      ])
-    }
-    if (embed.images || embed.media) {
-      // case with quote and gif / link preview
-      if (embed.media?.external) {
-        res = res.concat([
-          {
-            mediaType: !embed.media.external.uri.startsWith('https://media.ternor.com/') ? 'text/html' : 'image/gif',
-            description: embed.media.external.title,
-            url: embed.media.external.uri,
-            mediaOrder: 0,
-            external: true
-          }
-        ])
-      } else {
-        const thingToProcess = embed.images ? embed.images : embed.media.images
-        if (thingToProcess) {
-          const toConcat = thingToProcess.map((media: any, index: any) => {
-            const cid = media.image.ref['$link'] ? media.image.ref['$link'] : media.image.ref.toString()
-            const did = post.author.did
-            return {
-              mediaType: media.image.mimeType,
-              description: media.alt,
-              height: media.aspectRatio?.height,
-              width: media.aspectRatio?.width,
-              url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
-              mediaOrder: index,
-              external: true
-            }
-          })
-          res = res.concat(toConcat)
-        } else {
-          logger.debug({
-            message: `Bsky problem getting medias on post ${post.uri}`
-          })
-        }
-      }
-    }
-    if (embed.video) {
-      const video = embed.video
-      const cid = video.ref['$link'] ? video.ref['$link'] : video.ref.toString()
-      const did = post.author.did
-      res = res.concat([
-        {
-          mediaType: embed.video.mimeType,
-          description: '',
-          height: embed.aspectRatio?.height,
-          width: embed.aspectRatio?.width,
-          url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
-          mediaOrder: 0,
-          external: true
-        }
-      ])
-    }
-  }
-  return res.map((m) => {
-    return {
-      ...m,
-      NSFW: labels.length > 0
-    }
-  })
-}
-
 function getQuotedPostUri(post: PostView): string | undefined {
   let res: string | undefined = undefined
   const embed = (post.record as any).embed
@@ -425,21 +139,6 @@ function getQuotedPostUri(post: PostView): string | undefined {
   return res
 }
 
-// TODO improve this so we get better nsfw messages lol
-function getPostLabels(post: PostView) {
-  let labels = new Set<string>()
-  if (post.labels) {
-    for (const label of post.labels) {
-      if (label.neg && labels.has(label.val)) {
-        labels.delete(label.val)
-      } else {
-        labels.add(label.val)
-      }
-    }
-  }
-  return Array.from(labels)
-}
-
 async function getPostThreadSafe(options: any) {
   try {
     const agent = await getAdminAtprotoSession()
@@ -450,65 +149,6 @@ async function getPostThreadSafe(options: any) {
       options: options,
       error: error
     })
-  }
-}
-
-function getPostInteractionLevels(
-  post: PostView,
-  parentId: string | undefined
-): {
-  replyControl: InteractionControlType
-  likeControl: InteractionControlType
-  reblogControl: InteractionControlType
-  quoteControl: InteractionControlType
-} {
-  let canQuote = InteractionControl.Anyone
-  let canReply: InteractionControlType = InteractionControl.Anyone
-  if (post.viewer && post.viewer.embeddingDisabled) {
-    canQuote = InteractionControl.NoOne
-  }
-  if (parentId) {
-    canReply = InteractionControl.SameAsOp
-    canQuote = InteractionControl.SameAsOp
-  } else if (post.threadgate && post.threadgate.record && (post.threadgate.record as any).allow) {
-    const allowList = (post.threadgate.record as any).allow
-    if (allowList.length == 0) {
-      canReply = InteractionControl.NoOne
-    } else {
-      const mentiontypes: string[] = allowList
-        .map((elem: any) => elem['$type'])
-        .map((elem: string) => elem.split('app.bsky.feed.threadgate#')[1])
-      if (mentiontypes.includes('mentionRule')) {
-        if (mentiontypes.includes('followingRule')) {
-          canReply = mentiontypes.includes('followerRule')
-            ? InteractionControl.FollowersFollowersAndMentioned
-            : InteractionControl.FollowingAndMentioned
-        } else {
-          canReply = mentiontypes.includes('followerRule')
-            ? InteractionControl.FollowersAndMentioned
-            : InteractionControl.MentionedUsersOnly
-        }
-      } else {
-        if (mentiontypes.includes('followingRule')) {
-          canReply = mentiontypes.includes('followerRule')
-            ? InteractionControl.FollowersAndFollowing
-            : InteractionControl.Following
-        } else {
-          canReply = mentiontypes.includes('followerRule') ? InteractionControl.Followers : InteractionControl.NoOne
-        }
-      }
-    }
-  }
-
-  if (canQuote === InteractionControl.Anyone && canReply != InteractionControl.Anyone) {
-    canQuote = canReply
-  }
-
-  return {
-    quoteControl: canQuote,
-    replyControl: canReply,
-    likeControl: InteractionControl.Anyone,
-    reblogControl: InteractionControl.Anyone
   }
 }
 
