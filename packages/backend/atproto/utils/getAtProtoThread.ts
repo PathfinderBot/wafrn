@@ -54,7 +54,9 @@ async function processSinglePost(
   parentId?: string,
   forceUpdate?: boolean
 ): Promise<string | undefined> {
-  const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate })
+  const job = await processPostQueue.add('processSinglePost', { post, parentId, forceUpdate }, {
+          jobId: post.uri.replaceAll(':', '_').replaceAll('/', '_')
+        })
   const finished = await job.waitUntilFinished(processPostQueueEvents, 60000).catch((err) => {
     logger.debug(err, "Error occured while getting atproto post")
   });
