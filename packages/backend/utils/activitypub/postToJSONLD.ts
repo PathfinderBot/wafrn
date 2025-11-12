@@ -77,7 +77,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
         // we do same check for all parents
 
         const parentsUsers = ancestors.map((elem) => elem.user)
-        if (parentsUsers.some((elem) => elem.isBlueskyUser)) {
+        if (ancestors.some((elem) => elem.user.isBlueskyUser && elem.bskyUri && !elem.remotePostId)) {
           return undefined
         }
       }
