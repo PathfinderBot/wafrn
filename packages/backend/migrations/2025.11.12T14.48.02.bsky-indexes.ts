@@ -11,7 +11,7 @@ export const up: Migration = async (params) => {
 where (select count(*) from "posts" inr
 where inr."bskyUri" = ou."bskyUri") > 1);`);
 */
-  await queryInterface.sequelize.query(`CREATE UNIQUE INDEX post_bsky_uri  ON "posts" ("bskyUri");`);
+  await queryInterface.sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`);
 
 }
 export const down: Migration = async (params) => {
