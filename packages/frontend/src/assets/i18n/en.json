@@ -80,6 +80,7 @@
       "title": "Settings",
       "follows": "Manage followers",
       "enableBluesky": "Enable Bluesky",
+      "migrateBluesky": "Migrate Bluesky account to wafrn",
       "editProfile": "Preferences and Profile",
       "themeEditor": "Theme editor",
       "mutedUsers": "Muted users",

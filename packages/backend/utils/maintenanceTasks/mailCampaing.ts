@@ -50,32 +50,34 @@ async function sendMail() {
       }
     })
     // Modify before sending the email!
-    const subject = `Hello ${user.url}, this new wafrn update includes gay tags and will not gaslight you!.`
+    const subject = `Hello ${user.url}, wafrn now can BITE YOU`
     const body = `\
 <h1>${user.url}, We miss you at <a href="https://app.wafrn.net">wafrn</a>!</h1>
 <p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
-${notificationsCount == 0 ? '<p>Wow, still zero. Are you going to come back or should I keep roasting you on those emails? (please come back :3 )</p>' : ''}
+${notificationsCount == 0 ? '<p>Ok, zero notifications. No but seriously, we miss you</p>' : ''}
 <br />
-<img src="https://cdn.wafrn.net/api/cache?media=https%3A%2F%2Fmedia.wafrn.net%2F1756576344253_aa9288f523582f1072066f1f21aafb45cc64ba25_processed.webp" style="width: 100%"> </img>
+<img src="https://cdn.wafrn.net/api/cache?media=https%3A%2F%2Fnew.media.wafrn.net%2Fmedia%2F1763067663377_dde8964294533d803fc24a5d9f9395d8a9dec072_processed.webp" style="width: 100%"> </img>
+<img src="https://cdn.wafrn.net/api/cache?media=https%3A%2F%2Fnew.media.wafrn.net%2Fmedia%2F1763068200524_d40794511a018ed1d10a733f19781bb20b1ea54d_processed.webp" style="width: 100%"> </img>
 So some of the changelog for last month:
 <ul>
-  <li>MULTIPLE ACCOUNTS. YOU CAN HAVE MULTIPLE ACCOUNTS NOW</li>
+  <li>BITES.</li>
+  <li>BITE POSTS</li>
+  <li>BITE OTHER USERS</li>
+  <li>SPECIALY BLUESKY USERS</li>
 	<li>No gaslighting</li>
   <li>Gay hashtags</li>
-	<li>The button that fucking kills you: on edit profile -> misceaneous we have added a button that rolls a dice and if you are unlucky we crash your browser</li>
-  <li>Improved bluesky integration: now you can log in into your bluesky account hosted in wafrn! (this one is very janky but that has never stopped us)</li>
+  <li>BLUESKY MIGRATIONS: bring your bluesky account to wafrn</li>
 	<li>Disable rewoots from other users</li>
 	<li>Performance improvements</li>
 	<li>We have added new bugs</li>
-  <li>No more gaslighting</li>
-  <li>Added pictures of herobrine</li>
+  <li>More gaslighting</li>
 </ul>
 And finaly, the part of the email where I say "give me money". Well, first, give money to the team, and then me
 <ul>
+	<li><a href="https://ko-fi.com/cyrneko/tiers" target="_blank">Alexia</a> has helped improve the quality of the code and made the way for other improvements. She has done a lot to help wafrn grow</li>
   <li><a href="https://app.wafrn.net/blog/fireisgood">FireIsGood</a> has done A LOT. Like A HUGE FUCKING LOT. You should give her moneys <a href="https://ko-fi.com/fireisgood">here</a> </li>
 	<li><a href="https://social.sztupy.hu/blog/sztupy" target="_blank">SztupY</a> has helped to create a wafrn hosting guide and streamlined the process a lot. You should give <a href="https://ko-fi.com/SztupY" target="_blank">SztupY</a> some money. Also yes his profile is not on the main wafrn!</li>
 	<li><a href="https://ko-fi.com/juandjara" target="_blank">Javascript</a> made <a href="https://wafrn.net/" target="_blank">the mobile app</a>, its realy cool</li>
-	<li><a href="https://ko-fi.com/cyrneko/tiers" target="_blank">Alexia</a> has helped improve the quality of the code and made the way for other improvements. She has done a lot to help wafrn grow</li>
 	<li>And finaly... we have to link the wafrn <a href="https://patreon.com/wafrn" target="_blank">patreon</a> and <a href="https://ko-fi.com/wafrn" target="_blank">kofi</a>. This money goes to gabbo for fried chicken and to the wafrn servers. Give me money! please :3</li>
 </ul>
 <br />
@@ -83,7 +85,7 @@ And finaly, the part of the email where I say "give me money". Well, first, give
 `
     console.log(`mailing ${user.url}`)
     await sendEmail({ email: user.email, subject, body })
-    await wait(1500)
+    await wait(100)
   }
 }
 

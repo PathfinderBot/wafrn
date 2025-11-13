@@ -29,6 +29,9 @@ const usersNotVerified = await User.scope('full').findAll({
     banned: false,
     email: {
       [Op.ne]: null
+    },
+    createdAt: {
+      [Op.gt]: new Date(new Date().setMonth(new Date().getMonth() - 1))
     }
   }
 })
