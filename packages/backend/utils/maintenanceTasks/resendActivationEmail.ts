@@ -6,6 +6,7 @@ import sendEmail from '../sendEmail.js'
 
 // lets delete old users that are not activated
 
+/*
 await User.destroy({
   where: {
     activated: false,
@@ -19,6 +20,7 @@ await User.destroy({
     }
   }
 })
+*/
 
 const usersNotVerified = await User.scope('full').findAll({
   where: {
