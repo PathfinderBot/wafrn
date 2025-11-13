@@ -653,7 +653,7 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.integrations' },
         { type: 'link', value: 'menu.settings.enableBluesky', route: '/profile/enable-bluesky' }, // FIXME: make this on the page itself?
-        { type: 'link', value: 'menu.settings.migrateBluesky', route: '/profile/migrate-bluesky' }, // FIXME: make this on the page itself?
+        { type: 'link', value: 'menu.settings.migrateBluesky', route: '/profile/migrate-bluesky' },
         { type: 'key', value: 'rssOptions' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.migration' },
