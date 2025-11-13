@@ -81,10 +81,10 @@ let postIndexes = await queryInterface.showIndex('posts')
 console.log(postIndexes)
 if(!(postIndexes as Array<any>).some(index => index.name === 'post_bsky_uri')) {
   // well turns out that we dont have indexes
-//   await queryInterface.sequelize.query(`UPDATE "posts" SET "bskyUri" = NULL WHERE "id" IN (select "id" from "posts" ou
-// where "bskyUri" IS NOT NULL and (select count(*) from "posts" inr
-// where inr."bskyUri" IS NOT NULL AND ou."bskyUri" IS NOT NULL AND inr."bskyUri" = ou."bskyUri") > 1);`);
-await  queryInterface.sequelize.query(`CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`);
+  //   await queryInterface.sequelize.query(`UPDATE "posts" SET "bskyUri" = NULL WHERE "id" IN (select "id" from "posts" ou
+  // where "bskyUri" IS NOT NULL and (select count(*) from "posts" inr
+  // where inr."bskyUri" IS NOT NULL AND ou."bskyUri" IS NOT NULL AND inr."bskyUri" = ou."bskyUri") > 1);`);
+  //await  queryInterface.sequelize.query(`CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`);
 
 }
 
