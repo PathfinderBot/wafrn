@@ -61,7 +61,7 @@ const wsServer = expressWs(app)
 const server = wsServer.app
 websocketRoutes(server)
 
-cron.schedule('0 2 * * *', () => {
+cron.schedule('0 2 * * *', async () => {
   // maintenance tasks
   sequelize.query('VACUUM ANALYZE').then(() => {
     logger.info(`postgres vacuum analyze executed`)
@@ -75,3 +75,16 @@ cron.schedule('0 2 * * *', () => {
 server.listen(PORT, completeEnvironment.listenIp, () => {
   logger.info('started websocket')
 })
+
+const queryInterface = sequelize.getQueryInterface()
+let postIndexes = await queryInterface.showIndex('posts')
+console.log(postIndexes)
+if(!(postIndexes as Array<any>).some(index => index.name === 'post_bsky_uri')) {
+  // well turns out that we dont have indexes
+  await queryInterface.sequelize.query(`UPDATE "posts" SET "bskyUri" = NULL WHERE "id" IN (select "id" from "posts" ou
+where "bskyUri" IS NOT NULL and (select count(*) from "posts" inr
+where inr."bskyUri" IS NOT NULL AND ou."bskyUri" IS NOT NULL AND inr."bskyUri" = ou."bskyUri") > 1);`);
+await  queryInterface.sequelize.query(`CREATE UNIQUE INDEX IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`);
+
+}
+
