@@ -12,7 +12,7 @@ await User.destroy({
     emailVerified: false,
     email: { [Op.ne]: null },
     createdAt: {
-      [Op.lt]: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      [Op.lt]: new Date(new Date().setMonth(new Date().getMonth() - 1))
     }
   }
 })
@@ -39,7 +39,7 @@ for await (const user of usersNotVerified.filter((elem) => !!elem)) {
   const activationLink = `${completeEnvironment.instanceUrl}/activate/${encodeURIComponent(user.email)}/${user.activationCode}`
   const emailInfo = await sendEmail({
     email: user.email as string,
-    subject: `${user.url} your email is still not verified!`,
+    subject: `${user.url}, apologies on our side! your email is still not verified!`,
     body: `\
 <p>Hello ${user.url}, you registered on ${completeEnvironment.instanceUrl} but never verified your email!</p>
 <p>If you would like to activate your account, you can <a href="${activationLink}">verify your email</a>.</p>
