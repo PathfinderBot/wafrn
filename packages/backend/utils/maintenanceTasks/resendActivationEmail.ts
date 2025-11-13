@@ -11,6 +11,9 @@ await User.destroy({
     activated: false,
     emailVerified: false,
     email: { [Op.ne]: null },
+    banned: {
+      [Op.ne]: null
+    },
     createdAt: {
       [Op.lt]: new Date(new Date().setMonth(new Date().getMonth() - 1))
     }
