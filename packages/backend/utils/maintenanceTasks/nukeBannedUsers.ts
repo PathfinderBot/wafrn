@@ -22,6 +22,7 @@ import { Queue } from 'bullmq'
 import { LdSignature } from '../activitypub/rsa2017.js'
 import { getDeletedUser } from '../cacheGetters/getDeletedUser.js'
 import { logger } from '../logger.js'
+import { wait } from '../wait.js'
 
 async function nukeBannedUsers() {
   const deletePostQueue = new Queue('deletePostQueue', {
@@ -273,6 +274,7 @@ async function nukeBannedUsers() {
     })
     
     logger.debug(`--- Nuking posts Completed ---`)
+    await wait(3600000)
     await User.update({
       banned: true
     }, {
