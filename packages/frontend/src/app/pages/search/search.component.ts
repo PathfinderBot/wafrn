@@ -79,9 +79,9 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.followedUsers = this.postService.followedUserIds;
     this.notYetAcceptedFollows =
       this.postService.notYetAcceptedFollowedUsersIds;
-    if (this.activatedRoute.snapshot.paramMap.get("uri")) {
+    if (this.activatedRoute.snapshot.queryParamMap.get("uri")) {
       this.searchForm.patchValue({
-        search: this.activatedRoute.snapshot.paramMap.get("uri"),
+        search: this.activatedRoute.snapshot.queryParamMap.get("uri"),
       });
       this.submitSearch();
     }
