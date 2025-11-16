@@ -6,6 +6,7 @@ import { MessageService } from 'src/app/services/message.service'
 import { faArrowRight, faEye, faEyeSlash, faUpload, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { Router } from '@angular/router'
+import { JwtService } from 'src/app/services/jwt.service'
 
 @Component({
   selector: 'app-register',
@@ -16,6 +17,10 @@ import { Router } from '@angular/router'
 export class RegisterComponent {
   isPasswordVisible = false // Track visibility of password
   manuallyReview = EnvironmentService.environment.reviewRegistrations
+  registrationLevel = EnvironmentService.environment.registrationLevel
+  privateInstanceRegistrationText = EnvironmentService.environment.privateInstanceRegistrationText
+  instanceDomain = new URL(EnvironmentService.environment.frontUrl).hostname
+  isAdmin = false
 
   // Font Awesome icons
   faUserPlus = faUserPlus
@@ -273,7 +278,8 @@ export class RegisterComponent {
   constructor(
     private loginService: LoginService,
     private messages: MessageService,
-    private router: Router
+    private router: Router,
+    public jwtService: JwtService,
   ) {
     // minimum age: 14
     this.minimumRegistrationDate = new Date()
@@ -281,6 +287,8 @@ export class RegisterComponent {
     // do not accept dates before 1900
     this.minDate = new Date()
     this.minDate.setFullYear(1900, 0, 1)
+
+    this.isAdmin = this.jwtService.adminToken()
   }
 
   // Toggle password visibility

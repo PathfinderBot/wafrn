@@ -123,6 +123,7 @@ export default function statusRoutes(app: Application) {
   })
 
   app.get('/api/status/blocks', async (req: AuthorizedRequest, res: Response) => {
+    if (completeEnvironment.disableRequireSendEmail) res.sendStatus(404)
     res.send(
       await FederatedHost.findAll({
         attributes: ['displayName'],

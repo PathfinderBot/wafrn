@@ -11,6 +11,8 @@ import Cacher from 'cacher'
 import { Privacy } from '../../models/post.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { redisCache } from '../../utils/redis.js'
+import { version } from 'os'
+import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 const cacher = new Cacher()
 
 function wellKnownRoutes(app: Application) {
@@ -159,9 +161,11 @@ function wellKnownRoutes(app: Application) {
           }
         })
       },
-      openRegistrations: true,
+      openRegistrations: completeEnvironment.registrationLevel !== 'PRIVATE',
       metadata: {
-        themeColor: '#96d8d1'
+        themeColor: '#96d8d1',
+        emailRequiredForSignup: true,
+        disableRegistration: completeEnvironment.registrationLevel == 'PRIVATE',
       }
     }
     redisCache.set('nodeInfoData', JSON.stringify(result), 'EX', 3600 * 48)
@@ -182,6 +186,46 @@ function wellKnownRoutes(app: Application) {
       }
     ])
   })
+  app.get('/api/v1/instance', async (req, res) => {
+    const cacheResult = await redisCache.get('instanceData')
+    if (cacheResult) {
+      return res.send(JSON.parse(cacheResult))
+    }
+    const packageJsonFile = JSON.parse(fs.readFileSync('package.json').toString())
+    const adminUser = await getAdminUser()
+    const result = {
+      uri: completeEnvironment.instanceUrl,
+      title: completeEnvironment.defaultSEOData.title,
+      description: completeEnvironment.defaultSEOData.description,
+      email: completeEnvironment.adminEmail,
+      version: packageJsonFile.version,
+      registrations: completeEnvironment.registrationLevel !== 'PRIVATE',
+      approval_required: completeEnvironment.reviewRegistrations,
+      configuration: {
+        accounts: {
+          allow_custom_css: true
+        }
+      },
+      contact_account: {
+        id: `${completeEnvironment.frontendUrl}/fediverse/blog/${adminUser.url.toLowerCase()}`,
+        username: adminUser.url,
+        acct: adminUser.url,
+        display_name: adminUser.name,
+        bot: adminUser.isBot,
+        note: adminUser.description,
+        url: `${completeEnvironment.frontendUrl}/fediverse/blog/${adminUser.url.toLowerCase()}`,
+        uri: `${completeEnvironment.frontendUrl}/fediverse/blog/${adminUser.url.toLowerCase()}`,
+        avatar: completeEnvironment.mediaUrl + adminUser.avatar,
+        avatar_static: completeEnvironment.mediaUrl + adminUser.avatar,
+        banner: completeEnvironment.mediaUrl + adminUser.headerImage,
+        banner_static: completeEnvironment.mediaUrl + adminUser.headerImage,
+      }
+    }
+    redisCache.set('instanceData', JSON.stringify(result), 'EX', 3600 * 48)
+    res.send(result)
+    res.end()
+  })
+
 }
 
 export { wellKnownRoutes }
