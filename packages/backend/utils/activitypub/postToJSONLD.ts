@@ -183,7 +183,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
     logger.info(url, user);
   }
 
-  const misskeyMentionContent = misskeyMentions.length > 0 ? `<small>${misskeyMentions.join(' ')}</small>\n\n` : ''
+  const misskeyMentionContent = misskeyMentions.length > 0 ? `${misskeyMentions.join(' ')}\n\n` : ''
 
   let contentWarning = false
   postMedias.forEach((media: any) => {
