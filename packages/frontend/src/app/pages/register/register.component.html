@@ -1,18 +1,17 @@
 <mat-card class="pb-3 mb-6 lg:mx-4 mat-card-higher wafrn-container">
   <mat-card-header class="pb-3 wafrn-container-header">
-    <mat-card-title class="flex gap-2"
-      ><fa-icon [icon]="faUserPlus"></fa-icon
-      ><span class="font-medium">{{ 'register.title' | translate }}</span></mat-card-title
-    >
+    <mat-card-title class="flex gap-2"><fa-icon [icon]="faUserPlus"></fa-icon><span class="font-medium">{{
+        'register.title' | translate }}</span></mat-card-title>
   </mat-card-header>
+
+  @if (registrationLevel !== 'PRIVATE' || isAdmin) {
   <section class="my-6 mx-3 text-center">
     <h1 class="mb-0 text-5xl">{{ 'register.welcome' | translate }}</h1>
   </section>
-
   @if (manuallyReview) {
-    <section class="mx-3 mb-4">
-      <app-info-card type="info">{{ 'register.manualReviewInfo' | translate }}</app-info-card>
-    </section>
+  <section class="mx-3 mb-4">
+    <app-info-card type="info">{{ 'register.manualReviewInfo' | translate }}</app-info-card>
+  </section>
   }
 
   <form class="px-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -45,17 +44,11 @@
 
     <mat-form-field (click)="picker.open()" class="w-full mb-3" subscriptSizing="dynamic">
       <mat-label>Your birth date <b>(There is a minimum registration age!)</b></mat-label>
-      <input
-        formControlName="birthDate"
-        matInput
-        [min]="minDate"
-        [max]="minimumRegistrationDate"
-        [matDatepicker]="picker"
-      />
-      <mat-hint
-        >MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not shared
-        with anyone. Minimum registration age varies depending on the instance</mat-hint
-      >
+      <input formControlName="birthDate" matInput [min]="minDate" [max]="minimumRegistrationDate"
+        [matDatepicker]="picker" />
+      <mat-hint>MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not
+        shared
+        with anyone. Minimum registration age varies depending on the instance</mat-hint>
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
@@ -64,7 +57,7 @@
       <mat-hint>This actually does not do anything at all</mat-hint>
       <mat-select>
         @for (gender of genders; track $index) {
-          <mat-option [value]="gender" [innerHTML]="gender">{{ gender }}</mat-option>
+        <mat-option [value]="gender" [innerHTML]="gender">{{ gender }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -74,34 +67,41 @@
         <button type="button" mat-stroked-button color="primary" (click)="avatarInput.click()">
           <fa-icon [icon]="faUpload" class="m-1"></fa-icon>Choose File
         </button>
-        <input
-          #avatarInput
-          formControlName="avatar"
-          id="avatar"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          hidden
-          (change)="imgSelected($event)"
-        />
+        <input #avatarInput formControlName="avatar" id="avatar" type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif" hidden (change)="imgSelected($event)" />
         <p class="m-auto ml-1">{{ selectedFileName }}</p>
       </div>
     </div>
 
     <div class="flex">
-      <button
-        color="primary"
-        mat-flat-button
-        extended
-        [disabled]="!loginForm.valid"
-        class="w-full border-round-md mt-4"
-      >
-        <span class="flex gap-2"
-          >{{ 'register.registerButton' | translate }} <fa-icon [icon]="submitIcon"></fa-icon
-        ></span>
+      <button color="primary" mat-flat-button extended [disabled]="!loginForm.valid"
+        class="w-full border-round-md mt-4">
+        <span class="flex gap-2">{{ 'register.registerButton' | translate }} <fa-icon
+            [icon]="submitIcon"></fa-icon></span>
       </button>
       @if (loginForm.disabled) {
-        <mat-spinner diameter="24" class="mt-5 mx-3"></mat-spinner>
+      <mat-spinner diameter="24" class="mt-5 mx-3"></mat-spinner>
       }
     </div>
   </form>
+  } @else {
+  <section class="my-6 mx-3 text-center">
+    <h1 class="mb-0 text-5xl">{{ 'register.welcomeRegistrationsDisabled' | translate }}</h1>
+  </section>
+  <section class="mx-3 mb-4">
+    <app-info-card type="caution">{{ 'register.registrationsDisabled' | translate:{instanceDomain,
+      privateInstanceRegistrationText} }}</app-info-card>
+  </section>
+  <section class="mx-3 mb-4 flex flex-column">
+    <p>{{ 'register.registerOnOtherInstance' | translate }}</p>
+    <a mat-flat-button href="https://join.wafrn.net" target="_blank" class="border-round-md">{{ 'register.findServers' |
+      translate}}</a>
+  </section>
+  <section class="mx-3 mb-4 flex flex-column">
+    <p>{{ 'register.selfHostInstance' | translate }}</p>
+    <a mat-flat-button href="https://codeberg.org/wafrn/wafrn/src/branch/main/docs/deployment.md" target="_blank"
+      class="border-round-md">{{ 'register.selfHostInstructions' |
+      translate}}</a>
+  </section>
+  }
 </mat-card>

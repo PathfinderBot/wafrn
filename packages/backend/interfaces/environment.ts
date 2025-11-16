@@ -78,5 +78,7 @@ export interface Environment {
   webpushPrivateKey: string
   webpushPublicKey: string
   webpushEmail: string
+  registrationLevel: 'PRIVATE' | 'INVITE' | 'PUBLIC'
+  disableShowingBlockedServers: boolean
   frontendEnvironment: any
 }

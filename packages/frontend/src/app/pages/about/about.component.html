@@ -1,25 +1,29 @@
-<app-forum-component ></app-forum-component>
+<app-forum-component></app-forum-component>
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   @if (!loaded && !loading) {
-    <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
-      Show list of blocked servers
-    </button>
+  <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
+    Show list of blocked servers
+  </button>
   }
 
   @if (loading) {
-    <app-loader>blocked servers</app-loader>
+  <app-loader>blocked servers</app-loader>
   }
 
   @if (loaded) {
-    <div>
-      <h2>Blocked servers</h2>
-      <p class="mb-3">In case of possible error, please contact the admin team by email</p>
-      <ul>
-        @for (server of blockedServers; track $index) {
-          <li class="mb-3">{{ server }}</li>
-        }
-      </ul>
-    </div>
+  <div>
+    <h2>Blocked servers</h2>
+    @if (!disableShowingBlockedServers) {
+    <p class="mb-3">In case of possible error, please contact the admin team by email</p>
+    <ul>
+      @for (server of blockedServers; track $index) {
+      <li class="mb-3">{{ server }}</li>
+      }
+    </ul>
+    } @else {
+    <p class="mb-0">Blocked servers has not been made available on this server.</p>
+    }
+  </div>
   }
 </mat-card>
