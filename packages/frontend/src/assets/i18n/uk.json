@@ -1,0 +1,140 @@
+{
+  "login": {
+    "welcomeBack": "З поверненням!",
+    "exploreWithoutAccount": "Натисніть сюди, щоб переглянути сайт без аккаунту!",
+    "dontHaveAccount": "Немає аккаунта?",
+    "register": "Зареєструйтесь зараз!",
+    "checkSpam": "Якщо є проблеми, перевірте папку спаму!",
+    "email": "Електронна пошта",
+    "password": "Пароль",
+    "mfaToken": "Токен",
+    "mfaTokenEnter": "Введіть токен з вашого застосунку-аутентифікатора",
+    "forgottenPassword": "Забули пароль? Натисніть сюди!",
+    "showPassword": "Показати пароль",
+    "hidePassword": "Сховати пароль",
+    "loginButton": "Увійти в аккаунт"
+  },
+  "notifications": {
+    "loadingMore": "Завантаження інших сповіщень",
+    "refresh": "Оновити"
+  },
+  "menu": {
+    "login": "Увійти в аккаунт",
+    "register": "Зареєструватися",
+    "dashboard": "Головна",
+    "dashboardHover": "Побачити головну сторінку",
+    "writeWoot": "Написати новий вут",
+    "notifications": "Сповіщення",
+    "explore": "Огляд",
+    "exploreWafrn": "Огляд WAFRN",
+    "exploreFediverse": "Wafrn і друзі",
+    "unansweredAsks": "Неотвеченные вопросы",
+    "privateMessages": "Личные сообщения",
+    "search": "Пошук",
+    "myBlog": "Мій блог",
+    "about": "Опис",
+    "privacy": "Політіка конфідеційності",
+    "source": "Переглянути джерело!",
+    "patreon": "Patreon",
+    "kofi": "Ko-fi",
+    "logout": "Вийти з аккаунту",
+    "faq": "Часті запитання",
+    "settings": {
+      "title": "Налаштування",
+      "follows": "Керування підписниками",
+      "enableBluesky": "Підключити Bluesky",
+      "editProfile": "Налаштування профілю",
+      "themeEditor": "Редактор теми",
+      "mutedUsers": "Зам'ючені користувачі",
+      "mutedPosts": "Зам'ючені пости",
+      "bookmarkedPosts": "Закладки",
+      "myBlockedUsers": "Заблоковані користувачі",
+      "myBlockedServers": "Заблоковані сервера",
+      "importFollows": "Імпорт підписників",
+      "superSecretMenu": "Супер секретне меню"
+    },
+    "admin": {
+      "title": "Адміністрація",
+      "serverList": "Список серверів",
+      "addEmojis": "Додати эмоджі",
+      "reports": "Репорти",
+      "bans": "Забанені користувачі",
+      "blocklist": "Заблоковані користувачі",
+      "stats": "Статистика",
+      "awaitingAproval": "Очікування підтверждения"
+    }
+  },
+  "editor": {
+    "inReplyTo": "У відповідь на:",
+    "quoteButton": "Цитувати вут",
+    "publishWoot": "Опубліковати вут",
+    "directMessageWarning": "Адміни вашого та інших серверів можуть читати ці повідомлення.",
+    "unlistedWarning": "Непублічні пости будуть проигноровані пошуком (ВКЛЮЧАЮЧИ ТЕГИ) і не будуть з'являтися на локальній стрічці. але вони будуть відображені для ваших підписників. И если кто-то отправит ссылку, эти посты будут видны, в отличие от \"только для подписчиков\". По сути, когда вы хотите много запостить, но не хотите нагружать локальную ленту.",
+    "directMessageWithQuoteWarning": "Цитований користувач також буде сповіщений як згадка",
+    "sensitivePlaceholder": "Що у цьому вуті делікантного?",
+    "wootQuoteBoxLabel": "Вставте посилання на вут, щоб цитувати його. Дозволені зовнішні та wafrn посилання",
+    "wootQuoteBoxPlaceholder": "Просто вставте посилання на вут",
+    "wootQuoteConfirmButton": "Додати вут як цитату",
+    "wootTextLabel": "Текст вута",
+    "wootTextPlaceholder": "Почніть писати...",
+    "altTextFieldLabel": "Опис зоображення",
+    "altTextFieldPlaceholder": "Опис. Заповніть це, БУДЬ-ЛАСКА",
+    "isNSFWToggle": "NSFW",
+    "mediaCountMastodonWarning": "УВАГА! УСІ НАСТУПНІ ЗАВАНТАЖЕННІ МЕДІА НЕ БУДУТЬ ПОКАЗАНІ У MASTODON",
+    "altTextWarning": "Будь-ласка, заповніть все описи медіа. Якщо ви хочете вимкнути цю перевірку, ви можете це зробити в налаштуваннях.",
+    "quoteTitle": "Цитата:",
+    "tagFieldLabel": "Теги",
+    "tagSeparationNotice": "Розділені комами",
+    "ariaLabelWootPrivacy": "Налаштування приватності вута",
+    "ariaLabelQuoteSetter": "Увімкнути встановщик цитат",
+    "uploadMediaTooltip": "Завантажити медіа",
+    "contentWarningTooltip": "Попередження вмісту",
+    "insertEmojiTooltip": "Вставити эмоджі",
+    "hiddenMentionsTooltip": "Другие упомянутые пользователи",
+    "editorGuide": "Сумніваєтеся щодо форматування тексту чи не знаєте, з чого почати? Перегляньте <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">этот гайд</a>"
+  },
+  "profile": {
+    "security": {
+      "header": "Налаштування безпеки",
+      "passwordChange": "Скинути пароль",
+      "mfa": {
+        "header": "Двофакторна аутентифікация",
+        "setup": "Налаштувати двофакторну аутентифікацию",
+        "addNew": "Додати нову двофакторну аутентифікацию",
+        "friendlyNameLabel": "Дружнє ім'я, наприклад 'Work Phone' або 'Aegis'",
+        "typeLabel": "Тип аутентифікаціЇ",
+        "setupNewButton": "Налаштувати новий аутентифікатор",
+        "tokenLabel": "Токен",
+        "deleteLabel": "Видалити",
+        "scanInstructions": "Відскануйте код ниже у вашому застосунку-аутентифікаторі, и введіть сгенерований код",
+        "installInstructions": "Якщо у вас немає застосунку-аутентифікатора, ми рекомендуємо <a href=\"https://getaegis.app/\" target=\"_blank\">Aegis</a> (Android) або <a href=\"https://2fas.com/\" target=\"_blank\">2FAS</a> (iOS/Android)",
+        "imageAltSecret": "Ваш секрентий ключ: '{{ secret }}'",
+        "secretFallback": "Якщо ви не зможете просканувати QR код, вы можете ввести код '{{ secret }}' в вашому застосунку вручну",
+        "confirmDeleteMessage": "Ви впевнені, що хочете видалити цей MFA провайлер? Примітка: при видаленні усіх MFA провайдерів, ви відключите MFA на цьому аккаунті",
+        "deleteSuccess": "MFA провайдер був видален",
+        "verifySuccess": "Успішно підключено MFA",
+        "verifyFailed": "Верифікація не вдалась. Перевірте ваш токен або, якщо проблема не вирішена, спитайте у адміністратора",
+        "errorMessageGeneric": "Виникла проблема з вашим запитом. Спробуйте ще раз або зверніться за допомогою до адміністратора",
+        "noMfa": "MFA не підключен на цьому аккаунті",
+        "mfaList": "У вас налаштовані наступні MFA провайдери",
+        "type": {
+          "totpLabel": "Застосунок-аутентифікатор"
+        }
+      }
+    },
+    "tabHeaders": {
+      "profile": "Профіль",
+      "preferences": "Переваги",
+      "privacySecurity": "Конфідеційність та безпека",
+      "misc": "Різне"
+    }
+  },
+  "ask-dialog-content": {
+    "askAnonymously": "Зробити питання анонімним",
+    "askFormLabel": "Питання",
+    "askButtonText": "Задати питання"
+  },
+  "post-fragment": {
+    "replyingTo": "відповідь до: "
+  }
+}
