@@ -20,9 +20,9 @@
   "dependencies": {
     "@atcute/bluesky-richtext-builder": "^1.0.2",
     "@atcute/bluesky-richtext-parser": "^1.0.7",
-    "@atproto/api": "^0.13.35",
-    "@atproto/identity": "^0.4.8",
-    "@atproto/sync": "^0.1.4",
+    "@atproto/api": "^0.18.0",
+    "@atproto/identity": "^0.4.9",
+    "@atproto/sync": "^0.1.36",
     "@opera7133/mfmp": "^1.0.2-5",
     "@peertube/http-signature": "^1.7.0",
     "@rushstack/ts-command-line": "^5.0.0",
