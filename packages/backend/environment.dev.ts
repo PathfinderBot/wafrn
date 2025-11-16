@@ -115,6 +115,9 @@ export const baseEnvironment: Environment = {
   webpushPublicKey: 'BIWrO9knKAnPj2TFfU7pIxo0QkO_b2-PZCqYwAPArJdHTQ3Xsvf-E_WXaKGFB531fBOxCE92SZ6R_vHTVM1yTNw',
   // this is a email that will be sent to the distribution services in the users devices in case the owner of the distribution service wants to contact the server that is sending the notifications
   webpushEmail: 'mailto:info@wafrn.net',
+  // registration level for the instance
+  registrationLevel: 'PRIVATE',
+  disableShowingBlockedServers: true,
   frontendEnvironment: {
     logo: '/assets/logo.png',
     frontUrl: 'http://localhost:4200',
@@ -123,6 +126,9 @@ export const baseEnvironment: Environment = {
     externalCacheurl: '/api/cache?media=',
     shortenPosts: 3,
     disablePWA: false,
-    maintenance: false
+    maintenance: false,
+    registrationLevel: 'PRIVATE',
+    privateInstanceRegistrationText: 'test 123',
+    disableShowingBlockedServers: true
   }
 }

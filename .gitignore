@@ -32,6 +32,8 @@ chrome-profiler-events*.json
 .settings/
 *.sublime-workspace
 
+# bun lockfile
+bun.lock
 
 # misc
 /connect.lock

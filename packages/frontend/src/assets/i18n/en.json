@@ -34,7 +34,13 @@
     "title": "Register",
     "welcome": "Welcome to Wafrn!",
     "manualReviewInfo": "An administrator will review your profile before you can join. This process can take a few hours.",
-    "registerButton": "Register"
+    "registerButton": "Register",
+    "welcomeRegistrationsDisabled": "Registering on Wafrn",
+    "registrationsDisabled": "{{instanceDomain}} has registrations disabled: {{privateInstanceRegistrationText}}",
+    "registerOnOtherInstance": "But because Wafrn is decentralized, you can join to another server and interact with people from this server!",
+    "selfHostInstance": "Or, you can self-host your own Wafrn instance!",
+    "findServers": "Find one on join.wafrn.net",
+    "selfHostInstructions": "Self-hosting Instructions"
   },
   "notifications": {
     "title": "Notifications",

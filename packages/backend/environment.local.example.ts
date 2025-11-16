@@ -109,6 +109,9 @@ export const baseEnvironment: Environment = {
   webpushPublicKey: '${{WEBPUSH_PUBLIC}}',
   // this is a email that will be sent to the distribution services in the users devices in case the owner of the distribution service wants to contact the server that is sending the notifications
   webpushEmail: '${{WEBPUSH_EMAIL}}',
+  // registration level for the instance
+  registrationLevel: 'PRIVATE',
+  disableShowingBlockedServers: true,
   frontendEnvironment: {
     logo: '/assets/logo.png',
     frontUrl: 'https://localhost',
@@ -118,6 +121,9 @@ export const baseEnvironment: Environment = {
     shortenPosts: 3,
     disablePWA: false,
     maintenance: false,
-    enableRawOutput: true
+    enableRawOutput: true,
+    registrationLevel: 'PRIVATE',
+    privateInstanceRegistrationText: 'test 123',
+    disableShowingBlockedServers: true
   }
 }
