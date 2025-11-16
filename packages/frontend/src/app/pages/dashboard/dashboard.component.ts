@@ -173,7 +173,7 @@ export class DashboardComponent
   }
 
   async loadPosts(page: number) {
-    console.log("loading");
+    console.log("loading: " + page);
     this.currentPage += 1;
     this.loadingPosts = true;
     let scrollDate = new Date(this.timestamp);
@@ -184,7 +184,7 @@ export class DashboardComponent
     const tmpPosts = await this.dashboardService.getDashboardPage(
       scrollDate,
       this.level,
-      -1
+      page == 0 ? -1 : page
     );
     this.noMorePosts = tmpPosts.length === 0;
     if (this.noMorePosts && page == 0 && this.level === 1) {
