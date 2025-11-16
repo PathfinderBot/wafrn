@@ -96,6 +96,7 @@ function wellKnownRoutes(app: Application) {
         activated: true
       }
     })
+    const adminUser = await getAdminUser();
     const activeUsersSixMonths = await User.count({
       where: {
         id: {
@@ -163,6 +164,20 @@ function wellKnownRoutes(app: Application) {
       },
       openRegistrations: completeEnvironment.registrationLevel !== 'PRIVATE',
       metadata: {
+        nodeName: completeEnvironment.defaultSEOData.title,
+        nodeDescription: completeEnvironment.defaultSEOData.description,
+        nodeAdmins: [
+          {
+            name: '@' + adminUser.url,
+            email: adminUser.url + '@' + completeEnvironment.instanceUrl
+          }
+        ],
+        maintainer: {
+          name: '@' + adminUser.url,
+          email: adminUser.url + '@' + completeEnvironment.instanceUrl
+        },
+        inquiryUrl: `https://${completeEnvironment.instanceUrl}/fediverse/blog/${adminUser.url}`,
+        adminAccount: `https://${completeEnvironment.instanceUrl}/fediverse/blog/${adminUser.url}`,
         themeColor: '#96d8d1',
         emailRequiredForSignup: true,
         disableRegistration: completeEnvironment.registrationLevel == 'PRIVATE',
