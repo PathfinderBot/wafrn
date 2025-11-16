@@ -125,7 +125,7 @@ export const baseEnvironment: Environment = {
     maintenance: ${{FRONTEND_MAINTENANCE:-false}},
     enableRawOutput: ${{ENABLE_RAW_OUTPUT:-false}},
     registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
-    privateInstanceRegistrationText: '${{REGISTERATIONS_DISABLED_TEXT:-This instance is a private instance, and does not allow registrations}}',
+    privateInstanceRegistrationText: '${{REGISTRATIONS_DISABLED_TEXT:-This instance is a private instance, and does not allow registrations}}',
     disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}}
   }
 }
