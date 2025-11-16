@@ -10,6 +10,7 @@ import { createNotification } from '../utils/pushNotifications.js'
 import { Bites } from '../models/bites.js'
 import { bitePostRemote, biteUserRemote } from '../utils/activitypub/bite.js'
 import { biteLimiter } from '../utils/rateLimiters.js'
+import { sendBiteBsky } from '../utils/queueProcessors/sendPostBsky.js'
 
 export default function biteRoutes(app: Application) {
   app.post(
@@ -62,6 +63,7 @@ export default function biteRoutes(app: Application) {
         )
 
         bitePostRemote(bittenPost)
+        await sendBiteBsky(userId, postId, undefined)
       } catch (error) {
         logger.debug({
           message: 'Error biting post',
@@ -123,6 +125,7 @@ export default function biteRoutes(app: Application) {
         )
 
         biteUserRemote(biter, bitten)
+        await sendBiteBsky(biterId, undefined, bittenId)
       } catch (error) {
         logger.debug({
           message: 'Error biting user',

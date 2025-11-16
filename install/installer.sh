@@ -30,7 +30,7 @@ else
   echo "Ok now we need an email for the administrator user"
   read ADMIN_EMAIL
   echo
-  echo "We now need a handle for your administrator user. If this will be a personal, single-user instance then you can enter the username you wish to use as your main."
+  echo "We now need a handle for your administrator user. If this will be a personal single user instance, we still recommend creating an admin account for bluesky reasons"
   echo "Otherwise 'admin' is a good choice. You can also have a separate 'admin' and personal account as well."
   read ADMIN_USER
   echo

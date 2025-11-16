@@ -8,6 +8,10 @@ import axios from 'axios'
 async function postPetitionSigned(message: object, userInput: User, target: string): Promise<any> {
   const user = (await User.scope('full').findByPk(userInput.id)) as User
 
+  if(!user) {
+    return;
+  }
+
   let res
   if (user.url === completeEnvironment.deletedUser) {
     return {}

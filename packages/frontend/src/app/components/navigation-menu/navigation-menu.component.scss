@@ -86,10 +86,10 @@ hr {
   }
 }
 .footer-stack {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 0.25rem 0.5rem;
+  text-align: right;
 }
 
 @media (min-width: 992px) {

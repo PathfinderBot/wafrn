@@ -9,6 +9,19 @@ import { getPostAndUserFromPostId } from '../cacheGetters/getPostAndUserFromPost
 import { logger } from '../logger.js'
 import { Privacy } from '../../models/post.js'
 import { redisCache } from '../redis.js'
+import { htmlToMfm } from './htmlToMfm.js'
+import showdown from 'showdown'
+
+const markdownConverter = new showdown.Converter({
+  simplifiedAutoLink: true,
+  literalMidWordUnderscores: true,
+  strikethrough: true,
+  simpleLineBreaks: true,
+  openLinksInNewWindow: true,
+  emoji: true,
+  encodeEmails: false
+})
+
 
 async function postToJSONLD(postId: string): Promise<activityPubObject | undefined> {
   let resFromCacheString = await redisCache.get('postToJsonLD:' + postId)
@@ -17,6 +30,9 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
   }
   const cacheData = await getPostAndUserFromPostId(postId)
   const post = cacheData.data
+  if (!post) {
+    return undefined;
+  }
   const localUser = post.user
   const userAsker = post.ask?.asker
   const ask = post.ask
@@ -61,7 +77,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
         // we do same check for all parents
 
         const parentsUsers = ancestors.map((elem) => elem.user)
-        if (parentsUsers.some((elem) => elem.isBlueskyUser)) {
+        if (ancestors.some((elem) => elem.user.isBlueskyUser && elem.bskyUri && !elem.remotePostId)) {
           return undefined
         }
       }
@@ -96,12 +112,18 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
 
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
+  const misskeyContent = markdownConverter.makeHtml(post.markdownContent) || '';
+
+  let misskeyAskContent = '';
+
   if (ask) {
-    processedContent = `<p>${getUserName(userAsker)} <a href="${
-      completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
-    }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
+      }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+    misskeyAskContent = `$[border.style=double,width=4 <small>${getUserName(userAsker)} ?[asked](${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id}):</small>
+> ${ask.question.replaceAll('\n', '\n> ')}]\n\n`
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id)
+  const misskeyMentions: string[] = [];
   const fediMentions: fediverseTag[] = []
   const fediTags: fediverseTag[] = []
   let tagsAndQuotes = '<br>'
@@ -157,7 +179,11 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
         href: remoteId
       })
     }
+    if (!misskeyContent.includes(user.url)) misskeyMentions.push(url);
+    logger.info(url, user);
   }
+
+  const misskeyMentionContent = misskeyMentions.length > 0 ? `<small>${misskeyMentions.join(' ')}</small>\n\n` : ''
 
   let contentWarning = false
   postMedias.forEach((media: any) => {
@@ -184,6 +210,7 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
 
   const usersToSend = getToAndCC(post.privacy, mentionedUsers, stringMyFollowers)
   const actorUrl = `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`
+  const misskeyMarkdown = misskeyMentionContent + misskeyAskContent + await htmlToMfm((misskeyContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, ''))
   let misskeyQuoteURL = quotedPostString
   if (misskeyQuoteURL?.startsWith('https://bsky.app/')) {
     misskeyQuoteURL = null
@@ -207,8 +234,17 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       inReplyTo: parentPostString,
       published: new Date(post.createdAt).toISOString(),
       updated: new Date(post.updatedAt).toISOString(),
+      '_misskey_content': misskeyMarkdown,
+      source: {
+        content: misskeyMarkdown,
+        mediaType: "text/x.misskeymarkdown"
+      },
       url: post.bskyUri
-        ? [`${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`, post.bskyUri]
+        ? [`${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`, {
+          type: "Link",
+          rel: "alternate",
+          href: post.bskyUri
+        }]
         : `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
       attributedTo: `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`,
       to: usersToSend.to,
@@ -216,9 +252,8 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
       sensitive: !!post.content_warning || contentWarning,
       atomUri: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
       inReplyToAtomUri: parentPostString,
-      quote: misskeyQuoteURL,
       quoteUrl: misskeyQuoteURL,
-      _missksey_quote: misskeyQuoteURL,
+      _misskey_quote: misskeyQuoteURL,
       quoteUri: misskeyQuoteURL,
       // conversation: conversationString,
       content: (processedContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, ''),
@@ -229,11 +264,9 @@ async function postToJSONLD(postId: string): Promise<activityPubObject | undefin
           return {
             type: 'Document',
             mediaType: media.mediaType,
-            url: media.external
-              ? media.url
-              : media.url.startsWith('?cid')
-                ? completeEnvironment.externalCacheurl + encodeURIComponent(media.url)
-                : completeEnvironment.mediaUrl + media.url,
+            url: (media.url.startsWith('?cid') || media.external) ?
+              completeEnvironment.externalCacheurl + encodeURIComponent(media.url) :
+              (completeEnvironment.mediaUrl + media.url),
             sensitive: media.NSFW ? true : false,
             name: media.description
           }
@@ -316,7 +349,7 @@ function getToAndCC(
       break
     }
     default: {
-      ;((to = mentionedUsers), (cc = []))
+      ; ((to = mentionedUsers), (cc = []))
     }
   }
   return {

@@ -19,12 +19,10 @@
         @if (loggedIn && !isMe && blog) {
         @if (loggedIn) {
         <div>
-          @if (!blog.isBlueskyUser) {
           <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="biteAccount(blog.id)"
             matTooltip="{{ 'post-actions.biteUser' | translate }}">
             <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
           </button>
-          }
           @if (!postService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
           <button mat-stroked-button [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
             class="split-button-left" (click)="
@@ -98,20 +96,20 @@
           ) {
           @if (postService.usersRewootsDisabled.includes(blog.id)) {
           <button mat-menu-item (click)="updateDisableRewoots()">
-            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Re-show rewoots made by this user
+            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ 'blog.unhideRewoots' | translate }}
           </button>
           } @else {
           <button mat-menu-item (click)="updateDisableRewoots()">
-            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>Hide rewoots made by this user
+            <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ 'blog.hideRewoots' | translate }}
           </button>
           }
           @if (postService.usersQuotesDisabled.includes(blog.id)) {
           <button mat-menu-item (click)="updateDisableQuotes()">
-            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Re-hide quotes from this user
+            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ 'blog.unhideQuotes' | translate }}
           </button>
           } @else {
           <button mat-menu-item (click)="updateDisableQuotes()">
-            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>Hide quotes from this user
+            <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ 'blog.hideQuotes' | translate }}
           </button>
           }
           }

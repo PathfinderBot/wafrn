@@ -1,5 +1,6 @@
 import { Op } from 'sequelize'
 import {
+  Bites,
   Blocks,
   EmojiReaction,
   FederatedHost,
@@ -9,6 +10,7 @@ import {
   PostMentionsUserRelation,
   PostReport,
   User,
+  UserBitesPostRelation,
   UserBookmarkedPosts,
   UserEmojiRelation,
   UserFollowHashtags,
@@ -20,6 +22,7 @@ import { Queue } from 'bullmq'
 import { LdSignature } from '../activitypub/rsa2017.js'
 import { getDeletedUser } from '../cacheGetters/getDeletedUser.js'
 import { logger } from '../logger.js'
+import { wait } from '../wait.js'
 
 async function nukeBannedUsers() {
   const deletePostQueue = new Queue('deletePostQueue', {
@@ -244,14 +247,58 @@ async function nukeBannedUsers() {
         }
       }
     )
+    logger.debug(`--- Nuking bites ---`)
+    await Bites.destroy({
+      where: {
+        [Op.or] : [
+          {
+            biterId: {
+              [Op.in]: usersToNukeIds
+            }
+          },
+          {
+            bittenId: {
+              [Op.in]: usersToNukeIds
+            }
+          }
+        ]
+      }
+    })
+
+    await UserBitesPostRelation.destroy({
+      where: {
+        userId: {
+          [Op.in]: usersToNukeIds
+        }
+      }
+    })
+    
     logger.debug(`--- Nuking posts Completed ---`)
-    await User.destroy({
+    await wait(3600000)
+    await User.update({
+      banned: true
+    }, {
       where: {
         id: {
           [Op.in]: usersToNukeIds
         }
       }
     })
+    try {
+      await User.destroy({
+        where: {
+          id: {
+            [Op.in]: usersToNukeIds
+          }
+        }
+      })
+    } catch (error) {
+      logger.error({
+        message: `Error nuking users in db`,
+        error: error
+      })
+    }
+    
     logger.debug('--- Nuking users complete ---')
   }
 }

@@ -83,7 +83,7 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
       this.vlitePlayer = new Vlitejs(videoElement, {
         options: {
           autoHide: true,
-          autoHideDelay: 500
+          autoHideDelay: 2000
         }
       }).player
     }

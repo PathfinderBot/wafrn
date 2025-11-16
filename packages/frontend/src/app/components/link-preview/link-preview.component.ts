@@ -40,16 +40,15 @@ export class LinkPreviewComponent implements OnChanges {
         : this.link
       this.hostname = new URL(this.url).hostname
       this.mediaService.getLinkPreview(this.url).then((data) => {
-        this.favicon = data.favicons.at(0)
-        console.log('dayda', data, this.favicon)
+        this.favicon = EnvironmentService.environment.externalCacheurl +
+            encodeURIComponent(data.favicons.at(0)) 
         this.loading = false
         if (data.images && data.images.length) {
           this.img = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.images[0])
         }
         if (!this.img && data.favicons && data.favicons.length) {
           this.img =
-            EnvironmentService.environment.externalCacheurl +
-            encodeURIComponent(data.favicons[data.favicons.length - 1])
+            this.favicon
         }
         let sitenamePrefix = ''
         if (data.siteName) {

@@ -12,6 +12,7 @@ import { checkPushNotificationDelivery } from './queueProcessors/checkPushNotifi
 import { generateUserKeyPair } from './queueProcessors/generateUserKeyPair.js'
 import { completeEnvironment } from './backendOptions.js'
 import { sendPostBsky } from './queueProcessors/sendPostBsky.js'
+import { processSinglePostJob } from '../atproto/workers/processSinglePostWorker.js'
 
 logger.info('started worker')
 const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
@@ -95,14 +96,26 @@ const workerProcessRemoteMediaData = new Worker(
 
 const workerProcessFirehose = completeEnvironment.enableBsky
   ? new Worker('firehoseQueue', async (job: Job) => await processFirehose(job), {
-      connection: completeEnvironment.bullmqConnection,
-      metrics: {
-        maxDataPoints: MetricsTime.ONE_WEEK * 2
-      },
-      concurrency: completeEnvironment.workers.medium,
-      // up to one minute
-      lockDuration: 60000
-    })
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2
+    },
+    concurrency: completeEnvironment.workers.medium,
+    // up to one minute
+    lockDuration: 60000
+  })
+  : null
+
+const workerProcessSinglePost = completeEnvironment.enableBsky
+  ? new Worker('processSinglePost', async (job: Job) => await processSinglePostJob(job), {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2
+    },
+    concurrency: 25,
+    // up to one minute
+    lockDuration: 60000
+  })
   : null
 
 const workerSendPushNotification = new Worker(
@@ -156,6 +169,7 @@ const workers = [
 ]
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
+  workers.push(workerProcessSinglePost as Worker)
   workers.push(workerSendPostBsky as Worker)
 }
 
@@ -186,6 +200,7 @@ const workersToLogFail = [
 ]
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
+  workersToLogFail.push(workerProcessSinglePost as Worker)
   workersToLogFail.push(workerSendPostBsky as Worker)
 }
 
@@ -207,6 +222,7 @@ export {
   workerProcessRemotePostView,
   workerProcessRemoteMediaData,
   workerProcessFirehose,
+  workerProcessSinglePost,
   workerSendPushNotification,
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,

@@ -113,6 +113,7 @@ services:
       FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
       CACHE_HOST: "cache:9000"
       BACKEND_HOST: "wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000"
+      WEBSOCKET_HOST: "wafrn-websocket-1:9000"
     volumes:
       - "caddy:/data"
       - "frontend:/var/www/html/frontend"
@@ -152,7 +153,7 @@ services:
       PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX}
       PDS_DATA_DIRECTORY: /pds
       PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
-      PDS_BLOB_UPLOAD_LIMIT: 52428800
+      PDS_BLOB_UPLOAD_LIMIT: 157286400
       PDS_DID_PLC_URL: "https://plc.directory"
       PDS_BSKY_APP_VIEW_URL: "https://api.bsky.app"
       PDS_BSKY_APP_VIEW_DID: "did:web:api.bsky.app"
@@ -179,6 +180,13 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+
+  websocket:
+    <<: *default_backend
+    deploy:
+      mode: replicated
+      replicas: 1
+    command: "npm exec tsx websocket.ts"
 
   workers:
     <<: *default_backend

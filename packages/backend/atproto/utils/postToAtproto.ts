@@ -1,7 +1,7 @@
 import { BskyAgent, RichText } from '@atproto/api'
 import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
 import fs from 'fs/promises'
-import { getPostUrlForQuote } from '../../utils/activitypub/postToJSONLD.js'
+import { getPostUrlForQuote, postToJSONLD } from '../../utils/activitypub/postToJSONLD.js'
 import RichtextBuilder from '@atcute/bluesky-richtext-builder'
 import { Main } from '@atproto/api/dist/client/types/app/bsky/richtext/facet.js'
 import { tokenize } from '@atcute/bluesky-richtext-parser'
@@ -10,6 +10,11 @@ import optimizeMedia from '../../utils/optimizeMedia.js'
 import dompurify from 'isomorphic-dompurify'
 import ffmpeg from 'fluent-ffmpeg'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { getPostAndUserFromPostId } from '../../utils/cacheGetters/getPostAndUserFromPostId.js'
+import { getLinkPreview } from 'link-preview-js'
+import crypto from 'crypto'
+import { redisCache } from '../../utils/redis.js'
+import { logger } from '../../utils/logger.js'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -29,6 +34,14 @@ export async function getVideoAspectRatio(fileName: string) {
       }
     })
   })
+}
+
+function getUserName(user?: { url: string }): string {
+  let res = user ? '@' + user.url + '@' + completeEnvironment.instanceUrl : 'anonymous'
+  if (user?.url.startsWith('@')) {
+    res = user.url
+  }
+  return res
 }
 
 async function postToAtproto(post: Post, agent: BskyAgent) {
@@ -61,9 +74,10 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
 
   const contentWarning = post.content_warning ? `[${post.content_warning.trim()}]\n` : ''
-  const tags = (await post.getPostTags()).map((elem) => `#${elem.tagName.trim().replaceAll(' ', '-')}`).join(' ')
+  const tags = (await post.getPostTags()).map((elem) => elem.tagName).join('\n');
+  const tagText = (await post.getPostTags()).map((elem) => `#${elem.tagName.trim().replaceAll(' ', '-')}`).join(' ')
   let postText: string = dompurify.sanitize(
-    (contentWarning + (post.markdownContent ? post.markdownContent.trim() : post.content.trim()) + ' ' + tags).trim(),
+    (contentWarning + (post.markdownContent ? post.markdownContent.trim() : post.content.trim()) + ' ' + tagText).trim(),
     {
       ALLOWED_TAGS: []
     }
@@ -141,6 +155,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const textOnlyShortenerLength = 15
 
   const tokens = tokenize(postText)
+
+  let res: any = {};
+
   for (const token of tokens) {
     let text = builder.text
     if (token.type === 'link') text += token.text
@@ -167,8 +184,42 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       break
     }
 
-    if (token.type === 'link') builder.addLink(token.text, token.url)
-    else builder.addText(token.raw)
+    if (token.type === 'link') {
+      builder.addLink(token.text, token.url)
+    } else if (token.type === 'autolink' && medias.length === 0) {
+      // only add a embed if theres no embed, bsky only supports 1 embed
+      builder.addLink(token.url, token.url)
+      const shasum = crypto.createHash('sha1')
+      shasum.update(token.url.toLowerCase())
+      const urlHash = shasum.digest('hex')
+      let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
+      if (!linkPreview?.title) {
+        try {
+          linkPreview = await getLinkPreview(token.url, {
+            followRedirects: 'follow',
+            headers: { 'User-Agent': completeEnvironment.instanceUrl }
+          }) as { url: string; title: string; description: string } | undefined;
+          await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+        } catch (error) {
+          logger.trace({
+            message: `Error obtaining link ${token.url}`,
+            error: error
+          })
+        }
+
+      }
+
+      if (linkPreview?.title) {
+        res.embed = {
+          $type: 'app.bsky.embed.external',
+          external: {
+            uri: linkPreview.url,
+            title: linkPreview.title,
+            description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
+          }
+        }
+      }
+    } else builder.addText(token.raw)
   }
   postText = builder.text
 
@@ -184,17 +235,32 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   })
   await rt.detectFacets(agent)
 
+  const cacheData = await getPostAndUserFromPostId(post.id)
+  const userAsker = cacheData.data?.ask?.asker
+
   builder.facets.forEach((facet) => {
     if (rt.facets) rt.facets.push(facet as unknown as Main)
     else rt.facets = [facet as unknown as Main]
   })
 
-  const sanitizedText = dompurify.sanitize(post.content, { ALLOWED_TAGS: [] })
-  let res: any = {
+  let processedContent = post.content
+  const wafrnMediaRegex =
+    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm
+
+  // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
+  processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
+  if (ask) {
+    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
+      }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
+  }
+
+  const fullText = processedContent ?? post.content;
+  res = {
+    ...res,
     text: rt.text,
     facets: rt.facets,
     createdAt: new Date(post.createdAt).toISOString(),
-    fullText: sanitizedText,
+    fullText: fullText,
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`
   }
