@@ -449,7 +449,7 @@ function camelize(str: string): string {
   });
 }
 
-function getUserName(user?: User): string {
+function getUserName(user?: User | undefined | null): string {
   let res = user
     ? "@" + user.url + "@" + completeEnvironment.instanceUrl
     : "anonymous";
