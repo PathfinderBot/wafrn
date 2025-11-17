@@ -75,7 +75,7 @@ export class PostActionsComponent implements OnChanges {
     }/profile/${userDid}/post/${parts[1]}`;
   });
   externalUrl = computed<string>(
-    () => this.bskyUrl() ?? this.post().remotePostId
+    () => this.post().remotePostId ?? this.bskyUrl()
   );
 
   // icons
