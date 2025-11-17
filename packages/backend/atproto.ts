@@ -5,8 +5,17 @@ import { Job, Queue, Worker } from "bullmq";
 import { checkCommitMentions } from "./atproto/utils/checkCommitMentions.js";
 import { logger } from "./utils/logger.js";
 import { completeEnvironment } from "./utils/backendOptions.js";
+import { redisCache } from "./utils/redis.js";
 
 //const firehose = new Firehose(`wss://bolson.bsky.dev`);
+
+const cursorCache = await redisCache.get("jetstreamCursor");
+let cursor = new Date().getTime();
+if (cursorCache) {
+  try {
+    cursor = new Date(cursorCache).getTime();
+  } catch (error) {}
+}
 
 let cachedDids = await getCacheAtDids(true);
 // const firehose = new Firehose({
@@ -24,6 +33,7 @@ const jetstream = new Jetstream({
     "app.bsky.graph.block",
     "app.bsky.feed.threadgate",
   ],
+  cursor: cursor,
 });
 
 const firehoseQueue = new Queue("firehoseQueue", {
@@ -61,13 +71,11 @@ jetstream.on("commit", async (event) => {
   }
 });
 
-jetstream.on("close", () => {
+jetstream.on("close", async () => {
   logger.warn("jetstream closed");
-  jetstream.start();
-});
-
-jetstream.on("open", () => {
-  logger.debug("Started jetstream");
+  const timeClosing = new Date().getTime();
+  await redisCache.set("jetstreamCursor", timeClosing, "EX", 300);
+  throw new Error("Jetstream closed. Forcing restart");
 });
 
 jetstream.start();
