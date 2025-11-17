@@ -66,6 +66,10 @@ jetstream.on("close", () => {
   jetstream.start();
 });
 
+jetstream.on("open", () => {
+  logger.debug("Started jetstream");
+});
+
 jetstream.start();
 
 const workerForceUpdateAtDidCache = new Worker(
