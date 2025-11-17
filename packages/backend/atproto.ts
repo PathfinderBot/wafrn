@@ -48,7 +48,6 @@ jetstream.on("commit", async (event) => {
     checkCommitMentions(event.did, commit, cacheData) ||
     commit.collection === "net.wafrn.feed.bite"
   ) {
-    logger.debug("obtaining");
     const data = {
       repo: event.did,
       operation: {
