@@ -3,7 +3,8 @@
     "commaSeparation": "rozdzielone przecinkami",
     "characters": "znaków",
     "default": "Domyślne",
-    "commit": "commit"
+    "commit": "commit",
+    "buildDate": "Czas budowy"
   },
   "login": {
     "welcomeBack": "Witaj z powrotem!",
@@ -199,7 +200,7 @@
       "articles": "Artykuły (opcja w budowie)",
       "all": "Wszystko"
     },
-    "alsoKnownAs": "[FIXME] Znany też jako",
+    "alsoKnownAs": "Zewnętrzny nick",
     "requestAccountDeletion": "Rozwiń aby usunąć konto",
     "alsoKnownAsDescription": "Migracja z innego konta (nie pisz @)",
     "theme": "Motyw",
