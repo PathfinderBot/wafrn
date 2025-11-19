@@ -75,11 +75,7 @@ export class PostActionsComponent implements OnChanges {
   });
 
   externalUrl = computed<string>(
-    () => {
-      let a = (this.bskyUrl() && this.post().remotePostId.replace(/^https?:\/\//, '').startsWith(new URL(EnvironmentService.environment.baseUrl).hostname)) ? this.bskyUrl() : this.post().remotePostId
-      console.log("fortnite", a, this.bskyUrl(), this.post());
-      return a
-    }
+    () => (this.bskyUrl() && this.post().remotePostId.replace(/^https?:\/\//, '').startsWith(new URL(EnvironmentService.environment.baseUrl).hostname)) ? this.bskyUrl() : this.post().remotePostId
   );
 
   // icons
