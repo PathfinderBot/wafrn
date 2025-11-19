@@ -6,7 +6,7 @@ services:
       # these args configure private env vars for the backend and public env vars for the frontend
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_started
       frontend:
