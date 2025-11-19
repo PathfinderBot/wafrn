@@ -70,12 +70,16 @@ export class PostActionsComponent implements OnChanges {
     if (!bskyUri) return "";
     const parts = bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
-    return `https://${
-      this.settingsService.values().atprotoLinkDestination || "bsky.app"
-    }/profile/${userDid}/post/${parts[1]}`;
+    return `https://${this.settingsService.values().atprotoLinkDestination || "bsky.app"
+      }/profile/${userDid}/post/${parts[1]}`;
   });
+
   externalUrl = computed<string>(
-    () => this.bskyUrl() ?? this.post().remotePostId
+    () => {
+      let a = (this.bskyUrl() && this.post().remotePostId.replace(/^https?:\/\//, '').startsWith(new URL(EnvironmentService.environment.baseUrl).hostname)) ? this.bskyUrl() : this.post().remotePostId
+      console.log("fortnite", a, this.bskyUrl(), this.post());
+      return a
+    }
   );
 
   // icons
@@ -132,8 +136,7 @@ export class PostActionsComponent implements OnChanges {
 
   sharePost() {
     navigator.clipboard.writeText(
-      `${EnvironmentService.environment.frontUrl}/fediverse/post/${
-        this.post().id
+      `${EnvironmentService.environment.frontUrl}/fediverse/post/${this.post().id
       }`
     );
     this.messages.add({
