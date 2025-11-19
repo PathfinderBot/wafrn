@@ -18,7 +18,10 @@ export default async function sendEmail(options: {
       html: options.body
     })
   } catch (error) {
-    logger.info(error)
+    logger.info({
+      message: `Error sending email`,
+      error: error
+    })
   }
   return res
 }

@@ -12,6 +12,7 @@ import { UtilsService } from 'src/app/services/utils.service'
 })
 export class AboutComponent implements OnInit {
   logo = EnvironmentService.environment.logo
+  disableShowingBlockedServers = EnvironmentService.environment.disableShowingBlockedServers
   blockedServers: string[] = []
   loaded = false
   loading = false
@@ -35,6 +36,11 @@ export class AboutComponent implements OnInit {
   }
 
   async loadBlockedServers() {
+    if (this.disableShowingBlockedServers) {
+      this.loaded = true
+      this.cdr.markForCheck()
+      return;
+    }
     this.loading = true
     this.blockedServers = await this.utilsService.getBlockedServers()
     this.loaded = true

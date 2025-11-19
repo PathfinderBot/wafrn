@@ -84,6 +84,8 @@ const settingKeyVariants = [
   'confettiMultiplier',
   'flatConfetti',
   'disableRewootsExploreLocal',
+  'disableRewootsDashboard',
+  'disableReplies',
   'confirmOpenCw',
   'confirmOpenCwAnnoyance',
   'disableLinkPreviews'
@@ -403,6 +405,22 @@ export class SettingsService {
       type: 'checkbox',
       default: false
     },
+    disableRewootsDashboard: {
+      key: 'disableRewootsDashboard',
+      translationKey: 'settings.disableRewootsDashboard',
+      serverKey: 'wafrn.disableRewootsDashboard',
+      localStorageKey: 'disableRewootsDashboard',
+      type: 'checkbox',
+      default: false
+    },
+    disableReplies: {
+      key: 'disableReplies',
+      translationKey: 'settings.disableReplies',
+      serverKey: 'wafrn.disableReplies',
+      localStorageKey: 'disableReplies',
+      type: 'checkbox',
+      default: false
+    },
     automaticallyExpandPosts: {
       key: 'automaticallyExpandPosts',
       translationKey: 'settings.automaticallyExpandPosts',
@@ -635,6 +653,7 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.integrations' },
         { type: 'link', value: 'menu.settings.enableBluesky', route: '/profile/enable-bluesky' }, // FIXME: make this on the page itself?
+        { type: 'link', value: 'menu.settings.migrateBluesky', route: '/profile/migrate-bluesky' },
         { type: 'key', value: 'rssOptions' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.migration' },
@@ -698,6 +717,8 @@ export class SettingsService {
         { type: 'header', value: 'settings.header.dashboardBehavior' },
         { type: 'key', value: 'defaultDashboard' },
         { type: 'key', value: 'disableRewootsExploreLocal' },
+        { type: 'key', value: 'disableRewootsDashboard' },
+        { type: 'key', value: 'disableReplies' },
         { type: 'key', value: 'automaticallyExpandPosts' },
         { type: 'key', value: 'expandQuotes' },
         { type: 'key', value: 'disableLinkPreviews' },
@@ -826,7 +847,7 @@ export class SettingsService {
           try {
             this.fediAttachments.length = 0
             this.fediAttachments.push(...JSON.parse(rawAttachments.optionValue))
-          } catch (error) {}
+          } catch (error) { }
 
           if (this.fediAttachments.length === 0) {
             this.fediAttachments.push({ name: '', value: '' })

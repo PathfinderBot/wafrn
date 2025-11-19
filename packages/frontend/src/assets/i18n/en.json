@@ -34,7 +34,13 @@
     "title": "Register",
     "welcome": "Welcome to Wafrn!",
     "manualReviewInfo": "An administrator will review your profile before you can join. This process can take a few hours.",
-    "registerButton": "Register"
+    "registerButton": "Register",
+    "welcomeRegistrationsDisabled": "Registering on Wafrn",
+    "registrationsDisabled": "{{instanceDomain}} has registrations disabled: {{privateInstanceRegistrationText}}",
+    "registerOnOtherInstance": "But because Wafrn is decentralized, you can join to another server and interact with people from this server!",
+    "selfHostInstance": "Or, you can self-host your own Wafrn instance!",
+    "findServers": "Find one on join.wafrn.net",
+    "selfHostInstructions": "Self-hosting Instructions"
   },
   "notifications": {
     "title": "Notifications",
@@ -75,10 +81,12 @@
     "faq": "FAQ",
     "more": "More",
     "silencedPosts": "Silenced Woots",
+    "bookmarkedPosts": "Bookmarked woots",
     "settings": {
       "title": "Settings",
       "follows": "Manage followers",
       "enableBluesky": "Enable Bluesky",
+      "migrateBluesky": "Migrate Bluesky account to wafrn",
       "editProfile": "Preferences and Profile",
       "themeEditor": "Theme editor",
       "mutedUsers": "Muted users",
@@ -375,6 +383,8 @@
       "unlisted": "Unlisted"
     },
     "disableRewootsExploreLocal": "Disable rewoots in Explore local feed",
+    "disableRewootsDashboard": "Disable rewoots in Dashboard",
+    "disableReplies": "Disable replies in feeds",
     "mutedWords": "Muted words",
     "mutedWordsDescription": "One word per line. Woots with these phrases will be placed behind a CW.",
     "superMutedWords": "Blocked words",
@@ -556,7 +566,7 @@
     "bookmarkPost": "Bookmark woot",
     "unbookmarkPost": "Unbookmark woot",
     "likePost": "Like woot",
-    "dislikePost": "Remove woot",
+    "dislikePost": "Remove like",
     "reportPost": "Report woot",
     "editPost": "Edit woot",
     "deletePost": "Delete woot",
@@ -568,7 +578,7 @@
     "blockUser": "Block user",
     "unblockUser": "Unblock user",
     "reportUser": "Report user",
-    "bitePost": "Bite post",
+    "bitePost": "Bite woot",
     "biteUser": "Bite user"
   },
   "post-header": {
@@ -624,7 +634,7 @@
     },
     "typing": {
       "instructions": "Type the following phrase:",
-      "verifyLabel": "Verify..."
+      "verifyLabel": "Here..."
     }
   }
 }

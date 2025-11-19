@@ -1,4 +1,11 @@
 {
+  "common": {
+    "commaSeparation": "rozdzielone przecinkami",
+    "characters": "znaków",
+    "default": "Domyślne",
+    "commit": "commit",
+    "buildDate": "Czas budowy"
+  },
   "login": {
     "welcomeBack": "Witaj z powrotem!",
     "exploreWithoutAccount": "Kliknij tutaj, by przejrzeć Gofra bez konta!",
@@ -12,13 +19,29 @@
     "forgottenPassword": "Zapomniałoś hasła? Kliknij tutaj!",
     "loginButton": "Zaloguj się"
   },
+  "register": {
+    "title": "Zarejestruj się teraz!",
+    "welcome": "Witaj w Wafrn!",
+    "manualReviewInfo": "Administracja zewalułuje twój profil po rejestracji. Może to potrwać kilka godzin",
+    "registerButton": "Zarejestruj się"
+  },
+  "notifications": {
+    "title": "Powiadomienia",
+    "loadingMore": "Ładowanie więcej powiadomień",
+    "refresh": "Odśwież"
+  },
+  "asks": {
+    "title": "Zapytania",
+    "noAsks": "Nie ma więcej zapytań",
+    "nobodyAsked": "Nikt nie pytał..."
+  },
   "menu": {
     "dashboard": "Oś czasu",
     "dashboardHover": "Zobacz oś czasu",
-    "writeWoot": "Stwórz woota",
+    "writeWoot": "Stwórz Woota",
     "notifications": "Powiadomienia",
     "explore": "Eksploruj",
-    "exploreWafrn": "Eksploruj Gofra",
+    "exploreWafrn": "Eksploruj Wafrn",
     "exploreFediverse": "Eksploruj Fediwersum",
     "unansweredAsks": "Pytania bez odpowiedzi",
     "privateMessages": "Wiadomości prywatne",
@@ -30,19 +53,20 @@
     "patreon": "Patreon",
     "kofi": "Ko-fi",
     "logout": "Wyloguj się",
+    "bookmarkedPosts": "Zapisane wooty",
     "settings": {
       "title": "Ustawienia",
       "follows": "Zarządzaj obserwującymi",
-      "enableBluesky": "Włącz mostek z Bluesky",
+      "enableBluesky": "Włącz połączenie z Bluesky",
       "editProfile": "Edytuj profil",
       "themeEditor": "Edytor motywu",
       "mutedUsers": "Wyciszeni użytkownicy",
       "mutedPosts": "Wyciszone posty",
-      "bookmarkedPosts": "Bookmarked posts [TRANSLATION PENDING]",
+      "bookmarkedPosts": "Zapisane wooty",
       "myBlockedUsers": "Zablokowani użytkownicy",
       "myBlockedServers": "Zablokowane serwery",
       "importFollows": "Importuj obserwujących",
-      "superSecretMenu": "Seekretne Menu"
+      "superSecretMenu": "Sekretne menu"
     },
     "admin": {
       "title": "Administracja",
@@ -54,6 +78,14 @@
       "stats": "Statystyki",
       "awaitingAproval": "Oczekujący na akceptację"
     }
+  },
+  "theme-editor": {
+    "title": "Edytor Motywów",
+    "templateNote": "Możesz zobaczyć przykłady i kilka wskazówek w",
+    "themeTextLabel": "Edytuj własny motyw CSS",
+    "themeTextPlaceholder": "Wpisz tutaj własny motyw CSS...",
+    "themeGuideName": "Samouczku Motywów",
+    "updateButton": "Zaktualizuj Motyw"
   },
   "editor": {
     "inReplyTo": "W odpowiedzi do:",
@@ -80,6 +112,10 @@
     "uploadMediaTooltip": "Dodaj media",
     "contentWarningTooltip": "Ostrzeżenie o treściach wrażliwych"
   },
+  "blog": {
+    "tabWoots": "Wooty",
+    "tabMedia": "Multimedia"
+  },
   "profile": {
     "security": {
       "header": "Bezpieczeństwo",
@@ -97,13 +133,13 @@
         "installInstructions": "Jeśli nie masz aplikacji uwierzytelniającej, zalecamy użycie <a href=\"https://getaegis.app/\" target=\"_blank\">Aegis</a> (Android) lub <a href=\"https://2fas.com/\" target=\"_blank\">2FAS</a> (iOS/Android)",
         "imageAltSecret": "Sekretny kod do uwierzytelnienia to '{{ secret }}'",
         "secretFallback": "Jeśli nie możesz zeskanować kodu QR, użyj sekretnego kodu '{{ secret }}' w swojej aplikacji",
-        "confirmDeleteMessage": "Czy napewno chcesz usunąć ten token? Uwaga: Usunięcie wszystkich tokenów wyłączy MFA na twoim koncie",
+        "confirmDeleteMessage": "Czy na pewno chcesz usunąć ten token? Uwaga: Usunięcie wszystkich tokenów wyłączy MFA na twoim koncie",
         "deleteSuccess": "Token usunięty",
         "verifySuccess": "Gratulacje, MFA zostało włączone na twoim koncie",
         "verifyFailed": "Weryfikacja nieudana. Sprawdź swój token, a jeśli dalej masz problem, skontaktuj się z administracją",
         "errorMessageGeneric": "Wystąpił błąd. Spróbuj ponownie, lub poproś administrację o pomoc",
         "noMfa": "MFA nie jest włączone na twoim koncie",
-        "mfaList": "Ustawiłoś poniższe tokeny:",
+        "mfaList": "Ustawione zostały poniższe tokeny:",
         "type": {
           "totpLabel": "Token"
         }
@@ -116,9 +152,225 @@
       "misc": "Inne"
     }
   },
+  "settings": {
+    "sidebar": {
+      "profile": "Profil",
+      "account": "Konto",
+      "appearance": "Wygląd",
+      "behavior": "Zachowanie",
+      "privacy": "Prywatność",
+      "mutesAndBlocks": "Wyciszenia i Blokady",
+      "miscellaneous": "Inne"
+    },
+    "header": {
+      "fediAttachments": "Atrybuty w Fediwersum",
+      "emailAndPassword": "Email i hasło",
+      "integrations": "Integracje",
+      "migration": "Migracja konta",
+      "deleteAccount": "Usuwanie Konta",
+      "appearance": "Wygląd",
+      "userInterface": "Interfejs",
+      "classicOptions": "Opcje klasyczne",
+      "animationsAndSounds": "Animacje i dźwięki",
+      "dashboardBehavior": "Zachowanie osi czasu",
+      "cwBehavior": "Zachowanie treści oznaczonych jako nieprzyzwoite",
+      "profilePrivacy": "Prywatność profilu",
+      "editor": "Edytor",
+      "followers": "Obserwujący",
+      "mutedBlockedWords": "Zablokowane i wyciszone słowa",
+      "blockBehavior": "Zachowanie blokowania",
+      "mutedBlockedUsers": "Zablokowani i wyciszeni użytkownicy",
+      "fun": "Frajda"
+    },
+    "fediPropertyKey": "Nazwa atrybutu",
+    "fediPropertyValue": "Wartość atrybutu",
+    "addFediAttachment": "Dodaj atrybut",
+    "changeAvatar": "Zmień awatar",
+    "changeHeaderImage": "Zmień baner",
+    "name": "Nazwa",
+    "description": "Opis",
+    "changePasswordTitle": "Rozwiń aby zmienić hasło",
+    "changePassword": "Zmień hasło",
+    "changePasswordDescription": "Link do zmiany hasła został wysłany na twój adres email.",
+    "changePasswordMessage": "Link do zmiany hasła został wysłany na twój adres email.",
+    "disableEmailNotifications": "Wyłącz powiadomienia email.",
+    "rssOptions": "Włącz RSS i microfront dla twojego bloga",
+    "rssOptionsOptions": {
+      "none": "Brak",
+      "articles": "Artykuły (opcja w budowie)",
+      "all": "Wszystko"
+    },
+    "alsoKnownAs": "Zewnętrzny nick",
+    "requestAccountDeletion": "Rozwiń aby usunąć konto",
+    "alsoKnownAsDescription": "Migracja z innego konta (nie pisz @)",
+    "theme": "Motyw",
+    "themeDescription": "Motywy zmieniają kolory, niektóre wpływają na ciemny i jasny tryb.",
+    "lightDarkMode": "Tryb Jasny/Ciemny ",
+    "lightDarkModeDescription": "Tryb Jasny/Ciemny. Niektóre motywy nie działają z tymi trybami",
+    "additionalStyleModes": "Dodatkowa stylizacja",
+    "additionalStyleModesDescription": "Dodatkowe opcje dla układu oraz klasycznego interfejsu.",
+    "useOtherUserCustomThemes": "Używaj motywów innych blogów",
+    "useOtherUserCustomThemesDescription": "Używaj motywów CSS które zostały zdefiniowane w innych blogach. Własne motywy nie są moderowane i mogą zawierać elementy migoczące",
+    "askToUseOtherUserCustomThemes": "Pytaj czy używać motywów innych blogów",
+    "askToUseOtherUserCustomThemesDescription": "Otrzymasz pytanie jeśli wejdziesz na bloga z własnym motywem.",
+    "uiLanguage": "Język interfejsu użytkownika",
+    "uiLanguageDescription": "Wafrn jest tłumaczony przez wolontariuszy. Sprawdź <a href=\"https://codeberg.org/wafrn/wafrn\">kod źródłowy</a> w jaki sposób możesz pomóc!",
+    "forceClassicLogo": "Wymuś klasyczne logo",
+    "forceClassicVideoPlayer": "Wymuś klasyczny odtwarzacz wideo",
+    "forceClassicAudioPlayer": "Wymuś klasyczny odtwarzacz dźwięków",
+    "forceClassicMediaView": "Wymuś klasyczny odtwarzacz obrazów",
+    "disableConfetti": "Wyłącz konfetti gdy klikasz niektóre przyciski",
+    "disableConfettiDescription": "Domyślnie konfetti wybucha podczas polubień, reakcji, wootowania, edycji i podbić.",
+    "enableConfettiReceivingLike": "Włącz konfetti gdy otrzymasz polubienie (PvP)",
+    "disableSounds": "Wyłącz dźwięk gdy klikasz niektóre przyciski",
+    "disableSoundsDescription": "Domyślnie dźwięki odtwarzają się podczas polubień, reakcji, wootowania, edycji i podbić.",
+    "defaultDashboard": "Domyślna strona główna",
+    "defaultDashboardOptions": {
+      "dashboard": "Oś czasu",
+      "exploreLocal": "Eksploruj Wafrn"
+    },
+    "automaticallyExpandPosts": "Automatycznie rozwiń wooty",
+    "expandQuotes": "Nie zwijaj cytatów",
+    "atprotoLinkDestination": "Przekierowanie linków Atproto",
+    "atprotoLinkDestinationDescription": "Strona gdzie zostaną wyświetlone wooty Atproto. Domyślnie jest 'bsky.app'.",
+    "disableCW": "Wyłącz ostrzeżenia przed treściami nieprzyzwoitymi",
+    "disableNSFWFilter": "Wyłącz filtr multimediów oznaczonych jako nieprzyzwoite",
+    "hideNoDescriptionMedia": "Ukryj za filtrem multimedia bez tekstu alternatywnego",
+    "disableForceAltText": "Zezwól na przesyłanie multimediów bez tekstu alternatywnego",
+    "disableForceAltTextDescription": "Włącz tę opcję jeśli nie masz RiGCz-u",
+    "manuallyAcceptsFollows": "Ręcznie akceptuj obserwujących",
+    "enableAsks": "Włącz zapytania",
+    "enableAnonymousAsks": "Włącz anonimowe zapytania",
+    "hideProfileNotLoggedIn": "Ukryj twój profil dla niezalogowanych",
+    "hideProfileNotLoggedInDescription": "Dotyczy tylko tego Wafrna. Niezalogowani mogą zobaczyć twoje wooty. Nie dotyczy to innych instancji oraz blueskaja",
+    "hideFollows": "Ukryj obserwujących i obserwowanych ",
+    "displayMentionsOfBlockedUsersFromOtherUsers": "Pokaż wooty ze wzmiankami zablokowanych użytkowników",
+    "defaultPostEditorPrivacy": "Domyślna wartość prywatności w edytorze",
+    "postEditorPrivacyOptions": {
+      "public": "Publiczny",
+      "followersOnly": "Tylko obserwujący",
+      "instanceOnly": "Tylko ta instancja",
+      "unlisted": "Niepubliczne"
+    }
+  },
+  "dialog": {
+    "confirm": "Potwierdź",
+    "cancel": "Anuluj"
+  },
   "ask-dialog-content": {
-    "askAnonymously": "Anonimowe pytanie",
+    "askAnonymously": "Zadaj pytanie anonimowo",
     "askFormLabel": "Pytanie",
     "askButtonText": "Zapytaj"
+  },
+  "messages": {
+    "deleteRewootSuccess": "Podbicie zostało usunięte.",
+    "likePostSuccess": "Woot został polubiony.",
+    "unlikePostSuccess": "Polubienie zostało usunięte.",
+    "bookmarkPostSuccess": "Woot został zapisany.",
+    "unbookmarkPostSuccess": "Woot został usunięty z zapisanych.",
+    "rewootPostSuccess": "Woot został podbity.",
+    "followMessageSuccess": "Obserwujesz tego użytkownika.",
+    "cancelFollowMessageSuccess": "Anulowano prośbę o obserwację użytkownika.",
+    "unfollowMessageSuccess": "Nie obserwujesz już tego użytkownika.",
+    "copyLocalLinkSuccess": "Skopiowano link do schowka.",
+    "copyRemoteLinkSuccess": "Skopiowano link zewnętrzny do schowka.",
+    "silencePostSuccess": "Wyciszono powiadomienia dla tego woota.",
+    "unsilencePostSuccess": "Będziesz otrzymywać powiadomienia dla tego woota.",
+    "blockUserSuccess": "Zablokowano tego użytkownika.",
+    "unblockUserSuccess": "Odblokowano tego użytkownika.",
+    "muteUserSuccess": "Wyciszono tego użytkownika.",
+    "unmuteUserSuccess": "Odciszono użytkownika.",
+    "blockServerSuccess": "Zablokowano server.",
+    "reportUserSuccess": "Stworzono raport dla tego użytkownika.",
+    "reportPostSuccess": "Stworzono raport dla tego woota.",
+    "genericError": "Coś poszło nie tak! Sprawdź czy masz połączenie internetowe. ",
+    "notRewootableError": "Nie udało się podbić woota, podbicia wyłączone przez autora.",
+    "bitePostSuccess": "Woot został ugryziony!",
+    "biteUserSuccess": "Użytkownik został ugryziony!"
+  },
+  "keyboard-shortcuts": {
+    "keyboardShortcuts": "Skróty Klawiszowe",
+    "groupNavigation": "Nawigacja",
+    "scrollDown": "Przewiń w dół",
+    "scrollUp": "Przewiń w górę",
+    "scrollDownPage": "Przewiń w dół o stronę",
+    "scrollUpPage": "Przewiń w górę o stronę",
+    "nextPost": "Następny woot",
+    "previousPost": "Poprzedni woot",
+    "groupPostAction": "Akcje Wootów",
+    "likePost": "Polub woot",
+    "rewootPost": "Podbij woot",
+    "replyPost": "Odpowiedz na woot",
+    "quotePost": "Zacytuj woota",
+    "groupMisc": "Inne",
+    "openEditor": "Otwórz edytor",
+    "viewKeyboardShortcuts": "Zobacz skróty klawiszowe",
+    "unbound": "nieprzypisany",
+    "additionalOptions": "Dodatkowe Opcje",
+    "smoothScroll": "Płynne przewijanie"
+  },
+  "post-actions": {
+    "shareUrl": "Skopjuj link",
+    "shareExternalUrl": "Skopjuj link zewnętzrzny",
+    "viewOnAtproto": "Zobacz na Atproto",
+    "forceRefederate": "Wymuś ponowną federację",
+    "viewOriginalPost": "Zobacz orginał",
+    "replyPost": "Odpowiedz na woota",
+    "rewootPost": "Podbij woota",
+    "deleteRewootPost": "Cofnij Podbicie",
+    "quotePost": "Cytuj woota",
+    "bookmarkPost": "Zapisz woota",
+    "unbookmarkPost": "Usuń z zapisanych",
+    "likePost": "Polub woota",
+    "dislikePost": "Cofnij polubienie",
+    "reportPost": "Zgłoś woota",
+    "editPost": "Edytuj woota",
+    "deletePost": "Usuń woota",
+    "silenceInteractions": "Wycisz powiadomienia",
+    "silenceReplyNotifications": "Wycisz odpowiedzi",
+    "unsilenceReplyNotifications": "Odcisz odpowiedzi",
+    "muteUser": "Wycisz użytkownika",
+    "unmuteUser": "Odcisz użytkownika",
+    "blockUser": "Zablokuj użytkownika",
+    "unblockUser": "Odblokuj użytkownika",
+    "reportUser": "Zgłoś użytkownika",
+    "bitePost": "Ugryź woota",
+    "biteUser": "Ugryź użytkownika"
+  },
+  "post-header": {
+    "follow": "Obserwuj",
+    "awaitingApproval": "Oczekiwanie na akceptację",
+    "viewPost": "Wyświetl woot"
+  },
+  "post-fragment": {
+    "mutedWords": "Woot zawiera zablokowane słowa:",
+    "mediaContentWarning": "Woot zawiera ostrzerzenie:",
+    "mediaNsfw": "Multimedia oznaczone są jako nieprzyzwoite",
+    "replyingTo": "Wzmianki: "
+  },
+  "media": {
+    "noAltText": "Brak tekstu alternatywnego",
+    "sensitiveContent": "Te multimedia zawierają niestosowne treści",
+    "manuallyHidden": "Multimedia zostały ręcznie ukryte"
+  },
+  "page-not-found": {
+    "title": "404: Nie znaleziono strony",
+    "subtitle": "Niczego tutaj nie ma.",
+    "couldNotFind": "nie prowadzi do poprawnej strony",
+    "returnHome": "Wróć do strony głównej"
+  },
+  "games": {
+    "common": {
+      "moves": "Ruchów"
+    },
+    "fifteen": {
+      "title": "Piętnastka",
+      "newBoard": "Nowa Plansza",
+      "resetBoard": "Zresetuj Planszę"
+    },
+    "typing": {
+      "instructions": "Wpisz podaną frazę:",
+      "verifyLabel": "Tutaj..."
+    }
   }
 }

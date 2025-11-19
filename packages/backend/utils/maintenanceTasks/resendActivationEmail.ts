@@ -6,16 +6,21 @@ import sendEmail from '../sendEmail.js'
 
 // lets delete old users that are not activated
 
+/*
 await User.destroy({
   where: {
     activated: false,
     emailVerified: false,
     email: { [Op.ne]: null },
+    banned: {
+      [Op.ne]: null
+    },
     createdAt: {
-      [Op.lt]: new Date(new Date().setMonth(new Date().getMonth() - 2))
+      [Op.lt]: new Date(new Date().setMonth(new Date().getMonth() - 1))
     }
   }
 })
+*/
 
 const usersNotVerified = await User.scope('full').findAll({
   where: {
@@ -24,6 +29,9 @@ const usersNotVerified = await User.scope('full').findAll({
     banned: false,
     email: {
       [Op.ne]: null
+    },
+    createdAt: {
+      [Op.gt]: new Date(new Date().setMonth(new Date().getMonth() - 1))
     }
   }
 })
@@ -39,7 +47,7 @@ for await (const user of usersNotVerified.filter((elem) => !!elem)) {
   const activationLink = `${completeEnvironment.instanceUrl}/activate/${encodeURIComponent(user.email)}/${user.activationCode}`
   const emailInfo = await sendEmail({
     email: user.email as string,
-    subject: `${user.url} your email is still not verified!`,
+    subject: `${user.url}, apologies on our side! your email is still not verified!`,
     body: `\
 <p>Hello ${user.url}, you registered on ${completeEnvironment.instanceUrl} but never verified your email!</p>
 <p>If you would like to activate your account, you can <a href="${activationLink}">verify your email</a>.</p>

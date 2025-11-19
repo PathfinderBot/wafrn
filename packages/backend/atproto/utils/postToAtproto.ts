@@ -11,6 +11,10 @@ import dompurify from 'isomorphic-dompurify'
 import ffmpeg from 'fluent-ffmpeg'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { getPostAndUserFromPostId } from '../../utils/cacheGetters/getPostAndUserFromPostId.js'
+import { getLinkPreview } from 'link-preview-js'
+import crypto from 'crypto'
+import { redisCache } from '../../utils/redis.js'
+import { logger } from '../../utils/logger.js'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -151,6 +155,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const textOnlyShortenerLength = 15
 
   const tokens = tokenize(postText)
+
+  let res: any = {};
+
   for (const token of tokens) {
     let text = builder.text
     if (token.type === 'link') text += token.text
@@ -177,8 +184,42 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       break
     }
 
-    if (token.type === 'link') builder.addLink(token.text, token.url)
-    else builder.addText(token.raw)
+    if (token.type === 'link') {
+      builder.addLink(token.text, token.url)
+    } else if (token.type === 'autolink' && medias.length === 0) {
+      // only add a embed if theres no embed, bsky only supports 1 embed
+      builder.addLink(token.url, token.url)
+      const shasum = crypto.createHash('sha1')
+      shasum.update(token.url.toLowerCase())
+      const urlHash = shasum.digest('hex')
+      let linkPreview: { url: string; title: string; description: string } | undefined = JSON.parse(await redisCache.get('linkPreviewCache:' + urlHash) ?? '{}')
+      if (!linkPreview?.title) {
+        try {
+          linkPreview = await getLinkPreview(token.url, {
+            followRedirects: 'follow',
+            headers: { 'User-Agent': completeEnvironment.instanceUrl }
+          }) as { url: string; title: string; description: string } | undefined;
+          await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(linkPreview), 'EX', linkPreview ? 3600 * 24 : 300)
+        } catch (error) {
+          logger.trace({
+            message: `Error obtaining link ${token.url}`,
+            error: error
+          })
+        }
+
+      }
+
+      if (linkPreview?.title) {
+        res.embed = {
+          $type: 'app.bsky.embed.external',
+          external: {
+            uri: linkPreview.url,
+            title: linkPreview.title,
+            description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
+          }
+        }
+      }
+    } else builder.addText(token.raw)
   }
   postText = builder.text
 
@@ -214,7 +255,8 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
 
   const fullText = processedContent ?? post.content;
-  let res: any = {
+  res = {
+    ...res,
     text: rt.text,
     facets: rt.facets,
     createdAt: new Date(post.createdAt).toISOString(),

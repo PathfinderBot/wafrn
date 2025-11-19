@@ -174,13 +174,18 @@ async function processFirehose(job: Job) {
           }
           case 'app.bsky.feed.post': {
             const postBskyUri = `at://${job.data.repo}/${operation.path}`
-            await getAtProtoThread(postBskyUri)
+            const postCreated = await getAtProtoThread(postBskyUri)
+            if(!postCreated) {
+              logger.debug(`Failed to obtain post: ${postBskyUri}`)
+            }
             break
           }
           case 'app.bsky.feed.repost': {
             // we do not need to get all the replies, making this operation a lrecordot faster for big threads
             if (!record.subject) {
-              logger.error(record)
+              logger.error({
+                message: `Missing basic info for rewoot`,
+                record})
               break
             }
             const postToBeRewooted = await getAtProtoThread(record.subject.uri, false, false)
@@ -228,7 +233,10 @@ async function processFirehose(job: Job) {
                   error: error
                 })
               }
+            } else {
+              logger.debug(`Failed to obtain rewoot: ${record.subject.uri}`)
             }
+
             break
           }
           case 'app.bsky.graph.follow': {
