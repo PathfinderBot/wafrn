@@ -7,7 +7,7 @@ async function sendPostToInboxes(job: Job) {
   const localUser = job.data.petitionBy;
   const objectToSend = job.data.objectToSend;
   //at some point we should remove the array thing but at the same time yeah
-  logger.debug({ message: "sendpostToInbox", inbox, localUser });
+  logger.debug({ message: "sendpostToInbox", inbox, localUser: localUser.url });
   const tmp = await postPetitionSigned(objectToSend, localUser, inbox);
   return true;
 }
