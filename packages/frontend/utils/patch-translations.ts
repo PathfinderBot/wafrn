@@ -28,12 +28,14 @@ function patchEntries(from: Object, to: Object, options: PatchOptions) {
     const fromValue = fromEntries[i][1]
 
     const missingKey = fromKey !== toEntries.at(i)?.at(0)
-    if (!missingKey) continue
 
     if (typeof fromValue === 'object') {
-      toEntries.splice(i, 0, [fromKey, {}])
+      if (missingKey) {
+        toEntries.splice(i, 0, [fromKey, {}])
+      }
+
       toEntries[i][1] = patchEntries(fromValue, toEntries[i][1], options)
-    } else {
+    } else if (missingKey) {
       toEntries.splice(i, 0, [fromKey, options.placeholderTransformer(fromValue)])
     }
   }
