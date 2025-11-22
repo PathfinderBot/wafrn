@@ -12,6 +12,7 @@ export interface BlogDetails {
   descriptionMarkdown: string
   remoteId: string
   avatar: string
+  bskyDid?: string
   federatedHostId: string
   headerImage: string
   followingCount: number

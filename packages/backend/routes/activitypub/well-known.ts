@@ -55,7 +55,7 @@ function wellKnownRoutes(app: Application) {
             },
             {
               rel: 'http://ostatus.org/schema/1.0/subscribe',
-              template: `${completeEnvironment.frontendUrl}/fediverse/authorize_interaction?uri={uri}`
+              template: `${completeEnvironment.frontendUrl}/authorize_interaction?uri={uri}`
             }
           ]
         }
