@@ -27,7 +27,6 @@ const routes: Routes = [
           ),
         //loadChildren: () =>
       },
-
       {
         path: "register",
         loadChildren: () =>
@@ -206,4 +205,4 @@ const routes: Routes = [
   providers: [{ provide: RouteReuseStrategy, useClass: CustomReuseStrategy }],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

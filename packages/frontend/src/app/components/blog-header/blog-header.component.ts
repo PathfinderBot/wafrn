@@ -158,7 +158,27 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     }
   }
 
+  async getFollowLoggedOutComponent(): Promise<typeof FollowLoggedOutComponent> {
+    const { FollowLoggedOutComponent } = await import('../follow-logged-out/follow-logged-out.component')
+    return FollowLoggedOutComponent
+  }
+
   async followUser(id: string) {
+    if (!this.loginService.loggedIn.value) {
+      const blog = this.blogDetails()
+      this.dialogService.open(await this.getFollowLoggedOutComponent(), {
+        width: '600px',
+        data: {
+          bskyDid: blog?.bskyDid,
+          url: blog?.url,
+          name: blog?.name,
+          remoteId: blog?.remoteId
+        }
+      })
+
+      return;
+    }
+
     const response = await this.postService.followUser(id)
     if (response) {
       this.messages.add({

@@ -464,7 +464,14 @@
       "blockAccountDescription": "Hide woots and replies by this user or woots and replies mentioning this user. They will not be able to interact with your woots.",
       "blockAccountLabel": "Reason (optional)",
       "unblockAccountTitle": "Unblock account",
-      "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots."
+      "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots.",
+      "followLoggedOutTitle": "Follow {{name}}",
+      "followLoggedOutDescription": "To continue, you need to follow from your Fediverse account.",
+      "followLoggedOutLabel": "Fediverse account username (e.g. @example@example.com)",
+      "followLoggedOutBsky": "Not on Fediverse but on Bluesky?",
+      "followLoggedOutBskyNoFedi": "To continue, click the button below. This will redirect you to bsky.app.",
+      "followLoggedOutFollow": "Continue to your server",
+      "followLoggedOutFollowBsky": "Follow {{name}} on Bluesky"
     },
     "post-fragment": {
       "confirmOpenCwTitle": "Confirm opening content warning",
