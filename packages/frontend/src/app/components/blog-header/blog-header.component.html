@@ -179,8 +179,18 @@
     </p>
   </details>
   }
+  @if (blog?.migratedTo) {
+  <app-info-card class="mt-2" type="caution" [iconOverride]="movedAccountIcon">
+    This user has moved to a new account:
+    <span class="h-card">
+      <a href="u-url mention" [href]="migratedToUrl">
+        {{blog?.migratedTo?.startsWith('@') ? '' : '@'}}{{blog?.migratedTo}}
+      </a>
+    </span>
+  </app-info-card>
+  }
   @if (blog?.url?.startsWith('@')) {
-  <app-info-card [type]="loggedIn ? 'info' : 'caution'">
+  <app-info-card class="mt-2" [type]="loggedIn ? 'info' : 'caution'">
     {{
     loggedIn
     ? 'As this user is from a remote instance, the shown information may be incomplete.'
