@@ -1130,8 +1130,8 @@ function userRoutes(app: Application) {
         followed = await followed;
         followers = await followers;
         let migratedTo: User | null = null;
-        let splitMigratedUrl = blog.userMigratedTo.split('/');
         if (blog.userMigratedTo) {
+          let splitMigratedUrl = blog.userMigratedTo.split('/');
           migratedTo = await User.findOne({
             where: {
               [Op.or]: [
