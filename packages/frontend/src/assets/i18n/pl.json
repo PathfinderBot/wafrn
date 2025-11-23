@@ -1,12 +1,16 @@
 {
   "common": {
     "commaSeparation": "rozdzielone przecinkami",
+    "words": "słów",
+    "word": "słowo",
     "characters": "znaków",
+    "character": "znak",
     "default": "Domyślne",
     "commit": "commit",
     "buildDate": "Czas budowy"
   },
   "login": {
+    "title": "Zaloguj się",
     "welcomeBack": "Witaj z powrotem!",
     "exploreWithoutAccount": "Kliknij tutaj, by przejrzeć Gofra bez konta!",
     "dontHaveAccount": "Nie masz konta?",
@@ -14,16 +18,29 @@
     "checkSpam": "Jeśli masz problemy z rejestracją, sprawdź swój folder spam.",
     "email": "Email",
     "password": "Hasło",
+    "mfaNextStep": "jeszcze jeden krok...",
     "mfaToken": "Token",
     "mfaTokenEnter": "Enter your token from your Authenticator application",
-    "forgottenPassword": "Zapomniałoś hasła? Kliknij tutaj!",
-    "loginButton": "Zaloguj się"
+    "forgottenPassword": "Zresetuj hasło",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "loginButton": "Zaloguj się",
+    "checkEmail": "Sprawdź swój email",
+    "checkEmailLine1": "Wysłaliśmy email. Jeśli nie ma wiadomości w skrzynce sprawdź swój SPAM.",
+    "checkEmailLine2": "Jeśli masz jakiś problem napisz do admina instancji. Email możesz znaleźć <a href=\"/about\">tutaj.</a>",
+    "alreadyLoggedIn": "Konto jest już zalogowane."
   },
   "register": {
     "title": "Zarejestruj się teraz!",
     "welcome": "Witaj w Wafrn!",
     "manualReviewInfo": "Administracja zewalułuje twój profil po rejestracji. Może to potrwać kilka godzin",
-    "registerButton": "Zarejestruj się"
+    "registerButton": "Zarejestruj się",
+    "welcomeRegistrationsDisabled": "Rejestracja na Wafrn",
+    "registrationsDisabled": "Instancja {{instanceDomain}} ma wyłączone rejestracje: {{privateInstanceRegistrationText}}",
+    "registerOnOtherInstance": "Ale wafrn jest zdecentralizowany i możesz dołączyć do innej instancji, i komunikować się z użytkownikami tej instancji.",
+    "selfHostInstance": "Albo też możesz postawić własny serwer Wafrn",
+    "findServers": "Znajdź instancje na join.wafrn.net",
+    "selfHostInstructions": "Instrukcja tworzenia własnej instancji"
   },
   "notifications": {
     "title": "Powiadomienia",
@@ -36,6 +53,8 @@
     "nobodyAsked": "Nikt nie pytał..."
   },
   "menu": {
+    "login": "Zaloguj się",
+    "register": "Zarejestruj się",
     "dashboard": "Oś czasu",
     "dashboardHover": "Zobacz oś czasu",
     "writeWoot": "Stwórz Woota",
@@ -46,23 +65,34 @@
     "unansweredAsks": "Pytania bez odpowiedzi",
     "privateMessages": "Wiadomości prywatne",
     "search": "Szukaj",
+    "profile": "Profil",
     "myBlog": "Mój blog",
     "about": "O nas",
     "privacy": "Polityka prywatności",
     "source": "Zobacz kod żródłowy!",
     "patreon": "Patreon",
     "kofi": "Ko-fi",
+    "inbox": "Skrzynka",
+    "otherAccounts": "Inne konta",
+    "addAccount": "Dodaj konto",
     "logout": "Wyloguj się",
+    "viewBlog": "Zobacz blog",
+    "switchToAlt": "Przełącz konto",
+    "faq": "FAQ",
+    "more": "Więcej",
+    "silencedPosts": "Wyciszone wooty",
     "bookmarkedPosts": "Zapisane wooty",
     "settings": {
       "title": "Ustawienia",
       "follows": "Zarządzaj obserwującymi",
       "enableBluesky": "Włącz połączenie z Bluesky",
+      "migrateBluesky": "Przenieś konto Bluesky do Wafrn",
       "editProfile": "Edytuj profil",
       "themeEditor": "Edytor motywu",
       "mutedUsers": "Wyciszeni użytkownicy",
       "mutedPosts": "Wyciszone posty",
       "bookmarkedPosts": "Zapisane wooty",
+      "followedHashtags": "Obserwowane hasztagi",
       "myBlockedUsers": "Zablokowani użytkownicy",
       "myBlockedServers": "Zablokowane serwery",
       "importFollows": "Importuj obserwujących",
@@ -88,18 +118,26 @@
     "updateButton": "Zaktualizuj Motyw"
   },
   "editor": {
+    "editingLabel": "Edytowanie woota",
+    "askReplyLabel": "Odpowiadanie na pytanie",
     "inReplyTo": "W odpowiedzi do:",
     "quoteButton": "Zacytuj woota",
     "publishWoot": "Opublikuj woota",
     "directMessageWarning": "Administracja twojego serwera oraz serwera odbiorcy mają dostęp do tych wiadomości.",
     "unlistedWarning": "Prywatność woota jest ustawiona jako niepubliczna. Nie będzie on widoczny w hasztagach, wynikach wyszukiwania oraz innych opcjach odkrywania. Nie jest to rekomendowane dla wootów, które mają dotrzeć do szerszej publiki.",
+    "directMessageWithQuoteWarning": "Zacytowani zostaną powiadomieni wzmianką",
     "sensitivePlaceholder": "Jakie treści wrażliwe są w tym woocie?",
     "wootQuoteBoxLabel": "Wklej link woota, który chcesz zacytować. Może być to link zewnętrzny lub link z Gofra.",
     "wootQuoteBoxPlaceholder": "Wklej link woota",
     "wootQuoteConfirmButton": "Dodaj woota jako cytat",
     "wootTextLabel": "Treść woota",
     "wootTextPlaceholder": "Zacznij pisać...",
+    "uploadMediaIndicator": "Upuść plik tutaj aby przesłać",
+    "bskyLengthWarning": "Tekst powyżej 300 znaków będzie zastąpiony linkem do wafrn",
+    "bskyLengthNotice": "Dotyczy się to tylko Blueskaja. Na razie jest to tylko przybliżenie!",
+    "bskyLengthLabel": "Limit znaków Blueskaja",
     "altTextFieldLabel": "Opis załącznika",
+    "altTextFieldLabelVideo": "Opis wideo",
     "altTextFieldPlaceholder": "Opis. WYPEŁNIJ TO!",
     "isNSFWToggle": "Treści wrażliwe",
     "mediaCountMastodonWarning": "UWAGA! KAŻDE KOLEJNE ZAŁĄCZNIKI NIE WYŚWIELĄ SIĘ UŻYTKOWNIKOM MASTODONA",
@@ -110,13 +148,44 @@
     "ariaLabelWootPrivacy": "Zmień ustawienia prywatności woota",
     "ariaLabelQuoteSetter": "Enable the quote setter",
     "uploadMediaTooltip": "Dodaj media",
-    "contentWarningTooltip": "Ostrzeżenie o treściach wrażliwych"
+    "contentWarningTooltip": "Ostrzeżenie o treściach wrażliwych",
+    "insertEmojiTooltip": "Wstaw emoji",
+    "hiddenMentionsTooltip": "Inni wspomnieni użytkownicy",
+    "editorGuide": "Nie wiesz jak formatować tekst? Sprawdź <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">instrukcję!</a>",
+    "usernameLabel": "Wootujesz jako",
+    "noResults": "Brak wyników"
   },
   "blog": {
     "tabWoots": "Wooty",
     "tabMedia": "Multimedia"
   },
   "profile": {
+    "profile": {
+      "chooseAvatar": "Wybierz inny awatar",
+      "chooseHeader": "Wybierz baner",
+      "changeDisplayName": "Wyświetlany nick (może zawierać emoji)",
+      "changeBio": "Twój opis. Może zawierać emoji i używać markdown.",
+      "extraInfoHead": "Dodatkowe informacji (tylko na Fediwersum)",
+      "addAttachment": "Dodaj atrybut",
+      "fieldPropertyName": "Nazwa atrybutu",
+      "fieldPropertyValue": "Wartość atrybutu"
+    },
+    "preferences": {
+      "appearance": "Wygląd",
+      "colorScheme": "Motyw Kolorów",
+      "theme": "Tryb",
+      "additionalStyleModes": "Dodatkowe Tryby Motywów",
+      "language": "Język",
+      "appLanguage": "Język Aplikacji",
+      "notificationFilters": "Filtry powiadomień",
+      "showNotificationsFrom": "Pokaż powiadomienia",
+      "notifyFrom": {
+        "everyone": "od wszystkich",
+        "followers": "od obserwujących",
+        "following": "od obserwowanych",
+        "mutual": "jeśli wzajemnie się obserwujecie"
+      }
+    },
     "security": {
       "header": "Bezpieczeństwo",
       "passwordChange": "Zresetuj hasło",
@@ -145,12 +214,39 @@
         }
       }
     },
+    "other": {
+      "movingFromAccount": "Przeniesie z innego konta. (bez wpisania @)'",
+      "wordsThatWillAutoCwPosts": "Słowa które będę schowane za treściami nieprzyzwoitymi.",
+      "superMutedWords": "Zblokowane słowa. Wooty z tymi słowami nie pokażą się (BĄDŹ OSTROŻNY)",
+      "availableEmoji": "Dostępne Emoji",
+      "rollToCrash": "Rzuć kośćmi aby zawiesić przeglądarkę",
+      "rollSurvived": "Przetrwano!",
+      "rollDied": "NIE GRAJ ZE ŚMIERCIĄ!",
+      "rollDiedCountPrefix": "Rzutów:"
+    },
+    "bsky": {
+      "psa1": "Integracja z Blueskajem jest experymentalna. Rzeczy się zepsują.",
+      "psa2_1": "Sprawdź",
+      "psa2_2": "FAQ",
+      "psa2_3": "aby dowiedzieć się co działa z co nie.",
+      "psa3": "W przyszłości mamy nadzieję że umieścimy tutaj ustawienia związane z Blueskajem, takie jak zmiana nazwy."
+    },
+    "migrate": {
+      "psa1": "Aby przenieść konto kliknij",
+      "psa2": "tutaj"
+    },
+    "delete": {
+      "psa1": "Konto zostanie oznaczone jako nieaktywne. Po 30 dniach będzie skasowane BEZPOWROTNIE!",
+      "psa2": "Aby potwierdzić że to ty, wpisz hasło",
+      "button": "USUŃ KONTO"
+    },
     "tabHeaders": {
       "profile": "Profil",
       "preferences": "Preferencje",
       "privacySecurity": "Prywatność i Bezpieczeństwo",
       "misc": "Inne"
-    }
+    },
+    "updateButton": "Zaktualizuj Profil"
   },
   "settings": {
     "sidebar": {
@@ -251,11 +347,113 @@
       "followersOnly": "Tylko obserwujący",
       "instanceOnly": "Tylko ta instancja",
       "unlisted": "Niepubliczne"
-    }
+    },
+    "disableRewootsExploreLocal": "Wyłącz podbicia dla Eksploracji Wafrn",
+    "disableRewootsDashboard": "Wyłącz podbicia dla Osi Czasu",
+    "disableReplies": "Wyłącz odpowiedzi na wszystkich osiach czasu.",
+    "mutedWords": "Wyciszone słowa",
+    "mutedWordsDescription": "Jedno słowo na linię. Wooty z wyciszonymi słowami będą schowane jako treści nieprzyzwoite",
+    "superMutedWords": "Zablokowane słowa",
+    "superMutedWordsDescription": "Jedno słowo na linię. Wooty z tymi słowami nie będą się wyświetlać.",
+    "hideQuotes": "Ukryj cytaty",
+    "hideQuotesOptions": {
+      "cwDisabledQuotesUsers": "Oznacz jako nieprzyzwoite, jeśli cytat pochodzi od użytkowników dla których zostały wyciszone cytaty",
+      "cwUnfollowedOrDisabledQuotesUsers": "Oznacz jako nieprzyzwoite jeśli pochodzi od użytkowników których nie obserwujesz.",
+      "hidePostsDisabledQuotesUsers": "Zablokuj cytaty jeśli pochodzi od użytkowników których nie obserwujesz."
+    },
+    "replaceAIWithCocaine": "Zastąp „AI” innym słowem",
+    "replaceAIWord": "Słowo do podmianki",
+    "postReplyBarOrder": "Kolejność ikon pod Wootami",
+    "postReplyBarOrderDescription": "Niektóre elementy są widoczne wtedy i tylko wtedy gdy wooty został napisany przez ciebie.",
+    "postActionsButtonBarOrder": "Kolejność ikon w manu akcji Woota",
+    "postActionsButtonBarOrderDescription": "Ikony pokazane w menu akcji woota. Widoczność niektórych elementów zależna jest czy woot został napisany przez ciebie.",
+    "confettiOptions": "Konfetti",
+    "confettiMultiplier": "Mnożnik konfetti",
+    "confettiMultiplierDescription": "Powiela efekt konfetti. Duża wartość może zamrozić twoją przeglądarkę",
+    "flatConfetti": "Płaskie konfetti",
+    "flatConfettiDescription": "Wyłącza efekty trójwymarowe dla konfetti",
+    "confettiTestAreaDescription": "Wypróbuj efekt dla różnych interakcji:",
+    "confettiType": "Typ",
+    "confettiTestLocational": "Testuj pod myszą",
+    "confettiTestGeneric": "Testuj obrzeża ekranu",
+    "confirmOpenCw": "Pokaż wyskakujące okienko przed otwarciem treści nieprzyzwoitych",
+    "confirmOpenCwDescription": "Gdy otworzysz bezmyślnie treści nieprzyzwoite.",
+    "confirmOpenCwAnnoyance": "Typ przeszkadzajki",
+    "confirmOpenCwAnnoyanceOptions": {
+      "none": "Tylko pytanie",
+      "timeout": "Opóźnienie dwu sekundowe",
+      "typing": "Wpisz angielskie zdanie (ZŁOWIESZCZE)",
+      "fifteen": "Rozwiąż układankę piętnastkę (SADYSTYCZNE)"
+    },
+    "disableLinkPreviews": "Wyłącz podgląd odnośników",
+    "disableLinkPreviewsDescription": "Wyłącza pole pod Wootem z podglądem odnośnika"
   },
   "dialog": {
     "confirm": "Potwierdź",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "close": "Zamknij",
+    "bluesky": {
+      "generateInviteCodeWarningTitle": "Uwaga",
+      "generateInviteCodeWarning": "Wygenerowanie kodu zaproszenia BEZPOWROTNIE usunie wszytke powiązane konta Bluesky"
+    },
+    "post-header": {
+      "followTitle": "Obserwuj użytkownika",
+      "silenceInteractionsTitle": "Wycisz Woota",
+      "silenceInteractionsDescription": "Wycisz powiadomienia z podbić, polubień i reakcji.",
+      "silenceReplyTitle": "Wycisz woota i odpowiedzi",
+      "silenceReplyDescription": "Wycisz powiadomienia z podbić, polubień, reakcji i odpowiedzi.",
+      "muteAccountTitle": "Wyciszone konta",
+      "muteAccountDescription": "Ukryj wooty i odpowiedzi od tego użytkownika",
+      "blockAccountTitle": "Zablokuj konto",
+      "muteAccountLabel": "Powód (nieobowiązkowy)",
+      "unmuteAccountTitle": "Odcisz konto",
+      "unmuteAccountDescription": "Wooty i odpowiedzi znowu będą widoczne.",
+      "blockAccountDescription": "Ukryj wooty i odpowiedzi jeśli autorem jest ten użytkownik lub zawiera wzmiankę o nim. Nie będzie on mógł wchodzić w interakcję z tobą.",
+      "blockAccountLabel": "Powód (nieobowiązkowy)",
+      "unblockAccountTitle": "Odblokuj konto",
+      "unblockAccountDescription": "Pokaż wooty i odpowiedzi jeśli autorem jest ten użytkownik lub zawiera wzmiankę o nim. Znów będzie on mógł wchodzić w interakcję z tobą.",
+      "followLoggedOutTitle": "Obserwój {{name}}",
+      "followLoggedOutDescription": "Aby kontunuwać musisz zaobserwować z konta Fediwersum.",
+      "followLoggedOutLabel": "Nazwa użytkownika Fediwersum (e.g. @example@example.com)",
+      "followLoggedOutBsky": "Nie jesteś na Fediwersum ale na Bluesky?",
+      "followLoggedOutBskyNoFedi": "Aby kontunować kliknij przycisk poniżej. Przekieruje cię to do bsky.app",
+      "followLoggedOutFollow": "Kontynułuj do twojej instancji",
+      "followLoggedOutFollowBsky": "Obserwuj {{name}} na Bluesky"
+    },
+    "post-fragment": {
+      "confirmOpenCwTitle": "Potwierdź otwarcie treści nieprzyzwoitych:",
+      "confirmOpenCwContent": "Woot zawiera wyciszone słowa oraz treści nieprzyzwoite:",
+      "annoyances": {
+        "puzzleWarning": "Rozwiąż zadanie aby mieć pewność że nie popełniasz błędu:"
+      }
+    },
+    "blog": {
+      "customThemeTitle": "Własny Motyw",
+      "customThemeDescription": "Ten użytkownik ma własny motyw.<br><br>Aby włączyć własne motywy dla wszystkich, idź do Ustawienia > Wygląd.",
+      "customThemeOptions": {
+        "yes": "Włącz",
+        "cancel": "Nie włączaj",
+        "cancelRemember": "Nie i więcej nie pytaj"
+      },
+      "hideRewoots": "Ukryj podbicia od tego użytkownika",
+      "unhideRewoots": "Pokaż podbicia od tego użytkownika",
+      "unhideQuotes": "Pokaż cytaty od tego użytkownika",
+      "hideQuotes": "Ukruj podbicia od tego użytkownika"
+    },
+    "report": {
+      "reportUserTitle": "Zgłoś Użytkonika",
+      "reportPostTitle": "Zgłoś Woota",
+      "reportTypeLabel": "Typ Zgłoszenia",
+      "reportTypeOptions": {
+        "spam": "Spam"
+      },
+      "reportDescription": "Opis",
+      "reportBlockUser": "Zablokuj Użytkownka",
+      "reportConfirm": "Wyślij Zgłoszenie"
+    },
+    "common": {
+      "rawData": "Dane JSON"
+    }
   },
   "ask-dialog-content": {
     "askAnonymously": "Zadaj pytanie anonimowo",
@@ -346,7 +544,9 @@
     "mutedWords": "Woot zawiera zablokowane słowa:",
     "mediaContentWarning": "Woot zawiera ostrzerzenie:",
     "mediaNsfw": "Multimedia oznaczone są jako nieprzyzwoite",
-    "replyingTo": "Wzmianki: "
+    "replyingTo": "Wzmianki: ",
+    "show": "Pokaż",
+    "hide": "Ukryj"
   },
   "media": {
     "noAltText": "Brak tekstu alternatywnego",
