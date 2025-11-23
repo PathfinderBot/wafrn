@@ -1155,7 +1155,7 @@ function userRoutes(app: Application) {
             isBlueskyUser: blog.isBlueskyUser,
             isFediverseUser: blog.isFediverseUser,
             postCount,
-            migratedTo,
+            migratedTo: migratedTo?.url,
             muted,
             blocked,
             serverBlocked,
