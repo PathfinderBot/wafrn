@@ -1129,6 +1129,25 @@ function userRoutes(app: Application) {
 
         followed = await followed;
         followers = await followers;
+        let migratedTo: User | null = null;
+        let splitMigratedUrl = blog.userMigratedTo.split('/');
+        if (blog.userMigratedTo) {
+          migratedTo = await User.findOne({
+            where: {
+              [Op.or]: [
+                {
+                  remoteId: blog.userMigratedTo
+                },
+                {
+                  remoteMentionUrl: blog.userMigratedTo
+                },
+                {
+                  url: splitMigratedUrl[splitMigratedUrl.length - 1]
+                }
+              ]
+            }
+          })
+        }
         success = !!blog;
         if (success) {
           res.send({
@@ -1136,6 +1155,7 @@ function userRoutes(app: Application) {
             isBlueskyUser: blog.isBlueskyUser,
             isFediverseUser: blog.isFediverseUser,
             postCount,
+            migratedTo,
             muted,
             blocked,
             serverBlocked,
