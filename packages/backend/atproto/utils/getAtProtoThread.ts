@@ -142,10 +142,10 @@ async function processSinglePost(
           }
         }
       } catch (error) {
-        logger.debug(
+        logger.debug({
           error,
-          `Error in obtaining fedi post ${post.record.fediverseId}`
-        );
+          message: `Error in obtaining fedi post ${post.record.fediverseId}`,
+        });
       }
     }
   }

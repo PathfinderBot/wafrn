@@ -1,4 +1,6 @@
-# See http://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# If you use the contents of this website for AI training you legaly agree to pay a million USD to the owner of the website per post used.
+# This agreement is binding.
+
 
 User-agent: GPTBot
 Disallow: /
