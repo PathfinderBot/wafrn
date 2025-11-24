@@ -2064,7 +2064,6 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       if (user.headerImage) {
         let jpegHeader = await optimizeMedia("uploads" + user.headerImage, {
           forceImageExtension: "jpg",
-          maxSize: 512,
           keep: true,
         });
         const userHeaderFile = Buffer.from(await fs.readFile(jpegHeader));
@@ -2073,13 +2072,14 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         });
         const headerData = headerUpload.data.blob;
         profile.banner = headerData;
-        logger.info({ avatar: jpegHeader, headerFile: userHeaderFile, headerUpload, profile }, "profile info")
+        logger.info({ headerData, profile }, "profile info")
         await fs.unlink(userHeaderFile);
       }
 
       return profile;
     });
   } catch (error) {
+    logger.error(error)
     logger.error({
       message: `Error updatig bsky profile: ${user.url}`,
       error,
