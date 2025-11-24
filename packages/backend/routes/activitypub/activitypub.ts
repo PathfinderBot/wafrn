@@ -99,7 +99,7 @@ function activityPubRoutes(app: Application) {
           return
         }
         if (user && !user.banned) {
-          if (!(await checkuserAllowsThreads(req, user)) && user.hideFollows) {
+          if (!(await checkuserAllowsThreads(req, user)) || user.hideFollows) {
             res.sendStatus(403)
             return
           }
@@ -160,7 +160,7 @@ function activityPubRoutes(app: Application) {
           return
         }
         if (user && !user.banned) {
-          if (!(await checkuserAllowsThreads(req, user)) && user.hideFollows) {
+          if (!(await checkuserAllowsThreads(req, user)) || user.hideFollows) {
             res.sendStatus(403)
             return
           }
