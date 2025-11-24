@@ -51,7 +51,7 @@ import { getAvaiableEmojisCache } from "../utils/cacheGetters/getAvaiableEmojis.
 import { rejectremoteFollow } from "../utils/activitypub/rejectRemoteFollow.js";
 import { acceptRemoteFollow } from "../utils/activitypub/acceptRemoteFollow.js";
 import showdown from "showdown";
-import { AtpAgent, BskyAgent } from "@atproto/api";
+import { AppBskyActorProfile, AtpAgent, BskyAgent } from "@atproto/api";
 import { getAtProtoSession } from "../atproto/utils/getAtProtoSession.js";
 import {
   forceUpdateCacheDidsAtThread,
@@ -2030,7 +2030,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     await forceUpdateCacheDidsAtThread();
     await getCacheAtDids(true);
     return await agent.upsertProfile(async (existingProfile) => {
-      const profile = existingProfile ?? ({} as Record);
+      const profile = existingProfile ?? ({} as AppBskyActorProfile.Record);
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;
       profile.displayName = user.name.replace(/:[\S]+:/gm, '').substring(0, 63).trim();
       profile.description =
@@ -2062,9 +2062,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       }
       // TODO fix this it does not work
       if (user.headerImage) {
-        let jpegHeader = await optimizeMedia("uploads/" + user.headerImage, {
+        let jpegHeader = await optimizeMedia("uploads" + user.headerImage, {
           forceImageExtension: "jpg",
-          maxSize: 256,
+          maxSize: 512,
           keep: true,
         });
         const userHeaderFile = Buffer.from(await fs.readFile(jpegHeader));
