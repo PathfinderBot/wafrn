@@ -74,6 +74,7 @@ import { getAllLocalUserIds } from "../utils/cacheGetters/getAllLocalUserIds.js"
 import { syncBskyFollowersAndFollowing } from "../utils/atproto/syncBskyFollowersAndFollowing.js";
 import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.js";
+import { readFileSync } from "fs";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -2066,7 +2067,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
           forceImageExtension: "jpg",
           keep: true,
         });
-        const userHeaderFile = await fs.readFile(jpegHeader);
+        const userHeaderFile = readFileSync(jpegHeader);
         const headerUpload = await agent.uploadBlob(userHeaderFile, {
           encoding: "image/jpeg",
         });
