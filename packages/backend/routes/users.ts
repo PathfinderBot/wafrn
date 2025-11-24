@@ -2060,7 +2060,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         profile.avatar = avatarData;
         await fs.unlink(pngAvatar);
       }
-      // TODO fix this it does not work
+      // it works now yay
       if (user.headerImage) {
         let jpegHeader = await optimizeMedia("uploads" + user.headerImage, {
           forceImageExtension: "jpg",
@@ -2072,14 +2072,12 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         });
         const headerData = headerUpload.data.blob;
         profile.banner = headerData;
-        logger.info({ headerData, jpegHeader, profile }, "profile info")
         await fs.unlink(jpegHeader);
       }
 
       return profile;
     });
   } catch (error) {
-    logger.error(error)
     logger.error({
       message: `Error updatig bsky profile: ${user.url}`,
       error,
