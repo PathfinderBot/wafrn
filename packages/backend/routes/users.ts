@@ -2032,7 +2032,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     return await agent.upsertProfile(async (existingProfile) => {
       const profile = existingProfile ?? ({} as Record);
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;
-      profile.displayName = user.name.substring(0, 63);
+      profile.displayName = user.name.replace(/:[\S]+:/gm, '').substring(0, 63).trim();
       profile.description =
         dompurify.sanitize(
           user.descriptionMarkdown
@@ -2061,7 +2061,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         await fs.unlink(pngAvatar);
       }
       // TODO fix this it does not work
-      if (user.headerImage && false) {
+      if (user.headerImage) {
         let jpegHeader = await optimizeMedia("uploads/" + user.headerImage, {
           forceImageExtension: "jpg",
           maxSize: 256,
