@@ -372,7 +372,7 @@
     "enableAsks": "Enable asks",
     "enableAnonymousAsks": "Enable anonymous asks",
     "hideProfileNotLoggedIn": "Hide profile to users who are not logged in",
-    "hideProfileNotLoggedInDescription": "Only applies to your profile in this wafrn, not to your woots nor other fedi instances or bluesky.",
+    "hideProfileNotLoggedInDescription": "Only applies to your profile in this server and Bluesky, not on your woots, and on other servers. Note that Bluesky/Atproto clients can ignore this and show your profile anyways.",
     "hideFollows": "Hide my follows and followers",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
