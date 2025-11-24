@@ -51,7 +51,7 @@ import { getAvaiableEmojisCache } from "../utils/cacheGetters/getAvaiableEmojis.
 import { rejectremoteFollow } from "../utils/activitypub/rejectRemoteFollow.js";
 import { acceptRemoteFollow } from "../utils/activitypub/acceptRemoteFollow.js";
 import showdown from "showdown";
-import { AppBskyActorProfile, AtpAgent, BskyAgent } from "@atproto/api";
+import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from "@atproto/api";
 import { getAtProtoSession } from "../atproto/utils/getAtProtoSession.js";
 import {
   forceUpdateCacheDidsAtThread,
@@ -74,6 +74,7 @@ import { getAllLocalUserIds } from "../utils/cacheGetters/getAllLocalUserIds.js"
 import { syncBskyFollowersAndFollowing } from "../utils/atproto/syncBskyFollowersAndFollowing.js";
 import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.js";
+import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -2073,6 +2074,24 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         const headerData = headerUpload.data.blob;
         profile.banner = headerData;
         await fs.unlink(jpegHeader);
+      }
+      if (user.hideProfileNotLoggedIn) {
+        profile.labels = {
+          "$type": "com.atproto.label.defs#selfLabels",
+          "values": [
+            {
+              "val": "!no-unauthenticated"
+            },
+            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values : []),
+          ]
+        }
+      } else {
+        profile.labels = {
+          "$type": "com.atproto.label.defs#selfLabels",
+          "values": [
+            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values.filter(x => x.val !== "!no-unauthenticated") : []),
+          ]
+        }
       }
 
       return profile;
