@@ -1,6 +1,5 @@
-<h2 class="dialog-title" mat-dialog-title>{{
-  'dialog.post-header.followLoggedOutTitle' | translate:{name}
-  }}</h2>
+<h2 class="dialog-title" [innerHTML]="'dialog.post-header.followLoggedOutTitle' | translate:{name}" mat-dialog-title>
+</h2>
 <mat-dialog-content class="follow-logged-out">
   @if (remoteId) {
   <p>{{
@@ -30,10 +29,8 @@
       'dialog.post-header.followLoggedOutBskyNoFedi' | translate
       }}</p>
     }
-    <a mat-flat-button [attr.href]="'https://bsky.app/profile/' + bskyDid" [disabled]="disabled"
-      class="border-round-md">{{
-      'dialog.post-header.followLoggedOutFollowBsky' | translate:{name}
-      }}</a>
+    <a mat-flat-button [attr.href]="'https://bsky.app/profile/' + bskyDid" [disabled]="disabled" class="border-round-md"
+      [innerHTML]="'dialog.post-header.followLoggedOutFollowBsky' | translate:{name}"></a>
   </section>
   }
 </mat-dialog-content>
