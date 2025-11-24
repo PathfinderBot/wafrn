@@ -2073,6 +2073,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         });
         const headerData = headerUpload.data.blob;
         profile.banner = headerData;
+        logger.info({ avatar: jpegHeader, headerFile: userHeaderFile, headerUpload, profile }, "profile info")
         await fs.unlink(userHeaderFile);
       }
 
