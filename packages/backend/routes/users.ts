@@ -51,7 +51,7 @@ import { getAvaiableEmojisCache } from "../utils/cacheGetters/getAvaiableEmojis.
 import { rejectremoteFollow } from "../utils/activitypub/rejectRemoteFollow.js";
 import { acceptRemoteFollow } from "../utils/activitypub/acceptRemoteFollow.js";
 import showdown from "showdown";
-import { AtpAgent, BskyAgent } from "@atproto/api";
+import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from "@atproto/api";
 import { getAtProtoSession } from "../atproto/utils/getAtProtoSession.js";
 import {
   forceUpdateCacheDidsAtThread,
@@ -74,6 +74,7 @@ import { getAllLocalUserIds } from "../utils/cacheGetters/getAllLocalUserIds.js"
 import { syncBskyFollowersAndFollowing } from "../utils/atproto/syncBskyFollowersAndFollowing.js";
 import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.js";
+import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -2030,9 +2031,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     await forceUpdateCacheDidsAtThread();
     await getCacheAtDids(true);
     return await agent.upsertProfile(async (existingProfile) => {
-      const profile = existingProfile ?? ({} as Record);
+      const profile = existingProfile ?? ({} as AppBskyActorProfile.Record);
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;
-      profile.displayName = user.name.substring(0, 63);
+      profile.displayName = user.name.replace(/:[\S]+:/gm, '').substring(0, 63).trim();
       profile.description =
         dompurify.sanitize(
           user.descriptionMarkdown
@@ -2060,20 +2061,37 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         profile.avatar = avatarData;
         await fs.unlink(pngAvatar);
       }
-      // TODO fix this it does not work
-      if (user.headerImage && false) {
-        let jpegHeader = await optimizeMedia("uploads/" + user.headerImage, {
+      // it works now yay
+      if (user.headerImage) {
+        let jpegHeader = await optimizeMedia("uploads" + user.headerImage, {
           forceImageExtension: "jpg",
-          maxSize: 256,
           keep: true,
         });
-        const userHeaderFile = Buffer.from(jpegHeader);
+        const userHeaderFile = Buffer.from(await fs.readFile(jpegHeader));
         const headerUpload = await agent.uploadBlob(userHeaderFile, {
           encoding: "image/jpeg",
         });
         const headerData = headerUpload.data.blob;
         profile.banner = headerData;
-        await fs.unlink(userHeaderFile);
+        await fs.unlink(jpegHeader);
+      }
+      if (user.hideProfileNotLoggedIn) {
+        profile.labels = {
+          "$type": "com.atproto.label.defs#selfLabels",
+          "values": [
+            {
+              "val": "!no-unauthenticated"
+            },
+            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values : []),
+          ]
+        }
+      } else {
+        profile.labels = {
+          "$type": "com.atproto.label.defs#selfLabels",
+          "values": [
+            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values.filter(x => x.val !== "!no-unauthenticated") : []),
+          ]
+        }
       }
 
       return profile;
