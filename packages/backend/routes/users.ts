@@ -2066,13 +2066,13 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
           forceImageExtension: "jpg",
           keep: true,
         });
-        const userHeaderFile = Buffer.from(jpegHeader);
+        const userHeaderFile = Buffer.from(await fs.readFile(jpegHeader));
         const headerUpload = await agent.uploadBlob(userHeaderFile, {
           encoding: "image/jpeg",
         });
         const headerData = headerUpload.data.blob;
         profile.banner = headerData;
-        logger.info({ headerData, profile }, "profile info")
+        logger.info({ headerData, jpegHeader, profile }, "profile info")
         await fs.unlink(userHeaderFile);
       }
 
