@@ -30,7 +30,7 @@
       }}</p>
     }
     <a mat-flat-button [attr.href]="'https://bsky.app/profile/' + bskyDid" [disabled]="disabled" class="border-round-md"
-      [innerHTML]="'dialog.post-header.followLoggedOutFollowBsky' | translate:{name}"></a>
+      [innerHTML]="'dialog.post-header.followLoggedOutFollowBsky' | translate:{name:`<span>${name}</span>`}"></a>
   </section>
   }
 </mat-dialog-content>
