@@ -1,126 +1,143 @@
-import { Model, Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript'
-import { User } from './user.js'
-import { Post } from './post.js'
-import { completeEnvironment } from '../utils/backendOptions.js'
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from "sequelize-typescript";
+import { User } from "./user.js";
+import { Post } from "./post.js";
+import { completeEnvironment } from "../utils/backendOptions.js";
 
 export interface MediaAttributes {
-  id?: number
-  createdAt?: Date
-  updatedAt?: Date
-  mediaOrder?: number
-  NSFW?: boolean
-  description?: string
-  url?: string
-  ipUpload?: string
-  external?: boolean
-  mediaType?: string | null
-  width?: number
-  height?: number
-  blurhash?: string
-  userId?: string
-  postId?: string
+  id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  mediaOrder?: number;
+  NSFW?: boolean;
+  description?: string;
+  url?: string;
+  ipUpload?: string;
+  external?: boolean;
+  mediaType?: string | null;
+  width?: number;
+  height?: number;
+  blurhash?: string;
+  userId?: string;
+  postId?: string;
 }
 
 @Table({
-  tableName: 'medias',
-  modelName: 'medias',
+  tableName: "medias",
+  modelName: "medias",
   timestamps: true,
   defaultScope: {
     attributes: {
       // this one did not require a security disclosure
-      exclude: ['ipUpload']
-    }
-  }
+      exclude: ["ipUpload"],
+    },
+  },
 })
-export class Media extends Model<MediaAttributes, MediaAttributes> implements MediaAttributes {
+export class Media
+  extends Model<MediaAttributes, MediaAttributes>
+  implements MediaAttributes
+{
+  @Column({
+    primaryKey: true,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
+  declare id: string;
+
   @Column({
     allowNull: true,
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
-  declare mediaOrder: number
+  declare mediaOrder: number;
 
   @Column({
     allowNull: true,
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
-  declare NSFW: boolean
+  declare NSFW: boolean;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING
+    type: DataType.STRING,
   })
-  declare description: string
+  declare description: string;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING
+    type: DataType.STRING,
   })
-  declare url: string
+  declare url: string;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
-  declare ipUpload: string
+  declare ipUpload: string;
 
   @Column({
     type: DataType.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
   })
-  declare external: boolean
+  declare external: boolean;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
-  declare mediaType: string | null
-
-  @Column({
-    allowNull: true,
-    type: DataType.INTEGER,
-    defaultValue: 0
-  })
-  declare width: number
+  declare mediaType: string | null;
 
   @Column({
     allowNull: true,
     type: DataType.INTEGER,
-    defaultValue: 0
+    defaultValue: 0,
   })
-  declare height: number
+  declare width: number;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING(255)
+    type: DataType.INTEGER,
+    defaultValue: 0,
   })
-  declare blurhash: string
+  declare height: number;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING(255),
+  })
+  declare blurhash: string;
 
   @ForeignKey(() => User)
   @Column({
     allowNull: true,
-    type: DataType.UUID
+    type: DataType.UUID,
   })
-  declare userId: string
+  declare userId: string;
 
   @ForeignKey(() => Post)
   @Column({
     allowNull: true,
-    type: DataType.UUID
+    type: DataType.UUID,
   })
-  declare postId: string
+  declare postId: string;
 
-  @BelongsTo(() => User, 'userId')
-  declare user: User
+  @BelongsTo(() => User, "userId")
+  declare user: User;
 
-  @BelongsTo(() => Post, 'postId')
-  declare post: Post
+  @BelongsTo(() => Post, "postId")
+  declare post: Post;
 
   get fullUrl(): string {
-    return this.url.startsWith('?cid')
+    return this.url.startsWith("?cid")
       ? completeEnvironment.externalCacheurl + this.url
       : this.external
       ? this.url
-      : completeEnvironment.mediaUrl + this.url
+      : completeEnvironment.mediaUrl + this.url;
   }
 }
