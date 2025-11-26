@@ -146,7 +146,7 @@ async function postToJSONLD(
       userAsker
     )} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
       }):
-> ${ask.question.replaceAll("\n", "\n> ")}]\n\n`;
+> ${await htmlToMfm(ask.question.replaceAll("\n", "\n> "))}]\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
   const misskeyMentions: string[] = [];
