@@ -34,6 +34,7 @@ import {
   createAccountLimiter,
   loginRateLimiter,
   navigationRateLimiter,
+  onePerSecondLimiter,
 } from "../utils/rateLimiters.js";
 import fs from "fs/promises";
 import AuthorizedRequest from "../interfaces/authorizedRequest.js";
@@ -169,7 +170,9 @@ const slurs = [
 function userRoutes(app: Application) {
   app.post(
     "/api/register",
-    ...(completeEnvironment.registrationLevel === 'PRIVATE' ? [adminToken, createAccountLimiter] : [createAccountLimiter]),
+    ...(completeEnvironment.registrationLevel === "PRIVATE"
+      ? [adminToken, createAccountLimiter, onePerSecondLimiter]
+      : [createAccountLimiter, onePerSecondLimiter]),
     uploadHandler().single("avatar"),
     async (req, res) => {
       try {
@@ -181,7 +184,7 @@ function userRoutes(app: Application) {
           validateEmail(req.body.email) &&
           !slurs.includes(
             req.body.url.toLowerCase() &&
-            slurs.every((elem) => !req.body.url.includes(elem))
+              slurs.every((elem) => !req.body.url.includes(elem))
           )
         ) {
           const birthDate = new Date(req.body.birthDate);
@@ -268,15 +271,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `,
-              });
+                });
             await Promise.all([userWithEmail, emailSent]);
             await generateUserKeyPairQueue.add("generateUserKeyPair", {
               userId: (await userWithEmail).id,
@@ -320,12 +323,10 @@ function userRoutes(app: Application) {
           return;
         }
         if (!success) {
-          res
-            .status(401)
-            .send({
-              success: false,
-              message: "Got to final part with success false",
-            });
+          res.status(401).send({
+            success: false,
+            message: "Got to final part with success false",
+          });
         }
       } catch (error) {
         logger.error(error);
@@ -488,91 +489,102 @@ function userRoutes(app: Application) {
     }
   );
 
-  app.post("/api/forgotPassword", createAccountLimiter, async (req, res) => {
-    const resetCode = generateRandomString();
-    try {
-      if (req.body?.email && validateEmail(req.body.email)) {
-        const email = req.body.email.toLowerCase();
-        const user = await User.scope("full").findOne({ where: { email } });
-        if (user) {
-          user.activationCode = resetCode;
-          user.requestedPasswordReset = new Date();
-          user.save();
+  app.post(
+    "/api/forgotPassword",
+    createAccountLimiter,
+    onePerSecondLimiter,
+    async (req, res) => {
+      const resetCode = generateRandomString();
+      try {
+        if (req.body?.email && validateEmail(req.body.email)) {
+          const email = req.body.email.toLowerCase();
+          const user = await User.scope("full").findOne({ where: { email } });
+          if (user) {
+            user.activationCode = resetCode;
+            user.requestedPasswordReset = new Date();
+            user.save();
 
-          const link = `${completeEnvironment.instanceUrl
+            const link = `${
+              completeEnvironment.instanceUrl
             }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
-          const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(
-            email
-          )}&code=${resetCode}`;
+            const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(
+              email
+            )}&code=${resetCode}`;
 
-          await sendEmail({
-            email: req.body.email.toLowerCase(),
-            subject: `Reset ${completeEnvironment.instanceUrl} password`,
-            body: `\
+            await sendEmail({
+              email: req.body.email.toLowerCase(),
+              subject: `Reset ${completeEnvironment.instanceUrl} password`,
+              body: `\
 <h1>So you forgot your ${completeEnvironment.instanceUrl} password</h1>
 <p>If you requested this you may <a href="${link}">reset your password on the web</a> or <a href="${appLink}">reset your password on the app</a></p>
 <p>If you can't see the web link above, copy this link: ${link}</p>
 <p>If you didn't request this, ignore this email.</p>
 `,
-          });
+            });
+          }
         }
+      } catch (error) {
+        logger.error(error);
       }
-    } catch (error) {
-      logger.error(error);
+
+      res.send({ success: true });
     }
+  );
 
-    res.send({ success: true });
-  });
-
-  app.post("/api/activateUser", async (req, res) => {
-    let success = false;
-    if (req.body?.email && validateEmail(req.body.email) && req.body.code) {
-      const user = await User.scope("full").findOne({
-        where: {
-          email: req.body.email.toLowerCase(),
-          activationCode: req.body.code,
-        },
-      });
-      if (user) {
-        user.emailVerified = true;
-        let body = "";
-        let subject = "";
-        if (!completeEnvironment.reviewRegistrations) {
-          user.activated = true;
-          subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`;
-          body = "<p>;D</p>";
-        } else {
-          subject = `The email account for your ${completeEnvironment.instanceUrl} account ${user.url} has been verified`;
-          body = `\
+  app.post(
+    "/api/activateUser",
+    onePerSecondLimiter,
+    createAccountLimiter,
+    async (req, res) => {
+      let success = false;
+      if (req.body?.email && validateEmail(req.body.email) && req.body.code) {
+        const user = await User.scope("full").findOne({
+          where: {
+            email: req.body.email.toLowerCase(),
+            activationCode: req.body.code,
+          },
+        });
+        if (user) {
+          user.emailVerified = true;
+          let body = "";
+          let subject = "";
+          if (!completeEnvironment.reviewRegistrations) {
+            user.activated = true;
+            subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`;
+            body = "<p>;D</p>";
+          } else {
+            subject = `The email account for your ${completeEnvironment.instanceUrl} account ${user.url} has been verified`;
+            body = `\
 <p>Thanks for verifying your email, Our admin team will review your registration request soon!</p>
 `;
-        }
-        try {
-          await Promise.all([
-            user.save(),
-            sendEmail({ email: req.body.email.toLowerCase(), subject, body }),
-          ]);
-          success = true;
-        } catch (error) {
-          logger.info({
-            message: `Error while activating account`,
-            error: error,
-          });
+          }
+          try {
+            await Promise.all([
+              user.save(),
+              sendEmail({ email: req.body.email.toLowerCase(), subject, body }),
+            ]);
+            success = true;
+          } catch (error) {
+            logger.info({
+              message: `Error while activating account`,
+              error: error,
+            });
+          }
         }
       }
-    }
 
-    if (!success) {
-      logger.info({
-        message: `Success marked as false on activate account!`,
-        body: req.body,
+      if (!success) {
+        logger.info({
+          message: `Success marked as false on activate account!`,
+          body: req.body,
+        });
+      }
+
+      res.send({
+        success,
       });
     }
-
-    res.send({
-      success,
-    });
-  });
+  );
 
   app.post("/api/resetPassword", async (req, res) => {
     let success = false;
@@ -639,91 +651,98 @@ function userRoutes(app: Application) {
     });
   });
 
-  app.post("/api/login", loginRateLimiter, async (req, res) => {
-    let success = false;
-    try {
-      if (req.body?.email && req.body.password) {
-        const userWithEmail = await User.scope("full").findOne({
-          where: {
-            email: req.body.email.toLowerCase().trim(),
-            banned: {
-              [Op.ne]: true,
+  app.post(
+    "/api/login",
+    loginRateLimiter,
+    onePerSecondLimiter,
+    async (req, res) => {
+      let success = false;
+      try {
+        if (req.body?.email && req.body.password) {
+          const userWithEmail = await User.scope("full").findOne({
+            where: {
+              email: req.body.email.toLowerCase().trim(),
+              banned: {
+                [Op.ne]: true,
+              },
             },
-          },
-        });
-        if (userWithEmail && userWithEmail.email) {
-          const correctPassword = await bcrypt.compare(
-            req.body.password,
-            userWithEmail.password
-          );
-          if (correctPassword) {
-            success = true;
-            if (userWithEmail.activated) {
-              const mfaEnabled = await MfaDetails.findAll({
-                where: {
-                  userId: userWithEmail.id,
-                  enabled: {
-                    [Op.eq]: true,
-                  },
-                },
-              });
-              if (mfaEnabled.length > 0) {
-                res.send({
-                  success: true,
-                  mfaRequired: true,
-                  mfaOptions: [...new Set(mfaEnabled.map((elem) => elem.type))],
-                  token: jwt.sign(
-                    {
-                      mfaStep: 1,
-                      email: userWithEmail.email.toLowerCase(),
+          });
+          if (userWithEmail && userWithEmail.email) {
+            const correctPassword = await bcrypt.compare(
+              req.body.password,
+              userWithEmail.password
+            );
+            if (correctPassword) {
+              success = true;
+              if (userWithEmail.activated) {
+                const mfaEnabled = await MfaDetails.findAll({
+                  where: {
+                    userId: userWithEmail.id,
+                    enabled: {
+                      [Op.eq]: true,
                     },
-                    completeEnvironment.jwtSecret,
-                    { expiresIn: "300s" }
-                  ),
+                  },
                 });
+                if (mfaEnabled.length > 0) {
+                  res.send({
+                    success: true,
+                    mfaRequired: true,
+                    mfaOptions: [
+                      ...new Set(mfaEnabled.map((elem) => elem.type)),
+                    ],
+                    token: jwt.sign(
+                      {
+                        mfaStep: 1,
+                        email: userWithEmail.email.toLowerCase(),
+                      },
+                      completeEnvironment.jwtSecret,
+                      { expiresIn: "300s" }
+                    ),
+                  });
+                } else {
+                  res.send({
+                    success: true,
+                    token: jwt.sign(
+                      {
+                        userId: userWithEmail.id,
+                        email: userWithEmail.email.toLowerCase(),
+                        birthDate: userWithEmail.birthDate,
+                        url: userWithEmail.url,
+                        role: userWithEmail.role,
+                      },
+                      completeEnvironment.jwtSecret,
+                      { expiresIn: "31536000s" }
+                    ),
+                  });
+                  userWithEmail.lastLoginIp = getIp(req, true);
+                  await userWithEmail.save();
+                }
               } else {
                 res.send({
-                  success: true,
-                  token: jwt.sign(
-                    {
-                      userId: userWithEmail.id,
-                      email: userWithEmail.email.toLowerCase(),
-                      birthDate: userWithEmail.birthDate,
-                      url: userWithEmail.url,
-                      role: userWithEmail.role,
-                    },
-                    completeEnvironment.jwtSecret,
-                    { expiresIn: "31536000s" }
-                  ),
+                  success: false,
+                  message: "Please activate your account! Check your email",
                 });
-                userWithEmail.lastLoginIp = getIp(req, true);
-                await userWithEmail.save();
               }
-            } else {
-              res.send({
-                success: false,
-                message: "Please activate your account! Check your email",
-              });
             }
           }
         }
+      } catch (error) {
+        logger.error(error);
       }
-    } catch (error) {
-      logger.error(error);
-    }
 
-    if (!success) {
-      // res.statusCode = 401;
-      res.send({
-        success: false,
-        message: "Please recheck your email and password",
-      });
+      if (!success) {
+        // res.statusCode = 401;
+        res.send({
+          success: false,
+          message: "Please recheck your email and password",
+        });
+      }
     }
-  });
+  );
 
   app.post(
     "/api/login/mfa",
-    [loginRateLimiter, optionalAuthentication],
+    [loginRateLimiter, optionalAuthentication, onePerSecondLimiter],
     async (req: AuthorizedRequest, res: any) => {
       let success = false;
       try {
@@ -1063,19 +1082,19 @@ function userRoutes(app: Application) {
         let followed = blog.isRemoteUser
           ? blog.followingCount
           : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true,
-            },
-          });
+              where: {
+                followerId: blog.id,
+                accepted: true,
+              },
+            });
         let followers = blog.isRemoteUser
           ? blog.followerCount
           : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true,
-            },
-          });
+              where: {
+                followedId: blog.id,
+                accepted: true,
+              },
+            });
         const publicOptions = UserOptions.findAll({
           where: {
             userId: blog.id,
@@ -1121,32 +1140,32 @@ function userRoutes(app: Application) {
 
         const postCount = blog
           ? await Post.count({
-            where: {
-              userId: blog.id,
-            },
-          })
+              where: {
+                userId: blog.id,
+              },
+            })
           : 0;
 
         followed = await followed;
         followers = await followers;
         let migratedTo: User | null = null;
         if (blog.userMigratedTo) {
-          let splitMigratedUrl = blog.userMigratedTo.split('/');
+          let splitMigratedUrl = blog.userMigratedTo.split("/");
           migratedTo = await User.findOne({
             where: {
               [Op.or]: [
                 {
-                  remoteId: blog.userMigratedTo
+                  remoteId: blog.userMigratedTo,
                 },
                 {
-                  remoteMentionUrl: blog.userMigratedTo
+                  remoteMentionUrl: blog.userMigratedTo,
                 },
                 {
-                  url: splitMigratedUrl[splitMigratedUrl.length - 1]
-                }
-              ]
-            }
-          })
+                  url: splitMigratedUrl[splitMigratedUrl.length - 1],
+                },
+              ],
+            },
+          });
         }
         success = !!blog;
         if (success) {
@@ -1861,6 +1880,8 @@ function userRoutes(app: Application) {
   app.post(
     "/api/user/selfDeactivate",
     authenticateToken,
+    onePerSecondLimiter,
+    createAccountLimiter,
     async (req: AuthorizedRequest, res: Response) => {
       // frontend will warn user. User will recive email.
       const userId = req.jwtData?.userId as string;
@@ -1934,8 +1955,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
           if (petitionData && petitionData.alsoKnownAs) {
             const aliasList = isArray(petitionData.alsoKnownAs)
               ? petitionData.alsoKnownAs.map((elem: string) =>
-                elem.toLowerCase()
-              )
+                  elem.toLowerCase()
+                )
               : [petitionData.alsoKnownAs.toLowerCase()];
             if (
               aliasList.includes(
@@ -2013,7 +2034,7 @@ It is slow because we have to send every fedi server that has ever seen a post o
               message = `Alias not detected`;
             }
           }
-        } catch (error) { }
+        } catch (error) {}
       }
 
       res.status(success ? 200 : 500);
@@ -2037,9 +2058,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         dompurify.sanitize(
           user.descriptionMarkdown
             ? user.descriptionMarkdown.substring(
-              0,
-              248 - fullProfileString.length
-            )
+                0,
+                248 - fullProfileString.length
+              )
             : "",
           { ALLOWED_TAGS: [] }
         ) +
@@ -2113,15 +2134,15 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
         });
         userOption
           ? await userOption.update({
-            optionValue: option.value,
-            public: option.public == true,
-          })
+              optionValue: option.value,
+              public: option.public == true,
+            })
           : await UserOptions.create({
-            userId: posterId,
-            optionName: option.name,
-            optionValue: option.value,
-            public: option.public == true,
-          });
+              userId: posterId,
+              optionName: option.name,
+              optionValue: option.value,
+              public: option.public == true,
+            });
       }
     }
   }
@@ -2140,8 +2161,8 @@ async function createBskyAccount({
 }) {
   const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
     ? completeEnvironment.bskyPdsUrl
-      .replace("https://", "")
-      .replace("http://", "")
+        .replace("https://", "")
+        .replace("http://", "")
     : completeEnvironment.bskyPdsUrl;
 
   const sanitizedUrl = user.url
