@@ -134,7 +134,7 @@ async function postToJSONLD(
 
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, "");
-  const misskeyContent = markdownConverter.makeHtml(post.markdownContent) || processedContent;
+  let misskeyContent = markdownConverter.makeHtml(post.markdownContent) || processedContent;
 
   let misskeyAskContent = "";
 
@@ -154,6 +154,12 @@ async function postToJSONLD(
   const fediTags: fediverseTag[] = [];
   let tagsAndQuotes = "<br>";
   const quotedPosts = post.quoted;
+
+  const lineBreaksAtEndRegex = /\s*(<br\s*\/?>)+\s*$/g;
+
+  misskeyContent = await htmlToMfm(
+    (misskeyContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, "")
+  )
   if (quotedPosts && quotedPosts.length > 0) {
     const mainQuotedPost = quotedPosts[0];
     quoteAuthorization = (
@@ -239,9 +245,6 @@ async function postToJSONLD(
         : "anonymous",
     });
   }
-
-  const lineBreaksAtEndRegex = /\s*(<br\s*\/?>)+\s*$/g;
-
   const usersToSend = getToAndCC(
     post.privacy,
     mentionedUsers,
@@ -252,9 +255,7 @@ async function postToJSONLD(
   const misskeyMarkdown =
     misskeyMentionContent +
     misskeyAskContent +
-    (await htmlToMfm(
-      (misskeyContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, "")
-    ));
+    misskeyContent;
   let misskeyQuoteURL = quotedPostString;
   if (misskeyQuoteURL?.startsWith("https://bsky.app/")) {
     misskeyQuoteURL = null;
