@@ -25,7 +25,8 @@ export const audioMap: AudioData = {
   providedIn: 'root'
 })
 export class AudioService {
-  audios: Map<string, HTMLAudioElement> = new Map()
+  audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  audios: Map<string, AudioBuffer> = new Map()
 
   constructor() {
     // TODO maybe a better way to say "hey preload these audios"
@@ -37,23 +38,29 @@ export class AudioService {
       '/assets/sounds/5.ogg'
     ]
 
-    audiosToPreload.forEach((elem) => {
-      const audio = new Audio(elem)
-      audio.preload = 'auto'
-      this.audios.set(elem, audio)
+    audiosToPreload.forEach(async (elem) => {
+      const audio = await fetch(elem)
+      const audioBuf = await audio.arrayBuffer()
+      this.audios.set(elem, await this.audioContext.decodeAudioData(audioBuf))
     })
   }
 
-  playSound(name: AudioName, volume = 0.3) {
+  async playSound(name: AudioName, volume = 0.3) {
+    const source = this.audioContext.createBufferSource();
     const soundFile = audioMap[name]
     try {
       let audio = this.audios.get(soundFile)
       if (!audio) {
-        audio = new Audio(soundFile)
-        this.audios.set(soundFile, audio)
+        const audioFile = await fetch(soundFile)
+        const audioBuf = await audioFile.arrayBuffer()
+        audio = await this.audioContext.decodeAudioData(audioBuf)
       }
-      audio.volume = volume
-      audio.play()
+      source.buffer = audio
+      const gainNode = this.audioContext.createGain();
+      source.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+      source.start(0);
     } catch (error) {
       console.error(error)
     }

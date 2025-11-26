@@ -66,6 +66,7 @@ function rehypeToMfm() {
       if (node.type === 'element') {
         const child = (node.children || []).map(nodeToMfm).join('')
         const style = node.properties?.style || ''
+        const href = node.properties?.href || ''
         const types = parseInlineStyle(style)
         const schild = cssToMfm(child, types)
 
@@ -86,6 +87,13 @@ function rehypeToMfm() {
           case 'ul':
           case 'ol': return Array.from(node.children || []).map(nodeToMfm).join('')
           case 'li': return `- ${schild}\n`
+          case 'a': {
+            if (schild.startsWith('@')) {
+              const mfmMention = new URL(href).hostname;
+              return `${schild}@${mfmMention}`
+            }
+            return `[${schild}](${href})`
+          }
           default:
             return schild
         }
