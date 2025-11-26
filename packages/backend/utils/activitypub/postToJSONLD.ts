@@ -142,11 +142,11 @@ async function postToJSONLD(
     processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
       }">asked</a> </p> <blockquote>${ask.question
       }</blockquote> ${processedContent}`;
-    misskeyAskContent = `$[border.style=double,width=4 ${getUserName(
+    misskeyAskContent = `> ${getUserName(
       userAsker
     )} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
       }):
-> ${await htmlToMfm(ask.question.replaceAll("\n", "\n> "))}]\n\n`;
+> ${await htmlToMfm(ask.question.replaceAll("\n", "\n> "))}\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
   const misskeyMentions: string[] = [];
@@ -218,7 +218,7 @@ async function postToJSONLD(
         href: remoteId,
       });
     }
-    if (!misskeyContent.includes(user.url)) misskeyMentions.push(url);
+    if (!misskeyContent.includes(user.url) && !misskeyAskContent.includes(user.url)) misskeyMentions.push(url);
     logger.info(url, user);
   }
 
