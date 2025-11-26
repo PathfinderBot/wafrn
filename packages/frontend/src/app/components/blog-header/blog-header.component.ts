@@ -18,7 +18,8 @@ import {
   faRepeat,
   faQuoteRight,
   faCookieBite,
-  faCode
+  faCode,
+  faPlaneDeparture
 } from '@fortawesome/free-solid-svg-icons'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import { BlocksService } from 'src/app/services/blocks.service'
@@ -72,6 +73,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   disableRewootIcon = faRepeat
   disableQuotesIcon = faQuoteRight
   rawJsonIcon = faCode
+  migratedToUrl = ""
 
   userIcon = faUser
   bskyIcon = faBluesky
@@ -79,6 +81,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   blockUserIcon = faUserSlash
   unblockServerIcon = faServer
   biteUserIcon = faCookieBite
+  movedAccountIcon = faPlaneDeparture
   allowAsk = false
   allowRemoteAsk = false
   isBlueskyUser = false
@@ -137,6 +140,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       }
     })
     this.headerHTML = parsedAsHTML.documentElement.innerHTML
+    if (blog?.migratedTo) this.migratedToUrl = new URL(`/blog/${blog?.migratedTo}`, EnvironmentService.environment.frontUrl).href
   }
 
   ngOnDestroy(): void { }
@@ -158,7 +162,27 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     }
   }
 
+  async getFollowLoggedOutComponent(): Promise<typeof FollowLoggedOutComponent> {
+    const { FollowLoggedOutComponent } = await import('../follow-logged-out/follow-logged-out.component')
+    return FollowLoggedOutComponent
+  }
+
   async followUser(id: string) {
+    if (!this.loginService.loggedIn.value) {
+      const blog = this.blogDetails()
+      this.dialogService.open(await this.getFollowLoggedOutComponent(), {
+        width: '600px',
+        data: {
+          bskyDid: blog?.bskyDid,
+          url: blog?.url,
+          name: blog?.name,
+          remoteId: blog?.remoteId
+        }
+      })
+
+      return;
+    }
+
     const response = await this.postService.followUser(id)
     if (response) {
       this.messages.add({

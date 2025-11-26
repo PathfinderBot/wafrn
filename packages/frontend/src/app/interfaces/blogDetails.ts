@@ -12,6 +12,7 @@ export interface BlogDetails {
   descriptionMarkdown: string
   remoteId: string
   avatar: string
+  bskyDid?: string
   federatedHostId: string
   headerImage: string
   followingCount: number
@@ -20,6 +21,7 @@ export interface BlogDetails {
   emojis: Emoji[]
   federatedHost?: FederatedHost
   muted: boolean
+  migratedTo?: string
   blocked: boolean
   serverBlocked: boolean
   followed: number

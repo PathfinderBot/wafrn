@@ -151,7 +151,7 @@
     "contentWarningTooltip": "Content Warning",
     "insertEmojiTooltip": "Insert emoji",
     "hiddenMentionsTooltip": "Other mentioned users",
-    "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">the guide</a>",
+    "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">the guide!</a>",
     "usernameLabel": "Wooting as",
     "noResults": "No results."
   },
@@ -372,7 +372,7 @@
     "enableAsks": "Enable asks",
     "enableAnonymousAsks": "Enable anonymous asks",
     "hideProfileNotLoggedIn": "Hide profile to users who are not logged in",
-    "hideProfileNotLoggedInDescription": "Only applies to your profile in this wafrn, not to your woots nor other fedi instances or bluesky.",
+    "hideProfileNotLoggedInDescription": "Only applies to your profile in this server and Bluesky, not on your woots, and on other servers. Note that Bluesky/Atproto clients can ignore this and show your profile anyways.",
     "hideFollows": "Hide my follows and followers",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
@@ -464,11 +464,18 @@
       "blockAccountDescription": "Hide woots and replies by this user or woots and replies mentioning this user. They will not be able to interact with your woots.",
       "blockAccountLabel": "Reason (optional)",
       "unblockAccountTitle": "Unblock account",
-      "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots."
+      "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots.",
+      "followLoggedOutTitle": "Follow {{name}}",
+      "followLoggedOutDescription": "To continue, you need to follow from your Fediverse account.",
+      "followLoggedOutLabel": "Fediverse account username (e.g. @example@example.com)",
+      "followLoggedOutBsky": "Not on Fediverse but on Bluesky?",
+      "followLoggedOutBskyNoFedi": "To continue, click the button below. This will redirect you to bsky.app.",
+      "followLoggedOutFollow": "Continue to your server",
+      "followLoggedOutFollowBsky": "Follow {{name}} on Bluesky"
     },
     "post-fragment": {
       "confirmOpenCwTitle": "Confirm opening content warning",
-      "confirmOpenCwContent": "Post has the content warnings and muted words:",
+      "confirmOpenCwContent": "Woot has the content warnings and muted words:",
       "annoyances": {
         "puzzleWarning": "Solve this to prove you aren't making a bad decision:"
       }

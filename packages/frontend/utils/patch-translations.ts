@@ -10,13 +10,6 @@ const defaultOptions: PatchOptions = {
 }
 
 /**
- * Returns whether every value of two arrays are equal
- */
-function arrayEqual<T>(first: T[], second: T[]): boolean {
-  return first.every((val, index) => val === second[index])
-}
-
-/**
  * Recursively patch entries from {from} to {to} with given options
  */
 function patchEntries(from: Object, to: Object, options: PatchOptions) {
@@ -28,32 +21,18 @@ function patchEntries(from: Object, to: Object, options: PatchOptions) {
     const fromValue = fromEntries[i][1]
 
     const missingKey = fromKey !== toEntries.at(i)?.at(0)
-    if (!missingKey) continue
 
     if (typeof fromValue === 'object') {
-      toEntries.splice(i, 0, [fromKey, {}])
+      if (missingKey) {
+        toEntries.splice(i, 0, [fromKey, {}])
+      }
+
       toEntries[i][1] = patchEntries(fromValue, toEntries[i][1], options)
-    } else {
+    } else if (missingKey) {
       toEntries.splice(i, 0, [fromKey, options.placeholderTransformer(fromValue)])
     }
   }
   return Object.fromEntries(toEntries)
-}
-
-/**
- * Patch objectFrom on to objectTo so that all keys of objectFrom exist on objectTo
- *
- * Optionally includes a config to modify how the placeholder is transformed
- */
-export function patchObjects(objectFrom: Object, objectTo: Object, options?: PatchOptions) {
-  const combinedOpts = Object.assign(defaultOptions, options ?? {})
-
-  const matchesKeys = arrayEqual(Object.keys(objectFrom), Object.keys(objectTo))
-  if (!matchesKeys) {
-    objectTo = patchEntries(objectFrom, objectTo, combinedOpts)
-  }
-
-  return objectTo
 }
 
 //
@@ -109,6 +88,8 @@ function patchFile(sourceFileName: string, patchFileName: string): void {
   const defaultLang = <Object>require(sourceFile)
   const patchLang = <Object>require(patchFile)
 
-  const patched = patchObjects(defaultLang, patchLang)
+  const combinedOpts = Object.assign(defaultOptions, {})
+  const patched = patchEntries(defaultLang, patchLang, combinedOpts)
+
   fs.writeFileSync(patchFile, JSON.stringify(patched))
 }

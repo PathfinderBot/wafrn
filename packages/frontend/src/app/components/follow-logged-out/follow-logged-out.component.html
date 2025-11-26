@@ -1,0 +1,36 @@
+<h2 class="dialog-title" [innerHTML]="'dialog.post-header.followLoggedOutTitle' | translate:{name}" mat-dialog-title>
+</h2>
+<mat-dialog-content class="follow-logged-out">
+  @if (remoteId) {
+  <p>{{
+    'dialog.post-header.followLoggedOutDescription' | translate
+    }}</p>
+  <section class="flex flex-column">
+    <mat-form-field class="w-full">
+      <mat-label>{{ 'dialog.post-header.followLoggedOutLabel' | translate }}</mat-label>
+      <input formControlName="fediUsername" name="fediUsername" type="text" matInput [value]="fediUsername()"
+        (input)="onInput($event)" (keydown.enter)="onConfirm()" required />
+    </mat-form-field>
+    <button mat-flat-button class="dialog-confirm-button border-round-md" [disabled]="!formValid()"
+      (click)="onConfirm()">{{
+      'dialog.post-header.followLoggedOutFollow' | translate
+      }}</button>
+  </section>
+  }
+
+  @if (bskyDid) {
+  <section class="flex flex-column" [ngClass]="{'mt-4': remoteId}">
+    @if (remoteId) {
+    <p>{{
+      'dialog.post-header.followLoggedOutBsky' | translate
+      }}</p>
+    } @else {
+    <p>{{
+      'dialog.post-header.followLoggedOutBskyNoFedi' | translate
+      }}</p>
+    }
+    <a mat-flat-button [attr.href]="'https://bsky.app/profile/' + bskyDid" [disabled]="disabled" class="border-round-md"
+      [innerHTML]="'dialog.post-header.followLoggedOutFollowBsky' | translate:{name:`<span class='px-2'>${name}</span>`}"></a>
+  </section>
+  }
+</mat-dialog-content>
