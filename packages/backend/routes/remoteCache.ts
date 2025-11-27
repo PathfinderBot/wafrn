@@ -206,10 +206,14 @@ export default function cacheRoutes(app: Application) {
   app.get("/api/v2/cache/avatar/:id", async (req: Request, res: Response) => {
     try {
       let userId = req.params.id;
-      const user = userId ? await User.findByPk(userId) : undefined;
+      const user = userId
+        ? await User.scope("full").findByPk(userId, {
+            attributes: ["email", "avatar"],
+          })
+        : undefined;
       if (user) {
         const url = user.email
-          ? completeEnvironment.mediaUrl + user.avatar
+          ? `${completeEnvironment.mediaUrl}${user.avatar}`
           : user.avatar;
         logger.debug({
           message: `Avatar url: ${url}`,
