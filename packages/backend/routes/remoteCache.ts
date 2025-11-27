@@ -207,8 +207,19 @@ export default function cacheRoutes(app: Application) {
     try {
       let userId = req.params.id;
       const user = userId
-        ? await User.scope("full").findByPk(userId, {
+        ? await User.scope("full").findOne({
             attributes: ["email", "avatar"],
+            where: {
+              banned: false,
+              [Op.or]: [
+                {
+                  id: userId,
+                },
+                {
+                  url: userId,
+                },
+              ],
+            },
           })
         : undefined;
       if (user) {
