@@ -204,16 +204,24 @@ export default function cacheRoutes(app: Application) {
   });
 
   app.get("/api/v2/cache/avatar/:id", async (req: Request, res: Response) => {
-    let userId = req.params.id;
-    const user = userId ? await User.findByPk(userId) : undefined;
-    if (user) {
-      const url = user.email
-        ? completeEnvironment.mediaUrl + user.avatar
-        : user.avatar;
-      logger.trace(`Avatar url: ${url}`);
-      await getMediaFromUrl(url, res);
-    } else {
-      res.sendStatus(404);
+    try {
+      let userId = req.params.id;
+      const user = userId ? await User.findByPk(userId) : undefined;
+      if (user) {
+        const url = user.email
+          ? completeEnvironment.mediaUrl + user.avatar
+          : user.avatar;
+        logger.trace(`Avatar url: ${url}`);
+        await getMediaFromUrl(url, res);
+      } else {
+        res.sendStatus(404);
+      }
+    } catch (error) {
+      logger.debug({
+        message: `Error caching user avatar`,
+        error: error,
+      });
+      res.sendStatus(500);
     }
   });
 
