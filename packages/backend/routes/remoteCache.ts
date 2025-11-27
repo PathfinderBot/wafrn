@@ -211,7 +211,7 @@ export default function cacheRoutes(app: Application) {
         const url = user.email
           ? completeEnvironment.mediaUrl + user.avatar
           : user.avatar;
-        logger.trace(`Avatar url: ${url}`);
+        logger.debug(`Avatar url: ${url}`);
         await getMediaFromUrl(url, res);
       } else {
         res.sendStatus(404);
