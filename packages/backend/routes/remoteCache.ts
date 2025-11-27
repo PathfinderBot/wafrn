@@ -207,10 +207,11 @@ export default function cacheRoutes(app: Application) {
     let userId = req.params.id;
     const user = userId ? await User.findByPk(userId) : undefined;
     if (user) {
-      await getMediaFromUrl(
-        user.email ? completeEnvironment.mediaUrl + user.avatar : user.avatar,
-        res
-      );
+      const url = user.email
+        ? completeEnvironment.mediaUrl + user.avatar
+        : user.avatar;
+      logger.trace(`Avatar url: ${url}`);
+      await getMediaFromUrl(url, res);
     } else {
       res.sendStatus(404);
     }
