@@ -15,6 +15,9 @@ import { Media } from "../models/media.js";
 import { Op } from "sequelize";
 import { spawn } from "child_process";
 import sequelize from "sequelize/lib/sequelize";
+import { return404 } from "../utils/return404.js";
+import { User } from "../models/user.js";
+import { Emoji } from "../models/emoji.js";
 
 function sendWithCache(res: Response, localFileName: string) {
   // Does the .mime file exist?
@@ -181,11 +184,101 @@ export default function cacheRoutes(app: Application) {
       res.sendStatus(404);
       return;
     }
-    // if file exists
+    logger.trace({
+      message: `Old cache use: ${mediaUrl}`,
+    });
     await getMediaFromUrl(mediaUrl, res);
   });
 
-  app.get("/api/v2/cache/media/:id", async (req: Request, res: Response) => {});
+  app.get("/api/v2/cache/media/:id", async (req: Request, res: Response) => {
+    let mediaId = req.params.id;
+    const media = mediaId ? await Media.findByPk(mediaId) : undefined;
+    if (media) {
+      await getMediaFromUrl(
+        media.external ? media.url : completeEnvironment.mediaUrl + media.url,
+        res
+      );
+    } else {
+      res.sendStatus(404);
+    }
+  });
+
+  app.get("/api/v2/cache/avatar/:id", async (req: Request, res: Response) => {
+    let userId = req.params.id;
+    const user = userId ? await User.findByPk(userId) : undefined;
+    if (user) {
+      await getMediaFromUrl(
+        user.email ? completeEnvironment.mediaUrl + user.avatar : user.avatar,
+        res
+      );
+    } else {
+      res.sendStatus(404);
+    }
+  });
+
+  app.get("/api/v2/cache/emoji/:id", async (req: Request, res: Response) => {
+    let emojiUUID = req.params.id;
+    const emoji = emojiUUID
+      ? await Emoji.findOne({
+          where: {
+            uuid: emojiUUID,
+          },
+        })
+      : undefined;
+    if (emoji) {
+      await getMediaFromUrl(
+        emoji.external ? emoji.url : completeEnvironment.mediaUrl + emoji.url,
+        res
+      );
+    } else {
+      res.sendStatus(404);
+    }
+  });
+
+  app.get("/api/v2/cache/youtube/:id", async (req: Request, res: Response) => {
+    const youtubeId = decodeURIComponent(req.params.id);
+    const ytRegex =
+      /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g;
+    const match = youtubeId.matchAll(ytRegex).toArray();
+    if (match && match.length >= 7) {
+      await getMediaFromUrl(
+        `https://img.youtube.com/vi/${match[6]}/hqdefault.jpg`,
+        res
+      );
+    } else {
+      res.sendStatus(404);
+    }
+  });
+
+  app.get("/api/v2/cache/favicon/:id", async (req: Request, res: Response) => {
+    try {
+      const link = new URL(decodeURIComponent(req.params.id));
+      await getMediaFromUrl("https://" + link.hostname + "/favicon.ico", res);
+    } catch (error) {
+      res.sendStatus(500);
+    }
+  });
+
+  app.get("/api/v2/cache/imageurl/:id", async (req: Request, res: Response) => {
+    try {
+      const link = decodeURIComponent(req.params.id);
+
+      const shasum = crypto.createHash("sha1");
+      shasum.update(link.toLowerCase());
+      const urlHash = shasum.digest("hex");
+      // Here is the thing: for this to be asked, the link component has to load first so we can assume cache has been set
+      const cacheResult = JSON.parse(
+        (await redisCache.get("linkPreviewCache:" + urlHash)) || "{}"
+      );
+      if (cacheResult && cacheResult.images && cacheResult.images[0]) {
+        await getMediaFromUrl(cacheResult.images[0], res);
+      } else {
+        res.sendStatus(404);
+      }
+    } catch (error) {
+      res.sendStatus(500);
+    }
+  });
 
   app.get(
     "/api/linkPreview",
