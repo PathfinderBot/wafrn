@@ -24,7 +24,7 @@ export interface EmojiAttributes {
   url?: string;
   external?: boolean;
   emojiCollectionId?: string;
-  uuid: string;
+  uuid?: string;
 }
 
 @Table({
