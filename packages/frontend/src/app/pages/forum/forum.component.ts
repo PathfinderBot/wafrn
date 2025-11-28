@@ -119,7 +119,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
 
     this.navigationStart = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {})
+      .subscribe(() => { })
 
     if (this.loginService.loggedIn.value) {
       this.myId = this.loginService.getLoggedUserUUID()
@@ -161,6 +161,9 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
       // Set up meta tags now that we have the post
       const lastPost = this.post().at(-1)
       if (lastPost) {
+        const atUri = this.atUriLinkElement()
+        atUri.href = lastPost.bskyUri ?? ""
+
         const postIsArticle = lastPost.privacy === 20
         if (!postIsArticle) {
           this.simpleTitle.set(`Post by ${lastPost.user.nameMarkdown ?? lastPost.user.name} (${lastPost.user.url})`)
@@ -196,5 +199,16 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
     this.scrollTo('scroll-here-on-page-change')
     this.itemsPerPage = event.pageSize
     this.currentPage = event.pageIndex
+  }
+
+  private atUriLinkElement(): HTMLLinkElement {
+    const extElm = document.getElementById('atproto-alternate-uri')
+    if (extElm) return <HTMLLinkElement>extElm
+
+    const linkEl = document.createElement('link')
+    linkEl.setAttribute('rel', 'alternate')
+    linkEl.id = 'atproto-alternate-uri'
+    document.head.appendChild(linkEl)
+    return linkEl
   }
 }
