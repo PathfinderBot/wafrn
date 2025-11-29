@@ -45,6 +45,7 @@ ${{CACHE_DOMAIN}} {
 }
 
 ${{DOMAIN_NAME}} {
+    encode zstd gzip
     import /etc/caddy/config/main_domain_pre/* ${{DOMAIN_NAME}}
 
     header * {
@@ -61,7 +62,6 @@ ${{DOMAIN_NAME}} {
 
     handle @api {
         reverse_proxy ${{BACKEND_HOST:-backend:9000}}
-        encode zstd gzip
     }
 
     handle_path /adminer* {
@@ -71,7 +71,6 @@ ${{DOMAIN_NAME}} {
     import /etc/caddy/config/main_domain_mid/* ${{DOMAIN_NAME}}
 
     handle {
-        encode zstd gzip
         root * /var/www/html/frontend/
         try_files {path} /index.html
         file_server
