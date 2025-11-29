@@ -24,7 +24,6 @@ ${{MEDIA_DOMAIN}} {
     handle {
         root * /var/www/html/uploads/
         try_files {path} /index.html
-        encode zstd gzip
         file_server
     }
 
@@ -72,6 +71,7 @@ ${{DOMAIN_NAME}} {
     import /etc/caddy/config/main_domain_mid/* ${{DOMAIN_NAME}}
 
     handle {
+        encode zstd gzip
         root * /var/www/html/frontend/
         try_files {path} /index.html
         file_server
