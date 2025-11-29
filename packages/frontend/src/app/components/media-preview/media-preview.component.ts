@@ -37,7 +37,10 @@ export class MediaPreviewComponent implements OnInit {
   }
 
   updateMediaUrl(forceTimestamp = false) {
-    this.elemUrl = this.baseUrl + "/v2/cache/media/" + this.media.id;
+    this.elemUrl =
+      EnvironmentService.environment.cacheDomain +
+      "/api/v2/cache/media/" +
+      this.media.id;
     if (forceTimestamp) {
       this.elemUrl = this.elemUrl + `?date=${new Date().getTime()}`;
     }

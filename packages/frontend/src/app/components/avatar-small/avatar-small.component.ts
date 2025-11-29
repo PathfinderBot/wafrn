@@ -26,7 +26,9 @@ export class AvatarSmallComponent {
       return "/assets/img/anon.webp";
     }
     return (
-      EnvironmentService.environment.baseUrl + "/v2/cache/avatar/" + user.id
+      EnvironmentService.environment.cacheDomain +
+      "/api/v2/cache/avatar/" +
+      user.id
     );
   });
 }
