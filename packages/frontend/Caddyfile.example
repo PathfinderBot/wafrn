@@ -24,6 +24,7 @@ ${{MEDIA_DOMAIN}} {
     handle {
         root * /var/www/html/uploads/
         try_files {path} /index.html
+        encode zstd gzip
         file_server
     }
 
@@ -61,6 +62,7 @@ ${{DOMAIN_NAME}} {
 
     handle @api {
         reverse_proxy ${{BACKEND_HOST:-backend:9000}}
+        encode zstd gzip
     }
 
     handle_path /adminer* {
