@@ -37,6 +37,10 @@ ${{CACHE_DOMAIN}} {
         reverse_proxy ${{CACHE_HOST:-backend:9000}}
     }
 
+    handle /api/v2/cache/* {
+        reverse_proxy ${{CACHE_HOST:-backend:9000}}
+    }
+
     import /etc/caddy/config/cache_domain_post/* ${{DOMAIN_NAME}} ${{CACHE_DOMAIN}}
 }
 
