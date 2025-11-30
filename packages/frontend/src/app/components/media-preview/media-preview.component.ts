@@ -18,7 +18,6 @@ import { EnvironmentService } from "src/app/services/environment.service";
 export class MediaPreviewComponent implements OnInit {
   @Input() media!: WafrnMedia;
   baseMediaUrl = EnvironmentService.environment.baseMediaUrl;
-  cacheUrl = EnvironmentService.environment.externalCacheurl;
   baseUrl = EnvironmentService.environment.baseUrl;
   success = false;
   elemUrl = "";

@@ -261,12 +261,10 @@ export class DashboardService {
 
   public getAvatarUrl(blog?: BlogDetails) {
     if (!blog) return "";
-    return blog.url.startsWith("@")
-      ? EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(blog.avatar)
-      : EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(
-            EnvironmentService.environment.baseMediaUrl + blog.avatar
-          );
+    return (
+      EnvironmentService.environment.cacheDomain +
+      "/api/v2/cache/avatar" +
+      blog.id
+    );
   }
 }

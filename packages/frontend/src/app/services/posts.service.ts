@@ -47,6 +47,7 @@ export class PostsService {
       url: "",
       name: "",
       external: false,
+      uuid: "",
     },
     type: "react",
   });
@@ -59,6 +60,7 @@ export class PostsService {
       name: emoji.category + emoji.name, // todo add a display name?
       url: "",
       external: false,
+      uuid: emoji.name,
     };
   });
 
@@ -316,6 +318,7 @@ export class PostsService {
       name: unicodeEmoji.id,
       url: "",
       external: unicodeEmoji.external,
+      uuid: unicodeEmoji.id,
     };
   }
 
@@ -826,13 +829,7 @@ export class PostsService {
     // We are gonna allow images in posts now but they have to go through the cacher/proxy
     const imgs = parsedAsHTML.getElementsByTagName("img");
     Array.from(imgs).forEach((img, index) => {
-      if (
-        !img.src.startsWith(EnvironmentService.environment.externalCacheurl)
-      ) {
-        img.src =
-          EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(img.src);
-      }
+      img.src = "";
     });
     Array.from(links).forEach((link) => {
       const youtubeMatch = link.href.matchAll(this.youtubeRegex);
@@ -1039,14 +1036,9 @@ export class PostsService {
   }
 
   emojiToHtml(emoji: Emoji): string {
-    return `<img class="post-emoji" src="${
-      EnvironmentService.environment.externalCacheurl +
-      (emoji.external
-        ? encodeURIComponent(emoji.url)
-        : encodeURIComponent(
-            EnvironmentService.environment.baseMediaUrl + emoji.url
-          ))
-    }" title="${emoji.name}" alt="${emoji.name}">`;
+    return `<img class="post-emoji" src="${`${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${emoji.uuid}`}" title="${
+      emoji.name
+    }" alt="${emoji.name}">`;
   }
 
   postContainsBlockedOrMuted(post: ProcessedPost[], isDashboard: boolean) {
@@ -1068,7 +1060,6 @@ export class PostsService {
         userId: userId,
       })
     );
-    console.log(res);
     this.loadFollowers();
     return res;
   }

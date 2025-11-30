@@ -1,48 +1,56 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core'
-import { UserNotifications } from 'src/app/interfaces/user-notifications'
-import { RouterModule } from '@angular/router'
+import { Component, Input, OnInit, SimpleChanges } from "@angular/core";
+import { UserNotifications } from "src/app/interfaces/user-notifications";
+import { RouterModule } from "@angular/router";
 
-import { MatCardModule } from '@angular/material/card'
+import { MatCardModule } from "@angular/material/card";
 
-import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
-import { PostHeaderComponent } from '../post/post-header/post-header.component'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
-import { faAt, faCheck, faCookieBite, faHeart, faQuoteLeft, faRepeat, faUser } from '@fortawesome/free-solid-svg-icons'
+import { PostFragmentComponent } from "../post-fragment/post-fragment.component";
+import { PostHeaderComponent } from "../post/post-header/post-header.component";
+import { EnvironmentService } from "src/app/services/environment.service";
+import { PostRibbonComponent } from "../post-ribbon/post-ribbon.component";
+import {
+  faAt,
+  faCheck,
+  faCookieBite,
+  faHeart,
+  faQuoteLeft,
+  faRepeat,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 @Component({
-  selector: 'app-single-notification',
-  templateUrl: './single-notification.component.html',
-  styleUrls: ['./single-notification.component.scss'],
-  imports: [RouterModule, MatCardModule, PostFragmentComponent, PostHeaderComponent, PostRibbonComponent]
+  selector: "app-single-notification",
+  templateUrl: "./single-notification.component.html",
+  styleUrls: ["./single-notification.component.scss"],
+  imports: [
+    RouterModule,
+    MatCardModule,
+    PostFragmentComponent,
+    PostHeaderComponent,
+    PostRibbonComponent,
+  ],
   //providers: [DateTimeToRelativePipe, DateTimeFromJsDatePipe]
 })
 export class SingleNotificationComponent implements OnInit {
-  emojiUrl: string = ''
-  @Input() notification!: UserNotifications
+  emojiUrl: string = "";
+  @Input() notification!: UserNotifications;
 
   notificationIcons = {
-    ['MENTION']: faAt,
-    ['LIKE']: faHeart,
-    ['FOLLOW']: faUser,
-    ['REWOOT']: faRepeat,
-    ['QUOTE']: faQuoteLeft,
-    ['EMOJIREACT']: faCheck,
-    ['USERBITE']: faCookieBite,
-    ['POSTBITE']: faCookieBite,
-  }
+    ["MENTION"]: faAt,
+    ["LIKE"]: faHeart,
+    ["FOLLOW"]: faUser,
+    ["REWOOT"]: faRepeat,
+    ["QUOTE"]: faQuoteLeft,
+    ["EMOJIREACT"]: faCheck,
+    ["USERBITE"]: faCookieBite,
+    ["POSTBITE"]: faCookieBite,
+  };
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     if (this.notification.emojiReact) {
-      this.emojiUrl =
-        EnvironmentService.environment.externalCacheurl +
-        encodeURIComponent(
-          this.notification.emojiReact.external
-            ? this.notification.emojiReact.url
-            : EnvironmentService.environment.baseMediaUrl + this.notification.emojiReact.url
-        )
+      this.emojiUrl = `${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${this.notification.emojiReact.uuid}`;
     }
   }
 }

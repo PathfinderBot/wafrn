@@ -6,34 +6,39 @@
   $darker: 34%;
   $lighter: 62%;
   $medium: 45%;
+
   @if ($dark-mode) {
     $darker: 48%;
     $lighter: 78%;
     $medium: 60%;
   }
 
-  $adjusted_colors: ();
-  @each $color in $colors {
-    // Case for low contrast
-    @if (color.channel($color, 'saturation', $space: hsl) < 5%) {
-      @if (color.channel($color, 'lightness', $space: hsl) < 5%) {
-        $adjusted_colors: list.append(
-          $adjusted_colors,
+  $adjusted_colors: (
+  );
+
+@each $color in $colors {
+
+  // Case for low contrast
+  @if (color.channel($color, 'saturation', $space: hsl) < 5%) {
+    @if (color.channel($color, 'lightness', $space: hsl) < 5%) {
+      $adjusted_colors: list.append($adjusted_colors,
           blend.set($color, $chroma: 0, $lightness: $darker),
-          $separator: comma
-        );
-      } @else {
-        $adjusted_colors: list.append(
-          $adjusted_colors,
+          $separator: comma);
+    }
+
+    @else {
+      $adjusted_colors: list.append($adjusted_colors,
           blend.set($color, $chroma: 0, $lightness: $lighter),
-          $separator: comma
-        );
-      }
-    } @else {
-      $adjusted_colors: list.append($adjusted_colors, blend.set($color, $lightness: $medium), $separator: comma);
+          $separator: comma);
     }
   }
-  @return $adjusted_colors;
+
+  @else {
+    $adjusted_colors: list.append($adjusted_colors, blend.set($color, $lightness: $medium), $separator: comma);
+  }
+}
+
+@return $adjusted_colors;
 }
 
 @mixin gradient-text($colors...) {
@@ -44,6 +49,7 @@
     --gradient-colors: #{clamp-colors($colors, false)};
     --gradient-colors-inverse: #{clamp-colors($colors, true)};
   }
+
   html[data-theme='dark'] & {
     --gradient-colors: #{clamp-colors($colors, true)};
     --gradient-colors-inverse: #{clamp-colors($colors, false)};
@@ -53,9 +59,11 @@
   --gradient-colors-dark: #{clamp-colors($colors, true)};
   --on-gradient-colors-light: var(--mat-sys-primary-fixed);
   --on-gradient-colors-dark: var(--mat-sys-on-primary-fixed);
+
   &.tag {
     color: transparent;
   }
+
   & .tag-text {
     background-image: linear-gradient(in oklab to right, var(--gradient-colors));
     -webkit-background-clip: text;
@@ -66,122 +74,122 @@
 
 // Flag color text
 // Colors are transformed to be web safe, so use the exact colors from the flag
-[data-tag='lgbt'i],
-[data-tag='lgbtq'i],
-[data-tag='lgbtqia'i],
-[data-tag='pride'i],
-[data-tag='queer'i] {
+[data-tag='lgbt' i],
+[data-tag='lgbtq' i],
+[data-tag='lgbtqia' i],
+[data-tag='pride' i],
+[data-tag='queer' i] {
   @include gradient-text(#e50000, #ff8d00, #ffee00, #028121, #004cff, #770088);
 }
 
-[data-tag='transgender'i],
-[data-tag='trans'i] {
+[data-tag='transgender' i],
+[data-tag='trans' i] {
   @include gradient-text(#5bcefa, #f5a9b8, #fff, #f5a9b8, #5bcefa);
 }
 
-[data-tag='transfeminine'i],
-[data-tag='transfem'i] {
+[data-tag='transfeminine' i],
+[data-tag='transfem' i] {
   @include gradient-text(#73deff, #ffe0ed, #ff8cbe, #ffe0ed, #73deff);
 }
 
-[data-tag='transmasculine'i],
-[data-tag='transmasc'i] {
+[data-tag='transmasculine' i],
+[data-tag='transmasc' i] {
   @include gradient-text(#ff8abd, #cdf5fe, #74dfff, #cdf5fe, #ff8abd);
 }
 
-[data-tag='genderfluid'i] {
+[data-tag='genderfluid' i] {
   @include gradient-text(#ff76a2, #ffffff, #bf12d8, #000000, #303cbe);
 }
 
-[data-tag='bisexual'i],
-[data-tag='bi'i] {
+[data-tag='bisexual' i],
+[data-tag='bi' i] {
   @include gradient-text(#d60270, #9b4f96, #0038a8);
 }
 
-[data-tag='nonbinary'i],
-[data-tag='enby'i],
-[data-tag='nb'i] {
+[data-tag='nonbinary' i],
+[data-tag='enby' i],
+[data-tag='nb' i] {
   @include gradient-text(#fff430, #fff, #9c59d1, #000);
 }
 
-[data-tag='genderqueer'i] {
+[data-tag='genderqueer' i] {
   @include gradient-text(#b57edc, #fff, #4a8123);
 }
 
 // Might overlap with people talking about Balatro
-[data-tag='asexual'i],
-[data-tag='ace'i] {
+[data-tag='asexual' i],
+[data-tag='ace' i] {
   @include gradient-text(#000, #aaa, #810081);
 }
 
-[data-tag='gay'i],
-[data-tag='mlm'i] {
+[data-tag='gay' i],
+[data-tag='mlm' i] {
   @include gradient-text(#26ceaa, #f1efff, #5049cc);
 }
 
-[data-tag='achillean'i] {
+[data-tag='achillean' i] {
   @include gradient-text(#99c6ea, #f9fdea, #99c6ea);
 }
 
-[data-tag='lesbian'i],
-[data-tag='wlw'i] {
+[data-tag='lesbian' i],
+[data-tag='wlw' i] {
   @include gradient-text(#d62900, #ff9b55, #d461a6, #a50062);
 }
 
-[data-tag='sapphic'i] {
+[data-tag='sapphic' i] {
   @include gradient-text(#fd8ba8, #fbf2ff, #fd8ba8);
 }
 
-[data-tag='intersex'i] {
+[data-tag='intersex' i] {
   @include gradient-text(#ffda00, #7a00ac);
 }
 
 // Might overlap with people talking about frying pans
-[data-tag='pansexual'i],
-[data-tag='pan'i] {
+[data-tag='pansexual' i],
+[data-tag='pan' i] {
   @include gradient-text(#ff1b8d, #ffda00, #1bb3ff);
 }
 
-[data-tag='aromantic'i],
-[data-tag='aro'i] {
+[data-tag='aromantic' i],
+[data-tag='aro' i] {
   @include gradient-text(#3aa63f, #a8d47a, #aaa, #000);
 }
 
-[data-tag='agender'i] {
+[data-tag='agender' i] {
   @include gradient-text(#000, #aaa, #b6f583, #aaa, #000);
 }
 
-[data-tag='bigender'i] {
+[data-tag='bigender' i] {
   @include gradient-text(#6992d9, #90c3e8, #aaa, #c4a4ea, #aaa, #90c3e8, #6992d9);
 }
 
-[data-tag='aroace'i] {
+[data-tag='aroace' i] {
   @include gradient-text(#000, #810081, #aaa, #fff, #a8d47a, #3aa63f);
 }
 
-[data-tag='demisexual'i] {
+[data-tag='demisexual' i] {
   @include gradient-text(#fff, #7c0070, #aaa);
 }
 
-[data-tag='demiromantic'i] {
+[data-tag='demiromantic' i] {
   @include gradient-text(#fff, #339933, #aaa);
 }
 
-[data-tag='voidpunk'i] {
+[data-tag='voidpunk' i] {
   @include gradient-text(#362d49, #9f74b7, #e9e9e9, #51ad55, #20442d);
 }
 
 // Silly
-[data-tag='italian'i] {
+[data-tag='italian' i] {
   @include gradient-text(#009344, #fff, #cf2734);
 }
 
-[data-tag='tax fraud'i],
-[data-tag='tax evasion'i] {
+[data-tag='tax fraud' i],
+[data-tag='tax evasion' i] {
   @include gradient-text(#7d9d6c, #5f5f5f, #681a09, #5f5f5f, #7d9d6c);
 }
 
-[data-tag='wafrn'i] {
+[data-tag='wafrn' i] {
   &.tag {
     display: flex;
     gap: 0.125ch;
@@ -190,7 +198,7 @@
     &::after {
       content: '';
       display: inline-block;
-      background-image: url(https://cdn.wafrn.net/api/cache?media=https%3A%2F%2Fmedia.wafrn.net%2Femojipacks%2Fwaffy%2Fyeah_waffy.png);
+      background-image: url(/assets/img/yeah_waffy.png);
       background-size: 100%;
       width: 1.125em;
       height: 1.125em;

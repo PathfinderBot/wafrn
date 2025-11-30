@@ -70,7 +70,6 @@ export class PostComponent implements OnInit, OnDestroy {
   expanded = signal(false)
   finalPosts = computed(() => this.post().slice(-5))
   mediaBaseUrl = EnvironmentService.environment.baseMediaUrl
-  cacheurl = EnvironmentService.environment.externalCacheurl
   followedUsers: string[] = []
   notYetAcceptedFollows: string[] = []
   notes = computed(() => this.uniquePost().notes.toString())
