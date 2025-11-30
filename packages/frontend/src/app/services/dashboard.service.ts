@@ -263,7 +263,7 @@ export class DashboardService {
     if (!blog) return "";
     return (
       EnvironmentService.environment.cacheDomain +
-      "/api/v2/cache/avatar" +
+      "/api/v2/cache/avatar/" +
       blog.id
     );
   }
