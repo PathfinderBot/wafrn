@@ -52,8 +52,7 @@ ${{DOMAIN_NAME}} {
     header * {
         Service-Worker-Allowed: "/",
         # Cache-Control: no-cache, no-store, must-revalidate
-        X-Frame-Options "Deny"
-        Content-Security-Policy-Report-Only "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://${{CACHE_DOMAIN}}; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src https://${{CACHE_DOMAIN}}; frame-src 'none'; worker-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests; block-all-mixed-content"
+        Content-Security-Policy-Report-Only "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://${{CACHE_DOMAIN}}; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; style-src-elem 'unsafe-inline'; style-src-attr 'unsafe-inline'; img-src 'self' https://${{CACHE_DOMAIN}}; frame-src 'self'; worker-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests; block-all-mixed-content"
     }
 
 
