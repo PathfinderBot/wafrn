@@ -200,6 +200,7 @@ case $BLUESKY_SUPPORT in
   ;;
 esac
 
+
 POST_DOCKER
 
 echo "------------------"
@@ -222,6 +223,10 @@ echo
 echo "----"
 echo "Done"
 echo "----"
+
+sleep 5
+docker compose down
+docker compose up -d
 
 source $HOME/wafrn/.env
 
