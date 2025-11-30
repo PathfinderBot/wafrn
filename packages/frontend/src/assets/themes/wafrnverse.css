@@ -98,7 +98,7 @@
 /* WAFRN LOGO --------------------------------------------------------------- */
 .instance-logo {
   /* filter: hue-rotate(270deg); */
-  content: url("https://cdn.wafrn.net/api/cache/?media=https%3A%2F%2Fmedia.wafrn.net%2F1749063617775_1512bf9dc76e226a08df0ece5da0bd11ce5f5c2a_processed.webp");
+  content: url("/assets/img/wafrnverse.webp");
   height: 91px;
 }
 
@@ -335,6 +335,7 @@ div.quoted-post {
   border-radius: var(--mat-sys-corner-medium) !important;
   box-shadow: none !important;
 }
+
 .ask-content {
   border-radius: var(--mat-sys-corner-medium) !important;
 }
