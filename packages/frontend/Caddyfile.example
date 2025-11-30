@@ -52,7 +52,7 @@ ${{DOMAIN_NAME}} {
     header * {
         Service-Worker-Allowed: "/",
         # Cache-Control: no-cache, no-store, must-revalidate
-        Content-Security-Policy-Report-Only "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://${{CACHE_DOMAIN}}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval'; script-src-attr 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' data: 'unsafe-inline'; style-src-elem 'self' data: 'unsafe-inline'; style-src-attr 'self' data: 'unsafe-inline'; object-src 'self'; frame-src 'self'; worker-src 'self'; frame-ancestors 'self'; upgrade-insecure-requests; block-all-mixed-content; manifest-src 'self'"
+        Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://${{CACHE_DOMAIN}}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval'; script-src-attr 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' data: 'unsafe-inline'; style-src-elem 'self' data: 'unsafe-inline'; style-src-attr 'self' data: 'unsafe-inline'; object-src 'self'; frame-src 'self'; worker-src 'self'; frame-ancestors 'self'; upgrade-insecure-requests; block-all-mixed-content; manifest-src 'self'"
     }
 
 
