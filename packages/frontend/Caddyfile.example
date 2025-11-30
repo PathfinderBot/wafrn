@@ -52,12 +52,12 @@ ${{DOMAIN_NAME}} {
     header * {
         Service-Worker-Allowed: "/",
         # Cache-Control: no-cache, no-store, must-revalidate
+        X-Frame-Options "Deny"
         Content-Security-Policy-Report-Only "default-src 'self'"
     }
 
 
     handle_path /api/notifications/socket {
-        websocket
         reverse_proxy ${{WEBSOCKET_HOST:-backend:9000}}
     }
 
