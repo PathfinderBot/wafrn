@@ -46,6 +46,7 @@ ${{CACHE_DOMAIN}} {
 
 ${{DOMAIN_NAME}} {
     encode zstd gzip
+    Content-Security-Policy-Report-Only: default-src 'self'
     import /etc/caddy/config/main_domain_pre/* ${{DOMAIN_NAME}}
 
     header * {
