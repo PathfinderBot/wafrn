@@ -76,71 +76,69 @@ function writeStream(
 }
 
 async function getMediaFromUrl(mediaUrl: string, res: Response) {
-  logger.trace({
-    cachedUrl: mediaUrl,
-  });
-  const mediaLinkHash = crypto
-    .createHash("sha256")
-    .update(mediaUrl)
-    .digest("hex");
-  let localFileName = `cache/${mediaLinkHash}`;
-  // if file exists
-  if (fs.existsSync(localFileName)) {
-    return await sendWithCache(res, localFileName);
-  } else {
-    try {
-      if (mediaUrl.startsWith("?cid=")) {
-        try {
-          const did = decodeURIComponent(mediaUrl.split("&did=")[1]);
-          const cid = decodeURIComponent(
-            mediaUrl.split("&did=")[0].split("?cid=")[1]
-          );
-          if (!did || !cid) {
-            return res.sendStatus(400);
-          }
-          const plcResolver = getResolver();
-          const didResolver = new Resolver(plcResolver);
-          const didData = await didResolver.resolve(did);
-          if (didData?.didDocument?.service) {
-            const url =
-              didData.didDocument.service[0].serviceEndpoint +
-              "/xrpc/com.atproto.sync.getBlob?did=" +
-              encodeURIComponent(did) +
-              "&cid=" +
-              encodeURIComponent(cid);
-            mediaUrl = url;
-          } else if (did.startsWith("did:web")) {
-            // get did doc first
-            const docRes = await fetch(
-              `https://${did.split("did:web:")[1]}/.well-known/did.json`
+  try {
+    const mediaLinkHash = crypto
+      .createHash("sha256")
+      .update(mediaUrl)
+      .digest("hex");
+    let localFileName = `cache/${mediaLinkHash}`;
+    // if file exists
+    if (fs.existsSync(localFileName)) {
+      return await sendWithCache(res, localFileName);
+    } else {
+      try {
+        if (mediaUrl.startsWith("?cid=")) {
+          try {
+            const did = decodeURIComponent(mediaUrl.split("&did=")[1]);
+            const cid = decodeURIComponent(
+              mediaUrl.split("&did=")[0].split("?cid=")[1]
             );
-            const didDoc = await docRes.json();
-            const atProtoServer = didDoc.service.find(
-              (x: any) =>
-                x.id === "#atproto_pds" ||
-                x.type === "AtprotoPersonalDataServer"
-            );
-            if (!atProtoServer) {
-              return res.sendStatus(500);
+            if (!did || !cid) {
+              return res.sendStatus(400);
             }
-            const url =
-              atProtoServer.serviceEndpoint +
-              "/xrpc/com.atproto.sync.getBlob?did=" +
-              encodeURIComponent(did) +
-              "&cid=" +
-              encodeURIComponent(cid);
-            mediaUrl = url;
+            const plcResolver = getResolver();
+            const didResolver = new Resolver(plcResolver);
+            const didData = await didResolver.resolve(did);
+            if (didData?.didDocument?.service) {
+              const url =
+                didData.didDocument.service[0].serviceEndpoint +
+                "/xrpc/com.atproto.sync.getBlob?did=" +
+                encodeURIComponent(did) +
+                "&cid=" +
+                encodeURIComponent(cid);
+              mediaUrl = url;
+            } else if (did.startsWith("did:web")) {
+              // get did doc first
+              const docRes = await fetch(
+                `https://${did.split("did:web:")[1]}/.well-known/did.json`
+              );
+              const didDoc = await docRes.json();
+              const atProtoServer = didDoc.service.find(
+                (x: any) =>
+                  x.id === "#atproto_pds" ||
+                  x.type === "AtprotoPersonalDataServer"
+              );
+              if (!atProtoServer) {
+                return res.sendStatus(500);
+              }
+              const url =
+                atProtoServer.serviceEndpoint +
+                "/xrpc/com.atproto.sync.getBlob?did=" +
+                encodeURIComponent(did) +
+                "&cid=" +
+                encodeURIComponent(cid);
+              mediaUrl = url;
+            }
+          } catch (error) {
+            return res.sendStatus(500);
           }
-        } catch (error) {
-          return res.sendStatus(500);
         }
-      }
-      const response = await axios.get(mediaUrl, {
-        responseType: "stream",
-        headers: { "User-Agent": "wafrnCacher" },
-      });
-      let altText = "";
-      /*
+        const response = await axios.get(mediaUrl, {
+          responseType: "stream",
+          headers: { "User-Agent": "wafrnCacher" },
+        });
+        let altText = "";
+        /*
       let dbMediaUrl = String(req.query?.media).startsWith(
         completeEnvironment.mediaUrl
       )
@@ -160,13 +158,21 @@ async function getMediaFromUrl(mediaUrl: string, res: Response) {
       }
       */
 
-      const { stream, mime } = await getMimeType(response.data);
-      res.contentType(mime);
-      await writeStream(stream, localFileName, mime, altText);
-      return await sendWithCache(res, localFileName);
-    } catch (error) {
-      return res.sendStatus(500);
+        const { stream, mime } = await getMimeType(response.data);
+        res.contentType(mime);
+        await writeStream(stream, localFileName, mime, altText);
+        return await sendWithCache(res, localFileName);
+      } catch (error) {
+        return res.sendStatus(500);
+      }
     }
+  } catch (error) {
+    logger.debug({
+      message: "Error with cacher",
+      url: mediaUrl,
+      error: error,
+    });
+    res.sendStatus(500);
   }
 }
 
