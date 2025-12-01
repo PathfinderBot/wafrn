@@ -19,7 +19,7 @@
         {{ emoji.id }}
         }
         @if (emoji.url) {
-        <img loading="lazy" class="mr-2 ml-2" [src]="emojiCacherUrl + emoji.uuid" [alt]="emojiCollection.name"
+        <img loading="lazy" class="mr-2 ml-2" [src]="baseEmojisUrl + emoji.url" [alt]="emojiCollection.name"
           [title]="emojiCollection.name" />
         }
       </button>
@@ -45,7 +45,7 @@
           @if (!emoji.url) {
           {{ emoji.id }}
           } @else {
-          <img class="post-emoji-preview" loading="lazy" [alt]="emoji.name" [src]="this.emojiCacherUrl + emoji.uuid" />
+          <img class="post-emoji-preview" loading="lazy" [alt]="emoji.name" [src]="baseEmojisUrl + emoji.url" />
           }
           </button>
           }
