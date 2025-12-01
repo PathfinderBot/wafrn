@@ -74,118 +74,9 @@ function writeStream(
     stream.pipe(writeStream);
   });
 }
-
-async function getMediaFromUrl(mediaUrl: string, res: Response) {
-  try {
-    const mediaLinkHash = crypto
-      .createHash("sha256")
-      .update(mediaUrl)
-      .digest("hex");
-    let localFileName = `cache/${mediaLinkHash}`;
-    // if file exists
-    if (fs.existsSync(localFileName)) {
-      return await sendWithCache(res, localFileName);
-    } else {
-      try {
-        if (mediaUrl.startsWith("?cid=")) {
-          try {
-            const did = decodeURIComponent(mediaUrl.split("&did=")[1]);
-            const cid = decodeURIComponent(
-              mediaUrl.split("&did=")[0].split("?cid=")[1]
-            );
-            if (!did || !cid) {
-              return res.sendStatus(400);
-            }
-            const plcResolver = getResolver();
-            const didResolver = new Resolver(plcResolver);
-            const didData = await didResolver.resolve(did);
-            if (didData?.didDocument?.service) {
-              const url =
-                didData.didDocument.service[0].serviceEndpoint +
-                "/xrpc/com.atproto.sync.getBlob?did=" +
-                encodeURIComponent(did) +
-                "&cid=" +
-                encodeURIComponent(cid);
-              mediaUrl = url;
-            } else if (did.startsWith("did:web")) {
-              // get did doc first
-              const docRes = await fetch(
-                `https://${did.split("did:web:")[1]}/.well-known/did.json`
-              );
-              const didDoc = await docRes.json();
-              const atProtoServer = didDoc.service.find(
-                (x: any) =>
-                  x.id === "#atproto_pds" ||
-                  x.type === "AtprotoPersonalDataServer"
-              );
-              if (!atProtoServer) {
-                return res.sendStatus(500);
-              }
-              const url =
-                atProtoServer.serviceEndpoint +
-                "/xrpc/com.atproto.sync.getBlob?did=" +
-                encodeURIComponent(did) +
-                "&cid=" +
-                encodeURIComponent(cid);
-              mediaUrl = url;
-            }
-          } catch (error) {
-            return res.sendStatus(500);
-          }
-        }
-        const response = await axios.get(mediaUrl, {
-          responseType: "stream",
-          headers: { "User-Agent": "wafrnCacher" },
-        });
-        let altText = "";
-        /*
-      let dbMediaUrl = String(req.query?.media).startsWith(
-        completeEnvironment.mediaUrl
-      )
-        ? String(req.query?.media).split(completeEnvironment.mediaUrl)[1]
-        : String(req.query?.media);
-      // we are disabling this feature temporarily
-      let media = true
-        ? undefined
-        : await Media.findOne({
-            where: sequelize.where(
-              sequelize.fn("md5", sequelize.col("url")),
-              crypto.createHash("md5").update(dbMediaUrl).digest("hex")
-            ),
-          });
-      if (media) {
-        altText = media.description;
-      }
-      */
-
-        const { stream, mime } = await getMimeType(response.data);
-        res.contentType(mime);
-        await writeStream(stream, localFileName, mime, altText);
-        return await sendWithCache(res, localFileName);
-      } catch (error) {
-        return res.sendStatus(500);
-      }
-    }
-  } catch (error) {
-    logger.debug({
-      message: "Error with cacher",
-      url: mediaUrl,
-      error: error,
-    });
-    res.sendStatus(500);
-  }
-}
-
-export default function cacheRoutes(app: Application) {
+function cacheRoutes(app: Application) {
   app.get("/api/cache", async (req: Request, res: Response) => {
     let mediaUrl = String(req.query?.media);
-    const mediaLinkHash = crypto
-      .createHash("sha256")
-      .update(mediaUrl)
-      .digest("hex");
-    let localFileName = `cache/${mediaLinkHash}`;
-    const avatarTransform = String(req.query?.avatar) === "true";
-
     if (!mediaUrl) {
       res.sendStatus(404);
       return;
@@ -340,3 +231,116 @@ export default function cacheRoutes(app: Application) {
     }
   );
 }
+
+async function getMediaFromUrl(mediaUrl: string, res?: Response) {
+  try {
+    const mediaLinkHash = crypto
+      .createHash("sha256")
+      .update(mediaUrl)
+      .digest("hex");
+    let localFileName = `cache/${mediaLinkHash}`;
+    // if file exists
+    if (fs.existsSync(localFileName) && res) {
+      return await sendWithCache(res, localFileName);
+    } else {
+      try {
+        if (mediaUrl.startsWith("?cid=")) {
+          try {
+            const did = decodeURIComponent(mediaUrl.split("&did=")[1]);
+            const cid = decodeURIComponent(
+              mediaUrl.split("&did=")[0].split("?cid=")[1]
+            );
+            if ((!did || !cid) && res) {
+              return res.sendStatus(400);
+            }
+            const plcResolver = getResolver();
+            const didResolver = new Resolver(plcResolver);
+            const didData = await didResolver.resolve(did);
+            if (didData?.didDocument?.service) {
+              const url =
+                didData.didDocument.service[0].serviceEndpoint +
+                "/xrpc/com.atproto.sync.getBlob?did=" +
+                encodeURIComponent(did) +
+                "&cid=" +
+                encodeURIComponent(cid);
+              mediaUrl = url;
+            } else if (did.startsWith("did:web")) {
+              // get did doc first
+              const docRes = await fetch(
+                `https://${did.split("did:web:")[1]}/.well-known/did.json`
+              );
+              const didDoc = await docRes.json();
+              const atProtoServer = didDoc.service.find(
+                (x: any) =>
+                  x.id === "#atproto_pds" ||
+                  x.type === "AtprotoPersonalDataServer"
+              );
+              if (!atProtoServer && res) {
+                return res.sendStatus(500);
+              }
+              const url =
+                atProtoServer.serviceEndpoint +
+                "/xrpc/com.atproto.sync.getBlob?did=" +
+                encodeURIComponent(did) +
+                "&cid=" +
+                encodeURIComponent(cid);
+              mediaUrl = url;
+            }
+          } catch (error) {
+            if (res) {
+              return res.sendStatus(500);
+            }
+          }
+        }
+        const response = await axios.get(mediaUrl, {
+          responseType: "stream",
+          headers: { "User-Agent": "wafrnCacher" },
+        });
+        let altText = "";
+        /*
+      let dbMediaUrl = String(req.query?.media).startsWith(
+        completeEnvironment.mediaUrl
+      )
+        ? String(req.query?.media).split(completeEnvironment.mediaUrl)[1]
+        : String(req.query?.media);
+      // we are disabling this feature temporarily
+      let media = true
+        ? undefined
+        : await Media.findOne({
+            where: sequelize.where(
+              sequelize.fn("md5", sequelize.col("url")),
+              crypto.createHash("md5").update(dbMediaUrl).digest("hex")
+            ),
+          });
+      if (media) {
+        altText = media.description;
+      }
+      */
+
+        const { stream, mime } = await getMimeType(response.data);
+        if (res) {
+          res.contentType(mime);
+        }
+        await writeStream(stream, localFileName, mime, altText);
+        if (res) {
+          return await sendWithCache(res, localFileName);
+        }
+      } catch (error) {
+        if (res) {
+          return res.sendStatus(500);
+        }
+      }
+    }
+  } catch (error) {
+    logger.debug({
+      message: "Error with cacher",
+      url: mediaUrl,
+      error: error,
+    });
+    if (res) {
+      res.sendStatus(500);
+    }
+  }
+}
+
+export { cacheRoutes, getMediaFromUrl };

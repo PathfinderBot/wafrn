@@ -36,7 +36,7 @@ import muteRoutes from "./routes/mute.js";
 import { notificationRoutes } from "./routes/notifications.js";
 import pollRoutes from "./routes/polls.js";
 import postsRoutes from "./routes/posts.js";
-import cacheRoutes from "./routes/remoteCache.js";
+import { cacheRoutes } from "./routes/remoteCache.js";
 import searchRoutes from "./routes/search.js";
 import silencePostRoutes from "./routes/silencePost.js";
 import statusRoutes from "./routes/status.js";
