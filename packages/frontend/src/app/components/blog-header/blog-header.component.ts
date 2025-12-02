@@ -154,10 +154,10 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       blog.description,
       "text/html"
     );
-    const imgs = parsedAsHTML.getElementsByTagName("img");
-    Array.from(imgs).forEach((img, index) => {
-      img.src = "";
-    });
+    // const imgs = parsedAsHTML.getElementsByTagName("img");
+    // Array.from(imgs).forEach((img, index) => {
+    //   img.src = "";
+    // });
     this.headerHTML = parsedAsHTML.documentElement.innerHTML;
     if (blog?.migratedTo)
       this.migratedToUrl = new URL(
