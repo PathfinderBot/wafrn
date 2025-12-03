@@ -172,7 +172,12 @@ function userRoutes(app: Application) {
   app.post(
     "/api/register",
     ...(completeEnvironment.registrationLevel === "PRIVATE"
-      ? [authenticateToken, adminToken, createAccountLimiter, onePerSecondLimiter]
+      ? [
+          authenticateToken,
+          adminToken,
+          createAccountLimiter,
+          onePerSecondLimiter,
+        ]
       : [createAccountLimiter, onePerSecondLimiter]),
     uploadHandler().single("avatar"),
     async (req, res) => {
@@ -185,7 +190,7 @@ function userRoutes(app: Application) {
           validateEmail(req.body.email) &&
           !slurs.includes(
             req.body.url.toLowerCase() &&
-            slurs.every((elem) => !req.body.url.includes(elem))
+              slurs.every((elem) => !req.body.url.includes(elem))
           )
         ) {
           const birthDate = new Date(req.body.birthDate);
@@ -272,15 +277,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `,
-              });
+                });
             await Promise.all([userWithEmail, emailSent]);
             await generateUserKeyPairQueue.add("generateUserKeyPair", {
               userId: (await userWithEmail).id,
@@ -505,8 +510,9 @@ function userRoutes(app: Application) {
             user.requestedPasswordReset = new Date();
             user.save();
 
-            const link = `${completeEnvironment.instanceUrl
-              }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
+            const link = `${
+              completeEnvironment.instanceUrl
+            }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
             const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(
               email
             )}&code=${resetCode}`;
@@ -812,7 +818,31 @@ function userRoutes(app: Application) {
       }
     }
   );
+  app.get(
+    "/api/user/exportFollows",
+    authenticateToken,
+    async (req: AuthorizedRequest, res: Response) => {
+      const user = (await User.findByPk(req.jwtData?.userId as string)) as User;
+      const myFollows = await Follows.findAll({
+        include: [
+          {
+            model: User,
+            attributes: ["url"],
+            as: "followed",
+            required: true,
+          },
+        ],
+      });
 
+      const followList = myFollows.map((elem: any) =>
+        elem.followed.url.startsWith("@")
+          ? elem.followed.url
+          : `@${elem.followed.url}@${completeEnvironment.instanceUrl}`
+      );
+
+      res.send(followList);
+    }
+  );
   // list all registered MFA options for a user
   app.get(
     "/api/user/mfa",
@@ -1082,19 +1112,19 @@ function userRoutes(app: Application) {
         let followed = blog.isRemoteUser
           ? blog.followingCount
           : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true,
-            },
-          });
+              where: {
+                followerId: blog.id,
+                accepted: true,
+              },
+            });
         let followers = blog.isRemoteUser
           ? blog.followerCount
           : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true,
-            },
-          });
+              where: {
+                followedId: blog.id,
+                accepted: true,
+              },
+            });
         const publicOptions = UserOptions.findAll({
           where: {
             userId: blog.id,
@@ -1140,10 +1170,10 @@ function userRoutes(app: Application) {
 
         const postCount = blog
           ? await Post.count({
-            where: {
-              userId: blog.id,
-            },
-          })
+              where: {
+                userId: blog.id,
+              },
+            })
           : 0;
 
         followed = await followed;
@@ -1955,8 +1985,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
           if (petitionData && petitionData.alsoKnownAs) {
             const aliasList = isArray(petitionData.alsoKnownAs)
               ? petitionData.alsoKnownAs.map((elem: string) =>
-                elem.toLowerCase()
-              )
+                  elem.toLowerCase()
+                )
               : [petitionData.alsoKnownAs.toLowerCase()];
             if (
               aliasList.includes(
@@ -2034,7 +2064,7 @@ It is slow because we have to send every fedi server that has ever seen a post o
               message = `Alias not detected`;
             }
           }
-        } catch (error) { }
+        } catch (error) {}
       }
 
       res.status(success ? 200 : 500);
@@ -2053,14 +2083,17 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     return await agent.upsertProfile(async (existingProfile) => {
       const profile = existingProfile ?? ({} as AppBskyActorProfile.Record);
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;
-      profile.displayName = user.name.replace(/:[\S]+:/gm, '').substring(0, 63).trim();
+      profile.displayName = user.name
+        .replace(/:[\S]+:/gm, "")
+        .substring(0, 63)
+        .trim();
       profile.description =
         dompurify.sanitize(
           user.descriptionMarkdown
             ? user.descriptionMarkdown.substring(
-              0,
-              248 - fullProfileString.length
-            )
+                0,
+                248 - fullProfileString.length
+              )
             : "",
           { ALLOWED_TAGS: [] }
         ) +
@@ -2097,21 +2130,27 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       }
       if (user.hideProfileNotLoggedIn) {
         profile.labels = {
-          "$type": "com.atproto.label.defs#selfLabels",
-          "values": [
+          $type: "com.atproto.label.defs#selfLabels",
+          values: [
             {
-              "val": "!no-unauthenticated"
+              val: "!no-unauthenticated",
             },
-            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values : []),
-          ]
-        }
+            ...(profile.labels
+              ? (profile.labels as $Typed<SelfLabels>).values
+              : []),
+          ],
+        };
       } else {
         profile.labels = {
-          "$type": "com.atproto.label.defs#selfLabels",
-          "values": [
-            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values.filter(x => x.val !== "!no-unauthenticated") : []),
-          ]
-        }
+          $type: "com.atproto.label.defs#selfLabels",
+          values: [
+            ...(profile.labels
+              ? (profile.labels as $Typed<SelfLabels>).values.filter(
+                  (x) => x.val !== "!no-unauthenticated"
+                )
+              : []),
+          ],
+        };
       }
 
       return profile;
@@ -2151,15 +2190,15 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
         });
         userOption
           ? await userOption.update({
-            optionValue: option.value,
-            public: option.public == true,
-          })
+              optionValue: option.value,
+              public: option.public == true,
+            })
           : await UserOptions.create({
-            userId: posterId,
-            optionName: option.name,
-            optionValue: option.value,
-            public: option.public == true,
-          });
+              userId: posterId,
+              optionName: option.name,
+              optionValue: option.value,
+              public: option.public == true,
+            });
       }
     }
   }
@@ -2178,8 +2217,8 @@ async function createBskyAccount({
 }) {
   const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
     ? completeEnvironment.bskyPdsUrl
-      .replace("https://", "")
-      .replace("http://", "")
+        .replace("https://", "")
+        .replace("http://", "")
     : completeEnvironment.bskyPdsUrl;
 
   const sanitizedUrl = user.url
