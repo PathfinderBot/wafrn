@@ -529,7 +529,7 @@ const activitystreams = {
   }
 } satisfies JsonLd
 
-const wafrnContext = {
+export const wafrnContext = {
   '@context': [
     'https://www.w3.org/ns/activitystreams',
     'https://w3id.org/security/v1',
