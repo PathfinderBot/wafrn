@@ -42,20 +42,24 @@ export default function listRoutes(app: Application) {
             .map((url) => "@" + url);
           const allUsers = localUsersUrls
             .concat(remoteUsersUrls.map((usr) => usr.toLowerCase()))
-            .map((elem) => elem.trim());
+            .map((elem) => elem.trim().toLowerCase());
           let foundUsers = await User.findAll({
             where: {
               url: {
-                [Op.in]: allUsers,
+                [Op.iLike]: {
+                  [Op.any]: allUsers,
+                },
               },
             },
           });
-          let foundUsersUrls = foundUsers.map((elem: any) => elem.url);
+          let foundUsersUrls = foundUsers.map((elem: any) =>
+            elem.url.toLowerCase()
+          );
           let notFoundUsersUrls = allUsers.filter(
-            (elem) => !foundUsersUrls.includes(elem)
+            (elem) => !foundUsersUrls.includes(elem.toLowerCase())
           );
           const notFoundUsersToFetch = notFoundUsersUrls.filter(
-            (elem) => !localUsersUrls.includes(elem)
+            (elem) => !localUsersUrls.includes(elem.toLowerCase())
           );
           // try to get all users
           const userFetchPromise = await promiseRace(
@@ -67,13 +71,17 @@ export default function listRoutes(app: Application) {
           foundUsers = await User.findAll({
             where: {
               url: {
-                [Op.in]: allUsers,
+                [Op.iLike]: {
+                  [Op.any]: allUsers,
+                },
               },
             },
           });
-          foundUsersUrls = foundUsers.map((elem: any) => elem.url);
+          foundUsersUrls = foundUsers.map((elem: any) =>
+            elem.url.toLowerCase()
+          );
           notFoundUsersUrls = allUsers.filter(
-            (elem) => !foundUsersUrls.includes(elem)
+            (elem) => !foundUsersUrls.includes(elem.toLowerCase())
           );
           res.send({
             foundUsers: foundUsers.map((elem: any) => {
