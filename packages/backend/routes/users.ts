@@ -827,6 +827,7 @@ function userRoutes(app: Application) {
         include: [
           {
             model: User,
+            attributes: ["url"],
             as: "followed",
             required: true,
           },
@@ -839,7 +840,7 @@ function userRoutes(app: Application) {
           : `@${elem.followed.url}@${completeEnvironment.instanceUrl}`
       );
 
-      res.send(followList.join("\n"));
+      res.send(followList);
     }
   );
   // list all registered MFA options for a user
