@@ -226,7 +226,11 @@ async function sendMail() {
     ${mostRepliedPosts[0] ? `<p>The most replied woot you have is ${new URL(`/fediverse/post/${mostRepliedPosts[0].parentId}`, completeEnvironment.frontendUrl)} which has ${mostRepliedPosts[0].replyCount} replies</p>` : ''}
     ${mostReactedPosts[0] ? `<p>The most reacted woot you have is ${new URL(`/fediverse/post/${mostReactedPosts[0].postId}`, completeEnvironment.frontendUrl)} which has ${mostReactedPosts[0].reactions.length} reactions</p>` : ''}
     <br />
-    And finaly, the part of the email where I say "give me money". Well, first, give money to your <a href="${new URL(`/about`, completeEnvironment.frontendUrl)}">wafrn instance</a>, then to the team, and then me
+    And finaly, the part of the email where I say "give me money". Well, first, give money to your <a href="${
+      completeEnvironment.donationUrl ?
+      completeEnvironment.donationUrl : 
+      new URL(`/about`, completeEnvironment.frontendUrl)
+    }">wafrn instance</a>, then to the team, and then me
     <ul>
     	<li><a href="https://ko-fi.com/cyrneko/tiers" target="_blank">Alexia</a> has helped improve the quality of the code and made the way for other improvements. She has done a lot to help wafrn grow</li>
       <li><a href="https://app.wafrn.net/blog/fireisgood">FireIsGood</a> has done A LOT. Like A HUGE FUCKING LOT. You should give her moneys <a href="https://ko-fi.com/fireisgood">here</a> </li>

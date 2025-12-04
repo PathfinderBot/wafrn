@@ -80,5 +80,6 @@ export interface Environment {
   webpushEmail: string
   registrationLevel: 'PRIVATE' | 'INVITE' | 'PUBLIC'
   disableShowingBlockedServers: boolean
+  donationUrl?: string
   frontendEnvironment: any
 }
