@@ -118,6 +118,7 @@ export const baseEnvironment: Environment = {
   // registration level for the instance
   registrationLevel: 'PRIVATE',
   disableShowingBlockedServers: true,
+  donationUrl: 'http://localhost/about',
   frontendEnvironment: {
     logo: '/assets/logo.png',
     frontUrl: 'http://localhost:4200',

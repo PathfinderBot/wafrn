@@ -114,6 +114,7 @@ export const baseEnvironment: Environment = {
   webpushEmail: '${{WEBPUSH_EMAIL}}',
   registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
   disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}},
+  donationUrl: '${{DONATION_URL:-}}',
   frontendEnvironment: {
     logo: '${{FRONTEND_LOGO:-/assets/logo.png}}',
     frontUrl: '${{FRONTEND_FQDN_URL}}',
