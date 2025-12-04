@@ -45,7 +45,6 @@ import {
   faPlus,
   faPencil,
   faQuestion,
-  faCaretDown,
   faAngleDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { EditorData } from "src/app/interfaces/editor-data";
@@ -673,6 +672,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         severity: "success",
         summary: "Your woot has been published!",
         soundName: "sendWoot",
+        route: "/fediverse/post/" + res.id
       });
       this.particle.emojiReact(["✏️", "🖍️", "✒️", "🖊️"]);
       this.postCreatorForm.value.content = "";
@@ -817,15 +817,15 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     const tagText =
       this.tags.length > 0
         ? `\n${this.tags
-            .split(",")
-            .map((elem) => "#" + elem)
-            .join(" ")}`
+          .split(",")
+          .map((elem) => "#" + elem)
+          .join(" ")}`
         : "";
     const askText = this.data?.ask
       ? (this.data.ask.user ? this.data.ask.user.url : "anonymous") +
-        " asked: " +
-        this.data.ask.question +
-        "\n\n"
+      " asked: " +
+      this.data.ask.question +
+      "\n\n"
       : "";
     const fediQuoteText =
       this.data?.quote && !this.data.quote.bskyUri
