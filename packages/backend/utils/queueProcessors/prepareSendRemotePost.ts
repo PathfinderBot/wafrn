@@ -22,6 +22,7 @@ import { Privacy } from "../../models/post.js";
 import { completeEnvironment } from "../backendOptions.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
+import { include } from "underscore";
 
 const processPostViewQueue = new Queue("processRemoteView", {
   connection: completeEnvironment.bullmqConnection,
@@ -122,6 +123,13 @@ async function prepareSendRemotePostWorker(job: Job) {
         object: getPostUrlForQuote(quote.dataValues.quotedPost),
         instrument: await postToJSONLD(post.id),
       };
+      await RemoteUserPostView.findOrCreate({
+        where: {
+          postId: post.id,
+          userId: quote.dataValues.quotedPost.dataValues.user.id,
+        },
+      });
+
       highPriorityInboxes.push(
         quote.dataValues.quotedPost.dataValues.user.remoteInbox
       );
@@ -258,8 +266,32 @@ async function prepareSendRemotePostWorker(job: Job) {
           const mentionedInboxes = mentionedUsers.map(
             (elem: any) => elem.remoteInbox
           );
+          for await (const mentionedUser of mentionedUsers.filter(
+            (elem) => elem.remoteId
+          )) {
+            await RemoteUserPostView.findOrCreate({
+              where: {
+                postId: post.id,
+                userId: mentionedUser.id,
+              },
+            });
+          }
           for await (const remoteInbox of mentionedInboxes) {
             highPriorityInboxes.push(remoteInbox);
+          }
+        }
+        if (post.isReblog) {
+          const parent = await Post.findByPk(post.parentId, {
+            include: [{ model: User, as: "user" }],
+          });
+          if (parent && parent.user?.remoteInbox) {
+            highPriorityInboxes.push(parent.user.remoteInbox);
+            await RemoteUserPostView.findOrCreate({
+              where: {
+                postId: post.id,
+                userId: parent.user.id,
+              },
+            });
           }
         }
 
