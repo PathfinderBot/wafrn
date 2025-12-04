@@ -210,7 +210,7 @@ async function sendMail() {
     // Modify before sending the email!
     const subject = `Hello ${user.url}, get WAFfed`
     const body = `\
-    <h1>Hello ${user.url}, We miss you at <a href="https://app.wafrn.net">wafrn</a>!</h1>
+    <h1>Hello ${user.url}, We miss you at <a href="${completeEnvironment.frontendUrl}">wafrn</a>!</h1>
     <p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
     ${notificationsCount == 0 ? '<p>Hmm, no notifications. I guess you should get more oomfs</p>' : ''}
     <br />
