@@ -41,7 +41,6 @@ export class MessageService {
     })
 
     snackBarRef.onAction().subscribe(() => {
-      console.log('The snack-bar action was triggered!');
       this.router.navigate([message.route]);
     });
   }
