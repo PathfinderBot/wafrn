@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { DATA_TOKEN, ImageOverlayData, KillscreenOverlayData } from 'src/app/services/overlay.service'
 
@@ -12,7 +12,9 @@ export class ImageOverlayComponent {
   url: string
   backgroundSize: string
 
-  constructor(@Inject(DATA_TOKEN) data: ImageOverlayData) {
+  constructor() {
+    const data = inject<ImageOverlayData>(DATA_TOKEN);
+
     this.url = data.url
     this.backgroundSize = data.backgroundSize
   }
@@ -27,7 +29,9 @@ export class ImageOverlayComponent {
 export class KillscreenOverlayComponent {
   survivedCount: number
 
-  constructor(@Inject(DATA_TOKEN) data: KillscreenOverlayData) {
+  constructor() {
+    const data = inject<KillscreenOverlayData>(DATA_TOKEN);
+
     this.survivedCount = data.survivedCount
   }
 }

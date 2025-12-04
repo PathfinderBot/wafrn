@@ -1,4 +1,4 @@
-import { effect, Injectable, signal } from '@angular/core'
+import { effect, Injectable, signal, inject } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { TranslateService } from '@ngx-translate/core'
 import { GlobalData } from './global-data.service'
@@ -10,14 +10,14 @@ import { merge } from 'rxjs'
   providedIn: 'root'
 })
 export class SimpleTitleService {
+  private titleService = inject(Title);
+  private translate = inject(TranslateService);
+  private notifications = inject(NotificationsService);
+
   // Last set value so we can have notifications sync
   private title = signal('')
 
-  constructor(
-    private titleService: Title,
-    private translate: TranslateService,
-    private notifications: NotificationsService
-  ) {
+  constructor() {
     merge(toObservable(this.notifications.totalNotifications), toObservable(this.title)).subscribe(() => {
       this.syncTitle()
     })

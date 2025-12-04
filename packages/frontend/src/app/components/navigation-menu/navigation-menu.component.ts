@@ -1,13 +1,4 @@
-import {
-  Component,
-  computed,
-  OnDestroy,
-  OnInit,
-  Signal,
-  signal,
-  ViewEncapsulation,
-  WritableSignal
-} from '@angular/core'
+import { Component, computed, OnDestroy, OnInit, Signal, signal, ViewEncapsulation, WritableSignal, inject } from '@angular/core'
 import { NavigationEnd, Router } from '@angular/router'
 import { fromEvent, merge, Subscription } from 'rxjs'
 import { Action } from 'src/app/interfaces/editor-launcher-data'
@@ -72,6 +63,13 @@ import buildData from '../../../buildData.json'
   encapsulation: ViewEncapsulation.None
 })
 export class NavigationMenuComponent implements OnInit, OnDestroy {
+  private editorService = inject(EditorService);
+  private router = inject(Router);
+  jwtService = inject(JwtService);
+  protected loginService = inject(LoginService);
+  private notificationsService = inject(NotificationsService);
+  private dashboardService = inject(DashboardService);
+
   menuItems: MenuItem[] = []
   menuItemsMobile: MenuItem[][] = []
   menuLinks: MenuLink[] = []
@@ -165,16 +163,11 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
 
   buildData = buildData
 
-  constructor(
-    globalData: GlobalData,
-    private editorService: EditorService,
-    private router: Router,
-    public jwtService: JwtService,
-    protected loginService: LoginService,
-    private notificationsService: NotificationsService,
-    private dashboardService: DashboardService,
-    themeService: ThemeService
-  ) {
+  constructor() {
+    const globalData = inject(GlobalData);
+    const loginService = this.loginService;
+    const themeService = inject(ThemeService);
+
     this.currentAccount = loginService.currentAccount
     this.accountList = loginService.accountList
 

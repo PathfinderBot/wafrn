@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -29,14 +29,15 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrl: './manage-followed-hashtags.component.scss'
 })
 export class ManageFollowedHashtagsComponent {
+  postsService = inject(PostsService);
+  private dashboardService = inject(DashboardService);
+  private messageService = inject(MessageService);
+
   loading = true
   tag = ''
-  constructor(
-    public postsService: PostsService,
-    private dashboardService: DashboardService,
-    private messageService: MessageService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.settings.followedHashtags')
     // we force update of the lists
     this.postsService.loadFollowers().then(() => {

@@ -1,5 +1,5 @@
 import { ViewportScroller } from "@angular/common";
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { Meta, Title } from "@angular/platform-browser";
 import { NavigationSkipped, Router } from "@angular/router";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
@@ -28,6 +28,15 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
 export class DashboardComponent
   implements OnInit, OnDestroy, SnappyCreate, SnappyShow, SnappyHide
 {
+  private dashboardService = inject(DashboardService);
+  private jwtService = inject(JwtService);
+  private router = inject(Router);
+  private postService = inject(PostsService);
+  private messages = inject(MessageService);
+  private metaTagService = inject(Meta);
+  private readonly viewportScroller = inject(ViewportScroller);
+  private simpleTitle = inject(SimpleTitleService);
+
   loadingPosts = false;
   noMorePosts = false;
   posts: ProcessedPost[][] = [];
@@ -50,16 +59,9 @@ export class DashboardComponent
   // Would like to have this a bit more cleanly integrated though
   snActive: boolean = false;
 
-  constructor(
-    private dashboardService: DashboardService,
-    private jwtService: JwtService,
-    private router: Router,
-    private postService: PostsService,
-    private messages: MessageService,
-    private metaTagService: Meta,
-    private readonly viewportScroller: ViewportScroller,
-    private simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = this.simpleTitle;
+
     simpleTitle.set("menu.dashboard");
 
     this.metaTagService.addTags([

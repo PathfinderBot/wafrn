@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core'
+import { Component, signal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -26,12 +26,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
   styleUrl: './setting-delete-account.component.scss'
 })
 export class SettingDeleteAccountComponent {
+  private loginService = inject(LoginService);
+
   password: string = ''
   loading = signal(false)
 
   warnIcon = faWarning
-
-  constructor(private loginService: LoginService) {}
 
   handleInput(event: Event) {
     const target = event.target

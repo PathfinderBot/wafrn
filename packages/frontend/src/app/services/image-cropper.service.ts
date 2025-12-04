@@ -1,14 +1,12 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageCropperService {
+  private dialogService = inject(MatDialog);
 
-  constructor(
-    private dialogService: MatDialog
-  ) {}
 
   async getImageCropperComponent(): Promise<typeof ImageCropperDlgComponent> {
     const { ImageCropperDlgComponent } = await import('../components/image-cropper-dlg/image-cropper-dlg.component')

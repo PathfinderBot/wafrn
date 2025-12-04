@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { EnvironmentService } from 'src/app/services/environment.service'
@@ -12,6 +12,9 @@ import { MessageService } from 'src/app/services/message.service'
   standalone: false
 })
 export class RecoverPasswordComponent {
+  private loginService = inject(LoginService);
+  private messageService = inject(MessageService);
+
   loading = false
   logo = EnvironmentService.environment.logo
   icon = faUser
@@ -19,11 +22,6 @@ export class RecoverPasswordComponent {
   loginForm = new UntypedFormGroup({
     email: new UntypedFormControl('', [Validators.required, Validators.email])
   })
-
-  constructor(
-    private loginService: LoginService,
-    private messageService: MessageService
-  ) {}
 
   async onSubmit() {
     this.loading = true

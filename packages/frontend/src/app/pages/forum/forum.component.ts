@@ -67,6 +67,14 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
   styleUrl: "./forum.component.scss",
 })
 export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
+  private forumService = inject(ForumService);
+  readonly loginService = inject(LoginService);
+  private postService = inject(PostsService);
+  private readonly dashboardService = inject(DashboardService);
+  private readonly router = inject(Router);
+  private readonly snappy = inject(SnappyRouter);
+  private simpleTitle = inject(SimpleTitleService);
+
   loading = true;
   forumPosts = signal<ProcessedPost[]>([]);
   post = model<ProcessedPost[]>([]);
@@ -97,15 +105,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   rewootIcon = faRepeat;
   private readonly route = inject(ActivatedRoute);
   homeIcon = faHome;
-  constructor(
-    private forumService: ForumService,
-    readonly loginService: LoginService,
-    private postService: PostsService,
-    private readonly dashboardService: DashboardService,
-    private readonly router: Router,
-    private readonly snappy: SnappyRouter,
-    private simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
     this.followedUsers = this.postService.followedUserIds;
     this.notYetAcceptedFollows =
       this.postService.notYetAcceptedFollowedUsersIds;

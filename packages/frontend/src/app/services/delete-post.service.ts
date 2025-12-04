@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import { Observable, ReplaySubject } from 'rxjs'
 import { EnvironmentService } from './environment.service'
@@ -8,12 +8,10 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class DeletePostService {
-  public launchDeleteScreen: ReplaySubject<string> = new ReplaySubject()
+  private http = inject(HttpClient);
+  private dialogService = inject(MatDialog);
 
-  constructor(
-    private http: HttpClient,
-    private dialogService: MatDialog
-  ) {}
+  public launchDeleteScreen: ReplaySubject<string> = new ReplaySubject()
 
   public deletePost(id: string): Observable<boolean> {
     let petitionData: HttpParams = new HttpParams()

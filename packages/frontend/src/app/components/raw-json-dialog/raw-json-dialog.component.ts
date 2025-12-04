@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { LoaderComponent } from '../loader/loader.component';
@@ -18,13 +18,14 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './raw-json-dialog.component.scss',
 })
 export class RawJsonDialogComponent {
+  private dialogRef = inject<MatDialogRef<RawJsonDialogComponent>>(MatDialogRef);
+  jsonData = inject(MAT_DIALOG_DATA);
+
   data = {}
 
-  constructor(
-    private dialogRef: MatDialogRef<RawJsonDialogComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public jsonData: object
-  ) {
+  constructor() {
+    const jsonData = this.jsonData;
+
     this.data = jsonData
   }
 

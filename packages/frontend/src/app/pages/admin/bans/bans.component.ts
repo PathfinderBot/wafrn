@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core'
+import { Component, viewChild, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -33,6 +33,9 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrls: ['./bans.component.scss']
 })
 export class BansComponent {
+  private adminService = inject(AdminService);
+  private simpleDialog = inject(SimpleDialogService);
+
   showBans = false
   bannedUsers = new MatTableDataSource<UserBan | null, MatPaginator>(undefined)
   bannedUsersPaginator = viewChild.required<MatPaginator>(MatPaginator)
@@ -42,11 +45,9 @@ export class BansComponent {
 
   loading = true
 
-  constructor(
-    private adminService: AdminService,
-    private simpleDialog: SimpleDialogService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.admin.bans')
   }
 

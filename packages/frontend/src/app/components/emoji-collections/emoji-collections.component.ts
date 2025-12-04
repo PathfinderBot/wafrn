@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  ElementRef,
-  HostListener,
-  model,
-  OnDestroy,
-  output,
-  signal,
-  ViewChild,
-} from "@angular/core";
+import { AfterViewInit, Component, computed, ElementRef, HostListener, model, OnDestroy, output, signal, ViewChild, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatExpansionModule } from "@angular/material/expansion";
@@ -44,6 +33,8 @@ enum EmojiRenderType {
   styleUrl: "./emoji-collections.component.scss",
 })
 export class EmojiCollectionsComponent implements AfterViewInit, OnDestroy {
+  private postService = inject(PostsService);
+
   @ViewChild("emojiContainer")
   emojiElement: ElementRef<HTMLElement> | undefined;
 
@@ -146,7 +137,7 @@ export class EmojiCollectionsComponent implements AfterViewInit, OnDestroy {
     EnvironmentService.environment.cacheDomain + "/api/v2/cache/emoji/";
   baseEmojisUrl = "/api/uploads";
 
-  constructor(private postService: PostsService) {
+  constructor() {
     this.subscription = this.postService.updateFollowers.subscribe(() => {
       this.emojiCollections = this.postService.emojiCollections;
       this.updateDimensions(); // Must be called to update the computed signal vcRows (JANK AND EVIL)

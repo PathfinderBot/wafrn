@@ -1,13 +1,5 @@
 import { CommonModule } from "@angular/common";
-import {
-  Component,
-  computed,
-  input,
-  OnChanges,
-  OnDestroy,
-  Signal,
-  SimpleChanges,
-} from "@angular/core";
+import { Component, computed, input, OnChanges, OnDestroy, Signal, SimpleChanges, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialog } from "@angular/material/dialog";
@@ -62,6 +54,18 @@ import { RawJsonDialogComponent } from "../raw-json-dialog/raw-json-dialog.compo
   styleUrl: "./blog-header.component.scss",
 })
 export class BlogHeaderComponent implements OnChanges, OnDestroy {
+  protected loginService = inject(LoginService);
+  postService = inject(PostsService);
+  private messages = inject(MessageService);
+  blockService = inject(BlocksService);
+  dialogService = inject(MatDialog);
+  activatedRoute = inject(ActivatedRoute);
+  environmentService = inject(EnvironmentService);
+  reportService = inject(ReportService);
+  simpleDialog = inject(SimpleDialogService);
+  blogService = inject(BlogService);
+  utilsService = inject(UtilsService);
+
   parser = new DOMParser();
   blogDetails = input<BlogDetails>();
   avatarUrl = computed<string>(() => {
@@ -107,20 +111,6 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     }
     return [];
   });
-
-  constructor(
-    protected loginService: LoginService,
-    public postService: PostsService,
-    private messages: MessageService,
-    public blockService: BlocksService,
-    public dialogService: MatDialog,
-    public activatedRoute: ActivatedRoute,
-    public environmentService: EnvironmentService,
-    public reportService: ReportService,
-    public simpleDialog: SimpleDialogService,
-    public blogService: BlogService,
-    public utilsService: UtilsService
-  ) {}
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails();
     if (blog === undefined) return;

@@ -1,4 +1,4 @@
-import { Component, computed, input, viewChildren } from '@angular/core'
+import { Component, computed, input, viewChildren, inject } from '@angular/core'
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectChange, MatSelectModule } from '@angular/material/select'
@@ -21,6 +21,8 @@ import { UserSelectorComponent } from '../user-selector/user-selector.component'
   styleUrl: './setting-entry.component.scss'
 })
 export class SettingEntryComponent {
+  private settingsService = inject(SettingsService);
+
   data: SettingData
   values
   setting = input.required<SettingDataEntry>()
@@ -38,7 +40,9 @@ export class SettingEntryComponent {
     }
   })
 
-  constructor(private settingsService: SettingsService) {
+  constructor() {
+    const settingsService = this.settingsService;
+
     this.data = settingsService.data
     this.values = settingsService.values
   }

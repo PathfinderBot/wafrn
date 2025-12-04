@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core'
+import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -44,6 +44,12 @@ import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
   styleUrl: './follows.component.scss'
 })
 export class FollowsComponent implements OnInit, OnDestroy {
+  activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  postService = inject(PostsService);
+  private dashboardService = inject(DashboardService);
+  private blogService = inject(BlogService);
+
   navigationSubscription: Subscription
   followsSubscription: Subscription
   loading = true
@@ -62,14 +68,9 @@ export class FollowsComponent implements OnInit, OnDestroy {
 
   dataSource!: MatTableDataSource<followsResponse, MatPaginator>
 
-  constructor(
-    loginService: LoginService,
-    public activatedRoute: ActivatedRoute,
-    private router: Router,
-    public postService: PostsService,
-    private dashboardService: DashboardService,
-    private blogService: BlogService
-  ) {
+  constructor() {
+    const loginService = inject(LoginService);
+
     this.myId = loginService.getLoggedUserUUID()
     this.followsSubscription = this.postService.updateFollowers.subscribe(() => {
       this.followedUsers = this.postService.followedUserIds

@@ -1,4 +1,4 @@
-import { Component, computed, input, OnChanges } from "@angular/core";
+import { Component, computed, input, OnChanges, inject } from "@angular/core";
 import { ProcessedPost } from "../../interfaces/processed-post";
 import { MessageService } from "../../services/message.service";
 
@@ -58,6 +58,16 @@ import { MatDialog } from "@angular/material/dialog";
   styleUrl: "./post-actions.component.scss",
 })
 export class PostActionsComponent implements OnChanges {
+  private messages = inject(MessageService);
+  private postService = inject(PostsService);
+  protected loginService = inject(LoginService);
+  private reportService = inject(ReportService);
+  private utilsService = inject(UtilsService);
+  private settingsService = inject(SettingsService);
+  private simpleDialog = inject(SimpleDialogService);
+  dialogService = inject(MatDialog);
+  private blockService = inject(BlocksService);
+
   post = input.required<ProcessedPost>();
   myId: string = "user-00000000-0000-0000-0000-000000000000 ";
   postSilenced = false;
@@ -113,17 +123,9 @@ export class PostActionsComponent implements OnChanges {
 
   rawOutputEnabled = EnvironmentService.environment.enableRawOutput;
 
-  constructor(
-    private messages: MessageService,
-    private postService: PostsService,
-    protected loginService: LoginService,
-    private reportService: ReportService,
-    private utilsService: UtilsService,
-    private settingsService: SettingsService,
-    private simpleDialog: SimpleDialogService,
-    public dialogService: MatDialog,
-    private blockService: BlocksService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+
     if (loginService.loggedIn.value) {
       this.myId = loginService.getLoggedUserUUID();
     }

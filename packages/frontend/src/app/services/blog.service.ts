@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 
 import { followsResponse } from '../interfaces/follows-response'
@@ -10,7 +10,8 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class BlogService {
-  constructor(private http: HttpClient) { }
+  private http = inject(HttpClient);
+
 
   async getFollowers(url: string, followed = false): Promise<followsResponse[]> {
     const res = await firstValueFrom(

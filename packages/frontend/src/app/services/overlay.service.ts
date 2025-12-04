@@ -1,6 +1,6 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay'
 import { ComponentPortal } from '@angular/cdk/portal'
-import { Injectable, InjectionToken, Injector } from '@angular/core'
+import { Injectable, InjectionToken, Injector, inject } from '@angular/core'
 import { ImageOverlayComponent, KillscreenOverlayComponent } from '../components/image-overlay/overlay.component'
 
 export type ImageOverlayData = { url: string; backgroundSize: string }
@@ -11,7 +11,8 @@ export const DATA_TOKEN = new InjectionToken<string>('portal-data')
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService {
-  constructor(private overlay: Overlay) {}
+  private overlay = inject(Overlay);
+
 
   createOverlay(data: OverlayData, component: any): OverlayRef {
     const overlayRef = this.overlay.create()

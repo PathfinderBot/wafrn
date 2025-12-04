@@ -1,4 +1,4 @@
-import { Component, Injector, Inject, OnInit, DOCUMENT, HostBinding, ElementRef, effect } from '@angular/core'
+import { Component, Injector, OnInit, DOCUMENT, HostBinding, ElementRef, effect, inject } from '@angular/core'
 import { SwUpdate } from '@angular/service-worker'
 import { LoginService } from './services/login.service'
 import { EnvironmentService } from './services/environment.service'
@@ -20,24 +20,28 @@ import { ThemeService } from './services/theme.service'
   standalone: false
 })
 export class AppComponent implements OnInit {
+  private swUpdate = inject(SwUpdate);
+  private swPush = inject(SwPush);
+  private injector = inject(Injector);
+  private loginService = inject(LoginService);
+  private environmentService = inject(EnvironmentService);
+  private document = inject<Document>(DOCUMENT);
+  private translateService = inject(TranslateService);
+  private websocketService = inject(WebsocketService);
+  private router = inject(Router);
+  private messages = inject(MessageService);
+  private titleService = inject(Title);
+
   title = 'wafrn'
 
   @HostBinding('attr.data-additional-style-modes') dataAdditionalStyleModes: string | null = null
 
-  constructor(
-    private swUpdate: SwUpdate,
-    private swPush: SwPush,
-    private injector: Injector,
-    private loginService: LoginService,
-    private environmentService: EnvironmentService,
-    @Inject(DOCUMENT) private document: Document,
-    private translateService: TranslateService,
-    private websocketService: WebsocketService,
-    private router: Router,
-    private messages: MessageService,
-    private titleService: Title,
-    themeService: ThemeService
-  ) {
+  constructor() {
+    const swUpdate = this.swUpdate;
+    const translateService = this.translateService;
+    const router = this.router;
+    const themeService = inject(ThemeService);
+
     this.title = this.titleService.getTitle()
     GlobalData.appDefaultTitle = this.title
 

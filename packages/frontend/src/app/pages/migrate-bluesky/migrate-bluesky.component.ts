@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, signal } from '@angular/core'
+import { Component, signal, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -29,6 +29,10 @@ import { MessageService } from 'src/app/services/message.service'
   styleUrl: './migrate-bluesky.component.scss'
 })
 export class MigrateBlueskyComponent {
+  private environmentService = inject(EnvironmentService);
+  private loginService = inject(LoginService);
+  private messageService = inject(MessageService);
+
   environment = signal<any>(EnvironmentService.environment)
 
   loading = false
@@ -41,12 +45,6 @@ export class MigrateBlueskyComponent {
     account: new UntypedFormControl('', [Validators.required]),
     password: new UntypedFormControl('', [Validators.required])
   })
-
-  constructor(
-    private environmentService: EnvironmentService,
-    private loginService: LoginService,
-    private messageService: MessageService
-  ) {}
 
   loadInviteCode() {
     this.loginService.getBskyInviteCode().then((code) => {

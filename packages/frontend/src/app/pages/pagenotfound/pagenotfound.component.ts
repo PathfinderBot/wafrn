@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { faArrowRight, faEllipsis, faQuestion } from '@fortawesome/free-solid-svg-icons'
 
@@ -12,7 +12,9 @@ export class PagenotfoundComponent implements OnInit {
   pageIcon = faQuestion
   path: string
 
-  constructor(router: Router) {
+  constructor() {
+    const router = inject(Router);
+
     this.path = router.url
   }
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnChanges, input } from '@angular/core'
+import { Component, OnChanges, input, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { RouterModule } from '@angular/router'
@@ -54,6 +54,11 @@ import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
   styleUrl: './post-header.component.scss'
 })
 export class PostHeaderComponent implements OnChanges {
+  postService = inject(PostsService);
+  private messages = inject(MessageService);
+  private simpleDialog = inject(SimpleDialogService);
+  protected loginService = inject(LoginService);
+
   fragment = input.required<ProcessedPost>()
   readonly simplified = input<boolean>(true)
   readonly disableLink = input<boolean>(false)
@@ -88,12 +93,7 @@ export class PostHeaderComponent implements OnChanges {
 
   timeAgo = ''
 
-  constructor(
-    public postService: PostsService,
-    private messages: MessageService,
-    private simpleDialog: SimpleDialogService,
-    protected loginService: LoginService
-  ) {
+  constructor() {
     // its an array
     this.privacyOptions[10] = { level: 10, name: 'Direct Message', icon: faEnvelope }
     this.privacyOptions[20] = { level: 20, name: 'Link only', icon: faNewspaper }

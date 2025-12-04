@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
 import { statsReply } from 'src/app/interfaces/statsReply'
@@ -13,7 +13,10 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 })
 export class StatsComponent {
   backendReply: statsReply | undefined
-  constructor(adminService: AdminService, simpleTitle: SimpleTitleService) {
+  constructor() {
+    const adminService = inject(AdminService);
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.admin.stats')
 
     adminService.getStats().then((response) => {

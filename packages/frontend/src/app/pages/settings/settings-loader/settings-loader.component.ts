@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SettingEntryComponent } from 'src/app/components/setting-entry/setting-entry.component'
 import { GroupedSettingData, SettingData, SettingsService } from 'src/app/services/settings.service'
@@ -18,7 +18,10 @@ export class SettingsLoaderComponent {
   group: GroupedSettingData | undefined
   portal: Portal<any> | undefined
 
-  constructor(settingsService: SettingsService, @Inject(SETTINGS_TOKEN) groupKey: string) {
+  constructor() {
+    const settingsService = inject(SettingsService);
+    const groupKey = inject(SETTINGS_TOKEN);
+
     this.data = settingsService.data
     this.values = settingsService.values
     this.group = settingsService.groups.find((val) => val.key === groupKey)

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { LoginService } from 'src/app/services/login.service'
 
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
@@ -23,6 +23,9 @@ const loginMessageVariants: string[] = [
   standalone: false
 })
 export class LoginComponent implements OnInit {
+  private loginService = inject(LoginService);
+  private messages = inject(MessageService);
+
   faArrowRightToBracket = faArrowRightToBracket
   faUser = faUser
   faEye = faEye
@@ -39,10 +42,7 @@ export class LoginComponent implements OnInit {
   loginMessage = "you shouldn't see this ever"
   loginReset = false
 
-  constructor(
-    private loginService: LoginService,
-    private messages: MessageService
-  ) {
+  constructor() {
     this.newLoginMessage()
   }
 

@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { computed, Injectable, signal } from "@angular/core";
+import { computed, Injectable, signal, inject } from "@angular/core";
 import { JwtService } from "./jwt.service";
 import { filter, firstValueFrom } from "rxjs";
 import { SimplifiedUser } from "../interfaces/simplified-user";
@@ -35,6 +35,13 @@ export type NotificationData = {
   providedIn: "root",
 })
 export class NotificationsService {
+  private http = inject(HttpClient);
+  private jwt = inject(JwtService);
+  private postService = inject(PostsService);
+  private settings = inject(SettingsService);
+  private audioService = inject(AudioService);
+  private loginService = inject(LoginService);
+
   uniqueDate = new Date();
 
   emojiMap = new Map<string, Emoji>();
@@ -57,14 +64,9 @@ export class NotificationsService {
       this.asks()
   );
 
-  constructor(
-    private http: HttpClient,
-    private jwt: JwtService,
-    private postService: PostsService,
-    private settings: SettingsService,
-    private audioService: AudioService,
-    private loginService: LoginService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+
     // Initial notifications load when logging in
     loginService.loggedIn.pipe(filter((logged) => logged)).subscribe(() => {
       this.updateCount();

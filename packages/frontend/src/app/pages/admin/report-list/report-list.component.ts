@@ -1,4 +1,4 @@
-import { Component, computed, OnInit, signal, viewChild, WritableSignal } from '@angular/core'
+import { Component, computed, OnInit, signal, viewChild, WritableSignal, inject } from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatTableDataSource } from '@angular/material/table'
 import { parseReportFilter, ReportFilter } from 'src/app/grammars/report-grammar'
@@ -13,6 +13,9 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   standalone: false
 })
 export class ReportListComponent implements OnInit {
+  private adminService = inject(AdminService);
+  private simpleDialog = inject(SimpleDialogService);
+
   reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
   reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
   displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'date', 'actions']
@@ -38,11 +41,9 @@ export class ReportListComponent implements OnInit {
     resolved: 'resolved'
   }
 
-  constructor(
-    private adminService: AdminService,
-    private simpleDialog: SimpleDialogService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.admin.reports')
 
     this.loadReports()

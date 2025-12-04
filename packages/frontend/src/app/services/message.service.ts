@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { AudioName, AudioService } from './audio.service'
 import { TranslateService } from '@ngx-translate/core'
@@ -7,11 +7,10 @@ import { TranslateService } from '@ngx-translate/core'
   providedIn: 'root'
 })
 export class MessageService {
-  constructor(
-    private translateService: TranslateService,
-    private snackBar: MatSnackBar,
-    private audioService: AudioService
-  ) {}
+  private translateService = inject(TranslateService);
+  private snackBar = inject(MatSnackBar);
+  private audioService = inject(AudioService);
+
 
   add(message: {
     severity: 'error' | 'success' | 'warn' | 'info'

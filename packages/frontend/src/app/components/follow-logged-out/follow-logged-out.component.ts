@@ -1,4 +1,4 @@
-import { Component, computed, Inject, input, signal } from '@angular/core';
+import { Component, computed, input, signal, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { LoaderComponent } from '../loader/loader.component';
@@ -23,6 +23,14 @@ import { CommonModule } from '@angular/common';
   styleUrl: './follow-logged-out.component.scss',
 })
 export class FollowLoggedOutComponent {
+  private dialogRef = inject<MatDialogRef<FollowLoggedOutComponent>>(MatDialogRef);
+  data = inject<{
+    url: string;
+    name?: string;
+    bskyDid?: string;
+    remoteId?: string;
+}>(MAT_DIALOG_DATA);
+
   disabled = false
   formValid = computed<boolean>(() => this.fediUsername().length > 0 && !this.disabled)
   handle = ""
@@ -33,11 +41,9 @@ export class FollowLoggedOutComponent {
 
   fediUsername = signal<string>('')
 
-  constructor(
-    private dialogRef: MatDialogRef<FollowLoggedOutComponent>,
-    @Inject(MAT_DIALOG_DATA)
-    public data: { url: string, name?: string, bskyDid?: string, remoteId?: string },
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.url = data.remoteId ?? `${EnvironmentService.environment.frontUrl}/blog/${data.url}`
     this.bskyDid = data.bskyDid
     this.handle = data.url.startsWith('@') ? data.url : `@${data.url}@${new URL(EnvironmentService.environment.frontUrl).hostname}`

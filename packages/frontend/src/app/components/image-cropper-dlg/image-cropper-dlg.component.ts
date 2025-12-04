@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import {
   MatDialogTitle,
@@ -15,11 +15,17 @@ import { TranslateModule } from '@ngx-translate/core'
   imports: [MatButtonModule, MatDialogTitle, ImageCropperComponent, TranslateModule]
 })
 export class ImageCropperDlgComponent {
+  private dialogRef = inject<MatDialogRef<ImageCropperDlgComponent>>(MatDialogRef);
+  data = inject<{
+    image: File;
+    imageAspect: 'avatar' | 'header';
+    cropFinishedCallback: (croppedImage: File) => void;
+}>(MAT_DIALOG_DATA);
 
-  constructor(
-    private dialogRef: MatDialogRef<ImageCropperDlgComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { image: File, imageAspect: 'avatar' | 'header', cropFinishedCallback: (croppedImage: File) => void }
-  ) {
+
+  constructor() {
+    const data = this.data;
+
     this.image = data.image
     this.imageAspect = data.imageAspect
     this.cropFinishedCallback = data.cropFinishedCallback

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common'
-import { Component, viewChild } from '@angular/core'
+import { Component, viewChild, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -32,6 +32,8 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrls: ['./blocks.component.scss']
 })
 export class BlocksComponent {
+  private adminService = inject(AdminService);
+
   showUserBlocks = false
   userBlocks = new MatTableDataSource<AdminUserBlock, MatPaginator>(undefined)
   userBlocksPaginator = viewChild.required<MatPaginator>('userBlocksPaginator')
@@ -44,10 +46,9 @@ export class BlocksComponent {
   userServerBlocksSort = viewChild.required<MatSort>('userServerBlocksSort')
   userServerBlocksColumns = ['userBlocker', 'blockedServer', 'createdAt']
 
-  constructor(
-    private adminService: AdminService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.admin.blocklist')
   }
 

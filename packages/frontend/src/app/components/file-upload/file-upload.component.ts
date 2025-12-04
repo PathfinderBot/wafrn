@@ -1,5 +1,5 @@
 import { HttpEventType } from '@angular/common/http'
-import { Component, EventEmitter, Input, Output, input, signal } from '@angular/core'
+import { Component, EventEmitter, Input, Output, input, signal, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
@@ -23,6 +23,8 @@ enum UploadStatus {
   imports: [FormsModule, FontAwesomeModule, MatButtonModule, MatProgressSpinnerModule]
 })
 export class FileUploadComponent {
+  private fileUploadService = inject(FileUploadService);
+
   readonly disabled = input(false)
   readonly config = input({
     url: `/uploadMedia`,
@@ -39,8 +41,6 @@ export class FileUploadComponent {
   UploadStatus = UploadStatus // Mirrored for component
   uploadProgress = signal<number>(0)
   uploadSubscription: Subscription | undefined
-
-  constructor(private fileUploadService: FileUploadService) {}
 
   async onFileSelected(event: Event) {
     const el = event.target as HTMLInputElement

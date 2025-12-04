@@ -1,4 +1,4 @@
-import { Component, input, OnInit, Signal } from '@angular/core'
+import { Component, input, OnInit, Signal, inject } from '@angular/core'
 import { FormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { QuestionPoll } from '../../interfaces/questionPoll'
 import { LoginService } from '../../services/login.service'
@@ -11,16 +11,14 @@ import { PostsService } from '../../services/posts.service'
   standalone: false
 })
 export class PollComponent implements OnInit {
+  protected loginService = inject(LoginService);
+  private postsService = inject(PostsService);
+
   poll = input.required<QuestionPoll>()
   total = 0
   openPoll = false
   form = new UntypedFormGroup({})
   alreadyVoted = true
-
-  constructor(
-    protected loginService: LoginService,
-    private postsService: PostsService
-  ) {}
 
   ngOnInit(): void {
     this.openPoll = new Date().getTime() < this.poll().endDate.getTime()

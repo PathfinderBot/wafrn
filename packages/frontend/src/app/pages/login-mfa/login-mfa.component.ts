@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { LoginService } from 'src/app/services/login.service'
 
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
@@ -14,6 +14,10 @@ import { EnvironmentService } from 'src/app/services/environment.service'
   standalone: false
 })
 export class LoginMfaComponent implements OnInit {
+  private loginService = inject(LoginService);
+  private messages = inject(MessageService);
+  private router = inject(Router);
+
   loading = false
   logo = EnvironmentService.environment.logo
   faUser = faUser
@@ -23,12 +27,6 @@ export class LoginMfaComponent implements OnInit {
   loginMfaForm = new UntypedFormGroup({
     token: new UntypedFormControl('', [Validators.required])
   })
-
-  constructor(
-    private loginService: LoginService,
-    private messages: MessageService,
-    private router: Router
-  ) {}
 
   ngOnInit(): void {}
 
