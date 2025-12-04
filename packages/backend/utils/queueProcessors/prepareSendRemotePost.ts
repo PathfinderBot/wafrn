@@ -62,6 +62,7 @@ const sendPostBskyQueue = new Queue("sendPostBsky", {
   },
 });
 async function prepareSendRemotePostWorker(job: Job) {
+  let highPriorityInboxes: string[] = [];
   //async function sendRemotePost(localUser: any, post: any) {
   const post = await Post.findByPk(job.id);
   if (!post) {
@@ -121,9 +122,7 @@ async function prepareSendRemotePostWorker(job: Job) {
         object: getPostUrlForQuote(quote.dataValues.quotedPost),
         instrument: await postToJSONLD(post.id),
       };
-      const response = await postPetitionSigned(
-        objectToSend,
-        localUser,
+      highPriorityInboxes.push(
         quote.dataValues.quotedPost.dataValues.user.remoteInbox
       );
     }
@@ -260,21 +259,14 @@ async function prepareSendRemotePostWorker(job: Job) {
             (elem: any) => elem.remoteInbox
           );
           for await (const remoteInbox of mentionedInboxes) {
-            try {
-              const response = await postPetitionSigned(
-                objectToSendComplete,
-                localUser,
-                remoteInbox
-              );
-            } catch (error) {
-              logger.debug(error);
-            }
+            highPriorityInboxes.push(remoteInbox);
           }
         }
 
         if (
-          serversToSendThePost?.length > 0 ||
-          usersToSendThePost?.length > 0
+          serversToSendThePost.length > 0 ||
+          usersToSendThePost.length > 0 ||
+          highPriorityInboxes.length > 0
         ) {
           let inboxes: string[] = [];
           inboxes = inboxes.concat(
@@ -286,8 +278,7 @@ async function prepareSendRemotePostWorker(job: Job) {
             );
           });
           const addSendPostToQueuePromises: Promise<any>[] = [];
-          logger.debug(`Preparing send post. ${inboxes.length} inboxes`);
-          for (const inboxChunk of inboxes) {
+          for (const inboxChunk of highPriorityInboxes.concat(inboxes)) {
             addSendPostToQueuePromises.push(
               sendPostQueue.add(
                 "sendChunk",
