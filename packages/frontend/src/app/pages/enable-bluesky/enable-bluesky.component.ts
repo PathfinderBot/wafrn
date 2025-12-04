@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, signal } from '@angular/core'
+import { Component, signal, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -13,14 +13,14 @@ import { LoginService } from 'src/app/services/login.service'
   styleUrl: './enable-bluesky.component.scss'
 })
 export class EnableBlueskyComponent {
+  private loginService = inject(LoginService);
+  private environmentService = inject(EnvironmentService);
+
   loading = false
   password = ''
 
   environment = signal<any>(EnvironmentService.environment)
-  constructor(
-    private loginService: LoginService,
-    private environmentService: EnvironmentService
-  ) {
+  constructor() {
     setTimeout(() => {
       this.environment.set(EnvironmentService.environment)
     }, 500)

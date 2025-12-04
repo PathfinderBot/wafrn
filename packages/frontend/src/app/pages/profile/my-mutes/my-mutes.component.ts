@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common'
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -35,16 +35,17 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrls: ['./my-mutes.component.scss']
 })
 export class MyMutesComponent {
+  private blocksService = inject(BlocksService);
+
   mutes = new MatTableDataSource<UserBlockMute | null, MatPaginator>(undefined)
 
   displayedColumns = ['user', 'reason', 'date', 'actions']
 
   loading = true
 
-  constructor(
-    private blocksService: BlocksService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.settings.myBlockedUsers')
   }
 

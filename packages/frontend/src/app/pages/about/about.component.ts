@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { SimpleSeoService } from 'src/app/services/simple-seo.service'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
@@ -11,18 +11,18 @@ import { UtilsService } from 'src/app/services/utils.service'
   standalone: false
 })
 export class AboutComponent implements OnInit {
+  private simpleTitle = inject(SimpleTitleService);
+  private seo = inject(SimpleSeoService);
+  private utilsService = inject(UtilsService);
+  private cdr = inject(ChangeDetectorRef);
+
   logo = EnvironmentService.environment.logo
   disableShowingBlockedServers = EnvironmentService.environment.disableShowingBlockedServers
   blockedServers: string[] = []
   loaded = false
   loading = false
 
-  constructor(
-    private simpleTitle: SimpleTitleService,
-    private seo: SimpleSeoService,
-    private utilsService: UtilsService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.simpleTitle.set('About this instance')
   }
 

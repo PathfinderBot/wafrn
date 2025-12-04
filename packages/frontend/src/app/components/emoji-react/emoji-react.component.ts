@@ -23,18 +23,18 @@ import { EnvironmentService } from "src/app/services/environment.service";
   styleUrl: "./emoji-react.component.scss",
 })
 export class EmojiReactComponent {
+  private overlay = inject(Overlay);
+  private postsService = inject(PostsService);
+  private messages = inject(MessageService);
+  private particle = inject(ParticleService);
+
   scrollStrategy;
   dialog = inject(Dialog);
   readonly postId = input<string>("");
   isOpen = false;
   loading = false;
 
-  constructor(
-    private overlay: Overlay,
-    private postsService: PostsService,
-    private messages: MessageService,
-    private particle: ParticleService
-  ) {
+  constructor() {
     this.scrollStrategy = this.overlay.scrollStrategies.reposition();
   }
   openDialog(): void {

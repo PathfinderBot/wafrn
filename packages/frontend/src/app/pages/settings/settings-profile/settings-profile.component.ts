@@ -1,4 +1,4 @@
-import { Component, computed, signal, Signal } from '@angular/core'
+import { Component, computed, signal, Signal, inject } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
 import { SettingEntryComponent } from 'src/app/components/setting-entry/setting-entry.component'
 import { FediAttachment, SettingData, SettingsService } from 'src/app/services/settings.service'
@@ -36,6 +36,10 @@ import { ImageCropperService } from 'src/app/services/image-cropper.service'
   styleUrl: './settings-profile.component.scss'
 })
 export class SettingsProfileComponent {
+  private settingsService = inject(SettingsService);
+  private messageService = inject(MessageService);
+  private imageCropperService = inject(ImageCropperService);
+
   data: SettingData
   values
   fediAttachments: FediAttachment[]
@@ -63,12 +67,10 @@ export class SettingsProfileComponent {
   addIcon = faPlus
   removeIcon = faXmark
 
-  constructor(
-    private settingsService: SettingsService,
-    private messageService: MessageService,
-    private imageCropperService: ImageCropperService,
-    loginService: LoginService
-  ) {
+  constructor() {
+    const settingsService = this.settingsService;
+    const loginService = inject(LoginService);
+
     this.data = settingsService.data
     this.values = settingsService.values
     this.fediAttachments = settingsService.fediAttachments

@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, input, OnChanges, signal, viewChild } from '@angular/core'
+import { Component, computed, ElementRef, input, OnChanges, signal, viewChild, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -57,6 +57,15 @@ export type ReplyBarItem = replyBarItemsVariants[number]
   styleUrl: './post-action-buttons.component.scss'
 })
 export class PostActionButtonsComponent implements OnChanges {
+  readonly loginService = inject(LoginService);
+  private readonly postService = inject(PostsService);
+  private readonly editorService = inject(EditorService);
+  private readonly deletePostService = inject(DeletePostService);
+  private readonly messages = inject(MessageService);
+  private readonly editor = inject(EditorService);
+  private settingsService = inject(SettingsService);
+  private particle = inject(ParticleService);
+
   fragment = input.required<ProcessedPost>()
   settingKey = input.required<SettingKey>()
 
@@ -100,17 +109,10 @@ export class PostActionButtonsComponent implements OnChanges {
   accountList
   toAvatarUrl // mirrored function
 
-  constructor(
-    readonly loginService: LoginService,
-    private readonly postService: PostsService,
-    private readonly editorService: EditorService,
-    private readonly deletePostService: DeletePostService,
-    private readonly messages: MessageService,
-    private readonly editor: EditorService,
-    private settingsService: SettingsService,
-    private particle: ParticleService,
-    dashboardService: DashboardService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+    const dashboardService = inject(DashboardService);
+
     this.accountList = loginService.accountList
     this.toAvatarUrl = dashboardService.getAvatarUrl
 

@@ -1,10 +1,4 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  signal,
-  WritableSignal,
-} from "@angular/core";
+import { Component, OnDestroy, OnInit, signal, WritableSignal, inject } from "@angular/core";
 import { Meta } from "@angular/platform-browser";
 import { ActivatedRoute } from "@angular/router";
 import {
@@ -46,6 +40,17 @@ import { MatTabChangeEvent } from "@angular/material/tabs";
 export class ViewBlogComponent
   implements OnInit, OnDestroy, SnappyHide, SnappyShow
 {
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly dashboardService = inject(DashboardService);
+  readonly loginService = inject(LoginService);
+  private readonly metaTagService = inject(Meta);
+  private readonly themeService = inject(ThemeService);
+  readonly blockService = inject(BlocksService);
+  private readonly snappy = inject(SnappyRouter);
+  private settingService = inject(SettingsService);
+  private simpleDialog = inject(SimpleDialogService);
+  private simpleTitle = inject(SimpleTitleService);
+
   loading = signal<boolean>(true);
   noMorePosts = false;
   found = true;
@@ -90,18 +95,7 @@ export class ViewBlogComponent
 
   rateLimitLoadSubject = new Subject<void>();
 
-  constructor(
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly dashboardService: DashboardService,
-    readonly loginService: LoginService,
-    private readonly metaTagService: Meta,
-    private readonly themeService: ThemeService,
-    public readonly blockService: BlocksService,
-    private readonly snappy: SnappyRouter,
-    private settingService: SettingsService,
-    private simpleDialog: SimpleDialogService,
-    private simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
     this.rateLimitLoadSubject
       .pipe(
         throttleTime(5000, asyncScheduler, { leading: true, trailing: true })

@@ -1,4 +1,4 @@
-import { effect, Injectable, signal, WritableSignal } from '@angular/core'
+import { effect, Injectable, signal, WritableSignal, inject } from '@angular/core'
 import { LoginService } from './login.service'
 import { HttpClient } from '@angular/common/http'
 import { debounceTime, filter, firstValueFrom, fromEvent, merge } from 'rxjs'
@@ -170,6 +170,10 @@ export const additionalStyleModesData: AdditionalStyleModeData = {
   providedIn: 'root'
 })
 export class ThemeService {
+  private loginService = inject(LoginService);
+  private http = inject(HttpClient);
+  private settingService = inject(SettingsService);
+
   public theme = signal<Theme>('default')
   public lightDarkMode = signal<LightDarkMode>('auto')
   public additionalStyleModes: { [key in AdditionalStyleMode]: WritableSignal<boolean> } = {
@@ -184,11 +188,9 @@ export class ThemeService {
   public customCSS = signal<string>('') // Empty string is own theme, otherwise is the theme of the viewed blog
   public customCSSEnabled = signal(true) // Allows pages to disable it and re-enable on snappy hide
 
-  constructor(
-    private loginService: LoginService,
-    private http: HttpClient,
-    private settingService: SettingsService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+
     // Setup when logging out and completing setting sync
     // Also watches change from other tabs
     merge(

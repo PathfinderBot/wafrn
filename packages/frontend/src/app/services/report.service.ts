@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { ProcessedPost } from '../interfaces/processed-post'
 import { MatDialog } from '@angular/material/dialog'
@@ -16,12 +16,11 @@ type UserId = string
   providedIn: 'any'
 })
 export class ReportService {
-  constructor(
-    private http: HttpClient,
-    private dialogService: MatDialog,
-    private messages: MessageService,
-    private blockService: BlocksService
-  ) {}
+  private http = inject(HttpClient);
+  private dialogService = inject(MatDialog);
+  private messages = inject(MessageService);
+  private blockService = inject(BlocksService);
+
 
   async report(data: ProcessedPost | UserId) {
     let res: (UserReport & { block: boolean }) | undefined

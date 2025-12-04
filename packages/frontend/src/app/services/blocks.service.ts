@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 
 import { MessageService } from "./message.service";
 import { EnvironmentService } from "./environment.service";
@@ -11,13 +11,11 @@ import { UserBlockMute } from "./admin.service";
   providedIn: "root",
 })
 export class BlocksService {
-  baseMediaUrl = EnvironmentService.environment.baseMediaUrl;
+  private http = inject(HttpClient);
+  private messages = inject(MessageService);
+  private simpleDialog = inject(SimpleDialogService);
 
-  constructor(
-    private http: HttpClient,
-    private messages: MessageService,
-    private simpleDialog: SimpleDialogService
-  ) {}
+  baseMediaUrl = EnvironmentService.environment.baseMediaUrl;
 
   async promptBlockUser(id: string): Promise<Boolean> {
     const blockReason = await this.simpleDialog.createPromptDialog({

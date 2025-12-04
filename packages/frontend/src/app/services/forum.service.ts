@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import { unlinkedPosts } from '../interfaces/unlinked-posts'
 import { PostsService } from './posts.service'
@@ -9,10 +9,9 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class ForumService {
-  constructor(
-    private http: HttpClient,
-    private postService: PostsService
-  ) {}
+  private http = inject(HttpClient);
+  private postService = inject(PostsService);
+
 
   async getForumThread(id: string) {
     const response: unlinkedPosts = await firstValueFrom(

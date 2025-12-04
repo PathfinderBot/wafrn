@@ -1,13 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  ElementRef,
-  input,
-  OnInit,
-  Signal,
-  ViewChild,
-} from "@angular/core";
+import { AfterViewInit, Component, computed, ElementRef, input, OnInit, Signal, ViewChild, inject } from "@angular/core";
 import { WafrnMedia } from "../../interfaces/wafrn-media";
 import { EnvironmentService } from "../../services/environment.service";
 import { MediaService } from "../../services/media.service";
@@ -25,6 +16,8 @@ type FitMode = "contain" | "cover";
   standalone: false,
 })
 export class WafrnMediaComponent implements OnInit, AfterViewInit {
+  private mediaService = inject(MediaService);
+
   data = input.required<WafrnMedia>();
   filteredWords = input<string>();
   fitMode = input<FitMode>("contain");
@@ -90,10 +83,10 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
   readonly hideIcon = faEyeSlash;
 
   errorMode = false;
-  constructor(
-    private mediaService: MediaService,
-    settingsService: SettingsService
-  ) {
+  constructor() {
+    const mediaService = this.mediaService;
+    const settingsService = inject(SettingsService);
+
     this.disableNSFWFilter = mediaService.checkNSFWFilterDisabled();
     this.hideNoDescriptionMedia = computed(
       () => settingsService.values().hideNoDescriptionMedia === true

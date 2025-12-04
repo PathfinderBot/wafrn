@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { PostsService } from './posts.service'
 import { HttpClient } from '@angular/common/http'
 import { firstValueFrom } from 'rxjs'
@@ -8,10 +8,9 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class UtilsService {
-  constructor(
-    private postsService: PostsService,
-    private http: HttpClient
-  ) { }
+  private postsService = inject(PostsService);
+  private http = inject(HttpClient);
+
 
   objectToFormData(obj: any): FormData {
     const res = new FormData()

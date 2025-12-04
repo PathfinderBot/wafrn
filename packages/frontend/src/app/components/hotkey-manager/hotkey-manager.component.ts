@@ -57,6 +57,14 @@ let smoothScroll = signal(true)
   styleUrl: './hotkey-manager.component.scss'
 })
 export class HotkeyManagerComponent {
+  private keyboardService = inject(GlobalKeydownService);
+  private editorService = inject(EditorService);
+  private jwtService = inject(JwtService);
+  private dialogService = inject(MatDialog);
+  private loginService = inject(LoginService);
+  private hotkeyService = inject(HotkeyService);
+  private zone = inject(NgZone);
+
   scrollSize = 100 // Pixels per scroll
   scrollPageSize = 300 // Pixels per page scroll
   scrollRate = 120 // Milliseconds per pixel scroll and minimum scroll
@@ -108,16 +116,9 @@ export class HotkeyManagerComponent {
   userMapping: HotkeyConfig
   shortcutList: WritableSignal<CallbackDictionary>
 
-  constructor(
-    private keyboardService: GlobalKeydownService,
-    private editorService: EditorService,
-    private jwtService: JwtService,
-    private dialogService: MatDialog,
-    private loginService: LoginService,
-    private hotkeyService: HotkeyService,
-    private zone: NgZone,
-    themeService: ThemeService
-  ) {
+  constructor() {
+    const themeService = inject(ThemeService);
+
     const cachedMap = localStorage.getItem('customHotKeyMapping')
     const customMapping = cachedMap !== null ? JSON.parse(cachedMap) : {}
     const joinedMapping = Object.assign(customMapping, defaultKeybinds)
@@ -295,6 +296,8 @@ interface DialogData {
   styleUrl: './hotkey-manager.component.scss'
 })
 export class HotkeyListComponent {
+  private translateService = inject(TranslateService);
+
   readonly data = inject<DialogData>(MAT_DIALOG_DATA)
   mapping = this.data.currentHotkeys
   defaultKeybinds = defaultKeybinds
@@ -307,7 +310,7 @@ export class HotkeyListComponent {
   undoIcon = faRotateLeft
   titleIcon = faKeyboard
 
-  constructor(private translateService: TranslateService) {
+  constructor() {
     this.cancelSetKeybind.subscribe(() => {
       hotkeysEnabled = true
       this.changingKey = null

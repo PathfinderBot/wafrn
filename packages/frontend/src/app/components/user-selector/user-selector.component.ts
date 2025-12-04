@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, Output, signal } from '@angular/core'
+import { Component, EventEmitter, Input, OnDestroy, Output, signal, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -26,6 +26,8 @@ import { TranslatePipe } from '@ngx-translate/core'
   styleUrl: './user-selector.component.scss'
 })
 export class UserSelectorComponent implements OnDestroy {
+  private editorService = inject(EditorService);
+
   form = new FormGroup({
     userSearcher: new FormControl('')
   })
@@ -37,7 +39,7 @@ export class UserSelectorComponent implements OnDestroy {
   usersAutocompleteOptions: SimplifiedUser[] = []
   searching = signal(false)
 
-  constructor(private editorService: EditorService) {
+  constructor() {
     this.subscriptions.push(
       this.form.controls['userSearcher'].valueChanges
         .pipe(

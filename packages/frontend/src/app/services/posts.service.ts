@@ -1,4 +1,4 @@
-import { Injectable, signal } from "@angular/core";
+import { Injectable, signal, inject } from "@angular/core";
 import { ProcessedPost } from "../interfaces/processed-post";
 import { RawPost } from "../interfaces/raw-post";
 import { MediaService } from "./media.service";
@@ -22,6 +22,11 @@ import { EnvironmentService } from "./environment.service";
   providedIn: "root",
 })
 export class PostsService {
+  private mediaService = inject(MediaService);
+  private http = inject(HttpClient);
+  private jwtService = inject(JwtService);
+  private messageService = inject(MessageService);
+
   processedQuotes: ProcessedPost[] = [];
   parser = new DOMParser();
   wafrnMediaRegex =
@@ -75,14 +80,6 @@ export class PostsService {
   public enableBluesky: boolean = false;
   public usersQuotesDisabled: string[] = [];
   public usersRewootsDisabled: string[] = [];
-  constructor(
-    private mediaService: MediaService,
-    private http: HttpClient,
-    private jwtService: JwtService,
-    private messageService: MessageService
-  ) {
-    // this.loadFollowers()
-  }
 
   async loadFollowers() {
     if (!this.jwtService.tokenValid()) return;

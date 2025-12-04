@@ -1,4 +1,4 @@
-import { computed, Injectable, Injector, signal, WritableSignal } from '@angular/core'
+import { computed, Injectable, Injector, signal, WritableSignal, inject } from '@angular/core'
 import { DashboardService } from './dashboard.service'
 import { JwtService } from './jwt.service'
 import {
@@ -167,6 +167,14 @@ export type DropListData = Record<string, DropListDataEntry>
   providedIn: 'root'
 })
 export class SettingsService {
+  private dashboardService = inject(DashboardService);
+  private loginService = inject(LoginService);
+  private postsService = inject(PostsService);
+  private messages = inject(MessageService);
+  private http = inject(HttpClient);
+  private utils = inject(UtilsService);
+  private jwtService = inject(JwtService);
+
   public data: SettingData = {
     name: {
       key: 'name',
@@ -815,15 +823,9 @@ export class SettingsService {
   public settingsLoading = signal(false)
   public settingsLoadedFromLogin = new Subject<void>()
 
-  constructor(
-    private dashboardService: DashboardService,
-    private loginService: LoginService,
-    private postsService: PostsService,
-    private messages: MessageService,
-    private http: HttpClient,
-    private utils: UtilsService,
-    private jwtService: JwtService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+
     // Set defaults from local storage over global defaults
     // Uses an evil hack on the equal property to allow for "deep" checks (manually calling update) to notify dependents
     // Svelte has this by default :(

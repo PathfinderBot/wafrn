@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext } from '@angular/common/http'
-import { Injectable, OnDestroy } from '@angular/core'
+import { Injectable, OnDestroy, inject } from '@angular/core'
 import { BehaviorSubject, firstValueFrom, Subscription } from 'rxjs'
 
 import { WafrnMedia } from '../interfaces/wafrn-media'
@@ -21,6 +21,12 @@ import { AUTH_OVERRIDE } from '../interceptors/wafrn-auth.interceptor'
   providedIn: 'root'
 })
 export class EditorService implements OnDestroy {
+  private http = inject(HttpClient);
+  private dashboardService = inject(DashboardService);
+  private dialogService = inject(MatDialog);
+  private messages = inject(MessageService);
+  private router = inject(Router);
+
   base_url = EnvironmentService.environment.baseUrl
   public launchPostEditorEmitter: BehaviorSubject<EditorLauncherData> = new BehaviorSubject<EditorLauncherData>({
     action: Action.None
@@ -29,13 +35,7 @@ export class EditorService implements OnDestroy {
   editorSubscription: Subscription
   // TODO do something about this when angular 19, I dont like this too much
   public static editorData: EditorData | undefined
-  constructor(
-    private http: HttpClient,
-    private dashboardService: DashboardService,
-    private dialogService: MatDialog,
-    private messages: MessageService,
-    private router: Router
-  ) {
+  constructor() {
     this.editorSubscription = this.launchPostEditorEmitter.subscribe((data) => {
       if (data.action !== Action.None) {
         this.launchPostEditorEmitter.next({

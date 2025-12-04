@@ -1,4 +1,4 @@
-import { computed, Injectable, Signal, signal, WritableSignal } from '@angular/core'
+import { computed, Injectable, Signal, signal, WritableSignal, inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { HttpClient, HttpErrorResponse } from '@angular/common/http'
 import { UntypedFormGroup } from '@angular/forms'
@@ -23,21 +23,21 @@ export type AccountData = {
   providedIn: 'root'
 })
 export class LoginService {
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private utils = inject(UtilsService);
+  private jwt = inject(JwtService);
+  private postsService = inject(PostsService);
+  private messagesService = inject(MessageService);
+  private translate = inject(TranslateService);
+  private dashboardService = inject(DashboardService);
+  private simpleDialog = inject(SimpleDialogService);
+
   public loggedIn: BehaviorSubject<boolean>
   public currentAccount: Signal<BlogDetails | undefined> = computed(() => this.accountList()[0]?.blog)
   public accountList: WritableSignal<AccountData[]> = signal([])
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private utils: UtilsService,
-    private jwt: JwtService,
-    private postsService: PostsService,
-    private messagesService: MessageService,
-    private translate: TranslateService,
-    private dashboardService: DashboardService,
-    private simpleDialog: SimpleDialogService
-  ) {
+  constructor() {
     this.loggedIn = new BehaviorSubject(this.jwt.tokenValid())
 
     this.getLocalStorageAccounts()

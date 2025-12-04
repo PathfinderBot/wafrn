@@ -1,4 +1,4 @@
-import { Component, computed, OnInit, signal, Signal, ViewChild, WritableSignal } from '@angular/core'
+import { Component, computed, OnInit, signal, Signal, ViewChild, WritableSignal, inject } from '@angular/core'
 import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { EmojiCollectionsComponent } from 'src/app/components/emoji-collections/emoji-collections.component'
 import { BlogDetails } from 'src/app/interfaces/blogDetails'
@@ -30,6 +30,13 @@ import { TranslateService } from '@ngx-translate/core'
   standalone: false
 })
 export class EditProfileComponent implements OnInit {
+  private jwtService = inject(JwtService);
+  private dashboardService = inject(DashboardService);
+  private mediaService = inject(MediaService);
+  private loginService = inject(LoginService);
+  private messages = inject(MessageService);
+  private translationService = inject(TranslateService);
+
   loading = true
   img: File | undefined = undefined
   headerImg: File | undefined = undefined
@@ -132,15 +139,9 @@ export class EditProfileComponent implements OnInit {
   // Theme categories
   colorSchemeGroupList: ThemeGroupList
 
-  constructor(
-    private jwtService: JwtService,
-    private dashboardService: DashboardService,
-    private mediaService: MediaService,
-    private loginService: LoginService,
-    private messages: MessageService,
-    themeService: ThemeService,
-    private translationService: TranslateService
-  ) {
+  constructor() {
+    const themeService = inject(ThemeService);
+
     this.colorScheme = themeService.theme
     this.colorSchemeSelect = this.colorScheme()
     this.theme = themeService.lightDarkMode

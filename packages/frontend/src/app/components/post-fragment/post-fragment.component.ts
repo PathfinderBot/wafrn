@@ -1,15 +1,5 @@
 import { CommonModule } from "@angular/common";
-import {
-  Component,
-  computed,
-  ElementRef,
-  input,
-  OnChanges,
-  OnDestroy,
-  output,
-  signal,
-  viewChild,
-} from "@angular/core";
+import { Component, computed, ElementRef, input, OnChanges, OnDestroy, output, signal, viewChild, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { Router, RouterModule } from "@angular/router";
 import { ProcessedPost } from "../../interfaces/processed-post";
@@ -72,6 +62,14 @@ type EmojiReaction = {
   styleUrl: "./post-fragment.component.scss",
 })
 export class PostFragmentComponent implements OnChanges, OnDestroy {
+  private postService = inject(PostsService);
+  private loginService = inject(LoginService);
+  private jwtService = inject(JwtService);
+  private readonly messages = inject(MessageService);
+  private particle = inject(ParticleService);
+  private simpleDialog = inject(SimpleDialogService);
+  protected settingsService = inject(SettingsService);
+
   fragment = input.required<ProcessedPost>();
   forceExpand = output<boolean>();
   fragmentType = input<FragmentType>("post");
@@ -186,15 +184,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
 
   nonLinkMediaCount = 0;
 
-  constructor(
-    private postService: PostsService,
-    private loginService: LoginService,
-    private jwtService: JwtService,
-    private readonly messages: MessageService,
-    private particle: ParticleService,
-    private simpleDialog: SimpleDialogService,
-    protected settingsService: SettingsService
-  ) {
+  constructor() {
     this.userId = this.loginService.getLoggedUserUUID();
   }
 

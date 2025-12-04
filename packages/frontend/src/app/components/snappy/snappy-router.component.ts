@@ -69,6 +69,10 @@ export function snappyInject<T>(type: new (...args: any[]) => T): ((router: Snap
   exportAs: 'outlet',
 })
 export class SnappyRouter extends RouterOutlet implements OnInit, OnDestroy {
+  private readonly element = inject(ViewContainerRef);
+  private readonly router = inject(Router);
+  private readonly snappy = inject(SnappyService);
+
   private readonly parentCtx = inject(ChildrenOutletContexts);
   n = PRIMARY_OUTLET;
   data?: any;
@@ -82,11 +86,7 @@ export class SnappyRouter extends RouterOutlet implements OnInit, OnDestroy {
   dataStack: { token: string, data: any }[] = [];
   creationStack: string[] = [];
 
-  constructor(
-    private readonly element: ViewContainerRef,
-    private readonly router: Router,
-    private readonly snappy: SnappyService
-  ) {
+  constructor() {
     super();
     this.creationSub = creationsubject.asObservable().subscribe((e) => {
       this.creationStack.push(e);

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, OnInit, inject } from "@angular/core";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { Follower } from "src/app/interfaces/follower";
 import { ProcessedPost } from "src/app/interfaces/processed-post";
@@ -15,6 +15,9 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
   standalone: false,
 })
 export class NotificationsComponent implements OnInit {
+  private notificationsService = inject(NotificationsService);
+  private cdr = inject(ChangeDetectorRef);
+
   page = 0;
   follows: Follower[] = [];
   likes: Reblog[] = [];
@@ -34,11 +37,9 @@ export class NotificationsComponent implements OnInit {
 
   notificationsToShow: UserNotifications[] = [];
 
-  constructor(
-    private notificationsService: NotificationsService,
-    private cdr: ChangeDetectorRef,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set("menu.notifications");
 
     this.observer = new IntersectionObserver(

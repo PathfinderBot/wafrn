@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { JwtService } from './jwt.service'
 import { firstValueFrom } from 'rxjs'
 import { EnvironmentService } from './environment.service'
@@ -8,13 +8,13 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class MediaService {
+  private jwt = inject(JwtService);
+  private jwtService = inject(JwtService);
+  private http = inject(HttpClient);
+  private environmentService = inject(EnvironmentService);
+
   disableNSFWFilter = false
-  constructor(
-    private jwt: JwtService,
-    private jwtService: JwtService,
-    private http: HttpClient,
-    private environmentService: EnvironmentService
-  ) {
+  constructor() {
     if (localStorage.getItem('disableNSFWFilter') === 'true' && this.jwtService.tokenValid() && this.isAdult()) {
       this.disableNSFWFilter = true
     }

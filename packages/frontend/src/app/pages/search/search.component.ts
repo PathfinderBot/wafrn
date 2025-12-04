@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, Signal, signal } from "@angular/core";
+import { Component, OnDestroy, OnInit, Signal, signal, inject } from "@angular/core";
 import {
   UntypedFormControl,
   UntypedFormGroup,
@@ -23,6 +23,12 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
   standalone: false,
 })
 export class SearchComponent implements OnInit, OnDestroy {
+  private dashboardService = inject(DashboardService);
+  private messages = inject(MessageService);
+  postService = inject(PostsService);
+  protected loginService = inject(LoginService);
+  private activatedRoute = inject(ActivatedRoute);
+
   cacheurl = EnvironmentService.environment.externalCacheurl;
   baseMediaUrl = EnvironmentService.environment.baseMediaUrl;
   searchForm: UntypedFormGroup = new UntypedFormGroup({
@@ -47,15 +53,10 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   currentlyFollowedHashtags: string[] = [];
 
-  constructor(
-    private dashboardService: DashboardService,
-    private messages: MessageService,
-    public postService: PostsService,
-    protected loginService: LoginService,
-    router: Router,
-    private activatedRoute: ActivatedRoute,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const router = inject(Router);
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set("menu.search");
 
     this.navigationSubscription = router.events

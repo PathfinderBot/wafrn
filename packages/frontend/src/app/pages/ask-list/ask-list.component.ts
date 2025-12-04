@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { SingleAskComponent } from 'src/app/components/single-ask/single-ask.component'
@@ -17,15 +17,16 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrl: './ask-list.component.scss'
 })
 export class AskListComponent {
+  private dashboard = inject(DashboardService);
+  private editor = inject(EditorService);
+  private blogService = inject(BlogService);
+
   loading = true
   asks: Ask[] = []
 
-  constructor(
-    private dashboard: DashboardService,
-    private editor: EditorService,
-    private blogService: BlogService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.unansweredAsks')
   }
 

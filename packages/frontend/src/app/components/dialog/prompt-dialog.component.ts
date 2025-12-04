@@ -1,4 +1,4 @@
-import { Component, inject, Inject, signal } from '@angular/core'
+import { Component, inject, signal } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import {
   MAT_DIALOG_DATA,
@@ -45,6 +45,8 @@ export type PromptDialogResult =
   templateUrl: './prompt-dialog.component.html'
 })
 export class PromptDialogComponent {
+  protected data = inject<PromptDialogData>(MAT_DIALOG_DATA);
+
   readonly dialogRef = inject<MatDialogRef<PromptDialogComponent, PromptDialogResult>>(
     MatDialogRef<PromptDialogComponent>
   )
@@ -61,7 +63,9 @@ export class PromptDialogComponent {
 
   inputResponse = signal('')
 
-  constructor(@Inject(MAT_DIALOG_DATA) protected data: PromptDialogData) {
+  constructor() {
+    const data = this.data;
+
     this.textData = Object.assign(this.defaultTextData, data)
     console.log(this.textData)
   }

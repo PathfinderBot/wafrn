@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, inject } from "@angular/core";
 import {
   UntypedFormControl,
   UntypedFormGroup,
@@ -25,6 +25,11 @@ import { JwtService } from "src/app/services/jwt.service";
   standalone: false,
 })
 export class RegisterComponent {
+  private loginService = inject(LoginService);
+  private messages = inject(MessageService);
+  private router = inject(Router);
+  jwtService = inject(JwtService);
+
   isPasswordVisible = false; // Track visibility of password
   manuallyReview = EnvironmentService.environment.reviewRegistrations;
   registrationLevel = EnvironmentService.environment.registrationLevel;
@@ -290,12 +295,7 @@ export class RegisterComponent {
     avatar: new UntypedFormControl("", []),
   });
 
-  constructor(
-    private loginService: LoginService,
-    private messages: MessageService,
-    private router: Router,
-    public jwtService: JwtService
-  ) {
+  constructor() {
     // minimum age: 14
     this.minimumRegistrationDate = new Date();
     this.minimumRegistrationDate.setFullYear(

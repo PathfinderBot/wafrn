@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { TranslateModule } from '@ngx-translate/core'
 import { debounceTime, Subject } from 'rxjs'
@@ -11,11 +11,13 @@ import { OverlayService } from 'src/app/services/overlay.service'
   styleUrl: './crash-button.component.scss'
 })
 export class CrashButtonComponent {
+  private overlayService = inject(OverlayService);
+
   survivedCount = 0
   clearTextTimeout = new Subject<void>()
   survivedTextList: number[] = []
 
-  constructor(private overlayService: OverlayService) {
+  constructor() {
     this.clearTextTimeout.pipe(debounceTime(2000)).subscribe(() => {
       this.survivedTextList.length = 0
     })

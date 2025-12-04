@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
@@ -11,13 +11,12 @@ import { MessageService } from 'src/app/services/message.service'
   standalone: false
 })
 export class ActivateAccountComponent implements OnInit {
+  private activeRoute = inject(ActivatedRoute);
+  private loginService = inject(LoginService);
+  private messageService = inject(MessageService);
+
   logo = EnvironmentService.environment.logo
   message = 'loading'
-  constructor(
-    private activeRoute: ActivatedRoute,
-    private loginService: LoginService,
-    private messageService: MessageService
-  ) {}
 
   ngOnInit(): void {
     this.activateAccount()

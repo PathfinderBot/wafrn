@@ -1,4 +1,4 @@
-import { Component, Signal, WritableSignal } from '@angular/core'
+import { Component, Signal, WritableSignal, inject } from '@angular/core'
 import { AdditionalStyleMode, Theme, LightDarkMode, ThemeService } from '../../services/theme.service'
 
 @Component({
@@ -12,7 +12,9 @@ export class ThemeManagerComponent {
   theme: Signal<LightDarkMode>
   additionalStyleModes: { [key in AdditionalStyleMode]: WritableSignal<boolean> }
 
-  constructor(themeService: ThemeService) {
+  constructor() {
+    const themeService = inject(ThemeService);
+
     this.colorScheme = themeService.theme
     this.theme = themeService.lightDarkMode
     this.additionalStyleModes = themeService.additionalStyleModes

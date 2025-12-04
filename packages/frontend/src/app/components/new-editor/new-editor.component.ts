@@ -129,6 +129,16 @@ type EmojiSuggestion = {
   styleUrl: "./new-editor.component.scss",
 })
 export class NewEditorComponent implements OnInit, OnDestroy {
+  private messages = inject(MessageService);
+  private dashboardService = inject(DashboardService);
+  private editorService = inject(EditorService);
+  private loginService = inject(LoginService);
+  postService = inject(PostsService);
+  private jwtService = inject(JwtService);
+  private router = inject(Router);
+  private location = inject(Location);
+  private particle = inject(ParticleService);
+
   privacyOptions = [
     { level: 0, name: "Public", icon: faGlobe },
     { level: 3, name: "Unlisted", icon: faUnlock },
@@ -241,17 +251,10 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     ],
   });
 
-  constructor(
-    private messages: MessageService,
-    private dashboardService: DashboardService,
-    private editorService: EditorService,
-    private loginService: LoginService,
-    public postService: PostsService,
-    private jwtService: JwtService,
-    private router: Router,
-    private location: Location,
-    private particle: ParticleService
-  ) {
+  constructor() {
+    const dashboardService = this.dashboardService;
+    const loginService = this.loginService;
+
     // Current account is assumed to be the logged in user
     this.accountList = loginService.accountList;
     this.toAvatarUrl = dashboardService.getAvatarUrl;

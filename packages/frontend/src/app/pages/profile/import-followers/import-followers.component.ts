@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { lastValueFrom } from 'rxjs'
 import { FollowListElem } from 'src/app/interfaces/follow-list-elem'
 import { EnvironmentService } from 'src/app/services/environment.service'
@@ -13,6 +13,10 @@ import { PostsService } from 'src/app/services/posts.service'
   standalone: false
 })
 export class ImportFollowersComponent {
+  private http = inject(HttpClient);
+  private postService = inject(PostsService);
+  private messages = inject(MessageService);
+
   step = 0
   progress = 0.0
   failedFollows: string[] = []
@@ -38,12 +42,6 @@ export class ImportFollowersComponent {
     alreadyFollowing: 0,
     errors: []
   }
-
-  constructor(
-    private http: HttpClient,
-    private postService: PostsService,
-    private messages: MessageService
-  ) {}
   async onFileSelected(event: Event) {
     this.uploading = true
     const el = event.target as HTMLInputElement

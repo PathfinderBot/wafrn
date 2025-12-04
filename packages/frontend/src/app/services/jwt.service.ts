@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { Router } from '@angular/router'
 
 export type JwtTokenDecoded = {
@@ -14,7 +14,8 @@ export type JwtTokenDecoded = {
   providedIn: 'root'
 })
 export class JwtService {
-  constructor(private router: Router) {}
+  private router = inject(Router);
+
 
   // you're fully logged in
   // don't ask me why this is a duplicate -FireIsGood

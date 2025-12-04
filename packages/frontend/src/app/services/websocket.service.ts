@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket'
 import { EnvironmentService } from './environment.service'
 import { LoginService } from './login.service'
@@ -11,12 +11,14 @@ import { ParticleService } from './particle.service'
   providedIn: 'root'
 })
 export class WebsocketService {
+  private loginService = inject(LoginService);
+  private dashboardService = inject(DashboardService);
+  private particle = inject(ParticleService);
+
   private socket$!: WebSocketSubject<any>
-  constructor(
-    private loginService: LoginService,
-    private dashboardService: DashboardService,
-    private particle: ParticleService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+
     if (loginService.loggedIn.value) {
       this.connectSocket()
     }

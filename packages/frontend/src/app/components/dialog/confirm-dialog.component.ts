@@ -1,4 +1,4 @@
-import { Component, inject, Inject, signal } from '@angular/core'
+import { Component, inject, signal } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import {
   MAT_DIALOG_DATA,
@@ -51,6 +51,9 @@ export type ConfirmDialogResult = boolean
   templateUrl: './confirm-dialog.component.html'
 })
 export class ConfirmDialogComponent {
+  protected data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
+  private particle = inject(ParticleService);
+
   readonly dialogRef = inject<MatDialogRef<ConfirmDialogComponent, ConfirmDialogResult>>(
     MatDialogRef<ConfirmDialogComponent>
   )
@@ -74,10 +77,9 @@ export class ConfirmDialogComponent {
   // Type mirroring for component
   Annoyance = Annoyance
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) protected data: ConfirmDialogData,
-    private particle: ParticleService
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.textData = Object.assign(this.defaultTextData, data)
 
     // Disable button if there's additional conditions

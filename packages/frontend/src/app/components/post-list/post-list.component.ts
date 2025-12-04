@@ -1,14 +1,4 @@
-import {
-  afterRenderEffect,
-  Component,
-  computed,
-  ElementRef,
-  input,
-  output,
-  signal,
-  viewChild,
-  viewChildren
-} from '@angular/core'
+import { afterRenderEffect, Component, computed, ElementRef, input, output, signal, viewChild, viewChildren, inject } from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { PostModule } from '../post/post.module'
 import { LoaderComponent } from '../loader/loader.component'
@@ -43,6 +33,8 @@ export type DisplayMode = 'card' | 'grid'
   styleUrl: './post-list.component.scss'
 })
 export class PostListComponent {
+  private globalData = inject(GlobalData);
+
   displayMode = input<DisplayMode>('card')
   posts = input.required<ProcessedPost[][]>()
   visible = input<boolean>(true) // Disables keybinds, required due to SnappyRouter so we do not act off screen
@@ -69,10 +61,9 @@ export class PostListComponent {
 
   videoIcon = faPhotoFilm
 
-  constructor(
-    hotkeyService: HotkeyService,
-    private globalData: GlobalData
-  ) {
+  constructor() {
+    const hotkeyService = inject(HotkeyService);
+
     hotkeyService.hotkeySubscription.subscribe((type) => this.handleHotkeys(type))
 
     this.colCount = this.calculateMediaColumns()
