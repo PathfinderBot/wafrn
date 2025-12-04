@@ -70,6 +70,7 @@ export class Emoji
   @Column({
     allowNull: false,
     type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
   })
   declare uuid: string;
 
