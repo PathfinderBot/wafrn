@@ -1,5 +1,5 @@
 import { Application, Response } from "express";
-import { Model, Op } from "sequelize";
+import { Model, Op, UUIDV4 } from "sequelize";
 import {
   Ask,
   Blocks,
@@ -28,7 +28,7 @@ import { sequelize } from "../models/index.js";
 
 import optimizeMedia from "../utils/optimizeMedia.js";
 import uploadHandler from "../utils/uploads.js";
-import { generateKeyPairSync } from "crypto";
+import { generateKeyPairSync, randomUUID } from "crypto";
 import { logger } from "../utils/logger.js";
 import {
   createAccountLimiter,
@@ -76,6 +76,7 @@ import { syncBskyFollowersAndFollowing } from "../utils/atproto/syncBskyFollower
 import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.js";
 import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
+import { InviteCode } from "../models/inviteCode.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -173,11 +174,11 @@ function userRoutes(app: Application) {
     "/api/register",
     ...(completeEnvironment.registrationLevel === "PRIVATE"
       ? [
-          authenticateToken,
-          adminToken,
-          createAccountLimiter,
-          onePerSecondLimiter,
-        ]
+        authenticateToken,
+        adminToken,
+        createAccountLimiter,
+        onePerSecondLimiter,
+      ]
       : [createAccountLimiter, onePerSecondLimiter]),
     uploadHandler().single("avatar"),
     async (req, res) => {
@@ -190,12 +191,12 @@ function userRoutes(app: Application) {
           validateEmail(req.body.email) &&
           !slurs.includes(
             req.body.url.toLowerCase() &&
-              slurs.every((elem) => !req.body.url.includes(elem))
+            slurs.every((elem) => !req.body.url.includes(elem))
           )
         ) {
           const birthDate = new Date(req.body.birthDate);
           const minimumAge = new Date();
-          minimumAge.setFullYear(new Date().getFullYear() - 18);
+          minimumAge.setFullYear(new Date().getFullYear() - completeEnvironment.minimumAgeToRegister);
           if (birthDate.getTime() > minimumAge.getTime()) {
             res
               .status(403)
@@ -214,6 +215,36 @@ function userRoutes(app: Application) {
             },
           });
           if (!emailExists) {
+            const id = randomUUID()
+            if (completeEnvironment.registrationLevel === 'INVITE') {
+              // we get invite code first
+              if (!req.body.inviteCode) {
+                return res.status(403)
+                  .send({ success: false, error: true, message: "Invalid invite code" })
+              }
+
+              const invite = req.body.inviteCode as string
+
+              const inviteDef = await InviteCode.findOne({
+                where: {
+                  code: invite
+                }
+              })
+
+              if (!inviteDef || inviteDef.isUsedOrExpired) {
+                return res.status(403)
+                  .send({ success: false, error: true, message: "Invalid invite code" })
+              }
+
+              inviteDef.usedByUserId = id
+
+              await InviteCode.update(inviteDef, {
+                where: {
+                  code: invite
+                }
+              })
+            }
+
             let avatarURL = ""; // Empty user avatar in case of error let frontend do stuff
             if (req.file != null) {
               avatarURL = `/${await optimizeMedia(req.file.path, {
@@ -225,6 +256,7 @@ function userRoutes(app: Application) {
             }
             const activationCode = generateRandomString();
             const user = {
+              id: id,
               email: req.body.email.toLowerCase(),
               description: req.body.description.trim(),
               descriptionMarkdown: markdownConverter.makeHtml(
@@ -277,15 +309,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                  email,
-                  subject: `Welcome to ${instanceHost}, please verify your email!`,
-                  body: `\
+                email,
+                subject: `Welcome to ${instanceHost}, please verify your email!`,
+                body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `,
-                });
+              });
             await Promise.all([userWithEmail, emailSent]);
             await generateUserKeyPairQueue.add("generateUserKeyPair", {
               userId: (await userWithEmail).id,
@@ -510,9 +542,8 @@ function userRoutes(app: Application) {
             user.requestedPasswordReset = new Date();
             user.save();
 
-            const link = `${
-              completeEnvironment.instanceUrl
-            }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
+            const link = `${completeEnvironment.instanceUrl
+              }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
             const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(
               email
             )}&code=${resetCode}`;
@@ -1112,19 +1143,19 @@ function userRoutes(app: Application) {
         let followed = blog.isRemoteUser
           ? blog.followingCount
           : Follows.count({
-              where: {
-                followerId: blog.id,
-                accepted: true,
-              },
-            });
+            where: {
+              followerId: blog.id,
+              accepted: true,
+            },
+          });
         let followers = blog.isRemoteUser
           ? blog.followerCount
           : Follows.count({
-              where: {
-                followedId: blog.id,
-                accepted: true,
-              },
-            });
+            where: {
+              followedId: blog.id,
+              accepted: true,
+            },
+          });
         const publicOptions = UserOptions.findAll({
           where: {
             userId: blog.id,
@@ -1170,10 +1201,10 @@ function userRoutes(app: Application) {
 
         const postCount = blog
           ? await Post.count({
-              where: {
-                userId: blog.id,
-              },
-            })
+            where: {
+              userId: blog.id,
+            },
+          })
           : 0;
 
         followed = await followed;
@@ -1985,8 +2016,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
           if (petitionData && petitionData.alsoKnownAs) {
             const aliasList = isArray(petitionData.alsoKnownAs)
               ? petitionData.alsoKnownAs.map((elem: string) =>
-                  elem.toLowerCase()
-                )
+                elem.toLowerCase()
+              )
               : [petitionData.alsoKnownAs.toLowerCase()];
             if (
               aliasList.includes(
@@ -2064,7 +2095,7 @@ It is slow because we have to send every fedi server that has ever seen a post o
               message = `Alias not detected`;
             }
           }
-        } catch (error) {}
+        } catch (error) { }
       }
 
       res.status(success ? 200 : 500);
@@ -2091,9 +2122,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         dompurify.sanitize(
           user.descriptionMarkdown
             ? user.descriptionMarkdown.substring(
-                0,
-                248 - fullProfileString.length
-              )
+              0,
+              248 - fullProfileString.length
+            )
             : "",
           { ALLOWED_TAGS: [] }
         ) +
@@ -2146,8 +2177,8 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
           values: [
             ...(profile.labels
               ? (profile.labels as $Typed<SelfLabels>).values.filter(
-                  (x) => x.val !== "!no-unauthenticated"
-                )
+                (x) => x.val !== "!no-unauthenticated"
+              )
               : []),
           ],
         };
@@ -2190,15 +2221,15 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
         });
         userOption
           ? await userOption.update({
-              optionValue: option.value,
-              public: option.public == true,
-            })
+            optionValue: option.value,
+            public: option.public == true,
+          })
           : await UserOptions.create({
-              userId: posterId,
-              optionName: option.name,
-              optionValue: option.value,
-              public: option.public == true,
-            });
+            userId: posterId,
+            optionName: option.name,
+            optionValue: option.value,
+            public: option.public == true,
+          });
       }
     }
   }
@@ -2217,8 +2248,8 @@ async function createBskyAccount({
 }) {
   const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
     ? completeEnvironment.bskyPdsUrl
-        .replace("https://", "")
-        .replace("http://", "")
+      .replace("https://", "")
+      .replace("http://", "")
     : completeEnvironment.bskyPdsUrl;
 
   const sanitizedUrl = user.url

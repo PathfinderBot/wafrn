@@ -19,28 +19,30 @@ export default function adminRoutes(app: Application) {
     })
   })
 
-  app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-    res.send({
-      invites: await InviteCode.findAll()
-    })
-  })
-
-  app.post('/api/admin/create-invite-code', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-    if (!req.jwtData) return res.sendStatus(401)
-
-    const petitionBody: {
-      code?: string,
-      expirationDate: string
-    } = req.body
-
-    const inviteCode = await InviteCode.create({
-      code: petitionBody.code,
-      expirationDate: new Date(petitionBody.expirationDate),
-      createdByUserId: req.jwtData.userId
+  if (completeEnvironment.registrationLevel === 'INVITE') {
+    app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+      res.send({
+        invites: await InviteCode.findAll()
+      })
     })
 
-    res.send(inviteCode)
-  })
+    app.post('/api/admin/create-invite-code', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+      if (!req.jwtData) return res.sendStatus(401)
+
+      const petitionBody: {
+        code?: string,
+        expirationDate: string
+      } = req.body
+
+      const inviteCode = await InviteCode.create({
+        code: petitionBody.code,
+        expirationDate: new Date(petitionBody.expirationDate),
+        createdByUserId: req.jwtData.userId
+      })
+
+      res.send(inviteCode)
+    })
+  }
 
   app.post('/api/admin/server-update', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
     const petitionBody: Array<server> = req.body
