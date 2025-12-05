@@ -571,6 +571,15 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
             }
           },
           {
+            label: 'menu.admin.inviteCodes',
+            icon: faPlus,
+            visible: () => true,
+            routerLink: '/admin/invite-codes',
+            command: () => {
+              this.hideMenu()
+            }
+          },
+          {
             label: 'menu.admin.bans',
             icon: faBan,
             visible: () => true,

@@ -10,6 +10,7 @@ import { UserAttributes } from '../models/user.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
+import { InviteCode } from '../models/inviteCode.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -17,6 +18,30 @@ export default function adminRoutes(app: Application) {
       servers: await FederatedHost.findAll()
     })
   })
+
+  app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    res.send({
+      invites: await InviteCode.findAll()
+    })
+  })
+
+  app.post('/api/admin/create-invite-code', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!req.jwtData) return res.sendStatus(401)
+
+    const petitionBody: {
+      code?: string,
+      expirationDate: string
+    } = req.body
+
+    const inviteCode = await InviteCode.create({
+      code: petitionBody.code,
+      expirationDate: new Date(petitionBody.expirationDate),
+      createdByUserId: req.jwtData.userId
+    })
+
+    res.send(inviteCode)
+  })
+
   app.post('/api/admin/server-update', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
     const petitionBody: Array<server> = req.body
     if (petitionBody) {

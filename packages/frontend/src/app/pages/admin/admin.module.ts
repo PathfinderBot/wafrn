@@ -8,6 +8,10 @@ const routes: Route[] = [
     loadChildren: () => import('./server-list/server-list.module').then((m) => m.ServerListModule)
   },
   {
+    path: 'invite-codes',
+    loadChildren: () => import('./invite-codes/invite-codes.module').then((m) => m.InviteCodesModule)
+  },
+  {
     path: 'user-blocks',
     loadComponent: () => import('./blocks/blocks.component').then((c) => c.BlocksComponent)
   },
@@ -39,4 +43,4 @@ const routes: Route[] = [
   declarations: [],
   imports: [CommonModule, RouterModule.forChild(routes)]
 })
-export class AdminModule {}
+export class AdminModule { }

@@ -1,0 +1,16 @@
+<form [formGroup]="addInviteCode" (ngSubmit)="onSubmit()">
+  <mat-form-field class="w-full">
+    <mat-label>{{ 'add-invite-code.inviteCode' | translate }}</mat-label>
+    <input type="text" matNativeControl formControlName="code" />
+  </mat-form-field>
+  <mat-form-field class="w-full">
+    <mat-label>{{ 'add-invite-code.expirationDate' | translate }}</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="expirationDate">
+    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+
+  <button [disabled]="!addInviteCode.valid" mat-flat-button class="w-full my-2" type="submit">
+    {{ 'add-invite-code.addInviteText' | translate }}
+  </button>
+</form>

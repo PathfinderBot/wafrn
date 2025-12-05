@@ -106,7 +106,8 @@
       "bans": "Banned users",
       "blocklist": "Blocked users",
       "stats": "Stats",
-      "awaitingAproval": "Awaiting approval"
+      "awaitingAproval": "Awaiting approval",
+      "inviteCodes": "Invite codes"
     }
   },
   "theme-editor": {
@@ -512,6 +513,11 @@
     "askAnonymously": "Make question anonymous",
     "askFormLabel": "Question",
     "askButtonText": "Ask"
+  },
+  "add-invite-code": {
+    "inviteCode": "Invite code (default is random)",
+    "expirationDate": "Expiration date",
+    "addInviteText": "Create invite"
   },
   "messages": {
     "deleteRewootSuccess": "You successfully deleted your rewoot.",
