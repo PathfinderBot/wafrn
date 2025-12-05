@@ -37,12 +37,14 @@ import { UnifiedPushData } from './unifiedPushData.js'
 import { UserFollowHashtags } from './userFollowHashtag.js'
 import { UserBitesPostRelation } from './userBitesPostRelation.js'
 import { Bites } from './bites.js'
+import { InviteCode } from './inviteCode.js'
 
 sequelize.addModels([
   Ask,
   Blocks,
   Bites,
   BskyInviteCodes,
+  InviteCode,
   Emoji,
   EmojiCollection,
   EmojiReaction,

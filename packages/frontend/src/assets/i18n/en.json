@@ -34,6 +34,7 @@
     "title": "Register",
     "welcome": "Welcome to Wafrn!",
     "manualReviewInfo": "An administrator will review your profile before you can join. This process can take a few hours.",
+    "inviteOnlyInfo": "This instance requires an invite code to join. You can get one by contacting the admins.",
     "registerButton": "Register",
     "welcomeRegistrationsDisabled": "Registering on Wafrn",
     "registrationsDisabled": "{{instanceDomain}} has registrations disabled: {{privateInstanceRegistrationText}}",
@@ -106,7 +107,8 @@
       "bans": "Banned users",
       "blocklist": "Blocked users",
       "stats": "Stats",
-      "awaitingAproval": "Awaiting approval"
+      "awaitingAproval": "Awaiting approval",
+      "inviteCodes": "Invite codes"
     }
   },
   "theme-editor": {
@@ -512,6 +514,11 @@
     "askAnonymously": "Make question anonymous",
     "askFormLabel": "Question",
     "askButtonText": "Ask"
+  },
+  "add-invite-code": {
+    "inviteCode": "Invite code (default is random)",
+    "expirationDate": "Expiration date",
+    "addInviteText": "Create invite"
   },
   "messages": {
     "deleteRewootSuccess": "You successfully deleted your rewoot.",
