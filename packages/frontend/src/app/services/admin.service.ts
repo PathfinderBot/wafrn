@@ -21,6 +21,15 @@ export type UserReport = {
   createdAt: string
 }
 
+export interface InviteCode {
+  code?: string
+  createdAt?: Date
+  updatedAt?: Date
+  createdByUserId: string
+  expirationDate: Date
+  usedByUserId?: string | null
+}
+
 export type AdminUserBlock = {
   blockedId: string
   blocked: {
@@ -90,6 +99,25 @@ export class AdminService {
       this.http.post(`${EnvironmentService.environment.baseUrl}/admin/server-update`, serversToUpdate)
     )
     return response
+  }
+
+  async getInviteCodes(): Promise<InviteCode[]> {
+    const response = await firstValueFrom(
+      this.http.get<{ invites: InviteCode[] }>(`${EnvironmentService.environment.baseUrl}/admin/invite-codes`)
+    )
+    return response?.invites ? response?.invites : []
+  }
+
+  async addInviteCode(code?: string, expirationDate?: Date): Promise<InviteCode> {
+    if (!expirationDate) {
+      const date = new Date()
+      date.setDate(date.getDate() + 7)
+      expirationDate = date
+    }
+
+    return firstValueFrom<InviteCode>(
+      this.http.post<InviteCode>(`${EnvironmentService.environment.baseUrl}/admin/create-invite-code`, { code, expirationDate })
+    )
   }
 
   async getBlocks(): Promise<any> {

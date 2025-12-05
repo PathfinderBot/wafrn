@@ -293,13 +293,16 @@ export class RegisterComponent {
     birthDate: new UntypedFormControl("", [Validators.required]),
     captchaResponse: new UntypedFormControl("", []),
     avatar: new UntypedFormControl("", []),
+    ...(this.registrationLevel === 'INVITE' ? {
+      inviteCode: new UntypedFormControl("", [Validators.required])
+    } : {})
   });
 
   constructor() {
     // minimum age: 14
     this.minimumRegistrationDate = new Date();
     this.minimumRegistrationDate.setFullYear(
-      this.minimumRegistrationDate.getFullYear() - 18
+      this.minimumRegistrationDate.getFullYear() - (EnvironmentService.environment.minimumAgeToRegister ?? 18)
     );
     // do not accept dates before 1900
     this.minDate = new Date();
