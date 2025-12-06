@@ -1,7 +1,6 @@
 import { logger } from "./logger.js";
 
 export function isAdult(date?: string | Date): boolean {
-  logger.debug(date);
   if (!date) {
     return false;
   }
@@ -9,6 +8,8 @@ export function isAdult(date?: string | Date): boolean {
   const birthDate = new Date(date);
   const minimumBirthDate = new Date();
   minimumBirthDate.setFullYear(minimumBirthDate.getFullYear() - 18);
+  logger.debug(birthDate);
+
   if (!birthDate) {
     return false;
   }
