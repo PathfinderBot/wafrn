@@ -236,9 +236,9 @@ function userRoutes(app: Application) {
                   .send({ success: false, error: true, message: "Invalid invite code" })
               }
 
-              inviteDef.usedByUserId = id
-
-              await InviteCode.update(inviteDef, {
+              await InviteCode.update({
+                usedByUserId: id
+              }, {
                 where: {
                   code: invite
                 }

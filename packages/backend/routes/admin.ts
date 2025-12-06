@@ -11,6 +11,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { InviteCode } from '../models/inviteCode.js'
+import generateRandomString from '../utils/generateRandomString.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -22,7 +23,12 @@ export default function adminRoutes(app: Application) {
   if (completeEnvironment.registrationLevel === 'INVITE') {
     app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
       res.send({
-        invites: await InviteCode.findAll()
+        invites: (await InviteCode.findAll()).map(x => ({
+          ...x,
+          createdBy: x.createdBy,
+          usedBy: x.usedBy,
+          isUsedOrExpired: x.isUsedOrExpired
+        }))
       })
     })
 
@@ -35,7 +41,7 @@ export default function adminRoutes(app: Application) {
       } = req.body
 
       const inviteCode = await InviteCode.create({
-        code: petitionBody.code,
+        code: petitionBody.code ?? generateRandomString(),
         expirationDate: new Date(petitionBody.expirationDate),
         createdByUserId: req.jwtData.userId
       })
