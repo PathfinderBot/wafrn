@@ -33,6 +33,7 @@ import {
 import { getAllLocalUserIds } from "./cacheGetters/getAllLocalUserIds.js";
 import { checkBskyLabelersNSFW } from "./atproto/checkBskyLabelerNSFW.js";
 import { isAdult } from "./isAdult.js";
+import { logger } from "./logger.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -516,6 +517,7 @@ async function getUnjointedPosts(
   let finalPostsToSend = await Promise.all(postsToSend);
 
   if (!isAdult(user?.birthDate)) {
+    logger.debug(`${user?.url} marked as minor`);
     finalPostsToSend = finalPostsToSend.filter((x) => {
       const cwToFilter = (x.content_warning || "").toLowerCase();
       return (
