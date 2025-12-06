@@ -173,7 +173,10 @@ async function processSinglePost(
             remotePostId: null,
           },
         });
-        if (existingPost) {
+        if (
+          existingPost &&
+          !(await getAllLocalUserIds()).includes(existingPost.userId)
+        ) {
           // very expensive updates! but only happens when user
           // searches existing post that is alr on db
           await EmojiReaction.update(
@@ -331,6 +334,9 @@ async function processSinglePost(
             where: {
               bskyCid: post.cid,
               remotePostId: null,
+              userId: {
+                [Op.notIn]: await getAllLocalUserIds(),
+              },
             },
           });
         }
