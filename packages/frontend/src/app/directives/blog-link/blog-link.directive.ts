@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input, OnInit, Renderer2, inject } from '@angular/core';
 import { SnappyInjectable } from 'src/app/components/snappy/snappy-router.component';
 import { SnappyService } from 'src/app/components/snappy/snappy.service';
 import { SimplifiedUser } from 'src/app/interfaces/simplified-user';
@@ -8,9 +8,11 @@ import { SimplifiedUser } from 'src/app/interfaces/simplified-user';
   standalone: false
 })
 export class BlogLinkDirective implements OnInit {
-  @Input({ required: true }) blogLink?: SimplifiedUser | null;
+  private readonly host = inject(ElementRef);
+  private readonly renderer = inject(Renderer2);
+  private readonly snappy = inject(SnappyService);
 
-  constructor(private readonly host: ElementRef, private readonly renderer: Renderer2, private readonly snappy: SnappyService) { }
+  @Input({ required: true }) blogLink?: SimplifiedUser | null;
 
   async ngOnInit() {
     if (!this.blogLink) return;

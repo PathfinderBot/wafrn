@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatInputModule } from '@angular/material/input'
@@ -27,6 +27,9 @@ type ConfettiType = (typeof confettiTypeVariants)[number]
   styleUrl: './setting-confetti.component.scss'
 })
 export class SettingConfettiComponent {
+  private settingsService = inject(SettingsService);
+  private particle = inject(ParticleService);
+
   data: SettingData
   values
 
@@ -39,10 +42,9 @@ export class SettingConfettiComponent {
     bookmark: 'post-actions.bookmarkPost'
   }
 
-  constructor(
-    private settingsService: SettingsService,
-    private particle: ParticleService
-  ) {
+  constructor() {
+    const settingsService = this.settingsService;
+
     this.data = settingsService.data
     this.values = settingsService.values
   }

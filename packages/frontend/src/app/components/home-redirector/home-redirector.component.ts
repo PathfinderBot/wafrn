@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { Router, RouterModule } from '@angular/router'
 import { LoginService } from 'src/app/services/login.service'
 
@@ -9,10 +9,11 @@ import { LoginService } from 'src/app/services/login.service'
   styleUrl: './home-redirector.component.scss'
 })
 export class HomeRedirectorComponent {
-  constructor(
-    loginService: LoginService,
-    private router: Router
-  ) {
+  private router = inject(Router);
+
+  constructor() {
+    const loginService = inject(LoginService);
+
     if (!loginService.loggedIn.value) {
       this.router.navigate(['/dashboard/exploreLocal'])
     }

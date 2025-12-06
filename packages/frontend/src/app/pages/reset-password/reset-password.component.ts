@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { EnvironmentService } from 'src/app/services/environment.service'
@@ -11,15 +11,13 @@ import { LoginService } from 'src/app/services/login.service'
   standalone: false
 })
 export class ResetPasswordComponent {
+  private loginService = inject(LoginService);
+  private activeRoute = inject(ActivatedRoute);
+
   newPassword: string = ''
   logo = EnvironmentService.environment.logo
   loading = false
   icon = faLock
-
-  constructor(
-    private loginService: LoginService,
-    private activeRoute: ActivatedRoute
-  ) {}
 
   async resetPassword() {
     this.loading = true

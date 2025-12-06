@@ -112,6 +112,8 @@ export const baseEnvironment: Environment = {
   // registration level for the instance
   registrationLevel: 'PRIVATE',
   disableShowingBlockedServers: true,
+  minimumAgeToRegister: 18,
+  donationUrl: 'http://localhost/about',
   frontendEnvironment: {
     logo: '/assets/logo.png',
     frontUrl: 'https://localhost',
@@ -124,6 +126,7 @@ export const baseEnvironment: Environment = {
     enableRawOutput: true,
     registrationLevel: 'PRIVATE',
     privateInstanceRegistrationText: 'test 123',
+    minimumAgeToRegister: 18,
     disableShowingBlockedServers: true
   }
 }

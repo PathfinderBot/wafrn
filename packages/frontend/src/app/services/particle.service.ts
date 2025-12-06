@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { confetti, ConfettiOptions } from '@tsparticles/confetti'
 import { RecursivePartial } from '@tsparticles/engine'
 import { SettingsService } from './settings.service'
@@ -7,7 +7,8 @@ import { SettingsService } from './settings.service'
   providedIn: 'root'
 })
 export class ParticleService {
-  constructor(private settings: SettingsService) {}
+  private settings = inject(SettingsService);
+
 
   private confetti(opts: {
     location?: { event?: MouseEvent; scroll?: { x: number; y: number } }

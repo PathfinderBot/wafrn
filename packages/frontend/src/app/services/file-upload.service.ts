@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { catchError, throwError } from 'rxjs'
 import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
@@ -8,10 +8,9 @@ import { MessageService } from 'src/app/services/message.service'
   providedIn: 'root'
 })
 export class FileUploadService {
-  constructor(
-    private http: HttpClient,
-    private messageService: MessageService
-  ) {}
+  private http = inject(HttpClient);
+  private messageService = inject(MessageService);
+
 
   uploadFile(url: string, file: File, formdataName: string) {
     const formData = new FormData()

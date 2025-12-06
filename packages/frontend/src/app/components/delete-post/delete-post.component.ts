@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { DeletePostService } from 'src/app/services/delete-post.service'
 import { MessageService } from 'src/app/services/message.service'
@@ -18,15 +18,19 @@ import { LoaderComponent } from '../loader/loader.component'
   imports: [MatButtonModule, MatDialogTitle, LoaderComponent]
 })
 export class DeletePostComponent {
+  private deletePostService = inject(DeletePostService);
+  private messages = inject(MessageService);
+  private dialogRef = inject<MatDialogRef<DeletePostComponent>>(MatDialogRef);
+  data = inject<{
+    id: string;
+}>(MAT_DIALOG_DATA);
+
   postToDelete: string
   deleting = false
 
-  constructor(
-    private deletePostService: DeletePostService,
-    private messages: MessageService,
-    private dialogRef: MatDialogRef<DeletePostComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { id: string }
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.postToDelete = data.id
   }
 

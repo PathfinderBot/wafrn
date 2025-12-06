@@ -6,79 +6,51 @@
 
   <div #emojiContainer class="emoji-container">
     <div class="emoji-sidebar">
-      <button
-        mat-button
-        class="emoji-sidebar-child emoji-collection-button"
-        [class.emoji-active-collection]="this.collectionHas(-2)"
-        (click)="this.toggleCollection(-2)"
-      >
+      <button mat-button class="emoji-sidebar-child emoji-collection-button"
+        [class.emoji-active-collection]="this.collectionHas(-2)" (click)="this.toggleCollection(-2)">
         <span><fa-icon title="Recent emojis" [icon]="clockIcon" class="vertical-align-middle"></fa-icon></span>
       </button>
       @for (emojiCollection of emojiCollections; track $index) {
-        @if (emojiCollection.emojis.length > 0) {
-          @let emoji = emojiCollection.emojis[0];
-          <button
-            mat-button
-            class="emoji-sidebar-child emoji-collection-button"
-            [class.emoji-active-collection]="this.collectionHas($index)"
-            (click)="toggleCollection($index)"
-          >
-            @if (!emoji.url) {
-              {{ emoji.id }}
-            }
-            @if (emoji.url) {
-              <img
-                loading="lazy"
-                class="mr-2 ml-2"
-                [src]="baseMediaUrl + emoji.url"
-                [alt]="emojiCollection.name"
-                [title]="emojiCollection.name"
-              />
-            }
-          </button>
+      @if (emojiCollection.emojis.length > 0) {
+      @let emoji = emojiCollection.emojis[0];
+      <button mat-button class="emoji-sidebar-child emoji-collection-button"
+        [class.emoji-active-collection]="this.collectionHas($index)" (click)="toggleCollection($index)">
+        @if (!emoji.url) {
+        {{ emoji.id }}
         }
+        @if (emoji.url) {
+        <img loading="lazy" class="mr-2 ml-2" [src]="baseEmojisUrl + emoji.url" [alt]="emojiCollection.name"
+          [title]="emojiCollection.name" />
+        }
+      </button>
+      }
       }
     </div>
 
-    <cdk-virtual-scroll-viewport
-      itemSize="55"
-      class="emoji-viewport"
-      minBufferPx="200"
-      maxBufferPx="300"
-      [style.height.px]="this.virtualHeight()"
-    >
+    <cdk-virtual-scroll-viewport itemSize="55" class="emoji-viewport" minBufferPx="200" maxBufferPx="300"
+      [style.height.px]="this.virtualHeight()">
       <div *cdkVirtualFor="let row of this.vcRows()" class="emoji-row" [class.emoji-header]="row.tag === 0">
         @if (row.tag == 0) {
-          <h3 class="m-0 text-xl line-height-3 flex-1 emoji-header-text">
-            {{ row.name }}
-            @if (row.count) {
-              <span class="emoji-header-count">({{ row.count }})</span>
-            }
-          </h3>
-        } @else {
-          @for (e of this.rowIterable(); track $index) {
-            @if (row.index + $index < row.array.length) {
-              @let emoji = row.array[row.index + $index];
-              <button
-                mat-flat-button
-                [title]="emoji.name"
-                (click)="click(emoji)"
-                class="flex align-content-center justify-content-center cursor-pointer bg-transparent emoji-item"
-              >
-                @if (!emoji.url) {
-                  {{ emoji.id }}
-                } @else {
-                  <img
-                    class="post-emoji-preview"
-                    loading="lazy"
-                    [alt]="emoji.name"
-                    [src]="this.baseMediaUrl + emoji.url"
-                  />
-                }
-              </button>
-            }
+        <h3 class="m-0 text-xl line-height-3 flex-1 emoji-header-text">
+          {{ row.name }}
+          @if (row.count) {
+          <span class="emoji-header-count">({{ row.count }})</span>
           }
-        }
+        </h3>
+        } @else {
+        @for (e of this.rowIterable(); track $index) {
+        @if (row.index + $index < row.array.length) { @let emoji=row.array[row.index + $index]; <button mat-flat-button
+          [title]="emoji.name" (click)="click(emoji)"
+          class="flex align-content-center justify-content-center cursor-pointer bg-transparent emoji-item">
+          @if (!emoji.url) {
+          {{ emoji.id }}
+          } @else {
+          <img class="post-emoji-preview" loading="lazy" [alt]="emoji.name" [src]="baseEmojisUrl + emoji.url" />
+          }
+          </button>
+          }
+          }
+          }
       </div>
     </cdk-virtual-scroll-viewport>
   </div>

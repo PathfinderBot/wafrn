@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { SETTINGS_TOKEN } from 'src/app/pages/settings/settings.component'
 import {
   DropListData,
@@ -32,6 +32,8 @@ import { MatExpansionModule } from '@angular/material/expansion'
   styleUrl: './setting-drop-list.component.scss'
 })
 export class SettingDropListComponent {
+  private settingsService = inject(SettingsService);
+
   data: SettingData
   settingKey: SettingKey
   itemList: SettingListItem[]
@@ -41,10 +43,12 @@ export class SettingDropListComponent {
   barsIcon = faBars
   defaultIcon = faRotateRight
 
-  constructor(
-    private settingsService: SettingsService,
-    @Inject(SETTINGS_TOKEN) data: { settingKey: SettingKey }
-  ) {
+  constructor() {
+    const settingsService = this.settingsService;
+    const data = inject<{
+    settingKey: SettingKey;
+}>(SETTINGS_TOKEN);
+
     this.data = settingsService.data
     this.settingKey = data.settingKey
     this.dropListDataEntry = this.data[this.settingKey].dropListData

@@ -13,6 +13,11 @@
     <app-info-card type="info">{{ 'register.manualReviewInfo' | translate }}</app-info-card>
   </section>
   }
+  @if (registrationLevel === 'INVITE') {
+  <section class="mx-3 mb-4">
+    <app-info-card type="info">{{ 'register.inviteOnlyInfo' | translate }}</app-info-card>
+  </section>
+  }
 
   <form class="px-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
     <mat-form-field class="w-full">
@@ -28,6 +33,14 @@
       </button>
       <mat-error> Password is required </mat-error>
     </mat-form-field>
+    @if (registrationLevel === 'INVITE') {
+    <mat-form-field class="w-full" [ngClass]="{'opacity-80': !!inviteCode}">
+      <mat-label>Invite code</mat-label>
+      <input type="text" formControlName="inviteCode" matInput required [value]="inviteCode"
+        [readonly]="!!inviteCode" />
+      <mat-error> Invite code is required </mat-error>
+    </mat-form-field>
+    }
 
     <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
       <mat-label>Username</mat-label>

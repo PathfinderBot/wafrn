@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import {
   HttpRequest,
   HttpHandler,
@@ -16,7 +16,8 @@ export const AUTH_OVERRIDE = new HttpContextToken(() => '')
 
 @Injectable()
 export class WafrnAuthInterceptor implements HttpInterceptor {
-  constructor(private router: Router) {}
+  private router = inject(Router);
+
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     let authReq = req

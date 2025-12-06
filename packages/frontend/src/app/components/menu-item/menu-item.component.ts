@@ -1,4 +1,4 @@
-import { Component, computed, Input } from '@angular/core'
+import { Component, computed, Input, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatListModule } from '@angular/material/list'
 import { Router, RouterModule } from '@angular/router'
@@ -26,6 +26,8 @@ import { TranslateModule } from '@ngx-translate/core'
   styleUrl: './menu-item.component.scss'
 })
 export class MenuItemComponent {
+  private router = inject(Router);
+
   arrowIcon = faChevronDown
 
   @Input() item!: MenuItem
@@ -42,8 +44,6 @@ export class MenuItemComponent {
 
     return null
   })
-
-  constructor(private router: Router) {}
 
   routeChildActive() {
     if (this.item.highlightRoute === false) return false

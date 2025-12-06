@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core'
+import { Component, signal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { TranslatePipe } from '@ngx-translate/core'
@@ -13,13 +13,11 @@ import { MessageService } from 'src/app/services/message.service'
   styleUrl: './setting-change-password.component.scss'
 })
 export class SettingChangePasswordComponent {
-  loading = signal(false)
+  private loginService = inject(LoginService);
+  private jwt = inject(JwtService);
+  private messageService = inject(MessageService);
 
-  constructor(
-    private loginService: LoginService,
-    private jwt: JwtService,
-    private messageService: MessageService
-  ) {}
+  loading = signal(false)
 
   async changePassword() {
     const email = this.jwt.getTokenData()?.email

@@ -24,6 +24,8 @@ services:
       CACHE_DOMAIN: ${CACHE_DOMAIN}
       MEDIA_DOMAIN: ${MEDIA_DOMAIN}
 
+      DONATION_URL: ${DONATION_URL}
+
       SMTP_HOST: ${SMTP_HOST}
       SMTP_USER: ${SMTP_USER}
       SMTP_PORT: ${SMTP_PORT}
@@ -104,6 +106,8 @@ services:
       PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
       CACHE_DOMAIN: ${CACHE_DOMAIN}
       MEDIA_DOMAIN: ${MEDIA_DOMAIN}
+
+      DONATION_URL: ${DONATION_URL}
       ACME_EMAIL: ${ACME_EMAIL}
       FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
       FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
@@ -162,7 +166,7 @@ services:
       PDS_REPORT_SERVICE_URL: "https://mod.bsky.app"
       PDS_REPORT_SERVICE_DID: "did:plc:ar7c4by46qjdydhdevvrndac"
       PDS_CRAWLERS: "https://bsky.network, https://atproto.africa"
-      PDS_EMAIL_SMTP_URL: "smtp://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
+      PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
       PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
       LOG_ENABLED: true
     volumes:

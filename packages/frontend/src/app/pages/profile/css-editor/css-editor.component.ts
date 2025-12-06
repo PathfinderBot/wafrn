@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -16,14 +16,15 @@ import { ThemeService } from 'src/app/services/theme.service'
   styleUrl: './css-editor.component.scss'
 })
 export class CssEditorComponent {
+  private themeService = inject(ThemeService);
+  private messages = inject(MessageService);
+  private router = inject(Router);
+
   ready = false
   myCSS = ''
-  constructor(
-    private themeService: ThemeService,
-    private messages: MessageService,
-    private router: Router,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.settings.themeEditor')
 
     this.themeService

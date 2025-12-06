@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 
 import { server } from '../interfaces/servers'
 import { firstValueFrom } from 'rxjs'
@@ -19,6 +19,15 @@ export type UserReport = {
   reportedUserId: string
   reportedUser: SimplifiedUser
   createdAt: string
+}
+
+export interface InviteCode {
+  code?: string
+  createdAt?: Date
+  updatedAt?: Date
+  createdBy: SimplifiedUser
+  expiresIn: Date
+  usedBy?: SimplifiedUser | null
 }
 
 export type AdminUserBlock = {
@@ -75,7 +84,8 @@ export type UserBlockMute = {
   providedIn: 'root'
 })
 export class AdminService {
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
+
 
   async getServers(): Promise<server[]> {
     const response = await firstValueFrom(
@@ -89,6 +99,25 @@ export class AdminService {
       this.http.post(`${EnvironmentService.environment.baseUrl}/admin/server-update`, serversToUpdate)
     )
     return response
+  }
+
+  async getInviteCodes(): Promise<InviteCode[]> {
+    const response = await firstValueFrom(
+      this.http.get<{ invites: InviteCode[] }>(`${EnvironmentService.environment.baseUrl}/admin/invite-codes`)
+    )
+    return response?.invites ? response?.invites : []
+  }
+
+  async addInviteCode(code?: string, expirationDate?: Date): Promise<InviteCode> {
+    if (!expirationDate) {
+      const date = new Date()
+      date.setDate(date.getDate() + 7)
+      expirationDate = date
+    }
+
+    return firstValueFrom<InviteCode>(
+      this.http.post<InviteCode>(`${EnvironmentService.environment.baseUrl}/admin/create-invite-code`, { code, expirationDate })
+    )
   }
 
   async getBlocks(): Promise<any> {

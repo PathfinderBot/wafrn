@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
 import {
   PromptDialogComponent,
@@ -17,7 +17,8 @@ import { CustomDialogComponent, CustomDialogData } from '../components/dialog/cu
   providedIn: 'root'
 })
 export class SimpleDialogService {
-  constructor(private dialog: MatDialog) {}
+  private dialog = inject(MatDialog);
+
 
   public async createPromptDialog(data: PromptDialogData): Promise<PromptDialogResult | undefined> {
     const ref = this.dialog.open<PromptDialogComponent, PromptDialogData, PromptDialogResult>(PromptDialogComponent, {

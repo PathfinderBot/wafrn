@@ -1,4 +1,4 @@
-import { Component, inject, Inject, signal } from '@angular/core'
+import { Component, inject, signal } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import {
   MAT_DIALOG_DATA,
@@ -35,6 +35,8 @@ export interface CustomDialogData<T extends string> {
   templateUrl: './custom-dialog.component.html'
 })
 export class CustomDialogComponent<T extends string> {
+  protected data = inject<CustomDialogData<T>>(MAT_DIALOG_DATA);
+
   readonly dialogRef = inject<MatDialogRef<CustomDialogComponent<T>, T | undefined>>(
     MatDialogRef<CustomDialogComponent<T>>
   )
@@ -45,7 +47,9 @@ export class CustomDialogComponent<T extends string> {
 
   inputResponse = signal('')
 
-  constructor(@Inject(MAT_DIALOG_DATA) protected data: CustomDialogData<T>) {
+  constructor() {
+    const data = this.data;
+
     this.textData = data
   }
 

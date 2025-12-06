@@ -1,4 +1,4 @@
-import { Component, ElementRef, viewChild } from '@angular/core'
+import { Component, ElementRef, viewChild, inject } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
@@ -11,7 +11,9 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 export class DoomComponent {
   doomFrame = viewChild<ElementRef<HTMLIFrameElement>>('doom')
 
-  constructor(simpleTitle: SimpleTitleService) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('the social network with DOOM!')
   }
 

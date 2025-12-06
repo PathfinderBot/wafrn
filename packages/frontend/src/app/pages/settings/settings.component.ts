@@ -1,5 +1,5 @@
 import { CdkPortalOutlet, ComponentPortal, Portal } from '@angular/cdk/portal'
-import { Component, InjectionToken, Injector, Signal } from '@angular/core'
+import { Component, InjectionToken, Injector, Signal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatListModule } from '@angular/material/list'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
@@ -28,6 +28,8 @@ export const SETTINGS_TOKEN = new InjectionToken('settings token')
   styleUrl: './settings.component.scss'
 })
 export class SettingsComponent {
+  private settingsService = inject(SettingsService);
+
   data: SettingData
   values
   groups: GroupedSettingData[]
@@ -42,11 +44,11 @@ export class SettingsComponent {
   // Icons
   saveIcon = faFloppyDisk
 
-  constructor(
-    private settingsService: SettingsService,
-    activatedRoute: ActivatedRoute,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const settingsService = this.settingsService;
+    const activatedRoute = inject(ActivatedRoute);
+    const simpleTitle = inject(SimpleTitleService);
+
     this.data = settingsService.data
     this.values = settingsService.values
     this.groups = settingsService.groups

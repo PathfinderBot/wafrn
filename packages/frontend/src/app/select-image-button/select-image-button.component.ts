@@ -1,4 +1,4 @@
-import { Component, effect, output, signal } from '@angular/core'
+import { Component, effect, output, signal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
@@ -21,7 +21,9 @@ export class SelectImageButtonComponent {
   uploadIcon = faUpload
   fileName = ''
 
-  constructor(settingsService: SettingsService) {
+  constructor() {
+    const settingsService = inject(SettingsService);
+
     effect(() => {
       if (!settingsService.settingsModified()) {
         this.fileSelected.set(false)

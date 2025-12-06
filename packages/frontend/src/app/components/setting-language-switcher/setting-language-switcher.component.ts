@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatSelectChange, MatSelectModule } from '@angular/material/select'
 import { TranslatePipe, TranslateService } from '@ngx-translate/core'
@@ -13,15 +13,17 @@ import { LoginService } from 'src/app/services/login.service'
   styleUrl: './setting-language-switcher.component.scss'
 })
 export class SettingLanguageSwitcherComponent {
+  private loginService = inject(LoginService);
+  private translationService = inject(TranslateService);
+
   allLanguages
   appLanguage: string
 
   languageMap = languageMap
 
-  constructor(
-    private loginService: LoginService,
-    private translationService: TranslateService
-  ) {
+  constructor() {
+    const translationService = this.translationService;
+
     this.allLanguages = supportedLanguages
     this.appLanguage = translationService.currentLang
   }

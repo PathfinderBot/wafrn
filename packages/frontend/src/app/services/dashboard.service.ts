@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { EventEmitter, Injectable } from "@angular/core";
+import { EventEmitter, Injectable, inject } from "@angular/core";
 
 import { ProcessedPost } from "../interfaces/processed-post";
 import { SimplifiedUser } from "../interfaces/simplified-user";
@@ -16,17 +16,17 @@ import { EnvironmentService } from "./environment.service";
   providedIn: "root",
 })
 export class DashboardService {
+  private http = inject(HttpClient);
+  private postService = inject(PostsService);
+  private messageService = inject(MessageService);
+
   public scrollEventEmitter: EventEmitter<string> = new EventEmitter();
   // TODO improve this. will require some changes for stuff but basically
   // its faster to say "gimme page 0 startdate this" than "gime page 2 startdate this"
   public startScrollDate: Date = new Date();
   baseUrl: string;
 
-  constructor(
-    private http: HttpClient,
-    private postService: PostsService,
-    private messageService: MessageService
-  ) {
+  constructor() {
     this.baseUrl = EnvironmentService.environment.baseUrl;
   }
 
@@ -261,12 +261,10 @@ export class DashboardService {
 
   public getAvatarUrl(blog?: BlogDetails) {
     if (!blog) return "";
-    return blog.url.startsWith("@")
-      ? EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(blog.avatar)
-      : EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(
-            EnvironmentService.environment.baseMediaUrl + blog.avatar
-          );
+    return (
+      EnvironmentService.environment.cacheDomain +
+      "/api/v2/cache/avatar/" +
+      blog.id
+    );
   }
 }

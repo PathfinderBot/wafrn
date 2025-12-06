@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
@@ -13,7 +13,9 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrl: './emoji-uploader.component.scss'
 })
 export class EmojiUploaderComponent {
-  constructor(simpleTitle: SimpleTitleService) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.admin.addEmojis')
   }
 

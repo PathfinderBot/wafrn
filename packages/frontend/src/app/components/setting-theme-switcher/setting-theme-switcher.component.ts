@@ -1,4 +1,4 @@
-import { Component, WritableSignal } from '@angular/core'
+import { Component, WritableSignal, inject } from '@angular/core'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatSelectChange, MatSelectModule } from '@angular/material/select'
 import { TranslatePipe } from '@ngx-translate/core'
@@ -21,6 +21,8 @@ import {
   styleUrl: './setting-theme-switcher.component.scss'
 })
 export class SettingThemeSwitcherComponent {
+  private themeService = inject(ThemeService);
+
   // light/dark
   lightDarkMode: WritableSignal<LightDarkMode>
   colorThemeData = lightDarkModeData
@@ -35,7 +37,9 @@ export class SettingThemeSwitcherComponent {
   additionalStyleModesSelect
   additionalStyleModesData = additionalStyleModesData
 
-  constructor(private themeService: ThemeService) {
+  constructor() {
+    const themeService = this.themeService;
+
     this.lightDarkMode = themeService.lightDarkMode
 
     this.colorScheme = themeService.theme

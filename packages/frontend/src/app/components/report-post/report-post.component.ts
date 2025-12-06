@@ -1,4 +1,4 @@
-import { Component, computed, signal, Inject } from '@angular/core'
+import { Component, computed, signal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
 import {
@@ -34,6 +34,9 @@ export type ReportDialogData = { type: 'post'; post: ProcessedPost } | { type: '
   ]
 })
 export class ReportPostComponent {
+  private readonly dialogRef = inject<MatDialogRef<ReportPostComponent, UserReport | undefined>>(MatDialogRef);
+  data = inject<ReportDialogData>(MAT_DIALOG_DATA);
+
   formValid = computed<boolean>(() => this.reportSeverity() !== null && this.reportDescription().length > 0)
   postId: string | undefined
   userId: string
@@ -50,10 +53,9 @@ export class ReportPostComponent {
     10: 'Illegal content'
   }
 
-  constructor(
-    private readonly dialogRef: MatDialogRef<ReportPostComponent, UserReport | undefined>,
-    @Inject(MAT_DIALOG_DATA) public data: ReportDialogData
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.postId = data.type === 'post' ? data.post.id : undefined
     this.userId = data.type === 'user' ? data.userId : data.post.userId
   }

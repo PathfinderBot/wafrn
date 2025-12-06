@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { FormControl, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { EnvironmentService } from 'src/app/services/environment.service'
@@ -14,6 +14,10 @@ import encodeQR from 'qr';
   standalone: false
 })
 export class MfaSetupComponent {
+  private loginService = inject(LoginService);
+  private messageService = inject(MessageService);
+  private translateService = inject(TranslateService);
+
   loading = false
   logo = EnvironmentService.environment.logo
   icon = faUser
@@ -30,12 +34,6 @@ export class MfaSetupComponent {
   mfaVerifyForm = new UntypedFormGroup({
     token: new UntypedFormControl('', [Validators.required])
   })
-
-  constructor(
-    private loginService: LoginService,
-    private messageService: MessageService,
-    private translateService: TranslateService
-  ) { }
 
   async ngOnInit() {
     this.mfaList = await this.loginService.getUserMfaList()

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core'
+import { Component, signal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
@@ -16,14 +16,15 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrl: './pending-users.component.scss'
 })
 export class PendingUsersComponent {
+  private adminService = inject(AdminService);
+  private simpleDialog = inject(SimpleDialogService);
+
   pendingUsers: SimplifiedUser[] = []
   loading = signal(true)
 
-  constructor(
-    private adminService: AdminService,
-    private simpleDialog: SimpleDialogService,
-    simpleTitle: SimpleTitleService
-  ) {
+  constructor() {
+    const simpleTitle = inject(SimpleTitleService);
+
     simpleTitle.set('menu.admin.awaitingAproval')
 
     this.reloadList()

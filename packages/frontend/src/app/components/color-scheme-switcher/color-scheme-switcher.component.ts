@@ -1,5 +1,5 @@
 import { CommonModule, NgClass } from '@angular/common'
-import { Component, Signal, WritableSignal } from '@angular/core'
+import { Component, Signal, WritableSignal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatMenuModule } from '@angular/material/menu'
@@ -60,7 +60,9 @@ export class ColorSchemeSwitcherComponent {
   // Light/Dark mode
   iconClass = ''
 
-  constructor(themeService: ThemeService) {
+  constructor() {
+    const themeService = inject(ThemeService);
+
     this.colorScheme = themeService.theme
     this.theme = themeService.lightDarkMode
     this.additionalStyleModes = themeService.additionalStyleModes

@@ -1,6 +1,6 @@
 @if (mimeType().toLowerCase() == 'text/html' && !data().url.startsWith('https://media.tenor.com/')) {
-@if (displayUrl()) {
-<app-link-preview [link]="displayUrl()"></app-link-preview>
+@if (displayUrl() && data().url) {
+<app-link-preview [link]="data().url"></app-link-preview>
 }
 } @else {
 <div class="media-container" [class.always-show-alt]="alwaysShowAlt()"

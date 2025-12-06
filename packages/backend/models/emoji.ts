@@ -1,5 +1,12 @@
 import {
-  Model, Table, Column, DataType, ForeignKey, HasMany, BelongsToMany, BelongsTo
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  BelongsToMany,
+  BelongsTo,
 } from "sequelize-typescript";
 import { EmojiReaction } from "./emojiReaction.js";
 import { User } from "./user.js";
@@ -17,45 +24,55 @@ export interface EmojiAttributes {
   url?: string;
   external?: boolean;
   emojiCollectionId?: string;
+  uuid?: string;
 }
 
 @Table({
   tableName: "emojis",
   modelName: "emojis",
-  timestamps: true
+  timestamps: true,
 })
-export class Emoji extends Model<EmojiAttributes, EmojiAttributes> implements EmojiAttributes {
-
+export class Emoji
+  extends Model<EmojiAttributes, EmojiAttributes>
+  implements EmojiAttributes
+{
   @Column({
     primaryKey: true,
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   declare id: string;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   declare name: string;
 
   @Column({
     allowNull: true,
-    type: DataType.STRING
+    type: DataType.STRING,
   })
   declare url: string;
 
   @Column({
     allowNull: true,
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   declare external: boolean;
 
   @ForeignKey(() => EmojiCollection)
   @Column({
     allowNull: true,
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   declare emojiCollectionId: string;
+
+  @Column({
+    allowNull: false,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+  })
+  declare uuid: string;
 
   @HasMany(() => EmojiReaction)
   declare emojiReactions: EmojiReaction[];

@@ -1,16 +1,4 @@
-import {
-  Component,
-  computed,
-  ElementRef,
-  EventEmitter,
-  input,
-  OnDestroy,
-  OnInit,
-  Output,
-  signal,
-  viewChild,
-  viewChildren
-} from '@angular/core'
+import { Component, computed, ElementRef, EventEmitter, input, OnDestroy, OnInit, Output, signal, viewChild, viewChildren, inject } from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { LoginService } from 'src/app/services/login.service'
 import { PostsService } from 'src/app/services/posts.service'
@@ -48,6 +36,9 @@ import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
   standalone: false
 })
 export class PostComponent implements OnInit, OnDestroy {
+  postService = inject(PostsService);
+  private readonly loginService = inject(LoginService);
+
   post = input.required<ProcessedPost[]>()
   postSliced: ProcessedPost[] = []
 
@@ -70,7 +61,6 @@ export class PostComponent implements OnInit, OnDestroy {
   expanded = signal(false)
   finalPosts = computed(() => this.post().slice(-5))
   mediaBaseUrl = EnvironmentService.environment.baseMediaUrl
-  cacheurl = EnvironmentService.environment.externalCacheurl
   followedUsers: string[] = []
   notYetAcceptedFollows: string[] = []
   notes = computed(() => this.uniquePost().notes.toString())
@@ -141,10 +131,9 @@ export class PostComponent implements OnInit, OnDestroy {
   webkit = !!this.ua.match(/WebKit/i)
   iOSSafari = this.iOS && this.webkit && !this.ua.match(/CriOS/i)
 
-  constructor(
-    public postService: PostsService,
-    private readonly loginService: LoginService
-  ) {
+  constructor() {
+    const loginService = this.loginService;
+
     if (this.loginService.loggedIn.value) {
       this.myId = loginService.getLoggedUserUUID()
     }

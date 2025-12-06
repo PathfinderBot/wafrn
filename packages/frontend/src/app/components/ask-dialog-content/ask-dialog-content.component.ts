@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, Signal } from '@angular/core'
+import { Component, OnInit, Signal, inject } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
@@ -28,18 +28,17 @@ import { ParticleService } from 'src/app/services/particle.service'
   styleUrl: './ask-dialog-content.component.scss'
 })
 export class AskDialogContentComponent implements OnInit {
+  private dialogRef = inject<MatDialogRef<AskDialogContentComponent>>(MatDialogRef);
+  private messages = inject(MessageService);
+  data = inject<{
+    details: BlogDetails;
+}>(MAT_DIALOG_DATA);
+  private blogService = inject(BlogService);
+  protected loginService = inject(LoginService);
+  private particle = inject(ParticleService);
+
   allowAnons = false
-  constructor(
-    private dialogRef: MatDialogRef<AskDialogContentComponent>,
-    private messages: MessageService,
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      details: BlogDetails
-    },
-    private blogService: BlogService,
-    protected loginService: LoginService,
-    private particle: ParticleService
-  ) {
+  constructor() {
     this.askForm.controls['anonymous'].patchValue(!this.loginService.loggedIn.value)
   }
   ngOnInit(): void {

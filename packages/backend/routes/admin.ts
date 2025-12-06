@@ -10,6 +10,8 @@ import { UserAttributes } from '../models/user.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
+import { InviteCode } from '../models/inviteCode.js'
+import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -17,6 +19,52 @@ export default function adminRoutes(app: Application) {
       servers: await FederatedHost.findAll()
     })
   })
+
+  if (completeEnvironment.registrationLevel === 'INVITE') {
+    app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+      const inviteCodes = await InviteCode.findAll();
+      const usersInvolved = await User.findAll({
+        where: {
+          id: {
+            [Op.in]: [
+              ...inviteCodes.map(x => x.createdByUserId),
+              ...inviteCodes.map(x => x.usedByUserId ?? '').filter(x => !!x)
+            ]
+          }
+        }
+      })
+      const inviteCodesMapped = inviteCodes.map(x => ({
+        createdBy: usersInvolved.find(y => y.id === x.createdByUserId),
+        usedBy: usersInvolved.find(y => y.id === x.usedByUserId),
+        isUsedOrExpired: x.isUsedOrExpired,
+        updatedAt: x.updatedAt,
+        createdAt: x.createdAt,
+        expiresIn: x.expirationDate,
+        code: x.code
+      }))
+      res.send({
+        invites: inviteCodesMapped.reverse()
+      })
+    })
+
+    app.post('/api/admin/create-invite-code', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+      if (!req.jwtData) return res.sendStatus(401)
+
+      const petitionBody: {
+        code?: string,
+        expirationDate: string
+      } = req.body
+
+      const inviteCode = await InviteCode.create({
+        code: petitionBody.code?.trim() ? petitionBody.code : generateRandomStringInviteCode(),
+        expirationDate: new Date(petitionBody.expirationDate),
+        createdByUserId: req.jwtData.userId
+      })
+
+      res.send(inviteCode)
+    })
+  }
+
   app.post('/api/admin/server-update', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
     const petitionBody: Array<server> = req.body
     if (petitionBody) {

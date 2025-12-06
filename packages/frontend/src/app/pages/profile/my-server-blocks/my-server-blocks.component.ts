@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { BlocksService } from 'src/app/services/blocks.service'
 
 @Component({
@@ -8,11 +8,13 @@ import { BlocksService } from 'src/app/services/blocks.service'
   standalone: false
 })
 export class MyServerBlocksComponent {
+  private blocksService = inject(BlocksService);
+
   serverBlocks: any[] = []
   ready = false
   displayedColumns = ['muted', 'actions']
 
-  constructor(private blocksService: BlocksService) {
+  constructor() {
     this.blocksService.getMyServerBlockList().then((backendResponse) => {
       this.serverBlocks = backendResponse
       this.ready = true

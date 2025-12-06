@@ -65,6 +65,7 @@
   .mat-drawer-content {
     background-color: var(--main-bgcolor) !important;
   }
+
   /* ^ you can put an image here [and a lot of other places] with background-image: url('url.webp');. use a link to a file you have uploaded directly to wafrn*/
 
   /* REFRESH BUTTON */
@@ -79,8 +80,9 @@
   /* SIDE MENU */
 
   .instance-logo {
-    content: url('/api/cache?media=https%3A%2F%2Fmedia.wafrn.net%2F1758156049860_f04a906b9c6b976889ce48031157348f0eb1ac8f_processed.webp');
+    content: url('/assets/img/cohrn.webp');
   }
+
   /* ^ use a wafrn upload link here too */
 
   .mat-drawer-inner-container {
@@ -180,6 +182,7 @@ mat-nav-list app-menu-item {}
     color: #f8efe3;
     transition: var(--color-trans);
   }
+
   .mat-mdc-unelevated-button fa-icon {
     color: #f8efe3;
   }
@@ -219,25 +222,27 @@ mat-nav-list app-menu-item {}
     border-color: var(--container-bordercolor);
   }
 
-app-post .wafrn-container, app-notifications .mat-mdc-card.mdc-card.wafrn-container, app-forum-component .wafrn-container
-{
-background-color: #fff;
-color: var(--main-textcolor);
-box-shadow: 0px 0px 8px #a6a4a3 !important;
-border-radius: 10px 10px 0px 0px;
-padding: 0;
-}
+  app-post .wafrn-container,
+  app-notifications .mat-mdc-card.mdc-card.wafrn-container,
+  app-forum-component .wafrn-container {
+    background-color: #fff;
+    color: var(--main-textcolor);
+    box-shadow: 0px 0px 8px #a6a4a3 !important;
+    border-radius: 10px 10px 0px 0px;
+    padding: 0;
+  }
 
-app-post .wafrn-container button, app-notifications .mat-mdc-card.mdc-card.wafrn-container button, app-forum-component .wafrn-container button
-{
-  background-color: transparent !important;
-}
+  app-post .wafrn-container button,
+  app-notifications .mat-mdc-card.mdc-card.wafrn-container button,
+  app-forum-component .wafrn-container button {
+    background-color: transparent !important;
+  }
 
-app-forum-component app-post-ribbon .wafrn-container, app-forum-component app-post-ribbon .ribbon-container
-{
-  border-radius: 10px;
-  padding: 5px 10px 5px 10px !important;
-}
+  app-forum-component app-post-ribbon .wafrn-container,
+  app-forum-component app-post-ribbon .ribbon-container {
+    border-radius: 10px;
+    padding: 5px 10px 5px 10px !important;
+  }
 
   app-search .mat-mdc-card {
     background: #fff;
@@ -366,7 +371,7 @@ app-forum-component app-post-ribbon .wafrn-container, app-forum-component app-po
     border-width: 2px;
   }
 
-/* POST DATE - you can use these i think but use mat-sys-outline at the top to change both at once*/
+  /* POST DATE - you can use these i think but use mat-sys-outline at the top to change both at once*/
 
   /*
 
@@ -512,15 +517,15 @@ svg.fa-globe {}
     transition: var(--color-trans);
   }
 
-#emoji-reactions button {
-  background: transparent !important;
-}
+  #emoji-reactions button {
+    background: transparent !important;
+  }
 
-#emoji-reactions button:hover {
-  background:none !important;
-   box-shadow:none !important;
-  transition: var(--color-trans);
-}
+  #emoji-reactions button:hover {
+    background: none !important;
+    box-shadow: none !important;
+    transition: var(--color-trans);
+  }
 
   #emoji-reactions .mat-mdc-tooltip-trigger:hover {
     background: none !important;
@@ -535,196 +540,198 @@ svg.fa-globe {}
 
   /* ^ this is for the stubborn ones */
 
-/* ^ this is for the stubborn ones */
+  /* ^ this is for the stubborn ones */
 
-.mat-mdc-button-persistent-ripple {
-  color: black !important;
-  box-shadow:none !important;
-background:none;
-}
+  .mat-mdc-button-persistent-ripple {
+    color: black !important;
+    box-shadow: none !important;
+    background: none;
+  }
 
-/* ^ ??? */
+  /* ^ ??? */
 
-app-emoji-react svg {
-  fill: var(--link-textcolor);
-  background: none !important;
-  transition: var(--color-trans);
-}
+  app-emoji-react svg {
+    fill: var(--link-textcolor);
+    background: none !important;
+    transition: var(--color-trans);
+  }
 
-app-emoji-react svg:hover {
-  fill: var(--link-textcolor-hover);
-  background: none !important;
-  transition: var(--color-trans);
-}
+  app-emoji-react svg:hover {
+    fill: var(--link-textcolor-hover);
+    background: none !important;
+    transition: var(--color-trans);
+  }
 
-/* ^ these two change the color of the emoji react button itself, like the smiley with the plus */
+  /* ^ these two change the color of the emoji react button itself, like the smiley with the plus */
 
-div.emojireact-overlay {}
+  div.emojireact-overlay {}
 
-.emoji-reactions
-{
-padding: 0px 0px 10px 10px;
-}
+  .emoji-reactions {
+    padding: 0px 0px 10px 10px;
+  }
 
-/* TAGS */
+  /* TAGS */
 
-a.tag {
-  background-color: transparent !important;
+  a.tag {
+    background-color: transparent !important;
 
-  color: #83254f !important;
+    color: #83254f !important;
 
-  transition: var(--color-trans);
+    transition: var(--color-trans);
 
-  font-family: monospace;
-}
+    font-family: monospace;
+  }
 
-a.tag:hover {
-  color: var(--link-textcolor-hover) !important;
+  a.tag:hover {
+    color: var(--link-textcolor-hover) !important;
 
-  transition: var(--color-trans);
-}
+    transition: var(--color-trans);
+  }
 
-.tag-list
-{
-padding: 0px 0px 0px 20px;
-}
+  .tag-list {
+    padding: 0px 0px 0px 20px;
+  }
 
-.ql-snow a {
-  color: white;
-}
+  .ql-snow a {
+    color: white;
+  }
 
-/* ^ changes inline bsky etc. tags*/
+  /* ^ changes inline bsky etc. tags*/
 
 
-/* MENTIONS */
+  /* MENTIONS */
 
-a.mention {
-  color: #faa55b !important;
-  transition: var(--color-trans);
-}
+  a.mention {
+    color: #faa55b !important;
+    transition: var(--color-trans);
+  }
 
-a.mention:hover {
-  color: #f8efe3 !important;
-  transition: var(--color-trans);
-}
+  a.mention:hover {
+    color: #f8efe3 !important;
+    transition: var(--color-trans);
+  }
 
-.mention {
-background-color: #83254f !important;
-border-width: 0px !important;
-border-radius: 0px !important;
-padding: 0 10px;
-color: #faa55b !important;
-border-radius: 30px !important;
-}
+  .mention {
+    background-color: #83254f !important;
+    border-width: 0px !important;
+    border-radius: 0px !important;
+    padding: 0 10px;
+    color: #faa55b !important;
+    border-radius: 30px !important;
+  }
 
-/* container of quoted post */
+  /* container of quoted post */
 
-div.quoted-post {
-  border-width: 0px;
-  background:none;
-  border-color: var(--button-accent-color);
-  border-style: dotted;
-  box-shadow: none;
-}
+  div.quoted-post {
+    border-width: 0px;
+    background: none;
+    border-color: var(--button-accent-color);
+    border-style: dotted;
+    box-shadow: none;
+  }
 
-.quoted-post.quote-collapsed::before
-{
-	box-shadow: none !important;
-}
+  .quoted-post.quote-collapsed::before {
+    box-shadow: none !important;
+  }
 
-.quoted-post.quote-collapsed {
-  max-height: 17.5rem !important;
-  margin: 20px;
-  border: 1px solid #ddd;
-  padding: 0px 0px 10px 0px;
-  box-shadow: 0px 0px 20px #e4ddd5 inset;
-}
+  .quoted-post.quote-collapsed {
+    max-height: 17.5rem !important;
+    margin: 20px;
+    border: 1px solid #ddd;
+    padding: 0px 0px 10px 0px;
+    box-shadow: 0px 0px 20px #e4ddd5 inset;
+  }
 
-/* EMBED CONTAINER */
+  /* EMBED CONTAINER */
 
-.embed-container {
-background: rgba(255,255,255, 1);
-display:inline;
-border: none !important;
-}
+  .embed-container {
+    background: rgba(255, 255, 255, 1);
+    display: inline;
+    border: none !important;
+  }
 
-/* ^ INLINE STACKS PICTURE ON TOP OF LINK TEXT */
+  /* ^ INLINE STACKS PICTURE ON TOP OF LINK TEXT */
 
-.embed-link {
-  border-radius: 5px !important;
-  border: 1px solid #bbb8b8 !important;
-  background: none !important;
-}
+  .embed-link {
+    border-radius: 5px !important;
+    border: 1px solid #bbb8b8 !important;
+    background: none !important;
+  }
 
-.embed-link .embed-image-container {
-  max-height: 100%;
-  max-width: 14em !important;
-  display: flex;
-}
+  .embed-link .embed-image-container {
+    max-height: 100%;
+    max-width: 14em !important;
+    display: flex;
+  }
 
-a.embed-link .embed-image {
-  max-width: 100%;
-  max-height: 100%;
-  margin: 0;
-  object-fit: cover;
-  padding: 0;
-}
+  a.embed-link .embed-image {
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0;
+    object-fit: cover;
+    padding: 0;
+  }
 
-.embed-link .mat-typography h2 {
-  font-size: 1.1em;
-  line-height: 1.1;
-  margin-bottom: 10px;
-}
+  .embed-link .mat-typography h2 {
+    font-size: 1.1em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
 
-.embed-title, .embed-description, .embed-link, .embed-url {
-color:black !important;
-}
+  .embed-title,
+  .embed-description,
+  .embed-link,
+  .embed-url {
+    color: black !important;
+  }
 
-/* MEDIA CONTAINER */
-.media-content-container {
-background-color: #fff0 !important;;
-}
+  /* MEDIA CONTAINER */
+  .media-content-container {
+    background-color: #fff0 !important;
+    ;
+  }
 
-.media-container {
-background-color: #fff !important;
-border-style:groove;
-border-width:0px;
-border-radius:0px;
-border-color:black;
-display: grid;
-}
+  .media-container {
+    background-color: #fff !important;
+    border-style: groove;
+    border-width: 0px;
+    border-radius: 0px;
+    border-color: black;
+    display: grid;
+  }
 
-.media-gallery, .media-carousel {
-background-color: #fff !important;
-border-radius:0px;
-margin-left: auto;
-margin-right: auto;
-}
+  .media-gallery,
+  .media-carousel {
+    background-color: #fff !important;
+    border-radius: 0px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-/* IMAGES */
+  /* IMAGES */
 
-app-wafrn-media img {
-  filter: brightness(0.7);
-  transition: var(--image-transoff);
-}
+  app-wafrn-media img {
+    filter: brightness(0.7);
+    transition: var(--image-transoff);
+  }
 
-app-wafrn-media img:hover {
-  filter: brightness(1);
-  transition: var(--image-trans);
-}
+  app-wafrn-media img:hover {
+    filter: brightness(1);
+    transition: var(--image-trans);
+  }
 
-/* MEDIA DESCRIPTION */
+  /* MEDIA DESCRIPTION */
 
-app-wafrn-media div.media-description {
-  background-color: var(--element-bgcolor) !important;
-  border-radius: 0px;
-  font-family: monospace;
-  font-size: 11px;
-}
+  app-wafrn-media div.media-description {
+    background-color: var(--element-bgcolor) !important;
+    border-radius: 0px;
+    font-family: monospace;
+    font-size: 11px;
+  }
 
-/* VOTING [lol] */
+  /* VOTING [lol] */
 
-/*
+  /*
 
 .mdc-linear-progress__bar-inner {}
 .mdc-linear-progress__buffer-bar {}
@@ -895,6 +902,7 @@ fa-icon[mattooltip="Delete woot"]:hover {
     background-color: var(--main-bgcolor) !important;
     border-radius: 0px !important;
   }
+
   .mat-mdc-dialog-container {
     background-color: var(--element-bgcolor);
     border-width: 4px;
@@ -908,6 +916,7 @@ fa-icon[mattooltip="Delete woot"]:hover {
   .mdc-floating-label {
     color: white !important;
   }
+
   .mdc-text-field {
     background-color: #fff !important;
     border-color: #bdbdbd !important;
@@ -926,11 +935,9 @@ fa-icon[mattooltip="Delete woot"]:hover {
 
   /* PROFILE */
 
-  app-view-blog mat-card.wafrn-container {
-  }
+  app-view-blog mat-card.wafrn-container {}
 
-  app-view-blog img[alt='user avatar'] {
-  }
+  app-view-blog img[alt='user avatar'] {}
 
   .blog-avatar-image {
     border-radius: 45px !important;
@@ -1015,6 +1022,7 @@ div.follow-counts {}
   .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
     color: #5e5e5e !important;
   }
+
   .mdc-text-field--filled:not(.mdc-text-field--disabled) {
     background-color: #fff !important;
     border-color: #bdbdbd !important;
@@ -1024,20 +1032,21 @@ div.follow-counts {}
     box-shadow: 1px 1px 2px #99938d inset;
   }
 
-p#if-you-see-this-load-more-posts {
-  color: var(--main-textcolor);
-}
+  p#if-you-see-this-load-more-posts {
+    color: var(--main-textcolor);
+  }
 
-.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
-color: #5e5e5e !important;
-}
-.mdc-text-field--filled:not(.mdc-text-field--disabled) {
-background-color: #fff !important;
-border-color: #bdbdbd !important;
-border-style: solid;
-border-width: 1px;
-border-radius: 5px !important;
-box-shadow: 1px 1px 2px #99938d inset;
-}
+  .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
+    color: #5e5e5e !important;
+  }
 
-/* ^ changes the theme editor */
+  .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+    background-color: #fff !important;
+    border-color: #bdbdbd !important;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px !important;
+    box-shadow: 1px 1px 2px #99938d inset;
+  }
+
+  /* ^ changes the theme editor */

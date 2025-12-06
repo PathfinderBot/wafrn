@@ -11,7 +11,7 @@ async function sendPostToInboxes(job: Job) {
   logger.debug({ message: "sendpostToInbox", inbox, localUser: localUser.url });
   const tmp = await promiseRace(
     [postPetitionSigned(objectToSend, localUser, inbox)],
-    2500
+    5000
   );
   return true;
 }

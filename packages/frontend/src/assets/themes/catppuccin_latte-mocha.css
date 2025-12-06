@@ -3,7 +3,7 @@
 /* Source Repo: https://codeberg.org/astreaprtcl/catppuccin-wafrn */
 
 /* Catppuccin Colors */
-@import url('https://cdn.jsdelivr.net/npm/@catppuccin/palette/css/catppuccin.css');
+@import url('/assets/themes/catppuccin_base.css');
 /* URL taken from a page within https://github.com/catppuccin/palette
  *
  * If it would be more conveinent later on, catppuccin colors could be
@@ -23,12 +23,12 @@
    * see this color.
   */
   --failure: light-dark(var(--ctp-latte-red), var(--ctp-mocha-red));
-  
+
   /* Text variables */
   --text: light-dark(var(--ctp-latte-text), var(--ctp-mocha-text));
   --subtext0: light-dark(var(--ctp-latte-subtext0), var(--ctp-mocha-subtext0));
   --subtext1: light-dark(var(--ctp-latte-subtext1), var(--ctp-mocha-subtext1));
-  
+
   /* Panel variables */
   --crust: light-dark(var(--ctp-latte-crust), var(--ctp-mocha-crust));
   --mantle: light-dark(var(--ctp-latte-mantle), var(--ctp-mocha-mantle));
@@ -90,7 +90,8 @@
   --mat-sys-inverse-on-surface: var(--crust);
   --mat-sys-outline: var(--subtext0);
   --mat-sys-outline-variant: var(--accent2);
-  --mat-sys-neutral10: var(--failure); /* Variable used for the form field native select option text color */
+  --mat-sys-neutral10: var(--failure);
+  /* Variable used for the form field native select option text color */
 
   /* Error palette variables */
   --mat-sys-error: var(--failure);
@@ -101,13 +102,14 @@
   /* Neutral variant palette variables */
   --mat-sys-surface-variant: var(--surface1);
   --mat-sys-on-surface-variant: var(--accent3);
-  --mat-sys-neutral-variant20: var(--surface1); /* Variable used for the sidenav scrim (container background shadow when opened) */
+  --mat-sys-neutral-variant20: var(--surface1);
+  /* Variable used for the sidenav scrim (container background shadow when opened) */
 
   /* other */
   --mat-badge-text-color: var(--mat-sys-on-primary);
 }
 
 
-.mat-mdc-list-item { 
+.mat-mdc-list-item {
   height: 2rem !important;
 }

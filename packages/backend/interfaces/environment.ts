@@ -79,6 +79,8 @@ export interface Environment {
   webpushPublicKey: string
   webpushEmail: string
   registrationLevel: 'PRIVATE' | 'INVITE' | 'PUBLIC'
+  minimumAgeToRegister: number
   disableShowingBlockedServers: boolean
+  donationUrl?: string
   frontendEnvironment: any
 }

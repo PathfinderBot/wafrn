@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { firstValueFrom, map } from 'rxjs'
 import { environment } from '../../environments/environment'
 
@@ -7,10 +7,12 @@ import { environment } from '../../environments/environment'
   providedIn: 'root'
 })
 export class EnvironmentService {
+  private http = inject(HttpClient);
+
   // default env
   public static environment: any = { ...environment }
 
-  constructor(private http: HttpClient) {
+  constructor() {
     const environmentCopy: any = { ...environment }
     if (environmentCopy.forceEnvironment) {
       this.replaceEnvironment(environmentCopy.forceEnvironment)
