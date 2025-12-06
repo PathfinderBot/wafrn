@@ -214,7 +214,8 @@ function wellKnownRoutes(app: Application) {
       description: completeEnvironment.defaultSEOData.description,
       email: completeEnvironment.adminEmail,
       version: packageJsonFile.version,
-      registrations: completeEnvironment.registrationLevel !== 'PRIVATE',
+      registrations: completeEnvironment.registrationLevel === 'PUBLIC',
+      invites_enabled: completeEnvironment.registrationLevel === 'INVITE',
       approval_required: completeEnvironment.reviewRegistrations,
       configuration: {
         accounts: {
