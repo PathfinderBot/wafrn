@@ -13,6 +13,5 @@ export function isAdult(date?: string | Date): boolean {
     return false;
   }
   const res = minimumBirthDate.getTime() > birthDate.getTime();
-  logger.debug(`isAdult: ` + res);
   return res;
 }
