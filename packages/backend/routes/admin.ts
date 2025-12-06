@@ -22,13 +22,18 @@ export default function adminRoutes(app: Application) {
 
   if (completeEnvironment.registrationLevel === 'INVITE') {
     app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+      const inviteCodes = await InviteCode.findAll();
+      const inviteCodesMapped = inviteCodes.map(x => ({
+        createdBy: x.createdBy,
+        usedBy: x.usedBy,
+        isUsedOrExpired: x.isUsedOrExpired,
+        updatedAt: x.updatedAt,
+        createdAt: x.createdAt,
+        expiresIn: x.expirationDate,
+        code: x.code
+      }))
       res.send({
-        invites: (await InviteCode.findAll()).map(x => ({
-          ...x,
-          createdBy: x.createdBy,
-          usedBy: x.usedBy,
-          isUsedOrExpired: x.isUsedOrExpired
-        }))
+        invites: inviteCodesMapped
       })
     })
 
