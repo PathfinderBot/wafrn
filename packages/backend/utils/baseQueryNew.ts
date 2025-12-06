@@ -218,7 +218,7 @@ async function getUnjointedPosts(
   posterId: string,
   doNotFullyHide = false
 ) {
-  let user = await User.findByPk(posterId);
+  let user = await User.scope("full").findByPk(posterId);
 
   // we need a list of all the userId we just got from the post
   let userIds: string[] = [];
@@ -516,10 +516,8 @@ async function getUnjointedPosts(
 
   let finalPostsToSend = await Promise.all(postsToSend);
   const userIsAdult = isAdult(user?.birthDate);
-  logger.debug(`user ${user?.url} isadult: ` + userIsAdult);
 
   if (!userIsAdult) {
-    logger.debug(`${user?.url} marked as minor`);
     finalPostsToSend = finalPostsToSend.filter((x) => {
       const cwToFilter = (x.content_warning || "").toLowerCase();
       return (
