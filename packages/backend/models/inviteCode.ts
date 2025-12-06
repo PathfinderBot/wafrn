@@ -1,7 +1,7 @@
 import {
   Model, Table, Column, DataType, ForeignKey, BelongsTo
 } from "sequelize-typescript";
-import generateRandomString from "../utils/generateRandomString.js";
+import { generateRandomStringInviteCode } from "../utils/generateRandomString.js";
 import { User } from "./index.js";
 
 export interface InviteCodeAttributes {
@@ -22,7 +22,7 @@ export class InviteCode extends Model<InviteCodeAttributes, InviteCodeAttributes
   @Column({
     primaryKey: true,
     type: DataType.CHAR,
-    defaultValue: () => generateRandomString()
+    defaultValue: () => generateRandomStringInviteCode()
   })
   declare code: string;
 
