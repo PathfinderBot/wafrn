@@ -34,9 +34,10 @@
       <mat-error> Password is required </mat-error>
     </mat-form-field>
     @if (registrationLevel === 'INVITE') {
-    <mat-form-field class="w-full">
+    <mat-form-field class="w-full" [ngClass]="{'opacity-80': !!inviteCode}">
       <mat-label>Invite code</mat-label>
-      <input type="text" formControlName="inviteCode" matInput required />
+      <input type="text" formControlName="inviteCode" matInput required [value]="inviteCode"
+        [readonly]="!!inviteCode" />
       <mat-error> Invite code is required </mat-error>
     </mat-form-field>
     }

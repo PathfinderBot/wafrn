@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table'
 import { MatPaginator } from '@angular/material/paginator'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
 import { MatDialog } from '@angular/material/dialog'
+import { EnvironmentService } from 'src/app/services/environment.service'
 
 @Component({
   selector: 'app-invite-codes',
@@ -16,7 +17,7 @@ export class InviteCodesComponent implements OnInit {
   ready = false
   originalInvites: InviteCode[] = []
 
-  displayedColumns = ['code', 'createdBy', 'usedBy', 'expiresIn']
+  displayedColumns = ['actions', 'code', 'createdBy', 'usedBy', 'expiresIn']
   @ViewChild(MatPaginator) paginator!: MatPaginator
 
   dataSource!: MatTableDataSource<InviteCode, MatPaginator>
@@ -24,7 +25,7 @@ export class InviteCodesComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     simpleTitle: SimpleTitleService,
-    public dialogService: MatDialog,
+    public dialogService: MatDialog
   ) {
     simpleTitle.set('menu.admin.inviteCodes')
 
@@ -51,5 +52,12 @@ export class InviteCodesComponent implements OnInit {
     this.dialogService.open(await this.addInviteCodeComponent(), {
       width: '800px'
     })
+  }
+
+  async copy(code: string, method: 'CODE' | 'LINK' = 'CODE') {
+    navigator.clipboard.writeText(
+      method === 'CODE' ? code :
+        (new URL(`/register?code=${code}`, EnvironmentService.environment.frontUrl).href)
+    )
   }
 }

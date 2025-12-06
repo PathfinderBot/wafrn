@@ -1,5 +1,6 @@
 import { Component, inject } from "@angular/core";
 import {
+  FormControl,
   UntypedFormControl,
   UntypedFormGroup,
   Validators,
@@ -282,6 +283,8 @@ export class RegisterComponent {
     "None of the above",
   ];
 
+  inviteCode = new URLSearchParams(window.location.search).get('code')
+
   loginForm = new UntypedFormGroup({
     email: new UntypedFormControl("", [Validators.required, Validators.email]),
     password: new UntypedFormControl("", [Validators.required]),
@@ -294,7 +297,7 @@ export class RegisterComponent {
     captchaResponse: new UntypedFormControl("", []),
     avatar: new UntypedFormControl("", []),
     ...(this.registrationLevel === 'INVITE' ? {
-      inviteCode: new UntypedFormControl("", [Validators.required])
+      inviteCode: new UntypedFormControl(this.inviteCode ?? '', [Validators.required])
     } : {})
   });
 
