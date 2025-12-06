@@ -515,8 +515,10 @@ async function getUnjointedPosts(
     );
 
   let finalPostsToSend = await Promise.all(postsToSend);
+  const userIsAdult = isAdult(user?.birthDate);
+  logger.debug(`user ${user?.url} isadult: ` + userIsAdult);
 
-  if (!isAdult(user?.birthDate)) {
+  if (!userIsAdult) {
     logger.debug(`${user?.url} marked as minor`);
     finalPostsToSend = finalPostsToSend.filter((x) => {
       const cwToFilter = (x.content_warning || "").toLowerCase();
