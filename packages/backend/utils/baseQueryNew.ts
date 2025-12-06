@@ -518,11 +518,13 @@ async function getUnjointedPosts(
   if (!isAdult(user?.birthDate)) {
     finalPostsToSend = finalPostsToSend.filter((x) => {
       const cwToFilter = (x.content_warning || "").toLowerCase();
-      !cwToFilter.includes("nsfw") &&
+      return (
+        !cwToFilter.includes("nsfw") &&
         !cwToFilter.includes("lewd") &&
         !cwToFilter.includes("sexual") &&
         !cwToFilter.includes("nudity") &&
-        !cwToFilter.includes("porn");
+        !cwToFilter.includes("porn")
+      );
     });
     mediasToSend = mediasToSend.filter((x) => !x.NSFW);
   }
