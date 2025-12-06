@@ -1,11 +1,11 @@
 export function isAdult(date?: string | Date): boolean {
-  if (!date) return false
+  if (!date) return false;
 
-  const birthDate = new Date(date)
-  const minimumBirthDate = new Date()
-  minimumBirthDate.setFullYear(minimumBirthDate.getFullYear() - 18)
+  const birthDate = new Date(date);
+  const minimumBirthDate = new Date();
+  minimumBirthDate.setFullYear(minimumBirthDate.getFullYear() - 18);
   if (!birthDate) {
-    return false
+    return false;
   }
-  return minimumBirthDate > birthDate
+  return minimumBirthDate.getTime() > birthDate.getTime();
 }
