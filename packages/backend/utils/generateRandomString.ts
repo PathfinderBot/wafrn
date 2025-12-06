@@ -5,5 +5,5 @@ export default function generateRandomString() {
 }
 
 export function generateRandomStringInviteCode() {
-  return crypto.randomBytes(16).toString('hex')
+  return `${crypto.randomBytes(1).toString('hex')}-${crypto.randomBytes(1).toString('hex')}-${crypto.randomBytes(1).toString('hex')}-${crypto.randomBytes(1).toString('hex')}`
 }
