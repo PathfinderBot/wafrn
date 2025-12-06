@@ -25,9 +25,9 @@ export interface InviteCode {
   code?: string
   createdAt?: Date
   updatedAt?: Date
-  createdByUserId: string
-  expirationDate: Date
-  usedByUserId?: string | null
+  createdBy: SimplifiedUser
+  expiresIn: Date
+  usedBy?: SimplifiedUser | null
 }
 
 export type AdminUserBlock = {

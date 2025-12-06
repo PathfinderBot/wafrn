@@ -43,7 +43,7 @@ export default function adminRoutes(app: Application) {
         code: x.code
       }))
       res.send({
-        invites: inviteCodesMapped
+        invites: inviteCodesMapped.reverse()
       })
     })
 
@@ -56,7 +56,7 @@ export default function adminRoutes(app: Application) {
       } = req.body
 
       const inviteCode = await InviteCode.create({
-        code: petitionBody.code ?? generateRandomString(),
+        code: petitionBody.code?.trim() ? petitionBody.code : generateRandomString(),
         expirationDate: new Date(petitionBody.expirationDate),
         createdByUserId: req.jwtData.userId
       })
