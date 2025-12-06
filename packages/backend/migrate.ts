@@ -12,7 +12,7 @@ function wasCalledAsScript() {
   return import.meta.url === realPathAsUrl;
 }
 
-await wait(2500);
+await wait(5000);
 
 const sequelize = new Sequelize(completeEnvironment.databaseConnectionString);
 
