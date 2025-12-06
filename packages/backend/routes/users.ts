@@ -214,6 +214,8 @@ function userRoutes(app: Application) {
               ],
             },
           });
+
+          let inviteCode: InviteCode | undefined;
           if (!emailExists) {
             const id = randomUUID()
             if (completeEnvironment.registrationLevel === 'INVITE') {
@@ -232,17 +234,11 @@ function userRoutes(app: Application) {
               })
 
               if (!inviteDef || inviteDef.isUsedOrExpired) {
-                return res.status(403)
-                  .send({ success: false, error: true, message: "Invalid invite code" })
+                return res.status(400)
+                  .send({ success: false, message: "Invalid invite code" })
               }
 
-              inviteDef.usedByUserId = id
-
-              await InviteCode.update(inviteDef, {
-                where: {
-                  code: invite
-                }
-              })
+              inviteCode = inviteDef
             }
 
             let avatarURL = ""; // Empty user avatar in case of error let frontend do stuff
@@ -287,6 +283,12 @@ function userRoutes(app: Application) {
             };
 
             const userWithEmail = User.create(user);
+
+            if (inviteCode) {
+              await follow(id, inviteCode.createdByUserId)
+              inviteCode.usedByUserId = id
+              await inviteCode.save()
+            }
 
             const instanceUrl = completeEnvironment.instanceUrl.startsWith(
               "http"
@@ -363,7 +365,7 @@ function userRoutes(app: Application) {
         if (!success) {
           res.status(401).send({
             success: false,
-            message: "Got to final part with success false",
+            message: "Failed registration",
           });
         }
       } catch (error) {
