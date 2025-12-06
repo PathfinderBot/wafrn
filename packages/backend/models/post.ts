@@ -382,7 +382,7 @@ export class Post
 
   // only use if the user is already loaded into the object, otherwise use `await isRemoteBlueskyPostAsync()`
   get isRemoteBlueskyPost() {
-    return this.bskyUri && this.user.isRemoteUser && !this.user.remoteId;
+    return this.bskyUri && this.user.isRemoteUser && !this.remotePostId;
   }
 
   async isRemoteBlueskyPostAsync() {
