@@ -99,10 +99,10 @@ case $1 in
       fi
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
-      docker compose pull
       docker compose down
       rm -rf packages/backend/cache/ && mkdir packages/backend/cache/ && touch packages/backend/cache/.gitkeep
       docker system prune -f
+      docker compose pull
       docker compose up --build -d
       docker compose logs -t -n 50 -f
     popd
