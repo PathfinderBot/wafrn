@@ -97,18 +97,14 @@ case $1 in
       if [ ! -z "$COMPOSE_FILENAME" ]; then
         cp $COMPOSE_FILENAME docker-compose.yml
       fi
-      docker compose down
-      docker system prune -f
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
       docker compose pull
-      docker compose build
-
-      rm -rf packages/backend/cache/ && mkdir packages/backend/cache/ && touch packages/backend/cache/.gitkeep
-
-      docker compose up --build -d
       docker compose down
+      rm -rf packages/backend/cache/ && mkdir packages/backend/cache/ && touch packages/backend/cache/.gitkeep
       docker system prune -f
+      docker compose up --build -d
+      docker compose build
       docker compose up --build -d
       docker compose logs -t -n 50 -f
     popd
