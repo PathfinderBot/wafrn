@@ -32,6 +32,7 @@ import {
 } from "../models/post.js";
 import { getAllLocalUserIds } from "./cacheGetters/getAllLocalUserIds.js";
 import { checkBskyLabelersNSFW } from "./atproto/checkBskyLabelerNSFW.js";
+import { isAdult } from "./isAdult.js"
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -216,6 +217,8 @@ async function getUnjointedPosts(
   posterId: string,
   doNotFullyHide = false
 ) {
+  let user = await User.findByPk(posterId)
+
   // we need a list of all the userId we just got from the post
   let userIds: string[] = [];
   let postIds: string[] = [];
@@ -485,7 +488,7 @@ async function getUnjointedPosts(
   const postsToSendFiltered = (await postWithNotes)
     .map((post: any) => filterPost(post, postIdsToFullySend, doNotFullyHide))
     .filter((elem: any) => !!elem);
-  const mediasToSend = (await medias).filter((elem: any) => {
+  let mediasToSend = (await medias).filter((elem: any) => {
     return postIdsToFullySend.includes(elem.postId);
   });
   const tagsFiltered = (await tags).filter((tag: any) =>
@@ -498,7 +501,7 @@ async function getUnjointedPosts(
     postIdsToFullySend.includes(poll.postId)
   );
   // we edit posts so we add the interactionPolicies
-  const postsToSend = postsToSendFiltered
+  let postsToSend = postsToSendFiltered
     .filter((elem) => !!elem)
     .map(async (elem) =>
       addPostCanInteract(
@@ -510,9 +513,22 @@ async function getUnjointedPosts(
       )
     );
 
+  let finalPostsToSend = await Promise.all(postsToSend)
+
+  if (!isAdult(user?.birthDate)) {
+    finalPostsToSend = finalPostsToSend.filter(x =>
+      !x.content_warning.includes('nsfw') &&
+      !x.content_warning.includes('lewd') &&
+      !x.content_warning.includes('sexual') &&
+      !x.content_warning.includes('nudity') &&
+      !x.content_warning.includes('porn')
+    )
+    mediasToSend = mediasToSend.filter(x => !x.NSFW)
+  }
+
   return {
     rewootIds: finalRewootIds.filter((elem) => !!elem),
-    posts: await Promise.all(postsToSend),
+    posts: finalPostsToSend,
     emojiRelations: await emojis,
     mentions: mentions.postMentionRelation.filter((elem) => !!elem),
     users: (await users).filter((elem) => !!elem),
@@ -542,8 +558,8 @@ function filterPost(
     const ancestorsLength = res.ancestors ? res.ancestors.length : 0;
     res.ancestors = res.ancestors
       ? res.ancestors
-          .map((elem: any) => filterPost(elem, postIdsToFullySend, donotHide))
-          .filter((elem: any) => !!elem)
+        .map((elem: any) => filterPost(elem, postIdsToFullySend, donotHide))
+        .filter((elem: any) => !!elem)
       : [];
     res.ancestors = res.ancestors.filter((elem: any) => !(elem == undefined));
     if (ancestorsLength != res.ancestors.length && !donotHide) {
@@ -572,8 +588,8 @@ async function canInteract(
   let userFollowers = userFollowersInput
     ? userFollowersInput
     : getFollowedsIds(userId, false, {
-        getFollowersInstead: true,
-      });
+      getFollowersInstead: true,
+    });
   let mentions = mentionsInput ? mentionsInput : getMentionedUserIds([postId]);
   let post: Promise<Post | null> | Post | null = Post.findByPk(postId);
   await Promise.all([usersFollowing, userFollowers, mentions, post]);
@@ -686,7 +702,7 @@ async function addPostCanInteract(
   userFollowersInput?: string[],
   userFollowingInput?: string[],
   mentionsInput?: { usersMentioned: string[]; postMentionRelation: any[] }
-) {
+): Promise<Post & { canReply: boolean, canLike: boolean, canReblog: boolean, canQuote: boolean }> {
   let post: any = { ...postInput };
   let canReply = canInteract(
     post.replyControl,

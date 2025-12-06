@@ -77,6 +77,7 @@ import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
 import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.js";
 import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
 import { InviteCode } from "../models/inviteCode.js";
+import { isAdult } from "../utils/isAdult.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -1129,6 +1130,13 @@ function userRoutes(app: Application) {
             },
           },
         });
+        if (blog && !isAdult(req.jwtData?.birthDate)) {
+          const user = await User.findByPk(blog.id);
+          if (user?.NSFW) {
+            res.sendStatus(404);
+            return;
+          }
+        }
         if (blog && !req.jwtData) {
           const user = await User.findByPk(blog.id, {
             attributes: ["hideProfileNotLoggedIn"],
