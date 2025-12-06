@@ -214,7 +214,8 @@ function userRoutes(app: Application) {
               ],
             },
           });
-          let invitedBy;
+
+          let inviteCode: InviteCode | undefined;
           if (!emailExists) {
             const id = randomUUID()
             if (completeEnvironment.registrationLevel === 'INVITE') {
@@ -237,10 +238,7 @@ function userRoutes(app: Application) {
                   .send({ success: false, message: "Invalid invite code" })
               }
 
-              inviteDef.usedByUserId = id;
-
-              await inviteDef.save()
-              invitedBy = inviteDef.createdByUserId
+              inviteCode = inviteDef
             }
 
             let avatarURL = ""; // Empty user avatar in case of error let frontend do stuff
@@ -286,7 +284,11 @@ function userRoutes(app: Application) {
 
             const userWithEmail = User.create(user);
 
-            if (invitedBy) await follow(id, invitedBy)
+            if (inviteCode) {
+              await follow(id, inviteCode.createdByUserId)
+              inviteCode.usedByUserId = id
+              await inviteCode.save()
+            }
 
             const instanceUrl = completeEnvironment.instanceUrl.startsWith(
               "http"
