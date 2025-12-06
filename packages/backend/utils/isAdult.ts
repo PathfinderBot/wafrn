@@ -8,7 +8,7 @@ export function isAdult(date?: string | Date): boolean {
   const birthDate = new Date(date);
   const minimumBirthDate = new Date();
   minimumBirthDate.setFullYear(minimumBirthDate.getFullYear() - 18);
-  logger.debug({ birthDate, date });
+  logger.debug({ birthDate, date, minimumBirthDate });
 
   if (!birthDate) {
     return false;

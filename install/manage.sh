@@ -104,8 +104,6 @@ case $1 in
       rm -rf packages/backend/cache/ && mkdir packages/backend/cache/ && touch packages/backend/cache/.gitkeep
       docker system prune -f
       docker compose up --build -d
-      docker compose build
-      docker compose up --build -d
       docker compose logs -t -n 50 -f
     popd
     ;;
