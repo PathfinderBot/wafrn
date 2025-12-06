@@ -97,7 +97,8 @@ case $1 in
       if [ ! -z "$COMPOSE_FILENAME" ]; then
         cp $COMPOSE_FILENAME docker-compose.yml
       fi
-
+      docker compose down
+      docker system prune -f
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
       docker compose pull
