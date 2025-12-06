@@ -170,8 +170,13 @@ export class LoginService {
     }
   }
 
-  async register(registerForm: UntypedFormGroup, img: File | null): Promise<boolean> {
-    let success = false
+  async register(registerForm: UntypedFormGroup, img: File | null): Promise<{
+    success: boolean,
+    message?: string
+  }> {
+    let resPetition = {
+      success: false
+    }
     try {
       const payload = this.utils.objectToFormData(registerForm.value)
       if (img) {
@@ -180,13 +185,11 @@ export class LoginService {
       const petition: any = await this.http
         .post(`${EnvironmentService.environment.baseUrl}/register`, payload)
         .toPromise()
-      if (petition.success) {
-        success = petition.success
-      }
+      resPetition = petition
     } catch (exception) {
       console.error(exception)
     }
-    return success
+    return resPetition
   }
 
   async requestPasswordReset(email: string, navigate: boolean = true) {

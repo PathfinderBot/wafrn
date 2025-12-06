@@ -323,7 +323,7 @@ export class RegisterComponent {
         this.loginForm,
         this.img
       );
-      if (petition) {
+      if (petition.success) {
         this.messages.add({
           severity: "success",
           summary: "Success!",
@@ -332,7 +332,7 @@ export class RegisterComponent {
       } else {
         this.messages.add({
           severity: "warn",
-          summary: "Email or url in use",
+          summary: petition.message ?? "Email or url in use",
         });
         this.loginForm.enable();
       }

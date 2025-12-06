@@ -11,7 +11,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { InviteCode } from '../models/inviteCode.js'
-import generateRandomString from '../utils/generateRandomString.js'
+import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -56,7 +56,7 @@ export default function adminRoutes(app: Application) {
       } = req.body
 
       const inviteCode = await InviteCode.create({
-        code: petitionBody.code?.trim() ? petitionBody.code : generateRandomString(),
+        code: petitionBody.code?.trim() ? petitionBody.code : generateRandomStringInviteCode(),
         expirationDate: new Date(petitionBody.expirationDate),
         createdByUserId: req.jwtData.userId
       })
