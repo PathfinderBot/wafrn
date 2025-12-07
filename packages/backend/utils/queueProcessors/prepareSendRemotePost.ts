@@ -51,17 +51,6 @@ const sendPostQueue = new Queue("sendPostToInboxes", {
   },
 });
 
-const sendPostBskyQueue = new Queue("sendPostBsky", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "fixed",
-    },
-    removeOnFail: true,
-  },
-});
 async function prepareSendRemotePostWorker(job: Job) {
   let highPriorityInboxes: string[] = [];
   //async function sendRemotePost(localUser: any, post: any) {
@@ -71,15 +60,6 @@ async function prepareSendRemotePostWorker(job: Job) {
   }
 
   const localUser = await User.scope("full").findByPk(post.userId);
-  if (
-    post.privacy === Privacy.Public &&
-    localUser?.enableBsky &&
-    completeEnvironment.enableBsky
-  ) {
-    await sendPostBskyQueue.add("sendPostBsky", job.data);
-    await wait(2500);
-  }
-
   const parents = await post.getAncestors({
     include: [
       {

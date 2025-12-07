@@ -834,11 +834,34 @@ export default function postsRoutes(app: Application) {
           if (req.body.idPostToEdit) {
             await federatePostHasBeenEdited(post);
           } else {
-            await prepareSendPostQueue.add(
-              "prepareSendPost",
-              { postId: post.id, petitionBy: posterId },
-              { jobId: post.id, delay: 1500 }
-            );
+            const sendPostBskyQueue = new Queue("sendPostBsky", {
+              connection: completeEnvironment.bullmqConnection,
+              defaultJobOptions: {
+                removeOnComplete: true,
+                attempts: 3,
+                backoff: {
+                  type: "fixed",
+                },
+                removeOnFail: true,
+              },
+            });
+            const jobData = { postId: post.id, petitionBy: posterId };
+            let delay = 1500;
+            if (
+              post.privacy === Privacy.Public &&
+              posterUser?.enableBsky &&
+              completeEnvironment.enableBsky &&
+              !parent?.bskyUri
+            ) {
+              await sendPostBskyQueue.add("sendPostBsky", jobData, {
+                delay: 500,
+              });
+              delay = 5000;
+            }
+            await prepareSendPostQueue.add("prepareSendPost", jobData, {
+              jobId: post.id,
+              delay: delay,
+            });
           }
         }
       } catch (error) {
