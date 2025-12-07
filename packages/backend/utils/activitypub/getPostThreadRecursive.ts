@@ -281,7 +281,7 @@ async function getPostThreadRecursive(
                 bskyCid = threadView.post.cid
                 bskyUri = threadView.post.uri
                 // check if it cames from wafrn
-                if (!(threadView.post as PostView & { fediverseId: string | undefined }).fediverseId) {
+                if (!(threadView.post.record as { fediverseId: string | undefined }).fediverseId) {
                   // this is a bridgy fed post, assume main post is on bsky, use bsky user
                   const postId = await processSinglePost(threadView.post)
                   if (postId) {
