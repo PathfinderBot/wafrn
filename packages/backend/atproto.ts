@@ -58,7 +58,7 @@ jetstream.on("commit", async (event) => {
     checkCommitMentions(event.did, commit, cacheData) ||
     commit.collection === "net.wafrn.feed.bite"
   ) {
-    await redisCache.set("jetstreamCursor", event.time_us, "EX", 100);
+    await redisCache.set("jetstreamCursor", event.time_us);
     const data = {
       repo: event.did,
       operation: {
@@ -75,7 +75,7 @@ jetstream.on("commit", async (event) => {
 jetstream.on("close", async () => {
   logger.warn("jetstream closed");
   const timeClosing = new Date().getTime();
-  await redisCache.set("jetstreamCursor", timeClosing, "EX", 300);
+  await redisCache.set("jetstreamCursor", timeClosing);
   throw new Error("Jetstream closed. Forcing restart");
 });
 
