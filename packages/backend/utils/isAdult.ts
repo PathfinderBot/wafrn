@@ -12,7 +12,6 @@ export function isAdult(date?: string | Date): boolean {
   if (!birthDate) {
     return false;
   }
-  logger.info({ birthDate, minimumBirthDate }, "birth date")
-  const res = minimumBirthDate.getTime() > birthDate.getTime();
+  const res = minimumBirthDate.getTime() < birthDate.getTime();
   return !res;
 }

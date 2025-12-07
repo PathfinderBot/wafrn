@@ -1130,7 +1130,7 @@ function userRoutes(app: Application) {
             },
           },
         });
-        if (blog && !isAdult(req.jwtData?.birthDate)) {
+        if (blog && !isAdult(req.jwtData?.birthDate) && req.jwtData?.role !== 10) {
           const user = await User.findByPk(blog.id);
           if (user?.NSFW) {
             res.sendStatus(404);
