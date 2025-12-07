@@ -850,8 +850,7 @@ export default function postsRoutes(app: Application) {
             if (
               post.privacy === Privacy.Public &&
               posterUser?.enableBsky &&
-              completeEnvironment.enableBsky &&
-              !parent?.bskyUri
+              completeEnvironment.enableBsky
             ) {
               await sendPostBskyQueue.add("sendPostBsky", jobData, {
                 delay: 500,
