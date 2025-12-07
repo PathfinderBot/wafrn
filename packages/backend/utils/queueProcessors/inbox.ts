@@ -77,7 +77,7 @@ async function inboxWorker(job: Job) {
       if (
         (!remoteUser?.banned && !host?.blocked && blocksExisting + blocksServers === 0) ||
         req.body.type === 'Undo' ||
-        req.body.type === 'Deletee'
+        req.body.type === 'Delete'
       ) {
         switch (req.body.type) {
           case 'Accept': {
