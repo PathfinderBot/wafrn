@@ -88,8 +88,8 @@ async function prepareSendRemotePostWorker(job: Job) {
     ],
   });
   // we check if we need to send the post to fedi
-  const isBskyPost = parents.some((elem) => elem.isRemoteBlueskyPost);
-  if (localUser && !isBskyPost) {
+  const sendPostToFedi = parents.every((elem) => elem.postShouldGoFedi);
+  if (localUser && sendPostToFedi) {
     // we get quote authorizations
     const quotes = (
       await Quotes.findAll({

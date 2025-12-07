@@ -389,6 +389,10 @@ export class Post
     return this.bskyUri && (await this.getUser()).isRemoteUser;
   }
 
+  get postShouldGoFedi() {
+    return this.remotePostId || !this.user.isRemoteUser;
+  }
+
   async fullUrlIncludingBsky() {
     return (
       this.remotePostId ||
