@@ -280,6 +280,8 @@ async function postToJSONLD(
     cc: usersToSend.cc,
     object: {
       id: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
+      blueskyUri: post.bskyUri,
+      blueskyCid: post.bskyCid,
       actor: actorUrl,
       type: "Note",
       summary: post.content_warning ? post.content_warning : "",

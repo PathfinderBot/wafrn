@@ -35,9 +35,16 @@ import { Queue } from "bullmq";
 import { bulkCreateNotifications } from "../pushNotifications.js";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { Privacy } from "../../models/post.js";
-import { getAtProtoThread, getPostThreadSafe, processSinglePost } from "../../atproto/utils/getAtProtoThread.js";
+import {
+  getAtProtoThread,
+  getPostThreadSafe,
+  processSinglePost,
+} from "../../atproto/utils/getAtProtoThread.js";
 import * as cheerio from "cheerio";
-import { PostView, ThreadViewPost } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
+import {
+  PostView,
+  ThreadViewPost,
+} from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -193,8 +200,9 @@ async function getPostThreadRecursive(
 
         const privacy = getApObjectPrivacy(postPetition, remoteUser);
 
-        let postTextContent = `${postPetition.content ? postPetition.content : ""
-          }`; // Fix for bridgy giving this as undefined
+        let postTextContent = `${
+          postPetition.content ? postPetition.content : ""
+        }`; // Fix for bridgy giving this as undefined
         if (postPetition.type == "Video") {
           // peertube federation. We just add a link to the video, federating this is HELL
           postTextContent =
@@ -225,8 +233,8 @@ async function getPostThreadRecursive(
                 userId:
                   remoteUserServerBaned || remoteUser.banned
                     ? (
-                      await deletedUser
-                    )?.id
+                        await deletedUser
+                      )?.id
                     : remoteUser.id,
                 description: remoteFile.name,
                 ipUpload: "IMAGE_FROM_OTHER_FEDIVERSE_INSTANCE",
@@ -263,33 +271,41 @@ async function getPostThreadRecursive(
           createdAt = new Date();
         }
 
-        let bskyUri: string | undefined, bskyCid: string | undefined
-        let existingBskyPost: Post | undefined
+        let bskyUri: string | undefined, bskyCid: string | undefined;
+        let existingBskyPost: Post | undefined;
         // check if it's a bridgy post or a post from a wafrn by checking a valid FEP-fffd
         if (postPetition.url && Array.isArray(postPetition.url)) {
-          const url = postPetition.url as Array<string | { type: string, href: string }>
-          const firstFffd = url.find(x => typeof x !== 'string')
+          const url = postPetition.url as Array<
+            string | { type: string; href: string }
+          >;
+          const firstFffd = url.find((x) => typeof x !== "string");
           // check if it starts at at:// then its a bridged post, we do not touch it if it's not
-          if (firstFffd && firstFffd.href.startsWith('at://')) {
+          if (firstFffd && firstFffd.href.startsWith("at://")) {
             // get it's bsky counterparts first, we need the cid
             const thread = await getPostThreadSafe({
-              uri: firstFffd.href
-            })
+              uri: firstFffd.href,
+            });
             if (thread && thread.success) {
               try {
-                const threadView = (thread.data.thread as ThreadViewPost)
-                bskyCid = threadView.post.cid
-                bskyUri = threadView.post.uri
+                const threadView = thread.data.thread as ThreadViewPost;
+                bskyCid = threadView.post.cid;
+                bskyUri = threadView.post.uri;
                 // check if it cames from wafrn
-                if (!(threadView.post.record as { fediverseId: string | undefined }).fediverseId) {
+                if (
+                  !(
+                    threadView.post.record as {
+                      fediverseId: string | undefined;
+                    }
+                  ).fediverseId
+                ) {
                   // this is a bridgy fed post, assume main post is on bsky, use bsky user
-                  const postId = await processSinglePost(threadView.post)
+                  const postId = await processSinglePost(threadView.post);
                   if (postId) {
-                    const post = await Post.findByPk(postId)
+                    const post = await Post.findByPk(postId);
                     if (post) {
-                      post.remotePostId = postPetition.id
-                      await post.save()
-                      return post
+                      post.remotePostId = postPetition.id;
+                      await post.save();
+                      return post;
                     }
                   }
                 } else {
@@ -302,13 +318,13 @@ async function getPostThreadRecursive(
                     },
                   });
                   if (existingPost) {
-                    existingBskyPost = existingPost
+                    existingBskyPost = existingPost;
                     // do not attempt to merge it right now, this will crash backend
-                    bskyCid = undefined
-                    bskyUri = undefined
+                    bskyCid = undefined;
+                    bskyUri = undefined;
                   }
                 }
-              } catch { }
+              } catch {}
             }
           }
         }
@@ -318,8 +334,8 @@ async function getPostThreadRecursive(
           content_warning: postPetition.summary
             ? postPetition.summary
             : remoteUser.NSFW
-              ? "User is marked as NSFW by this instance staff. Possible NSFW without tagging"
-              : "",
+            ? "User is marked as NSFW by this instance staff. Possible NSFW without tagging"
+            : "",
           createdAt: createdAt,
           updatedAt: createdAt,
           userId:
@@ -328,10 +344,14 @@ async function getPostThreadRecursive(
               : remoteUser.id,
           remotePostId: postPetition.id,
           privacy: privacy,
-          ...(bskyCid && bskyUri ? {
-            bskyCid,
-            bskyUri
-          } : {})
+          bskyUri: postPetition.blueskyUri,
+          bskyCid: postPetition.blueskyCid,
+          ...(bskyCid && bskyUri
+            ? {
+                bskyCid,
+                bskyUri,
+              }
+            : {}),
         };
 
         if (postPetition.name) {
@@ -543,7 +563,7 @@ async function getPostThreadRecursive(
                 },
               }
             );
-          } catch { }
+          } catch {}
           await QuestionPoll.update(
             {
               postId: newPost.id,
@@ -654,12 +674,12 @@ async function getPostThreadRecursive(
           );
 
           // now we delete the existing bsky post
-          await existingBskyPost.destroy()
+          await existingBskyPost.destroy();
 
           // THEN we merge it
-          newPost.bskyCid = existingBskyPost.bskyCid
-          newPost.bskyUri = existingBskyPost.bskyUri
-          await newPost.save()
+          newPost.bskyCid = existingBskyPost.bskyCid;
+          newPost.bskyUri = existingBskyPost.bskyUri;
+          await newPost.save();
         }
 
         return newPost;

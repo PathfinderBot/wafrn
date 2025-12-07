@@ -8,7 +8,6 @@ async function sendPostToInboxes(job: Job) {
   const localUser = job.data.petitionBy;
   const objectToSend = job.data.objectToSend;
   //at some point we should remove the array thing but at the same time yeah
-  logger.debug({ message: "sendpostToInbox", inbox, localUser: localUser.url });
   const tmp = await promiseRace(
     [postPetitionSigned(objectToSend, localUser, inbox)],
     5000
