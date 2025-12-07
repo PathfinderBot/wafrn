@@ -23,6 +23,7 @@ import { completeEnvironment } from "../backendOptions.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
 import { include } from "underscore";
+import { wait } from "../wait.js";
 
 const processPostViewQueue = new Queue("processRemoteView", {
   connection: completeEnvironment.bullmqConnection,
@@ -57,7 +58,6 @@ const sendPostBskyQueue = new Queue("sendPostBsky", {
     attempts: 3,
     backoff: {
       type: "fixed",
-      delay: 500,
     },
     removeOnFail: true,
   },
@@ -77,6 +77,7 @@ async function prepareSendRemotePostWorker(job: Job) {
     completeEnvironment.enableBsky
   ) {
     await sendPostBskyQueue.add("sendPostBsky", job.data);
+    await wait(2500);
   }
 
   const parents = await post.getAncestors({
