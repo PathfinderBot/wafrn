@@ -327,7 +327,11 @@ async function getPostThreadRecursive(
               ? (await deletedUser)?.id
               : remoteUser.id,
           remotePostId: postPetition.id,
-          privacy: privacy
+          privacy: privacy,
+          ...(bskyCid && bskyUri ? {
+            bskyCid,
+            bskyUri
+          } : {})
         };
 
         if (postPetition.name) {
