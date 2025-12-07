@@ -140,8 +140,6 @@ async function sendMail() {
       (a, b) => b.quotes - a.quotes
     );
 
-    console.log(mostQuotedPosts);
-
     const mostReactedPostsReaction = await EmojiReaction.findAll({
       where: {
         postId: {
@@ -208,35 +206,56 @@ async function sendMail() {
       },
     });
 
-    const yearBitens = (await Bites.findAll({
-      attributes: ["biterId", "biter", [fn("COUNT", col("biterId")), "biteCount"]],
+    let yearBitens = (await Bites.findAll({
+      attributes: ["biterId", [fn("COUNT", col("biterId")), "biteCount"]],
       where: {
         bittenId: user.id
       },
       group: ["biterId"],
-      include: ["biter"],
       order: [
         ["biteCount", "DESC"]
-      ]
+      ],
+      raw: true
     })).map(x => ({
       ...x,
       biteCount: Number.parseInt((x as any).biteCount)
     }))
 
-    const yearBites = (await Bites.findAll({
-      attributes: ["bittenId", "bitten", [fn("COUNT", col("bittenId")), "bittenCount"]],
+    let yearBites = (await Bites.findAll({
+      attributes: ["bittenId", [fn("COUNT", col("bittenId")), "bittenCount"]],
       where: {
         biterId: user.id
       },
       group: ["bittenId"],
-      include: ["bitten"],
       order: [
         ["bittenCount", "DESC"]
-      ]
+      ],
+      raw: true
     })).map(x => ({
       ...x,
       bittenCount: Number.parseInt((x as any).bittenCount)
     }))
+
+    const userBitesAccounts = await User.findAll({
+      where: {
+        id: {
+          [Op.in]: [...yearBitens.map(x => x.biterId), ...yearBites.map(x => x.bittenId)]
+        }
+      },
+      raw: true
+    })
+
+    yearBitens = yearBitens.map(x => ({
+      ...x,
+      biter: userBitesAccounts.find(y => y.id === x.biterId) as User
+    }))
+
+    yearBites = yearBites.map(x => ({
+      ...x,
+      bitten: userBitesAccounts.find(y => y.id === x.bittenId) as User
+    }))
+
+    console.log(yearBitens, yearBites)
 
     const notificationsCount = await Notification.count({
       where: {
@@ -266,7 +285,7 @@ async function sendMail() {
     const subject = `Hello ${user.url}, get WAFfed`;
     const body = `\
     <h1>Hello ${user.url}, We miss you at <a href="${completeEnvironment.frontendUrl
-      }">wafrn</a>!</h1>
+      }">${completeEnvironment.defaultSEOData.title}</a>!</h1>
     <p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
     ${notificationsCount == 0
         ? "<p>Hmm, no notifications. I guess you should get more oomfs</p>"
@@ -286,34 +305,35 @@ async function sendMail() {
     <p>You got followed by ${yearFollowers.count
       } people on this year, and you followed ${yearFollows.count
       } people on this year!</p>
-    <p>You biten ${yearBites.map(x => x.bittenCount).reduce((p, c) => p + c, 0)}
-      people on this year, especially <a href=${new URL(
+    ${yearBites[0] ? `<p>You biten ${yearBites.map(x => x.bittenCount).reduce((p, c) => p + c, 0)}
+      times on this year, especially <a href=${new URL(
         `/user/${yearBites[0].bitten.url}`,
         completeEnvironment.frontendUrl
       )}>${yearBites[0].bitten.url}</a> with ${yearBites[0].bittenCount} bites, 
+      ${yearBites[1] ? `
       <a href=${new URL(
         `/user/${yearBites[1].bitten.url}`,
         completeEnvironment.frontendUrl
-      )}>${yearBites[1].bitten.url}</a> with ${yearBites[1].bittenCount} bites, and
-      <a href=${new URL(
+      )}>${yearBites[1].bitten.url}</a> with ${yearBites[1].bittenCount} bites` : ''}
+      ${yearBites[2] ? `and <a href=${new URL(
         `/user/${yearBites[2].bitten.url}`,
         completeEnvironment.frontendUrl
-      )}>${yearBites[2].bitten.url}</a> with ${yearBites[2].bittenCount} bites.
-    </p>
-    <p>You got bitten by ${yearBitens.map(x => x.biteCount).reduce((p, c) => p + c, 0)}
-      people on this year, especially <a href=${new URL(
+      )}>${yearBites[2].bitten.url}</a> with ${yearBites[2].bittenCount} bites.` : ''}
+    </p>` : ''}
+    ${yearBitens[0] ? `<p>You got bitten ${yearBitens.map(x => x.biteCount).reduce((p, c) => p + c, 0)}
+      times on this year, especially <a href=${new URL(
         `/user/${yearBitens[0].biter.url}`,
         completeEnvironment.frontendUrl
       )}>${yearBitens[0].biter.url}</a> with ${yearBitens[0].biteCount} bites, 
-      <a href=${new URL(
+      ${yearBitens[1] ? `<a href=${new URL(
         `/user/${yearBitens[1].biter.url}`,
         completeEnvironment.frontendUrl
-      )}>${yearBitens[1].biter.url}</a> with ${yearBitens[1].biteCount} bites, and
-      <a href=${new URL(
+      )}>${yearBitens[1].biter.url}</a> with ${yearBitens[1].biteCount} bites` : ''}
+      ${yearBitens[2] ? `and <a href=${new URL(
         `/user/${yearBitens[2].biter.url}`,
         completeEnvironment.frontendUrl
-      )}>${yearBitens[2].biter.url}</a> with ${yearBitens[2].biteCount} bites.
-    </p>
+      )}>${yearBitens[2].biter.url}</a> with ${yearBitens[2].biteCount} bites.` : ''}
+    </p>` : ''}
     <br />
     <p>Now let's go to the juicy parts</p>
     ${mostRewootedPosts[0]
@@ -354,7 +374,7 @@ async function sendMail() {
       <li><a href="https://app.wafrn.net/blog/fireisgood">FireIsGood</a> has done A LOT. Like A HUGE FUCKING LOT. You should give her moneys <a href="https://ko-fi.com/fireisgood">here</a> </li>
     	<li><a href="https://social.sztupy.hu/blog/sztupy" target="_blank">SztupY</a> has helped to create a wafrn hosting guide and streamlined the process a lot. You should give <a href="https://ko-fi.com/SztupY" target="_blank">SztupY</a> some money. Also yes his profile is not on the main wafrn!</li>
     	<li><a href="https://ko-fi.com/juandjara" target="_blank">Javascript</a> made <a href="https://wafrn.net/" target="_blank">the mobile app</a>, its realy cool</li>
-      <li><a href="https://wf.jbc.lol/blog/jbcrn">Jb</a> made a lot of things, including this very email, you should give <a href="https://patreon.com/jbcarreon123">jb</a> some money, he will appriciate it, also yes his profile is also not on the main wafrn!</li>
+      <li><a href="https://waf.moe/blog/jb">Jb</a> made a lot of things, including this very email, you should give <a href="https://patreon.com/jbcarreon123">jb</a> some money, he will appriciate it, also yes his profile is also not on the main wafrn!</li>
     	<li>And finaly... we have to link the wafrn <a href="https://patreon.com/wafrn" target="_blank">patreon</a> and <a href="https://ko-fi.com/wafrn" target="_blank">kofi</a>. This money goes to gabbo for fried chicken and to the wafrn servers. Give me money! please :3</li>
     </ul>
     <br />
