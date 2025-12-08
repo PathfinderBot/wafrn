@@ -32,7 +32,7 @@ const markdownConverter = new showdown.Converter({
 async function postToJSONLD(
   postId: string
 ): Promise<activityPubObject | undefined> {
-  let resFromCacheString = undefined; // await redisCache.get("postToJsonLD:" + postId);
+  let resFromCacheString = await redisCache.get("postToJsonLD:" + postId);
   if (resFromCacheString) {
     return JSON.parse(resFromCacheString) as activityPubObject;
   }
