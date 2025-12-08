@@ -13,14 +13,11 @@ import { logger } from '../utils/logger.js'
 import { Feed } from 'feed'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
-import { getAdminAtprotoSession } from '../utils/atproto/getAdminAtprotoSession.js'
 
 const cacheOptions = {
   etag: false,
   maxAge: '1'
 }
-
-const adminUser = await getAdminAtprotoSession()
 
 function frontend(app: Application) {
   const defaultSeoData = completeEnvironment.defaultSEOData
@@ -204,39 +201,6 @@ function frontend(app: Application) {
 
   app.get('/blog/:url/:somethingElse', async function (_req, res) {
     res.send(getIndexFormatted(defaultSeoDataMetaTag))
-  })
-
-  app.get('/blog/fromBluesky/:did', async function (req, res) {
-    if (!req.params.did) {
-      return res.redirect(completeEnvironment.frontendUrl)
-    }
-
-    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`)
-    if (cacheUrl) return res.redirect(cacheUrl)
-
-    let did = ""
-    if (!req.params.did.startsWith('did:')) {
-      const doc = await adminUser.resolveHandle({
-        handle: req.params.did
-      })
-      if (!doc.success) {
-        return res.redirect(completeEnvironment.frontendUrl)
-      }
-      did = doc.data.did
-    }
-
-    const user = await User.findOne({
-      where: {
-        bskyDid: did
-      }
-    })
-
-    if (!user) {
-      return res.redirect(completeEnvironment.frontendUrl)
-    }
-
-    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl)
-    return res.redirect(user.fullUrl)
   })
 
   app.get('/blog/:url', async function (req, res) {
