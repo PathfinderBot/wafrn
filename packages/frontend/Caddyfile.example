@@ -115,7 +115,7 @@ ${{PDS_DOMAIN_NAME}} {
     }
     
     handle / {
-        rewrite * /api/fromBluesky/{labels.3}
+        rewrite * /api/fromBluesky/{host}
         reverse_proxy ${{BACKEND_HOST:-backend:9000}}
     }
 
