@@ -75,6 +75,18 @@ const prepareSendPostQueue = new Queue("prepareSendPost", {
     removeOnFail: true,
   },
 });
+
+const sendPostBskyQueue = new Queue("sendPostBsky", {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 3,
+    backoff: {
+      type: "fixed",
+    },
+    removeOnFail: true,
+  },
+});
 export default function postsRoutes(app: Application) {
   app.get(
     "/api/article/:user?/:slug",
@@ -834,11 +846,23 @@ export default function postsRoutes(app: Application) {
           if (req.body.idPostToEdit) {
             await federatePostHasBeenEdited(post);
           } else {
-            await prepareSendPostQueue.add(
-              "prepareSendPost",
-              { postId: post.id, petitionBy: posterId },
-              { jobId: post.id, delay: 1500 }
-            );
+            const jobData = { postId: post.id, petitionBy: posterId };
+            let delay = 1500;
+            if (
+              post.privacy === Privacy.Public &&
+              posterUser?.enableBsky &&
+              completeEnvironment.enableBsky
+            ) {
+              await sendPostBskyQueue.add("sendPostBsky", jobData, {
+                delay: 500,
+              });
+              delay = 5000;
+            } else {
+              await prepareSendPostQueue.add("prepareSendPost", jobData, {
+                jobId: post.id,
+                delay: delay,
+              });
+            }
           }
         }
       } catch (error) {
@@ -896,11 +920,22 @@ export default function postsRoutes(app: Application) {
             })
           );
         }
-        await prepareSendPostQueue.add(
-          "prepareSendPost",
-          { postId: post.id, petitionBy: post.userId },
-          { jobId: post.id, delay: 1500 }
-        );
+        const jobData = { postId: post.id, petitionBy: post.userId };
+
+        if (
+          post.privacy === Privacy.Public &&
+          user.enableBsky &&
+          completeEnvironment.enableBsky
+        ) {
+          await sendPostBskyQueue.add("sendPostBsky", jobData, {
+            delay: 500,
+          });
+        } else {
+          await prepareSendPostQueue.add("prepareSendPost", jobData, {
+            jobId: post.id,
+            delay: 1500,
+          });
+        }
         success = true;
       }
       res.send({

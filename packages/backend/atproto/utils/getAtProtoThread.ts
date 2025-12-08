@@ -151,12 +151,12 @@ async function processSinglePost(
   if (verifiedFedi) {
     try {
       const remotePost = await getPostThreadRecursive(
-        postCreator,
+        await getAdminUser(),
         verifiedFedi
       );
       if (remotePost) {
         await getPostThreadRecursive(
-          postCreator,
+          await getAdminUser(),
           verifiedFedi,
           undefined,
           remotePost.id
