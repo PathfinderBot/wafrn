@@ -157,13 +157,11 @@ async function postToJSONLD(
   const fediMentions: fediverseTag[] = [];
   const fediTags: fediverseTag[] = [];
   let tagsAndQuotes = "<br>";
+  let misskeyTagsAndQuotes = "<br>";
   const quotedPosts = post.quoted;
 
   const lineBreaksAtEndRegex = /\s*(<br\s*\/?>)+\s*$/g;
 
-  misskeyContent = await htmlToMfm(
-    (misskeyContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, "")
-  );
   if (quotedPosts && quotedPosts.length > 0) {
     const mainQuotedPost = quotedPosts[0];
     quoteAuthorization = (
@@ -189,6 +187,7 @@ async function postToJSONLD(
       }
     });
   }
+  misskeyTagsAndQuotes = tagsAndQuotes;
   for await (const tag of post.postTags) {
     const externalTagName = tag.tagName
       .replaceAll('"', "'")
@@ -197,6 +196,11 @@ async function postToJSONLD(
       completeEnvironment.frontendUrl
     }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
     tagsAndQuotes = `${tagsAndQuotes}<small><a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a></small> `;
+    misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} <small>${
+      tag.tagName.trim().includes(" ")
+        ? "# " + tag.tagName.trim()
+        : "#" + tag.tagName.trim()
+    }</small>`;
     fediTags.push({
       type: "Hashtag",
       name: `#${externalTagName}`,
@@ -229,7 +233,9 @@ async function postToJSONLD(
     )
       misskeyMentions.push(url);
   }
-
+  misskeyContent = await htmlToMfm(
+    (misskeyContent + misskeyTagsAndQuotes).replace(lineBreaksAtEndRegex, "")
+  );
   const misskeyMentionContent =
     misskeyMentions.length > 0 ? `${misskeyMentions.join(" ")}\n\n` : "";
 
