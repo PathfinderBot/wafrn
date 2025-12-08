@@ -31,7 +31,10 @@ export default function adminRoutes(app: Application) {
               ...inviteCodes.map(x => x.usedByUserId ?? '').filter(x => !!x)
             ]
           }
-        }
+        },
+        order: [
+          ['createdAt', 'DESC']
+        ]
       })
       const inviteCodesMapped = inviteCodes.map(x => ({
         createdBy: usersInvolved.find(y => y.id === x.createdByUserId),
