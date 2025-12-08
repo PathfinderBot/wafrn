@@ -214,7 +214,7 @@ function frontend(app: Application) {
     const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`)
     if (cacheUrl) return res.redirect(cacheUrl)
 
-    const did = ""
+    let did = ""
     if (!req.params.did.startsWith('did:')) {
       const doc = await adminUser.resolveHandle({
         handle: req.params.did
