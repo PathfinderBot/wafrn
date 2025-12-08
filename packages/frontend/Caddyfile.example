@@ -89,28 +89,34 @@ monitoring.${{DOMAIN_NAME}} {
     import /etc/caddy/config/monitoring_domain_post/* ${{DOMAIN_NAME}}
 }
 
-${{PDS_DOMAIN_NAME}} *.${{PDS_DOMAIN_NAME}} {
+${{PDS_DOMAIN_NAME}} {
     import /etc/caddy/config/pds_domain_pre/* ${{DOMAIN_NAME}} ${{PDS_DOMAIN_NAME}}
-
-    @user_subdomain {
-        host *.${{PDS_DOMAIN_NAME}}
-        not host ${{PDS_DOMAIN_NAME}}
-        not path /.well-known/*
-    }
 
     tls {
         on_demand
-    }
-
-    route @user_subdomain {
-        rewrite * /blog/fromBluesky/{labels.3}
-        reverse_proxy ${{BACKEND_HOST:-backend:9000}}
     }
 
     handle / {
         root * /pds-homepage
         try_files {path} /pds.txt
         file_server
+    }
+
+    reverse_proxy ${{PDS_HOST:-pds:3000}}
+
+    import /etc/caddy/config/pds_domain_post/* ${{DOMAIN_NAME}} ${{PDS_DOMAIN_NAME}}
+}
+
+ *.${{PDS_DOMAIN_NAME}} {
+    import /etc/caddy/config/pds_domain_pre/* ${{DOMAIN_NAME}} ${{PDS_DOMAIN_NAME}}
+
+    tls {
+        on_demand
+    }
+    
+    handle / {
+        rewrite * /blog/fromBluesky/{labels.3}
+        reverse_proxy ${{BACKEND_HOST:-backend:9000}}
     }
 
     reverse_proxy ${{PDS_HOST:-pds:3000}}
