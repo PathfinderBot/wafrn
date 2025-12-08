@@ -78,6 +78,7 @@ import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.
 import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
 import { InviteCode } from "../models/inviteCode.js";
 import { isAdult } from "../utils/isAdult.js";
+import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -170,7 +171,42 @@ const slurs = [
   "yid",
 ];
 
+const adminUser = await getAdminAtprotoSession()
+
 function userRoutes(app: Application) {
+  app.get('/api/fromBluesky/:did', async function (req, res) {
+    if (!req.params.did) {
+      return res.redirect(completeEnvironment.frontendUrl)
+    }
+
+    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`)
+    if (cacheUrl) return res.redirect(cacheUrl)
+
+    let did = ""
+    if (!req.params.did.startsWith('did:')) {
+      const doc = await adminUser.resolveHandle({
+        handle: req.params.did
+      })
+      if (!doc.success) {
+        return res.redirect(completeEnvironment.frontendUrl)
+      }
+      did = doc.data.did
+    }
+
+    const user = await User.findOne({
+      where: {
+        bskyDid: did
+      }
+    })
+
+    if (!user) {
+      return res.redirect(completeEnvironment.frontendUrl)
+    }
+
+    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl)
+    return res.redirect(user.fullUrl)
+  })
+
   app.post(
     "/api/register",
     ...(completeEnvironment.registrationLevel === "PRIVATE"

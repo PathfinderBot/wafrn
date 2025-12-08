@@ -129,6 +129,7 @@ export const baseEnvironment: Environment = {
     registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
     privateInstanceRegistrationText: '${{REGISTRATIONS_DISABLED_TEXT:-This instance is a private instance, and does not allow registrations}}',
     minimumAgeToRegister: ${{REGISTRATION_MINIMUM_AGE:-18}},
+    donationUrl: '${{DONATION_URL:-}}',
     disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}}
   }
 }
