@@ -92,8 +92,19 @@ monitoring.${{DOMAIN_NAME}} {
 ${{PDS_DOMAIN_NAME}} *.${{PDS_DOMAIN_NAME}} {
     import /etc/caddy/config/pds_domain_pre/* ${{DOMAIN_NAME}} ${{PDS_DOMAIN_NAME}}
 
+    @user_subdomain {
+        host *.${{PDS_DOMAIN_NAME}}
+        not host ${{PDS_DOMAIN_NAME}}
+        not path /.well-known/*
+    }
+
     tls {
         on_demand
+    }
+
+    route @user_subdomain {
+        rewrite * /blog/fromBluesky/{labels.3}
+        reverse_proxy ${{BACKEND_HOST:-backend:9000}}
     }
 
     handle / {

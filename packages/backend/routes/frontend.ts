@@ -13,11 +13,14 @@ import { logger } from '../utils/logger.js'
 import { Feed } from 'feed'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
+import { getAdminAtprotoSession } from '../utils/atproto/getAdminAtprotoSession.js'
 
 const cacheOptions = {
   etag: false,
   maxAge: '1'
 }
+
+const adminUser = await getAdminAtprotoSession()
 
 function frontend(app: Application) {
   const defaultSeoData = completeEnvironment.defaultSEOData
@@ -30,34 +33,34 @@ function frontend(app: Application) {
   }
 
   app.get('/api/health', async (req, res) => {
-  const health = {
-    uptime: process.uptime(),
-    timestamp: Date.now(),
-    status: 'ok',
-    checks: {
-      database: 'unknown',
-      redis: 'unknown',
+    const health = {
+      uptime: process.uptime(),
+      timestamp: Date.now(),
+      status: 'ok',
+      checks: {
+        database: 'unknown',
+        redis: 'unknown',
+      }
     }
-  }
 
-  try {
-    await sequelize.authenticate()
-    health.checks.database = 'ok'
-  } catch (error) {
-    health.checks.database = 'error'
-    health.status = 'degraded'
-  }
+    try {
+      await sequelize.authenticate()
+      health.checks.database = 'ok'
+    } catch (error) {
+      health.checks.database = 'error'
+      health.status = 'degraded'
+    }
 
-  try {
-    await redisCache.ping()
-    health.checks.redis = 'ok'
-  } catch (error) {
-    health.checks.redis = 'error'
-    health.status = 'degraded'
-  }
+    try {
+      await redisCache.ping()
+      health.checks.redis = 'ok'
+    } catch (error) {
+      health.checks.redis = 'error'
+      health.status = 'degraded'
+    }
 
-  res.status(health.status === 'ok' ? 200 : 503).json(health)
-})
+    res.status(health.status === 'ok' ? 200 : 503).json(health)
+  })
   app.get('/api/disableEmailNotifications/:id/:code', async (req: Request, res: Response) => {
     let result = false
     let userId = req.params.id
@@ -203,6 +206,39 @@ function frontend(app: Application) {
     res.send(getIndexFormatted(defaultSeoDataMetaTag))
   })
 
+  app.get('/blog/fromBluesky/:did', async function (req, res) {
+    if (!req.params.did) {
+      return res.redirect(completeEnvironment.frontendUrl)
+    }
+
+    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`)
+    if (cacheUrl) return res.redirect(cacheUrl)
+
+    const did = ""
+    if (!req.params.did.startsWith('did:')) {
+      const doc = await adminUser.resolveHandle({
+        handle: req.params.did
+      })
+      if (!doc.success) {
+        return res.redirect(completeEnvironment.frontendUrl)
+      }
+      did = doc.data.did
+    }
+
+    const user = await User.findOne({
+      where: {
+        bskyDid: did
+      }
+    })
+
+    if (!user) {
+      return res.redirect(completeEnvironment.frontendUrl)
+    }
+
+    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl)
+    return res.redirect(user.fullUrl)
+  })
+
   app.get('/blog/:url', async function (req, res) {
     if (!req.params?.url) return res.send(getIndexFormatted(defaultSeoDataMetaTag))
 
@@ -261,38 +297,33 @@ function getPostMicroformat(post: Post, includeBlog: boolean = false, mainImage?
     if (post.medias?.[p1 - 1]) {
       skipImage[p1 - 1] = true
       const media = post.medias[p1 - 1]
-      return `<img class="${
-        mainImage == media.fullUrl ? 'u-photo' : ''
-      }" style="max-width:100%" title="${sanitizeStringForSEO(media.description)}" src="${media.fullUrl}">`
+      return `<img class="${mainImage == media.fullUrl ? 'u-photo' : ''
+        }" style="max-width:100%" title="${sanitizeStringForSEO(media.description)}" src="${media.fullUrl}">`
     } else return ''
   })
 
   return `<div style="max-width:100%" class="h-entry">
-        ${
-          includeBlog
-            ? `<div class="p-author">
+        ${includeBlog
+      ? `<div class="p-author">
           ${getBlogMicroformat(post.user)}
         </div>`
-            : ''
-        }
-        <a class="u-url u-uid" href="${
-          post.fullUrl
-        }"><time class="dt-published" datetime="${post.createdAt.toISOString()}">${post.createdAt.toLocaleString()}</time></a>
+      : ''
+    }
+        <a class="u-url u-uid" href="${post.fullUrl
+    }"><time class="dt-published" datetime="${post.createdAt.toISOString()}">${post.createdAt.toLocaleString()}</time></a>
         ${post.parent ? `<a class="u-in-reply-to" href="${post.parent.fullUrl}">In Reply To</a>` : ''}
         ${post.content_warning ? `<div class="p-summary">${sanitizeStringForSEO(post.content_warning)}</div>` : ''}
         <div class="e-content">
         ${sanitizedHtml}
-        ${
-          post.medias
-            ?.filter((_, idx) => !skipImage[idx])
-            ?.map(
-              (elem) =>
-                `<img class="${
-                  mainImage == elem.fullUrl ? 'u-photo' : ''
-                }" style="max-width:100%" title="${sanitizeStringForSEO(elem.description)}" src="${elem.fullUrl}">`
-            )
-            .join('\n') || ''
-        }
+        ${post.medias
+      ?.filter((_, idx) => !skipImage[idx])
+      ?.map(
+        (elem) =>
+          `<img class="${mainImage == elem.fullUrl ? 'u-photo' : ''
+          }" style="max-width:100%" title="${sanitizeStringForSEO(elem.description)}" src="${elem.fullUrl}">`
+      )
+      .join('\n') || ''
+    }
         </div>
       </div>`
 }
@@ -301,11 +332,10 @@ function getBlogMicroformat(user: User): string {
   return `<div style="max-width:100%" class="h-card">
             <a class="p-name u-url" rel="me" href="${user.fullUrl}">${sanitizeStringForSEO(user.name)}</a>
             ${user.avatar ? `<img style="max-width:100%" class="u-photo" src="${user.avatarFullUrl}" />` : ''}
-            ${
-              user.headerImage
-                ? `<img style="max-width:100%" class="u-featured" src="${user.headerImageFullUrl}" />`
-                : ''
-            }
+            ${user.headerImage
+      ? `<img style="max-width:100%" class="u-featured" src="${user.headerImageFullUrl}" />`
+      : ''
+    }
           </div>`
 }
 
