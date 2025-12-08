@@ -125,6 +125,7 @@ async function sendPostBsky(job: Job) {
           }
         }
       }
+      await post.save();
     } catch (error) {
       logger.debug({ message: `Error sending post to bluesky`, error });
     }
@@ -137,7 +138,7 @@ async function sendPostBsky(job: Job) {
         attempts: 3,
         backoff: {
           type: "exponential",
-          delay: 1000,
+          delay: 5000,
         },
         removeOnFail: true,
       },
@@ -145,7 +146,7 @@ async function sendPostBsky(job: Job) {
     // we send the post to fedi once we get the bsky data
     await prepareSendPostQueue.add("prepareSendPost", job.data, {
       jobId: post.id,
-      delay: 1500,
+      delay: 5000,
     });
   }
 }
