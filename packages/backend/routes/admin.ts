@@ -46,7 +46,7 @@ export default function adminRoutes(app: Application) {
         code: x.code
       }))
       res.send({
-        invites: inviteCodesMapped.reverse()
+        invites: inviteCodesMapped
       })
     })
 
