@@ -184,6 +184,7 @@ function userRoutes(app: Application) {
 
     let did = ""
     if (!req.params.did.startsWith('did:')) {
+      logger.info(req.params.did, "did")
       const doc = await adminUser.resolveHandle({
         handle: req.params.did
       })
