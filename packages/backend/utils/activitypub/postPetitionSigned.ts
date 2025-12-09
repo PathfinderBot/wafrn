@@ -3,6 +3,7 @@ import { completeEnvironment } from "../backendOptions.js";
 import { logger } from "../logger.js";
 import { removeUser } from "./removeUser.js";
 import { User } from "../../models/index.js";
+import { Agent, fetch } from "undici";
 
 async function postPetitionSigned(
   message: object,
@@ -51,11 +52,12 @@ async function postPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-
+    const agent = new Agent({ autoSelectFamily: true });
     petition = await fetch(target, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(message),
+      dispatcher: agent,
     });
     res = await petition.json();
   } catch (error: any) {

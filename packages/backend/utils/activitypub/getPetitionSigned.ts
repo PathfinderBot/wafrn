@@ -4,7 +4,7 @@ import { logger } from "../logger.js";
 import { User } from "../../models/index.js";
 import { removeUser } from "./removeUser.js";
 import { Op } from "sequelize";
-
+import { Agent, fetch } from "undici";
 async function getPetitionSigned(
   userInput: User,
   target: string
@@ -48,7 +48,11 @@ async function getPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    petitionResponse = await fetch(url.href, { headers: headers });
+    const agent = new Agent({ autoSelectFamily: true });
+    petitionResponse = await fetch(url.href, {
+      headers: headers,
+      dispatcher: agent,
+    });
     res = await petitionResponse.json();
   } catch (error: any) {
     logger.debug({
