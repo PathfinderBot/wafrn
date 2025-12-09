@@ -52,7 +52,11 @@ async function postPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    const agent = new Agent({ autoSelectFamily: true });
+    const agent = new Agent({
+      connect: {
+        family: 4,
+      },
+    });
     petition = await fetch(target, {
       method: "POST",
       headers: headers,

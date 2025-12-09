@@ -48,7 +48,11 @@ async function getPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    const agent = new Agent({ autoSelectFamily: true });
+    const agent = new Agent({
+      connect: {
+        family: 4,
+      },
+    });
     petitionResponse = await fetch(url.href, {
       headers: headers,
       dispatcher: agent,

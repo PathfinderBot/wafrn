@@ -4,11 +4,13 @@ import { splitHandle } from "../../models/user.js";
 import { logger } from "../logger.js";
 import { getPetitionSigned } from "./getPetitionSigned.js";
 import { getRemoteActor } from "./getRemoteActor.js";
+import { Agent, fetch } from "undici";
 
 async function searchRemoteUser(
   searchTerm: string,
   user: any
 ): Promise<User | null> {
+  let remoteResponse: any;
   const searchData = splitHandle(searchTerm);
   const users: Array<any> = [];
   if (searchData && searchData.type === "fediverse") {
@@ -25,14 +27,30 @@ async function searchRemoteUser(
       return null;
     }
     try {
-      let remoteResponse = await getPetitionSigned(
-        user,
-        `https://${domain}/.well-known/webfinger/?resource=acct:${username}@${domain}`
-      );
-      if (!remoteResponse) {
-        remoteResponse = await axios.get(
+      try {
+        remoteResponse = await getPetitionSigned(
+          user,
           `https://${domain}/.well-known/webfinger/?resource=acct:${username}@${domain}`
         );
+      } catch (error) {}
+
+      if (!remoteResponse) {
+        try {
+          const agent = new Agent({
+            connect: {
+              family: 4,
+            },
+          });
+          const petitionResponse = await fetch(
+            `https://${domain}/.well-known/webfinger/?resource=acct:${username}@${domain}`,
+            {
+              dispatcher: agent,
+            }
+          );
+          remoteResponse = await petitionResponse.json();
+        } catch (error) {
+          logger.debug(error);
+        }
       }
       if (!remoteResponse) {
         remoteResponse = await getPetitionSigned(
