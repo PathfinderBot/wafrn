@@ -151,8 +151,9 @@ export class RegisterComponent {
     "485.72 Hz",
     "Snake in a böx",
     "Rock 'n' Roll",
+    "Carp in a bathub",
     // prettier-ignore
-    "I prefer double quotes over single quotes",
+    'I prefer single quotes over double quotes',
     "Trademark Dress doesn't exist",
     "thanks for watching guys",
     "YOU ARE A TOOL.",
@@ -283,7 +284,7 @@ export class RegisterComponent {
     "None of the above",
   ];
 
-  inviteCode = new URLSearchParams(window.location.search).get('code')
+  inviteCode = new URLSearchParams(window.location.search).get("code");
 
   loginForm = new UntypedFormGroup({
     email: new UntypedFormControl("", [Validators.required, Validators.email]),
@@ -296,16 +297,21 @@ export class RegisterComponent {
     birthDate: new UntypedFormControl("", [Validators.required]),
     captchaResponse: new UntypedFormControl("", []),
     avatar: new UntypedFormControl("", []),
-    ...(this.registrationLevel === 'INVITE' ? {
-      inviteCode: new UntypedFormControl(this.inviteCode ?? '', [Validators.required])
-    } : {})
+    ...(this.registrationLevel === "INVITE"
+      ? {
+          inviteCode: new UntypedFormControl(this.inviteCode ?? "", [
+            Validators.required,
+          ]),
+        }
+      : {}),
   });
 
   constructor() {
     // minimum age: 14
     this.minimumRegistrationDate = new Date();
     this.minimumRegistrationDate.setFullYear(
-      this.minimumRegistrationDate.getFullYear() - (EnvironmentService.environment.minimumAgeToRegister ?? 18)
+      this.minimumRegistrationDate.getFullYear() -
+        (EnvironmentService.environment.minimumAgeToRegister ?? 18)
     );
     // do not accept dates before 1900
     this.minDate = new Date();
