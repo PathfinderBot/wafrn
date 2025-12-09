@@ -51,6 +51,10 @@ async function getPetitionSigned(
     petitionResponse = await fetch(url.href, { headers: headers });
     res = await petitionResponse.json();
   } catch (error: any) {
+    logger.debug({
+      message: `Problem doing petition to ${target}`,
+      error,
+    });
     if (petitionResponse.status === 410) {
       const webfingerUrl = target.split(
         ".well-known/webfinger/?resource=acct:"
