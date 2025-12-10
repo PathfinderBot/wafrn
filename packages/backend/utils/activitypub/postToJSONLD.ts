@@ -18,6 +18,7 @@ import { Privacy } from "../../models/post.js";
 import { redisCache } from "../redis.js";
 import { htmlToMfm } from "./htmlToMfm.js";
 import showdown from "showdown";
+import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -171,9 +172,9 @@ async function postToJSONLD(
         },
       })
     )?.authorizationUrl;
-    quotedPostString = getPostUrlForQuote(mainQuotedPost);
-    quotedPosts.forEach((quotedPost: any) => {
-      const postUrl = getPostUrlForQuote(quotedPost);
+    quotedPostString = await getPostUrlForQuote(mainQuotedPost);
+    for await (const quotedPost of quotedPosts) {
+      const postUrl = await getPostUrlForQuote(quotedPost);
       tagsAndQuotes =
         tagsAndQuotes + `<br>RE: <a href="${postUrl}">${postUrl}</a><br>`;
       if (!postUrl.startsWith("https://bsky.app/")) {
@@ -185,7 +186,7 @@ async function postToJSONLD(
           href: postUrl,
         });
       }
-    });
+    }
   }
   misskeyTagsAndQuotes = tagsAndQuotes;
   for await (const tag of post.postTags) {
@@ -473,10 +474,10 @@ function getUserName(user?: User | undefined | null): string {
   return res;
 }
 
-function getPostUrlForQuote(post: any): string {
+async function getPostUrlForQuote(post: any): Promise<string> {
   const isPostFromFedi = !!post.remotePostId;
   let res = `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`;
-  if (post.bskyUri) {
+  if (post.bskyUri && !(await getAllLocalUserIds()).includes(post.userId)) {
     const parts = post.bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
     res = `https://bsky.app/profile/${userDid}/post/${parts[1]}`;

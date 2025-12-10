@@ -1,5 +1,5 @@
-import { Job } from 'bullmq'
-import { logger } from '../logger.js'
+import { Job } from "bullmq";
+import { logger } from "../logger.js";
 import {
   Blocks,
   Emoji,
@@ -8,204 +8,221 @@ import {
   Follows,
   Post,
   User,
-  UserLikesPostRelations
-} from '../../models/index.js'
-import { getRemoteActor } from '../activitypub/getRemoteActor.js'
-import { signAndAccept } from '../activitypub/signAndAccept.js'
-import { removeUser } from '../activitypub/removeUser.js'
-import getBlockedIds from '../cacheGetters/getBlockedIds.js'
-import getUserBlockedServers from '../cacheGetters/getUserBlockedServers.js'
-import { deletePostCommon } from '../deletePost.js'
-import { AcceptActivity } from '../activitypub/processors/accept.js'
-import { AnnounceActivity } from '../activitypub/processors/announce.js'
-import { CreateActivity } from '../activitypub/processors/create.js'
-import { FollowActivity } from '../activitypub/processors/follow.js'
-import { UpdateActivity } from '../activitypub/processors/update.js'
-import { UndoActivity } from '../activitypub/processors/undo.js'
-import { LikeActivity } from '../activitypub/processors/like.js'
-import { DeleteActivity } from '../activitypub/processors/delete.js'
-import { EmojiReactActivity } from '../activitypub/processors/emojiReact.js'
-import { RemoveActivity } from '../activitypub/processors/remove.js'
-import { AddActivity } from '../activitypub/processors/add.js'
-import { BlockActivity } from '../activitypub/processors/block.js'
-import { MoveActivity } from '../activitypub/processors/move.js'
-import { RejectActivity } from '../activitypub/processors/reject.js'
-import { wait } from '../wait.js'
-import { flagActivity } from '../activitypub/processors/flag.js'
-import { getPetitionSigned } from '../activitypub/getPetitionSigned.js'
-import { completeEnvironment } from '../backendOptions.js'
-import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
-import { getPostUrlForQuote } from '../activitypub/postToJSONLD.js'
-import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
-import { getAdminUser } from '../getAdminAndDeletedUser.js'
-import { postPetitionSigned } from '../activitypub/postPetitionSigned.js'
-import { biteActivity } from '../activitypub/processors/bite.js'
+  UserLikesPostRelations,
+} from "../../models/index.js";
+import { getRemoteActor } from "../activitypub/getRemoteActor.js";
+import { signAndAccept } from "../activitypub/signAndAccept.js";
+import { removeUser } from "../activitypub/removeUser.js";
+import getBlockedIds from "../cacheGetters/getBlockedIds.js";
+import getUserBlockedServers from "../cacheGetters/getUserBlockedServers.js";
+import { deletePostCommon } from "../deletePost.js";
+import { AcceptActivity } from "../activitypub/processors/accept.js";
+import { AnnounceActivity } from "../activitypub/processors/announce.js";
+import { CreateActivity } from "../activitypub/processors/create.js";
+import { FollowActivity } from "../activitypub/processors/follow.js";
+import { UpdateActivity } from "../activitypub/processors/update.js";
+import { UndoActivity } from "../activitypub/processors/undo.js";
+import { LikeActivity } from "../activitypub/processors/like.js";
+import { DeleteActivity } from "../activitypub/processors/delete.js";
+import { EmojiReactActivity } from "../activitypub/processors/emojiReact.js";
+import { RemoveActivity } from "../activitypub/processors/remove.js";
+import { AddActivity } from "../activitypub/processors/add.js";
+import { BlockActivity } from "../activitypub/processors/block.js";
+import { MoveActivity } from "../activitypub/processors/move.js";
+import { RejectActivity } from "../activitypub/processors/reject.js";
+import { wait } from "../wait.js";
+import { flagActivity } from "../activitypub/processors/flag.js";
+import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
+import { completeEnvironment } from "../backendOptions.js";
+import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
+import { getPostThreadRecursive } from "../activitypub/getPostThreadRecursive.js";
+import { getAdminUser } from "../getAdminAndDeletedUser.js";
+import { postPetitionSigned } from "../activitypub/postPetitionSigned.js";
+import { biteActivity } from "../activitypub/processors/bite.js";
 
 async function inboxWorker(job: Job) {
   try {
-    const user = await User.findByPk(job.data.petitionBy)
+    const user = await User.findByPk(job.data.petitionBy);
     if (!user) {
-      return
+      return;
     }
 
-    const body = job.data.petition
-    const req = { body: body }
+    const body = job.data.petition;
+    const req = { body: body };
     // little hack that should be fixed later
-    if (req.body.type === 'Delete' && req.body.id.endsWith('#delete')) {
+    if (req.body.type === "Delete" && req.body.id.endsWith("#delete")) {
       const userToRemove = await User.findOne({
         where: {
-          remoteId: req.body.id.split('#')[0].toLowerCase()
-        }
-      })
+          remoteId: req.body.id.split("#")[0].toLowerCase(),
+        },
+      });
       if (userToRemove) {
-        await removeUser(userToRemove.id)
-        return
+        await removeUser(userToRemove.id);
+        return;
       }
     }
-    const remoteUser = await getRemoteActor(req.body.actor, user)
+    const remoteUser = await getRemoteActor(req.body.actor, user);
     const host = await FederatedHost.findOne({
       where: {
-        displayName: new URL(req.body.actor).host
-      }
-    })
+        displayName: new URL(req.body.actor).host,
+      },
+    });
     if (remoteUser) {
       // we check if the user has blocked the user or the server. This will mostly work for follows and dms. Will investigate further down the line
-      const userBlocks: string[] = await getBlockedIds(user.id, false, true)
-      const blocksExisting = userBlocks.includes(remoteUser.id) ? 1 : 0
-      const blockedServersData = await getUserBlockedServers(user.id)
-      const blocksServers = blockedServersData.find((elem: any) => elem.id === host?.id) ? 1 : 0
+      const userBlocks: string[] = await getBlockedIds(user.id, false, true);
+      const blocksExisting = userBlocks.includes(remoteUser.id) ? 1 : 0;
+      const blockedServersData = await getUserBlockedServers(user.id);
+      const blocksServers = blockedServersData.find(
+        (elem: any) => elem.id === host?.id
+      )
+        ? 1
+        : 0;
       if (
-        (!remoteUser?.banned && !host?.blocked && blocksExisting + blocksServers === 0) ||
-        req.body.type === 'Undo' ||
-        req.body.type === 'Delete'
+        (!remoteUser?.banned &&
+          !host?.blocked &&
+          blocksExisting + blocksServers === 0) ||
+        req.body.type === "Undo" ||
+        req.body.type === "Delete"
       ) {
         switch (req.body.type) {
-          case 'Accept': {
-            await AcceptActivity(body, remoteUser, user)
-            break
+          case "Accept": {
+            await AcceptActivity(body, remoteUser, user);
+            break;
           }
-          case 'Reject': {
-            await RejectActivity(body, remoteUser, user)
-            break
+          case "Reject": {
+            await RejectActivity(body, remoteUser, user);
+            break;
           }
-          case 'Announce': {
-            await AnnounceActivity(body, remoteUser, user)
-            break
+          case "Announce": {
+            await AnnounceActivity(body, remoteUser, user);
+            break;
           }
-          case 'Page':
-          case 'Create': {
-            await CreateActivity(body, remoteUser, user)
-            break
+          case "Page":
+          case "Create": {
+            await CreateActivity(body, remoteUser, user);
+            break;
           }
-          case 'Follow': {
-            await FollowActivity(body, remoteUser, user)
-            break
+          case "Follow": {
+            await FollowActivity(body, remoteUser, user);
+            break;
           }
-          case 'Update': {
-            await wait(5000)
-            await UpdateActivity(body, remoteUser, user)
-            break
+          case "Update": {
+            await wait(5000);
+            await UpdateActivity(body, remoteUser, user);
+            break;
           }
-          case 'Undo': {
-            await UndoActivity(body, remoteUser, user)
-            break
+          case "Undo": {
+            await UndoActivity(body, remoteUser, user);
+            break;
           }
-          case 'Like': {
-            await LikeActivity(body, remoteUser, user)
-            break
+          case "Like": {
+            await LikeActivity(body, remoteUser, user);
+            break;
           }
-          case 'Delete': {
-            await DeleteActivity(body, remoteUser, user)
-            break
+          case "Delete": {
+            await DeleteActivity(body, remoteUser, user);
+            break;
           }
-          case 'EmojiReact': {
-            await EmojiReactActivity(body, remoteUser, user)
-            break
+          case "EmojiReact": {
+            await EmojiReactActivity(body, remoteUser, user);
+            break;
           }
-          case 'Remove': {
-            await RemoveActivity(body, remoteUser, user)
-            break
+          case "Remove": {
+            await RemoveActivity(body, remoteUser, user);
+            break;
           }
-          case 'Add': {
-            await AddActivity(body, remoteUser, user)
-            break
+          case "Add": {
+            await AddActivity(body, remoteUser, user);
+            break;
           }
-          case 'Block': {
-            await BlockActivity(body, remoteUser, user)
-            break
-          }
-
-          case 'Move': {
-            await MoveActivity(body, remoteUser, user)
-            break
+          case "Block": {
+            await BlockActivity(body, remoteUser, user);
+            break;
           }
 
-          case 'Flag': {
-            await flagActivity(body, remoteUser, user)
-            break
+          case "Move": {
+            await MoveActivity(body, remoteUser, user);
+            break;
           }
 
-          case 'Bite': {
-            await biteActivity(body, remoteUser, user)
-            break
+          case "Flag": {
+            await flagActivity(body, remoteUser, user);
+            break;
+          }
+
+          case "Bite": {
+            await biteActivity(body, remoteUser, user);
+            break;
           }
 
           // activities that we ignore:
-          case 'CacheFile':
-          case 'Playlist':
-          case 'Listen':
-          case 'View': {
+          case "CacheFile":
+          case "Playlist":
+          case "Listen":
+          case "View": {
             // await signAndAccept(req, remoteUser, user)
-            break
+            break;
           }
 
-          case 'QuoteRequest':
+          case "QuoteRequest":
             {
               // TODO in case of rejecting quotes on fedi we do here
-              if (req.body.object && req.body.object.startsWith(`${completeEnvironment.frontendUrl}/fediverse/post/`)) {
-                const postId = req.body.object.split(`${completeEnvironment.frontendUrl}/fediverse/post/`)[1]
+              if (
+                req.body.object &&
+                req.body.object.startsWith(
+                  `${completeEnvironment.frontendUrl}/fediverse/post/`
+                )
+              ) {
+                const postId = req.body.object.split(
+                  `${completeEnvironment.frontendUrl}/fediverse/post/`
+                )[1];
                 const post: any = await Post.findByPk(postId, {
                   include: [
                     {
                       model: User,
-                      as: 'user'
-                    }
-                  ]
-                })
-                const quoterPost = await getPostThreadRecursive(await getAdminUser(), req.body.instrument.id)
+                      as: "user",
+                    },
+                  ],
+                });
+                const quoterPost = await getPostThreadRecursive(
+                  await getAdminUser(),
+                  req.body.instrument.id
+                );
                 if (post && quoterPost) {
                   const acceptToSend: activityPubObject = {
-                    '@context': [
-                      'https://www.w3.org/ns/activitystreams',
-                      `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+                    "@context": [
+                      "https://www.w3.org/ns/activitystreams",
+                      `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
                     ],
-                    actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${post?.dataValues.user.url.toLowerCase()}`,
+                    actor: `${
+                      completeEnvironment.frontendUrl
+                    }/fediverse/blog/${post?.dataValues.user.url.toLowerCase()}`,
                     id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${quoterPost.id}`,
-                    type: 'Accept',
+                    type: "Accept",
                     object: req.body.object,
-                    instrument: req.body.instrument
-                  }
+                    instrument: req.body.instrument,
+                  };
 
                   await postPetitionSigned(
                     acceptToSend,
-                    (await User.scope('full').findByPk(post.userId)) as User,
+                    (await User.scope("full").findByPk(post.userId)) as User,
                     remoteUser.remoteInbox
-                  )
+                  );
                 }
               }
             }
-            break
+            break;
           default: {
-            logger.info(`NOT IMPLEMENTED: ${req.body.type}`)
-            logger.info(req.body)
+            logger.info(`NOT IMPLEMENTED: ${req.body.type}`);
+            logger.info(req.body);
           }
         }
       }
     }
   } catch (err) {
-    logger.debug(err)
-    const error = new Error('error')
+    logger.debug(err);
+    const error = new Error("error");
   }
 }
 
-export { inboxWorker }
+export { inboxWorker };

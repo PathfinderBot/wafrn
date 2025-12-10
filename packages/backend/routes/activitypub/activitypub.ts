@@ -438,7 +438,7 @@ function activityPubRoutes(app: Application) {
           actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${quote.dataValues.quoterPost.dataValues.user.url}`,
           id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${req.params.id}`,
           type: "QuoteRequest",
-          object: getPostUrlForQuote(quote.dataValues.quotedPost),
+          object: await getPostUrlForQuote(quote.dataValues.quotedPost),
         };
         res.send(objectToSend);
       } else {

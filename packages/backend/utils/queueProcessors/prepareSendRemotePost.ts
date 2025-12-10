@@ -101,7 +101,7 @@ async function prepareSendRemotePostWorker(job: Job) {
         }/fediverse/blog/${localUser.url.toLowerCase()}`,
         id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${post.id}`,
         type: "QuoteRequest",
-        object: getPostUrlForQuote(quote.dataValues.quotedPost),
+        object: await getPostUrlForQuote(quote.dataValues.quotedPost),
         instrument: await postToJSONLD(post.id),
       };
       await RemoteUserPostView.findOrCreate({
