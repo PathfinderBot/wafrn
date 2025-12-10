@@ -11,6 +11,7 @@
   padding-bottom: 0.75rem;
   scroll-margin: 1rem;
   content-visibility: auto;
+
   & hr {
     margin: 0.75rem -1rem;
   }
@@ -57,10 +58,11 @@
 }
 
 .post-text {
-  & > :first-child {
+  &> :first-child {
     margin-top: 0;
   }
-  & > :last-child {
+
+  &> :last-child {
     margin-bottom: 0;
   }
 }
@@ -76,7 +78,7 @@
   user-select: unset;
 }
 
-.mention > span {
+.mention>span {
   margin: 0;
 }
 
