@@ -476,7 +476,7 @@ function getUserName(user?: User | undefined | null): string {
 function getPostUrlForQuote(post: any): string {
   const isPostFromFedi = !!post.remotePostId;
   let res = `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`;
-  if (post.isRemoteBlueskyPost) {
+  if (post.bskyUri) {
     const parts = post.bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
     res = `https://bsky.app/profile/${userDid}/post/${parts[1]}`;
