@@ -234,8 +234,13 @@ async function postToJSONLD(
       misskeyMentions.push(url);
   }
   misskeyContent = await htmlToMfm(
-    (misskeyContent + misskeyTagsAndQuotes).replace(lineBreaksAtEndRegex, "")
+    misskeyContent.replace(lineBreaksAtEndRegex, "")
   );
+  if (misskeyTagsAndQuotes.length > 0) {
+    misskeyContent =
+      misskeyContent +
+      `\n<small>${await htmlToMfm(misskeyTagsAndQuotes)}</small>`;
+  }
   const misskeyMentionContent =
     misskeyMentions.length > 0 ? `${misskeyMentions.join(" ")}\n\n` : "";
 
