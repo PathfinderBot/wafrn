@@ -297,7 +297,6 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     if (rt.facets) rt.facets.push(facet as unknown as Main);
     else rt.facets = [facet as unknown as Main];
   });
-
   let processedContent = post.content;
   const wafrnMediaRegex =
     /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm;
@@ -313,6 +312,20 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
 
   const fullText = processedContent ?? post.content;
+  if (rt.facets) {
+    rt.facets = rt.facets.filter((facet) => {
+      res = true;
+      if (
+        facet.features[0] &&
+        (facet.features[0]["$type"] as string) ==
+          "app.bsky.richtext.facet#mention"
+      ) {
+        let didOfMention = (facet.features[0] as any)["did"];
+        res = !!didOfMention;
+      }
+      return res;
+    });
+  }
   res = {
     ...res,
     text: rt.text,
