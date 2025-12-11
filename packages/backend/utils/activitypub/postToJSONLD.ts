@@ -188,7 +188,6 @@ async function postToJSONLD(
       }
     }
   }
-  misskeyTagsAndQuotes = tagsAndQuotes;
   for await (const tag of post.postTags) {
     const externalTagName = tag.tagName
       .replaceAll('"', "'")
