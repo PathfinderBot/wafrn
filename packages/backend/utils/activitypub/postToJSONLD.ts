@@ -158,7 +158,7 @@ async function postToJSONLD(
   const fediMentions: fediverseTag[] = [];
   const fediTags: fediverseTag[] = [];
   let tagsAndQuotes = "<br>";
-  let misskeyTagsAndQuotes = "<br>";
+  let misskeyTagsAndQuotes = "";
   const quotedPosts = post.quoted;
 
   const lineBreaksAtEndRegex = /\s*(<br\s*\/?>)+\s*$/g;
