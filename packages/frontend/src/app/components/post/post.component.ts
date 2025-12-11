@@ -59,7 +59,7 @@ export class PostComponent implements OnInit, OnDestroy {
 
   postsExpanded = EnvironmentService.environment.shortenPosts
   expanded = signal(false)
-  finalPosts = computed(() => this.post().slice(-5))
+  finalPosts = computed(() => this.post().slice(-2))
   mediaBaseUrl = EnvironmentService.environment.baseMediaUrl
   followedUsers: string[] = []
   notYetAcceptedFollows: string[] = []
