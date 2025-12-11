@@ -239,8 +239,7 @@ async function postToJSONLD(
   );
   if (misskeyTagsAndQuotes.length > 0) {
     misskeyContent =
-      misskeyContent +
-      `\n<small>${await htmlToMfm(misskeyTagsAndQuotes)}</small>`;
+      misskeyContent + `\n${await htmlToMfm(misskeyTagsAndQuotes)}`;
   }
   const misskeyMentionContent =
     misskeyMentions.length > 0 ? `${misskeyMentions.join(" ")}\n\n` : "";
