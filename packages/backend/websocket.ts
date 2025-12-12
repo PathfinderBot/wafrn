@@ -122,20 +122,13 @@ async function clearDuplicatedBskyUris(): Promise<boolean> {
               },
             }
           );
-          await Post.update(
-            {
-              isDeleted: true,
-              bskyCid: null,
-              bskyUri: null,
-            },
-            {
-              where: {
-                id: {
-                  [Op.in]: duplicatedPostIds,
-                },
+          await Post.destroy({
+            where: {
+              id: {
+                [Op.in]: duplicatedPostIds,
               },
-            }
-          );
+            },
+          });
         }
       }
     }
