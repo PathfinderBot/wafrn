@@ -327,6 +327,11 @@ function userRoutes(app: Application) {
               await inviteCode.save()
             }
 
+            if (completeEnvironment.autoFollowAdmin) {
+              const adminUser = await getAdminUser()
+              await follow(id, adminUser.id)
+            }
+
             const instanceUrl = completeEnvironment.instanceUrl.startsWith(
               "http"
             )

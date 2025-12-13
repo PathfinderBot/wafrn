@@ -78,6 +78,7 @@ export interface Environment {
   webpushPrivateKey: string
   webpushPublicKey: string
   webpushEmail: string
+  autoFollowAdmin: boolean
   registrationLevel: 'PRIVATE' | 'INVITE' | 'PUBLIC'
   minimumAgeToRegister: number
   disableShowingBlockedServers: boolean
