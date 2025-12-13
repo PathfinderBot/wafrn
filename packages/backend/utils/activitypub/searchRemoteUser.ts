@@ -32,20 +32,12 @@ async function searchRemoteUser(
           user,
           `https://${domain}/.well-known/webfinger/?resource=acct:${username}@${domain}`
         );
-      } catch (error) {}
+      } catch (error) { }
 
       if (!remoteResponse) {
         try {
-          const agent = new Agent({
-            connect: {
-              family: 4,
-            },
-          });
           const petitionResponse = await fetch(
             `https://${domain}/.well-known/webfinger/?resource=acct:${username}@${domain}`,
-            {
-              dispatcher: agent,
-            }
           );
           remoteResponse = await petitionResponse.json();
         } catch (error) {

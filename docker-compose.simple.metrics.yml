@@ -270,3 +270,7 @@ volumes:
   redis:
   prometheus_data:
   grafana_data:
+
+networks:
+  default:
+    enable_ipv6: true
