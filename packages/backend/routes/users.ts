@@ -1117,6 +1117,7 @@ function userRoutes(app: Application) {
             "description",
             "descriptionMarkdown",
             "remoteId",
+            "isBot",
             "avatar",
             "federatedHostId",
             "headerImage",

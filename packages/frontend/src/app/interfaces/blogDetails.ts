@@ -11,6 +11,7 @@ export interface BlogDetails {
   description: string
   descriptionMarkdown: string
   remoteId: string
+  isBot: boolean,
   avatar: string
   bskyDid?: string
   federatedHostId: string
