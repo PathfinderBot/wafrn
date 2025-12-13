@@ -1127,6 +1127,7 @@ function userRoutes(app: Application) {
             "followerCount",
             "manuallyAcceptsFollows",
             "bskyDid",
+            "role",
             "userMigratedTo",
             [
               sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
