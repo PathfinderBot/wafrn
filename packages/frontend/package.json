@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "npm run prebuild && ng serve",
     "dev": "npm run prebuild && ng serve --configuration=development",
-    "build": "npm run prebuild && ng build --source-map=false",
+    "build": "npm run prebuild && ng build --prod --source-map=false",
     "watch": "npm run prebuild && ng build --watch --configuration=development",
     "test": "npm run prebuild && ng test",
     "vercel-build": "ng build  --configuration=vercel",
