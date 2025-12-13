@@ -54,6 +54,9 @@ import { nukeBannedUsers } from "./utils/maintenanceTasks/nukeBannedUsers.js";
 import { sequelize } from "./models/sequelize.js";
 import { Op, Sequelize } from "sequelize";
 import { Post } from "./models/post.js";
+import { User } from "./models/index.js";
+import { follow } from "./utils/follow.js";
+import { getAdminUser } from "./utils/getAdminAndDeletedUser.js";
 
 const PORT = completeEnvironment.port;
 const app = express();
@@ -76,6 +79,23 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
 });
 
 const queryInterface = sequelize.getQueryInterface();
+
+if (completeEnvironment.autoFollowAdmin) {
+  try {
+    const users = await User.findAll({
+      where: {
+        banned: {
+          [Op.ne]: true
+        },
+        email: {
+          [Op.ne]: null,
+        },
+      }
+    })
+    const adminUser = await getAdminUser()
+    await Promise.all(users.map(x => follow(x.id, adminUser.id)))
+  } catch { }
+}
 
 clearDuplicatedBskyUris().then(async (res) => {
   let postIndexes = await queryInterface.showIndex("posts");
