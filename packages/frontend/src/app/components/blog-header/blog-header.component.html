@@ -133,8 +133,8 @@
         <span class="badge bsky-badge"> <fa-icon class="mr-2" [icon]="bskyIcon"></fa-icon>Bluesky </span>
         }
         @if (blog?.isAdmin) {
-        <span class="badge admin-badge"> <fa-icon class="mr-2" [icon]="adminIcon"
-            [matTooltip]="blog?.url + ' is an admin of ' + instanceHostname"></fa-icon>Admin </span>
+        <span class="badge admin-badge" [matTooltip]="blog?.url + ' is an admin of ' + instanceHostname"> <fa-icon
+            class="mr-2" [icon]="adminIcon"></fa-icon>Admin </span>
         }
         @if (blog?.isBot) {
         <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>Bot </span>
