@@ -300,6 +300,7 @@ export class ViewBlogComponent
       followerCount: 0,
       manuallyAcceptsFollows: true,
       emojis: [],
+      isBot: false,
       muted: false,
       blocked: false,
       serverBlocked: false,

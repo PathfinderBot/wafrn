@@ -479,6 +479,8 @@ function userRoutes(app: Application) {
           user.hideProfileNotLoggedIn = hideProfileNotLoggedIn == "true";
           user.disableEmailNotifications =
             req.body.disableEmailNotifications == "true";
+          user.isBot =
+            req.body.isBot == "true";
           if (description) {
             const descriptionHtml = markdownConverter.makeHtml(description);
             user.description = descriptionHtml;

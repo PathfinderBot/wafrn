@@ -47,6 +47,7 @@ const settingKeyVariants = [
   'hideFollows',
   'hideProfileNotLoggedIn',
   'disableEmailNotifications',
+  'botAccount',
   // everything else - stored in the options table
   'theme', // This and v
   'lightDarkMode', // this option are weirdly named in localStorage because legacy reasons
@@ -226,6 +227,14 @@ export class SettingsService {
       default: false
     },
     // For new options, add below here.
+    botAccount: {
+      key: 'botAccount',
+      translationKey: 'settings.botAccount',
+      serverKey: 'isBot',
+      profileOption: true,
+      type: 'checkbox',
+      default: false
+    },
     rssOptions: {
       key: 'rssOptions',
       translationKey: 'settings.rssOptions',
@@ -664,6 +673,10 @@ export class SettingsService {
         { type: 'link', value: 'menu.settings.migrateBluesky', route: '/profile/migrate-bluesky' },
         { type: 'key', value: 'rssOptions' },
         { type: 'separator' },
+        { type: 'header', value: 'settings.header.botAccount' },
+        // { type: 'description', value: '[Email Change] (not currently available, sorry!)' },
+        { type: 'key', value: 'botAccount' },
+        { type: 'separator' },
         { type: 'header', value: 'settings.header.migration' },
         { type: 'key', value: 'alsoKnownAs' },
         { type: 'link', value: 'menu.settings.importFollows', route: '/profile/importFollows' }, // FIXME: make this on the page itself?
@@ -841,6 +854,7 @@ export class SettingsService {
         this.values().hideFollows = blogDetails.hideFollows
         this.values().hideProfileNotLoggedIn = blogDetails.hideProfileNotLoggedIn
         this.values().disableEmailNotifications = blogDetails.disableEmailNotifications
+        this.values().botAccount = blogDetails.isBot
 
         const rawAttachments = blogDetails.publicOptions?.find(
           (elem) => elem.optionName === 'fediverse.public.attachment'
@@ -936,6 +950,7 @@ export class SettingsService {
       hideFollows: this.values().hideFollows,
       hideProfileNotLoggedIn: this.values().hideProfileNotLoggedIn,
       disableEmailNotifications: this.values().disableEmailNotifications,
+      isBot: this.values().botAccount,
       options: JSON.stringify(options)
     }
 
