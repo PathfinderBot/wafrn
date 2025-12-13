@@ -1295,6 +1295,7 @@ function userRoutes(app: Application) {
             serverBlocked,
             followed,
             followers,
+            isAdmin: blog.dataValues.role === 10,
             publicOptions: await publicOptions,
           });
         }
