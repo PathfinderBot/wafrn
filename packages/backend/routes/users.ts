@@ -2143,6 +2143,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
               // third step: return data and set message to succ ess
               localUser.userMigratedTo = newUserRemoteId;
               await localUser.save();
+              // fourth step: send update profile
+              await sendUpdateProfile(localUser);
               message = `Operation successful!`;
               success = true;
             } else {
