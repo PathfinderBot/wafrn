@@ -85,30 +85,30 @@ if (completeEnvironment.autoFollowAdmin) {
     const users = await User.findAll({
       where: {
         banned: {
-          [Op.ne]: true
+          [Op.ne]: true,
         },
         email: {
           [Op.ne]: null,
         },
-      }
-    })
-    const adminUser = await getAdminUser()
-    await Promise.all(users.map(x => follow(x.id, adminUser.id)))
-  } catch { }
+      },
+    });
+    const adminUser = await getAdminUser();
+    await Promise.all(users.map((x) => follow(x.id, adminUser.id)));
+  } catch {}
 }
+let postIndexes = await queryInterface.showIndex("posts");
 
-clearDuplicatedBskyUris().then(async (res) => {
-  let postIndexes = await queryInterface.showIndex("posts");
-  if (
-    !(postIndexes as Array<any>).some((index) => index.name === "post_bsky_uri")
-  ) {
+if (
+  !(postIndexes as Array<any>).some((index) => index.name === "post_bsky_uri")
+) {
+  clearDuplicatedBskyUris().then(async (res) => {
     // well turns out that we dont have indexes
     // we have cleaned duplicated before. if a duplicate apears here we just crash and do it again :3
     await queryInterface.sequelize.query(
       `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`
     );
-  }
-});
+  });
+}
 
 async function clearDuplicatedBskyUris(): Promise<boolean> {
   let duplicatedURIs: any = await queryInterface.sequelize.query(
