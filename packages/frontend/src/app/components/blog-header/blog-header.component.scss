@@ -79,6 +79,10 @@ mat-card:has(+ app-info-card) {
   background-color: rgba(0 133 255 / 0.35);
 }
 
+.bot-badge {
+  background-color: rgba(1, 190, 102, 0.35);
+}
+
 .ratio-badge {
   background-color: var(--mat-sys-secondary-container);
 }

@@ -18,26 +18,23 @@ async function getPetitionSigned(
     const acceptedFormats = "application/activity+json,application/json";
     const signingOptions = {
       key: privKey,
-      keyId: `${
-        completeEnvironment.frontendUrl
-      }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key`,
+      keyId: `${completeEnvironment.frontendUrl
+        }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key`,
       algorithm: "rsa-sha256",
       authorizationHeaderName: "signature",
       headers: ["(request-target)", "host", "date", "accept"],
     };
     const sendDate = new Date();
-    const stringToSign = `(request-target): get ${url.pathname}\nhost: ${
-      url.host
-    }\ndate: ${sendDate.toUTCString()}\naccept: ${acceptedFormats}`;
+    const stringToSign = `(request-target): get ${url.pathname}\nhost: ${url.host
+      }\ndate: ${sendDate.toUTCString()}\naccept: ${acceptedFormats}`;
 
     const digest = createHash("sha256").update(stringToSign).digest("base64");
     const signer = createSign("sha256");
     signer.update(stringToSign);
     signer.end();
     const signature = signer.sign(user.privateKey as string).toString("base64");
-    const header = `keyId="${
-      completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date accept",signature="${signature}"`;
+    const header = `keyId="${completeEnvironment.frontendUrl
+      }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date accept",signature="${signature}"`;
     const headers = {
       "Content-Type": "application/activity+json",
       "User-Agent": completeEnvironment.instanceUrl,
@@ -48,14 +45,8 @@ async function getPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    const agent = new Agent({
-      connect: {
-        family: 4,
-      },
-    });
     petitionResponse = await fetch(url.href, {
       headers: headers,
-      dispatcher: agent,
     });
     res = await petitionResponse.json();
   } catch (error: any) {

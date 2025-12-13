@@ -58,6 +58,9 @@ export async function userToJSONLD(user: User) {
       preferredUsername: user.url.toLowerCase(),
       name: user.name,
       summary: user.description,
+      ...(!!user.userMigratedTo ? {
+        movedTo: user.userMigratedTo
+      } : {}),
       url: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
       manuallyApprovesFollowers: user.manuallyAcceptsFollows,
       discoverable: true,

@@ -298,6 +298,7 @@
     "header": {
       "fediAttachments": "Fediverse Attachments",
       "emailAndPassword": "Email and Password",
+      "botAccount": "Bot Account",
       "integrations": "Integrations",
       "migration": "Account Migration",
       "deleteAccount": "Delete Account",
@@ -318,6 +319,7 @@
     "fediPropertyKey": "Property Name",
     "fediPropertyValue": "Property Value",
     "addFediAttachment": "Add Attachment",
+    "botAccount": "Mark user as a bot account",
     "changeAvatar": "Change Avatar",
     "changeHeaderImage": "Change Banner",
     "name": "Name",

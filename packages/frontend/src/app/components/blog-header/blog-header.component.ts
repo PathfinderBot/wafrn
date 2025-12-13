@@ -20,6 +20,7 @@ import {
   faCookieBite,
   faCode,
   faPlaneDeparture,
+  faRobot,
 } from "@fortawesome/free-solid-svg-icons";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import { BlocksService } from "src/app/services/blocks.service";
@@ -90,6 +91,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
 
   userIcon = faUser;
   bskyIcon = faBluesky;
+  botIcon = faRobot;
   usersIcon = faUsers;
   blockUserIcon = faUserSlash;
   unblockServerIcon = faServer;

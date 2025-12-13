@@ -132,6 +132,9 @@
         @if (blog?.isBlueskyUser) {
         <span class="badge bsky-badge"> <fa-icon class="mr-2" [icon]="bskyIcon"></fa-icon>Bluesky </span>
         }
+        @if (blog?.isBot) {
+        <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>Bot </span>
+        }
         @if (blog && blog.followers / blog.followed > 5) {
         <span class="badge ratio-badge" matTooltip="{{
               'For every ' +

@@ -327,6 +327,11 @@ function userRoutes(app: Application) {
               await inviteCode.save()
             }
 
+            if (completeEnvironment.autoFollowAdmin) {
+              const adminUser = await getAdminUser()
+              await follow(id, adminUser.id)
+            }
+
             const instanceUrl = completeEnvironment.instanceUrl.startsWith(
               "http"
             )
@@ -474,6 +479,8 @@ function userRoutes(app: Application) {
           user.hideProfileNotLoggedIn = hideProfileNotLoggedIn == "true";
           user.disableEmailNotifications =
             req.body.disableEmailNotifications == "true";
+          user.isBot =
+            req.body.isBot == "true";
           if (description) {
             const descriptionHtml = markdownConverter.makeHtml(description);
             user.description = descriptionHtml;
@@ -1112,6 +1119,7 @@ function userRoutes(app: Application) {
             "description",
             "descriptionMarkdown",
             "remoteId",
+            "isBot",
             "avatar",
             "federatedHostId",
             "headerImage",
@@ -2135,6 +2143,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
               // third step: return data and set message to succ ess
               localUser.userMigratedTo = newUserRemoteId;
               await localUser.save();
+              // fourth step: send update profile
+              await sendUpdateProfile(localUser);
               message = `Operation successful!`;
               success = true;
             } else {
