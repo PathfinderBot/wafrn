@@ -196,7 +196,7 @@ async function postToJSONLD(
       completeEnvironment.frontendUrl
     }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
     tagsAndQuotes = `${tagsAndQuotes}<a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a>`;
-    misskeyTagsAndQuotes = `${misskeyTagsAndQuotes}${
+    misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} ${
       tag.tagName.trim().includes(" ")
         ? "# " + tag.tagName.trim()
         : "#" + tag.tagName.trim()
