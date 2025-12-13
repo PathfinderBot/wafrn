@@ -38,8 +38,7 @@ import { MatTabChangeEvent } from "@angular/material/tabs";
   standalone: false,
 })
 export class ViewBlogComponent
-  implements OnInit, OnDestroy, SnappyHide, SnappyShow
-{
+  implements OnInit, OnDestroy, SnappyHide, SnappyShow {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly dashboardService = inject(DashboardService);
   readonly loginService = inject(LoginService);
@@ -301,6 +300,7 @@ export class ViewBlogComponent
       manuallyAcceptsFollows: true,
       emojis: [],
       isBot: false,
+      isAdmin: false,
       muted: false,
       blocked: false,
       serverBlocked: false,
