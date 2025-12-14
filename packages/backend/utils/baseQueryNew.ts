@@ -361,6 +361,7 @@ async function getUnjointedPosts(
       "banned",
       "bskyDid",
       "federatedHostId",
+      "isBot"
     ],
     where: {
       id: {

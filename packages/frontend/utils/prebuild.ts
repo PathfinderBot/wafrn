@@ -26,7 +26,6 @@ function main(): void {
       fullHash: execSyncSafe('git rev-parse HEAD'),
     },
     timestamp: new Date().getTime()
-
   }
 
   const filePath = path.resolve('src', 'buildData.json')
