@@ -17,11 +17,6 @@
       <span class="text-sm" matTooltip="{{ fragment.createdAt | date: 'short' }}">
         <a [postLink]="fragment" style="color: var(--mat-sys-outline)">{{ this.timeAgo }}</a>
       </span>
-      @if (fragment.user.isBot) {
-      <span class="text-xs" matTooltip="{{ privacyOptions[fragment.privacy].name }}">
-        <fa-icon [icon]="botIcon"></fa-icon>
-      </span>
-      }
       @if (edited) {
       <span matTooltip="Edited {{ fragment.updatedAt | date: 'short' }}" class="text-xs">
         <fa-icon [icon]="editedIcon"></fa-icon>
@@ -30,6 +25,11 @@
       <span class="text-xs" matTooltip="{{ privacyOptions[fragment.privacy].name }}">
         <fa-icon [icon]="privacyOptions[fragment.privacy].icon"></fa-icon>
       </span>
+      @if (fragment.user.isBot) {
+      <span class="text-xs">
+        <fa-icon [icon]="botIcon"></fa-icon>
+      </span>
+      }
       @if (
       !postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) &&
       !postService.followedUserIds.includes(fragment.userId) &&
