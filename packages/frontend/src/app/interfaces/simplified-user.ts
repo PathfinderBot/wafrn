@@ -9,7 +9,7 @@ export interface SimplifiedUser {
   remoteId?: string
   description?: string
   emojis?: Emoji[]
-  isBot: string
+  isBot?: boolean
   email?: string
   registerIp?: string
   bskyDid?: string
