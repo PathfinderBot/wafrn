@@ -7,7 +7,7 @@
         <app-avatar-small [user]="fragment.user"></app-avatar-small>
         <a class="flex flex-column min-w-0 user-link" [blogLink]="!disableLink() ? fragment.user : null">
           <span class="no-underline user-name"><span [innerHTML]="fragment.user.name"></span> @if (fragment.user.isBot)
-            {<fa-icon [icon]="botIcon"></fa-icon>}
+            {<span class="bot-icon"><fa-icon [icon]="botIcon"></fa-icon></span>}
             <span class="text-sm post-action">{{ headerText() }}</span></span>
           <span class="text-sm user-url" [innerText]="fragment.user.url"></span>
         </a>
