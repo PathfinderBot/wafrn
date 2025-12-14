@@ -261,10 +261,13 @@ export class DashboardService {
 
   public getAvatarUrl(blog?: BlogDetails) {
     if (!blog) return "";
-    return (
-      EnvironmentService.environment.cacheDomain +
+    const res =
+      (EnvironmentService.environment
+        ? EnvironmentService.environment.cacheDomain
+        : "") +
       "/api/v2/cache/avatar/" +
-      blog.id
-    );
+      blog.id;
+    console.log(res);
+    return res;
   }
 }
