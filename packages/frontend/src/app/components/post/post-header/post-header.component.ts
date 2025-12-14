@@ -21,7 +21,8 @@ import {
   faTrash,
   faUnlock,
   faUser,
-  faNewspaper
+  faNewspaper,
+  faRobot
 } from '@fortawesome/free-solid-svg-icons'
 import { DateTime } from 'luxon'
 import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
@@ -88,6 +89,7 @@ export class PostHeaderComponent implements OnChanges {
   envelopeIcon = faEnvelope
   serverIcon = faServer
   userIcon = faUser
+  botIcon = faRobot
   editedIcon = faPen
   edited = false
 

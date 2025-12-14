@@ -6,55 +6,49 @@
       <div class="flex gap-2 mr-auto min-w-0">
         <app-avatar-small [user]="fragment.user"></app-avatar-small>
         <a class="flex flex-column min-w-0 user-link" [blogLink]="!disableLink() ? fragment.user : null">
-          <span class="no-underline user-name"
-            ><span [innerHTML]="fragment.user.name"></span>
-            <span class="text-sm post-action">{{ headerText() }}</span></span
-          >
+          <span class="no-underline user-name"><span [innerHTML]="fragment.user.name"></span> @if (fragment.user.isBot)
+            {<fa-icon [icon]="botIcon"></fa-icon>}
+            <span class="text-sm post-action">{{ headerText() }}</span></span>
           <span class="text-sm user-url" [innerText]="fragment.user.url"></span>
         </a>
       </div>
     </div>
     @if (!simplified()) {
-      <div class="flex align-items-center date-line">
-        <span class="text-sm" matTooltip="{{ fragment.createdAt | date: 'short' }}">
-          <a [postLink]="fragment" style="color: var(--mat-sys-outline)">{{ this.timeAgo }}</a>
-        </span>
-        @if (edited) {
-          <span matTooltip="Edited {{ fragment.updatedAt | date: 'short' }}" class="text-xs">
-            <fa-icon [icon]="editedIcon"></fa-icon>
-          </span>
-        }
-        <span class="text-xs" matTooltip="{{ privacyOptions[fragment.privacy].name }}">
-          <fa-icon [icon]="privacyOptions[fragment.privacy].icon"></fa-icon>
-        </span>
-        @if (
-          !postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) &&
-          !postService.followedUserIds.includes(fragment.userId) &&
-          loggedIn
-        ) {
-          <button mat-button class="text-sm follow-button" style="text-wrap: nowrap" (click)="followUser(fragment)">
-            {{ 'post-header.follow' | translate }}
-          </button>
-        }
-        @if (postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) && loggedIn) {
-          <button mat-button class="text-sm follow-button" (click)="cancelFollowUser(fragment)">
-            {{ 'post-header.awaitingApproval' | translate }}
-          </button>
-        }
-      </div>
+    <div class="flex align-items-center date-line">
+      <span class="text-sm" matTooltip="{{ fragment.createdAt | date: 'short' }}">
+        <a [postLink]="fragment" style="color: var(--mat-sys-outline)">{{ this.timeAgo }}</a>
+      </span>
+      @if (edited) {
+      <span matTooltip="Edited {{ fragment.updatedAt | date: 'short' }}" class="text-xs">
+        <fa-icon [icon]="editedIcon"></fa-icon>
+      </span>
+      }
+      <span class="text-xs" matTooltip="{{ privacyOptions[fragment.privacy].name }}">
+        <fa-icon [icon]="privacyOptions[fragment.privacy].icon"></fa-icon>
+      </span>
+      @if (
+      !postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) &&
+      !postService.followedUserIds.includes(fragment.userId) &&
+      loggedIn
+      ) {
+      <button mat-button class="text-sm follow-button" style="text-wrap: nowrap" (click)="followUser(fragment)">
+        {{ 'post-header.follow' | translate }}
+      </button>
+      }
+      @if (postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) && loggedIn) {
+      <button mat-button class="text-sm follow-button" (click)="cancelFollowUser(fragment)">
+        {{ 'post-header.awaitingApproval' | translate }}
+      </button>
+      }
+    </div>
     }
   </div>
   <div class="flex gap-3 h-full align-items-center flex-shrink-0">
     @if (!simplified()) {
-      <app-post-actions [post]="fragment"></app-post-actions>
+    <app-post-actions [post]="fragment"></app-post-actions>
     } @else {
-      <a
-        [href]="'/fediverse/post/' + fragment.id"
-        [routerLink]="'/fediverse/post/' + fragment.id"
-        mat-button
-        class="subtle-link text-sm quote-view-original"
-        >{{ 'post-header.viewPost' | translate }}</a
-      >
+    <a [href]="'/fediverse/post/' + fragment.id" [routerLink]="'/fediverse/post/' + fragment.id" mat-button
+      class="subtle-link text-sm quote-view-original">{{ 'post-header.viewPost' | translate }}</a>
     }
   </div>
 </div>

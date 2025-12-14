@@ -16,6 +16,7 @@ import {
   faQuoteLeft,
   faRepeat,
   faReply,
+  faRobot,
   faServer,
   faShareNodes,
   faTrash,
@@ -105,6 +106,7 @@ export class PostComponent implements OnInit, OnDestroy {
   userIcon = faUser
   editedIcon = faPen
   checkIcon = faCheck
+  botIcon = faRobot
 
   // bottom bar for controls
   bottomReplyBar = viewChild.required(BottomReplyBarComponent)
@@ -203,11 +205,11 @@ export class PostComponent implements OnInit, OnDestroy {
     return !finalOne
       ? true
       : this.post() &&
-          finalOne.content == '' &&
-          finalOne.tags.length == 0 &&
-          finalOne.quotes.length == 0 &&
-          !finalOne.questionPoll &&
-          finalOne.medias?.length == 0
+      finalOne.content == '' &&
+      finalOne.tags.length == 0 &&
+      finalOne.quotes.length == 0 &&
+      !finalOne.questionPoll &&
+      finalOne.medias?.length == 0
   }
 
   // Adds 50 more posts to the sliced list
