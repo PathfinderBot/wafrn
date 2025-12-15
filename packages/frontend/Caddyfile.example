@@ -56,7 +56,10 @@ ${{DOMAIN_NAME}} {
     }
 
 
-    handle_path /api/notifications/socket* {
+    handle_path /api/notifications/socket 
+    {
+        header Connection *Upgrade*
+	    header Upgrade websocket
         reverse_proxy ${{WEBSOCKET_HOST:-backend:9000}}
     }
 
