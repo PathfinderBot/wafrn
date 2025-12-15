@@ -146,7 +146,7 @@ async function biteUserRemote(biter: User, bittenUser: User) {
 
       [Op.or]: [
         sequelize.literal(
-          `"id" in (SELECT "federatedHostId" from "users" where "users"."id" IN (SELECT "followerId" from "follows" where "followedId" = '${biteRelation.userId}') and "federatedHostId" is not NULL)`
+          `"id" in (SELECT "federatedHostId" from "users" where "users"."id" IN (SELECT "followerId" from "follows" where "followedId" = '${biter.id}') and "federatedHostId" is not NULL)`
         ),
         {
           friendServer: true,
