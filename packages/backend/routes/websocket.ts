@@ -24,6 +24,7 @@ export default function websocketRoutes(app: Application) {
     }
   );
   app.ws("/api/notifications/socket", async (ws: WebSocket, req: Request) => {
+    logger.debug(`Websocket connected`);
     let authorized = false;
     let procesingAuth = false;
     let userId: string | undefined;
