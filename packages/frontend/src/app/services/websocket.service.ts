@@ -1,74 +1,78 @@
-import { Injectable, inject } from '@angular/core'
-import { WebSocketSubject, webSocket } from 'rxjs/webSocket'
-import { EnvironmentService } from './environment.service'
-import { LoginService } from './login.service'
-import { DashboardService } from './dashboard.service'
-import { debounce, retry, Subject } from 'rxjs'
-import { MessageService } from './message.service'
-import { ParticleService } from './particle.service'
+import { Injectable, inject } from "@angular/core";
+import { WebSocketSubject, webSocket } from "rxjs/webSocket";
+import { EnvironmentService } from "./environment.service";
+import { LoginService } from "./login.service";
+import { DashboardService } from "./dashboard.service";
+import { debounce, retry, Subject } from "rxjs";
+import { MessageService } from "./message.service";
+import { ParticleService } from "./particle.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class WebsocketService {
   private loginService = inject(LoginService);
   private dashboardService = inject(DashboardService);
   private particle = inject(ParticleService);
 
-  private socket$!: WebSocketSubject<any>
+  private socket$!: WebSocketSubject<any>;
   constructor() {
     const loginService = this.loginService;
 
     if (loginService.loggedIn.value) {
-      this.connectSocket()
+      this.connectSocket();
     }
   }
 
   connectSocket() {
     try {
-      const onSocketConnect = new Subject()
+      const onSocketConnect = new Subject();
       const url =
-        EnvironmentService.environment.baseUrl.replace('http://', 'ws://').replace('https://', 'wss://') +
-        '/notifications/socket'
+        EnvironmentService.environment.baseUrl
+          .replace("http://", "ws://")
+          .replace("https://", "wss://") + "/socket/notifications";
       this.socket$ = webSocket({
         url: url,
         WebSocketCtor: WebSocket,
         openObserver: onSocketConnect,
-        protocol: 'server'
-      })
+        protocol: "server",
+      });
       this.socket$
         .pipe(
           retry({
-            delay: 3000
+            delay: 3000,
           })
         )
-        .subscribe((obs: { message: 'update_notifications'; type: string }) => {
+        .subscribe((obs: { message: "update_notifications"; type: string }) => {
           try {
             switch (obs.message) {
-              case 'update_notifications': {
-                this.dashboardService.scrollEventEmitter.next('scroll')
-                console.log(obs)
-                if (obs.type == 'LIKE' && localStorage.getItem('enableConfettiRecivingLike') == 'true') {
-                  this.particle.like()
+              case "update_notifications": {
+                this.dashboardService.scrollEventEmitter.next("scroll");
+                console.log(obs);
+                if (
+                  obs.type == "LIKE" &&
+                  localStorage.getItem("enableConfettiRecivingLike") == "true"
+                ) {
+                  this.particle.like();
                 }
               }
             }
           } catch (error) {
-            console.error(error)
+            console.error(error);
           }
-        })
+        });
       if (this.socket$) {
       }
       onSocketConnect.subscribe((data) => {
         this.socket$.next({
-          type: 'auth',
-          object: localStorage.getItem('authToken') as string
-        })
-        this.dashboardService.scrollEventEmitter.next('scroll')
-      })
+          type: "auth",
+          object: localStorage.getItem("authToken") as string,
+        });
+        this.dashboardService.scrollEventEmitter.next("scroll");
+      });
     } catch (error) {
-      console.error('error conecting websocket')
-      console.error(error)
+      console.error("error conecting websocket");
+      console.error(error);
     }
   }
 }
