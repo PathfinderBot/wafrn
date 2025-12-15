@@ -267,7 +267,6 @@ export class DashboardService {
         : "") +
       "/api/v2/cache/avatar/" +
       blog.id;
-    console.log(res);
     return res;
   }
 }
