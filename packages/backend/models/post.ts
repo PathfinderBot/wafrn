@@ -91,6 +91,7 @@ export interface PostAttributes {
   likeControl?: InteractionControlType;
   reblogControl?: InteractionControlType;
   quoteControl?: InteractionControlType;
+  displayUrl: String | null;
 }
 
 @Table({
@@ -196,6 +197,12 @@ export class Post
     type: DataType.INTEGER,
   })
   declare hierarchyLevel: number;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING,
+  })
+  declare displayUrl: string;
 
   @ForeignKey(() => Post)
   @Column({

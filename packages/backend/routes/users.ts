@@ -171,51 +171,51 @@ const slurs = [
   "yid",
 ];
 
-const adminUser = await getAdminAtprotoSession()
+const adminUser = await getAdminAtprotoSession();
 
 function userRoutes(app: Application) {
-  app.get('/api/fromBluesky/:did', async function (req, res) {
+  app.get("/api/fromBluesky/:did", async function (req, res) {
     if (!req.params.did) {
-      return res.redirect(completeEnvironment.frontendUrl)
+      return res.redirect(completeEnvironment.frontendUrl);
     }
 
-    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`)
-    if (cacheUrl) return res.redirect(cacheUrl)
+    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`);
+    if (cacheUrl) return res.redirect(cacheUrl);
 
-    let did = ""
-    if (!req.params.did.startsWith('did:')) {
+    let did = "";
+    if (!req.params.did.startsWith("did:")) {
       const doc = await adminUser.resolveHandle({
-        handle: req.params.did
-      })
+        handle: req.params.did,
+      });
       if (!doc.success) {
-        return res.redirect(completeEnvironment.frontendUrl)
+        return res.redirect(completeEnvironment.frontendUrl);
       }
-      did = doc.data.did
+      did = doc.data.did;
     }
 
     const user = await User.findOne({
       where: {
-        bskyDid: did
-      }
-    })
+        bskyDid: did,
+      },
+    });
 
     if (!user) {
-      return res.redirect(completeEnvironment.frontendUrl)
+      return res.redirect(completeEnvironment.frontendUrl);
     }
 
-    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl)
-    return res.redirect(user.fullUrl)
-  })
+    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl);
+    return res.redirect(user.fullUrl);
+  });
 
   app.post(
     "/api/register",
     ...(completeEnvironment.registrationLevel === "PRIVATE"
       ? [
-        authenticateToken,
-        adminToken,
-        createAccountLimiter,
-        onePerSecondLimiter,
-      ]
+          authenticateToken,
+          adminToken,
+          createAccountLimiter,
+          onePerSecondLimiter,
+        ]
       : [createAccountLimiter, onePerSecondLimiter]),
     uploadHandler().single("avatar"),
     async (req, res) => {
@@ -228,12 +228,14 @@ function userRoutes(app: Application) {
           validateEmail(req.body.email) &&
           !slurs.includes(
             req.body.url.toLowerCase() &&
-            slurs.every((elem) => !req.body.url.includes(elem))
+              slurs.every((elem) => !req.body.url.includes(elem))
           )
         ) {
           const birthDate = new Date(req.body.birthDate);
           const minimumAge = new Date();
-          minimumAge.setFullYear(new Date().getFullYear() - completeEnvironment.minimumAgeToRegister);
+          minimumAge.setFullYear(
+            new Date().getFullYear() - completeEnvironment.minimumAgeToRegister
+          );
           if (birthDate.getTime() > minimumAge.getTime()) {
             res
               .status(403)
@@ -254,28 +256,34 @@ function userRoutes(app: Application) {
 
           let inviteCode: InviteCode | undefined;
           if (!emailExists) {
-            const id = randomUUID()
-            if (completeEnvironment.registrationLevel === 'INVITE') {
+            const id = randomUUID();
+            if (completeEnvironment.registrationLevel === "INVITE") {
               // we get invite code first
               if (!req.body.inviteCode) {
-                return res.status(403)
-                  .send({ success: false, error: true, message: "Invalid invite code" })
+                return res
+                  .status(403)
+                  .send({
+                    success: false,
+                    error: true,
+                    message: "Invalid invite code",
+                  });
               }
 
-              const invite = req.body.inviteCode as string
+              const invite = req.body.inviteCode as string;
 
               const inviteDef = await InviteCode.findOne({
                 where: {
-                  code: invite
-                }
-              })
+                  code: invite,
+                },
+              });
 
               if (!inviteDef || inviteDef.isUsedOrExpired) {
-                return res.status(400)
-                  .send({ success: false, message: "Invalid invite code" })
+                return res
+                  .status(400)
+                  .send({ success: false, message: "Invalid invite code" });
               }
 
-              inviteCode = inviteDef
+              inviteCode = inviteDef;
             }
 
             let avatarURL = ""; // Empty user avatar in case of error let frontend do stuff
@@ -322,14 +330,14 @@ function userRoutes(app: Application) {
             const userWithEmail = User.create(user);
 
             if (inviteCode) {
-              await follow(id, inviteCode.createdByUserId)
-              inviteCode.usedByUserId = id
-              await inviteCode.save()
+              await follow(id, inviteCode.createdByUserId);
+              inviteCode.usedByUserId = id;
+              await inviteCode.save();
             }
 
             if (completeEnvironment.autoFollowAdmin) {
-              const adminUser = await getAdminUser()
-              await follow(id, adminUser.id)
+              const adminUser = await getAdminUser();
+              await follow(id, adminUser.id);
             }
 
             const instanceUrl = completeEnvironment.instanceUrl.startsWith(
@@ -353,15 +361,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `,
-              });
+                });
             await Promise.all([userWithEmail, emailSent]);
             await generateUserKeyPairQueue.add("generateUserKeyPair", {
               userId: (await userWithEmail).id,
@@ -479,8 +487,7 @@ function userRoutes(app: Application) {
           user.hideProfileNotLoggedIn = hideProfileNotLoggedIn == "true";
           user.disableEmailNotifications =
             req.body.disableEmailNotifications == "true";
-          user.isBot =
-            req.body.isBot == "true";
+          user.isBot = req.body.isBot == "true";
           if (description) {
             const descriptionHtml = markdownConverter.makeHtml(description);
             user.description = descriptionHtml;
@@ -588,8 +595,9 @@ function userRoutes(app: Application) {
             user.requestedPasswordReset = new Date();
             user.save();
 
-            const link = `${completeEnvironment.instanceUrl
-              }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
+            const link = `${
+              completeEnvironment.instanceUrl
+            }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
             const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(
               email
             )}&code=${resetCode}`;
@@ -1129,6 +1137,7 @@ function userRoutes(app: Application) {
             "bskyDid",
             "role",
             "userMigratedTo",
+            "displayUrl",
             [
               sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
               "enableBsky",
@@ -1175,7 +1184,12 @@ function userRoutes(app: Application) {
             },
           },
         });
-        if (blog && !isAdult(req.jwtData?.birthDate) && req.jwtData?.role !== 10 && blog.id !== req.jwtData?.userId) {
+        if (
+          blog &&
+          !isAdult(req.jwtData?.birthDate) &&
+          req.jwtData?.role !== 10 &&
+          blog.id !== req.jwtData?.userId
+        ) {
           const user = await User.findByPk(blog.id);
           if (user?.NSFW) {
             res.sendStatus(404);
@@ -1198,19 +1212,19 @@ function userRoutes(app: Application) {
         let followed = blog.isRemoteUser
           ? blog.followingCount
           : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true,
-            },
-          });
+              where: {
+                followerId: blog.id,
+                accepted: true,
+              },
+            });
         let followers = blog.isRemoteUser
           ? blog.followerCount
           : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true,
-            },
-          });
+              where: {
+                followedId: blog.id,
+                accepted: true,
+              },
+            });
         const publicOptions = UserOptions.findAll({
           where: {
             userId: blog.id,
@@ -1256,10 +1270,10 @@ function userRoutes(app: Application) {
 
         const postCount = blog
           ? await Post.count({
-            where: {
-              userId: blog.id,
-            },
-          })
+              where: {
+                userId: blog.id,
+              },
+            })
           : 0;
 
         followed = await followed;
@@ -2072,8 +2086,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
           if (petitionData && petitionData.alsoKnownAs) {
             const aliasList = isArray(petitionData.alsoKnownAs)
               ? petitionData.alsoKnownAs.map((elem: string) =>
-                elem.toLowerCase()
-              )
+                  elem.toLowerCase()
+                )
               : [petitionData.alsoKnownAs.toLowerCase()];
             if (
               aliasList.includes(
@@ -2153,7 +2167,7 @@ It is slow because we have to send every fedi server that has ever seen a post o
               message = `Alias not detected`;
             }
           }
-        } catch (error) { }
+        } catch (error) {}
       }
 
       res.status(success ? 200 : 500);
@@ -2180,9 +2194,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         dompurify.sanitize(
           user.descriptionMarkdown
             ? user.descriptionMarkdown.substring(
-              0,
-              248 - fullProfileString.length
-            )
+                0,
+                248 - fullProfileString.length
+              )
             : "",
           { ALLOWED_TAGS: [] }
         ) +
@@ -2235,8 +2249,8 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
           values: [
             ...(profile.labels
               ? (profile.labels as $Typed<SelfLabels>).values.filter(
-                (x) => x.val !== "!no-unauthenticated"
-              )
+                  (x) => x.val !== "!no-unauthenticated"
+                )
               : []),
           ],
         };
@@ -2279,15 +2293,15 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
         });
         userOption
           ? await userOption.update({
-            optionValue: option.value,
-            public: option.public == true,
-          })
+              optionValue: option.value,
+              public: option.public == true,
+            })
           : await UserOptions.create({
-            userId: posterId,
-            optionName: option.name,
-            optionValue: option.value,
-            public: option.public == true,
-          });
+              userId: posterId,
+              optionName: option.name,
+              optionValue: option.value,
+              public: option.public == true,
+            });
       }
     }
   }
@@ -2306,8 +2320,8 @@ async function createBskyAccount({
 }) {
   const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
     ? completeEnvironment.bskyPdsUrl
-      .replace("https://", "")
-      .replace("http://", "")
+        .replace("https://", "")
+        .replace("http://", "")
     : completeEnvironment.bskyPdsUrl;
 
   const sanitizedUrl = user.url

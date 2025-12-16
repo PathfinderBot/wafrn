@@ -203,9 +203,9 @@
     ? 'As this user is from a remote instance, the shown information may be incomplete.'
     : 'To see external users you need to be logged in. You can view their profile on their actual instance.'
     }}
-    <a [href]="
-          blog?.url?.split('@')?.length === 3
-            ? blog?.remoteId
+    <a *ngIf="blog" [href]="
+          blog.url.split('@').length === 3
+            ? ( blog.displayUrl ? blog.displayUrl : blog.remoteId)
             : 'https://bsky.app/profile/' + blog?.url?.split('@')?.at(1)
         " target="_blank">View on remote instance</a>
   </app-info-card>
