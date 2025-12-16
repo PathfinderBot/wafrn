@@ -188,6 +188,7 @@ async function postToJSONLD(
       }
     }
   }
+  tagsAndQuotes = tagsAndQuotes + "<small>";
   for await (const tag of post.postTags) {
     const externalTagName = tag.tagName
       .replaceAll('"', "'")
@@ -195,7 +196,7 @@ async function postToJSONLD(
     const link = `${
       completeEnvironment.frontendUrl
     }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
-    tagsAndQuotes = `${tagsAndQuotes}<a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a>`;
+    tagsAndQuotes = `${tagsAndQuotes} <a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a>`;
     misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} ${
       tag.tagName.trim().includes(" ")
         ? "# " + tag.tagName.trim()
@@ -212,6 +213,8 @@ async function postToJSONLD(
       name: tag.tagName.replaceAll('"', "'"),
     });
   }
+  tagsAndQuotes = tagsAndQuotes + "</small>";
+
   for await (const userId of mentions) {
     const user =
       (await User.findOne({ where: { id: userId } })) ||
