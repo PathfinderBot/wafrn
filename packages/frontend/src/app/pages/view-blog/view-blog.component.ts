@@ -195,7 +195,7 @@ export class ViewBlogComponent
   }
 
   async handleTheme(blogDetails: BlogDetails) {
-    const userHasCustomTheme = this.themeExists(blogDetails.id);
+    const userHasCustomTheme = await this.themeExists(blogDetails.id);
     const userIsSelf =
       blogDetails.id === this.loginService.currentAccount()?.id;
     if (!userHasCustomTheme || userIsSelf) return;
