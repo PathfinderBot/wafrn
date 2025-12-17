@@ -21,6 +21,9 @@ import { logger } from "../logger.js";
 import { redisCache } from "../redis.js";
 import { Op } from "sequelize";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
+import processExternalCustomCss from "../processExternalCustomCss.js";
+import { unlink, writeFile } from "fs/promises";
+import { existsSync } from "fs";
 
 // This function will return userid after processing it.
 async function getRemoteActorIdProcessor(job: Job) {
@@ -177,12 +180,10 @@ async function getRemoteActorIdProcessor(job: Job) {
             ) {
               const existingUser = existingUsers[0];
               existingUser.activated = false;
-              existingUser.remoteId = `${
-                existingUser.remoteId
-              }_OVERWRITTEN_ON${new Date().getTime()}`;
-              existingUser.url = `${
-                existingUser.url
-              }_OVERWRITTEN_ON${new Date().getTime()}`;
+              existingUser.remoteId = `${existingUser.remoteId
+                }_OVERWRITTEN_ON${new Date().getTime()}`;
+              existingUser.url = `${existingUser.url
+                }_OVERWRITTEN_ON${new Date().getTime()}`;
               await existingUser.save();
               if (userRes) {
                 const updates = [
@@ -325,6 +326,26 @@ async function getRemoteActorIdProcessor(job: Job) {
           const properties = userPetition.attachment.filter(
             (elem: any) => elem.type === "PropertyValue"
           );
+          try {
+            if (userPetition._wafrn_customCSS) {
+              let customCSS: string | undefined = undefined
+              if (URL.canParse(userPetition._wafrn_customCSS)) {
+                const cssRes = await fetch(userPetition._wafrn_customCSS)
+                if (cssRes.ok)
+                  customCSS = await cssRes.text()
+              } else {
+                customCSS = userPetition._wafrn_customCSS
+              }
+              if (customCSS) {
+                const css = await processExternalCustomCss(userRes.id, customCSS)
+                await writeFile(`uploads/themes/${userRes.id}.css`, css)
+              }
+            } else if (existsSync(`uploads/themes/${userRes.id}.css`)) {
+              await unlink(`uploads/themes/${userRes.id}.css`)
+            }
+          } catch (e) {
+            logger.warn(e)
+          }
           await UserOptions.create({
             userId: userRes.id,
             optionName: `fediverse.public.attachment`,
