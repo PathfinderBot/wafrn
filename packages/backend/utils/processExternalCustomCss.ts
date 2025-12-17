@@ -23,7 +23,8 @@ export default async function processExternalCustomCss(userId: string, unprocess
             NSFW: false,
             userId: userId,
             description: "",
-            ipUpload: "MEDIA_FROM_CUSTOM_CSS_FROM_ANOTHER_INSTANCE"
+            ipUpload: "MEDIA_FROM_CUSTOM_CSS_FROM_ANOTHER_INSTANCE",
+            external: true
           }
         })
         processedCSS = processedCSS.replaceAll(linkMatch,
