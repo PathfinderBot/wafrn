@@ -345,7 +345,9 @@ async function getPostThreadRecursive(
           remotePostId: postPetition.id,
           privacy: privacy,
           bskyUri: postPetition.blueskyUri,
-          displayUrl: postPetition.url,
+          displayUrl: Array.isArray(postPetition.url)
+            ? postPetition.url[0]
+            : postPetition.url,
           bskyCid: postPetition.blueskyCid,
           ...(bskyCid && bskyUri
             ? {

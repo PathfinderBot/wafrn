@@ -129,7 +129,9 @@ async function getRemoteActorIdProcessor(job: Job) {
           NSFW: false,
           birthDate: new Date(),
           userMigratedTo: userPetition.movedTo || "",
-          displayUrl: userPetition.url,
+          displayUrl: Array.isArray(userPetition.url)
+            ? userPetition.url[0]
+            : userPetition.url,
         };
         federatedHost.publicInbox = userPetition.endpoints?.sharedInbox;
         await federatedHost.save();
