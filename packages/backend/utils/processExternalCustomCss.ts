@@ -26,7 +26,7 @@ export default async function processExternalCustomCss(userId: string, unprocess
             ipUpload: "MEDIA_FROM_CUSTOM_CSS_FROM_ANOTHER_INSTANCE"
           }
         })
-        processedCSS.replaceAll(linkMatch,
+        processedCSS = processedCSS.replaceAll(linkMatch,
           new URL('/api/v2/cache/media/' + extMedia[0].id, completeEnvironment.externalCacheurl).href
         )
       } catch {
