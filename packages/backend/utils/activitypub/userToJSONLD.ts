@@ -48,7 +48,7 @@ export async function userToJSONLD(user: User) {
     }
     let customCSS: string | undefined = undefined
     if (existsSync(`uploads/themes/${user.id}.css`)) {
-      customCSS = new URL(`/uploads/themes/${user.id}.css`, completeEnvironment.frontendUrl).href
+      customCSS = new URL(`/api/uploads/themes/${user.id}.css`, completeEnvironment.frontendUrl).href
     }
     userForFediverse = {
       '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
