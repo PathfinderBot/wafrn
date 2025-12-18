@@ -33,13 +33,15 @@ async function postPetitionSigned(
       .digest("base64");
     const signer = createSign("sha256");
     const sendDate = new Date();
-    const stringToSign = `(request-target): post ${url.pathname}\nhost: ${url.host
-      }\ndate: ${sendDate.toUTCString()}\nalgorithm: rsa-sha256\ndigest: SHA-256=${digest}`;
+    const stringToSign = `(request-target): post ${url.pathname}\nhost: ${
+      url.host
+    }\ndate: ${sendDate.toUTCString()}\nalgorithm: rsa-sha256\ndigest: SHA-256=${digest}`;
     signer.update(stringToSign);
     signer.end();
     const signature = signer.sign(user.privateKey as string).toString("base64");
-    const header = `keyId="${completeEnvironment.frontendUrl
-      }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date algorithm digest",signature="${signature}"`;
+    const header = `keyId="${
+      completeEnvironment.frontendUrl
+    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date algorithm digest",signature="${signature}"`;
     const headers = {
       "Content-Type": "application/activity+json",
       "User-Agent": completeEnvironment.instanceUrl,
@@ -55,7 +57,14 @@ async function postPetitionSigned(
       headers: headers,
       body: JSON.stringify(message),
     });
-    res = await petition.json();
+    if (petition.ok) {
+      res = await petition.json();
+    } else {
+      logger.trace({
+        message: "error post petition signed",
+        url: target,
+      });
+    }
   } catch (error: any) {
     if (petition.status === 410) {
       logger.trace(`should remove user ${target}`);
