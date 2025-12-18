@@ -111,6 +111,7 @@ export const baseEnvironment: Environment = {
   webpushEmail: '${{WEBPUSH_EMAIL}}',
   // registration level for the instance
   registrationLevel: 'PRIVATE',
+  autoFollowAdmin: true,
   disableShowingBlockedServers: true,
   minimumAgeToRegister: 18,
   donationUrl: 'http://localhost/about',
@@ -127,6 +128,7 @@ export const baseEnvironment: Environment = {
     registrationLevel: 'PRIVATE',
     privateInstanceRegistrationText: 'test 123',
     minimumAgeToRegister: 18,
+    donationUrl: 'http://localhost/about',
     disableShowingBlockedServers: true
   }
 }

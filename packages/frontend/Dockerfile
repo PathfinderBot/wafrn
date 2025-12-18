@@ -10,6 +10,8 @@ COPY package-lock.json /app
 
 COPY packages/frontend/package.json .
 
+COPY .git .
+
 # install dependencies
 RUN npm install
 

@@ -52,6 +52,11 @@ import { completeEnvironment } from "./utils/backendOptions.js";
 import cron from "node-cron";
 import { nukeBannedUsers } from "./utils/maintenanceTasks/nukeBannedUsers.js";
 import { sequelize } from "./models/sequelize.js";
+import { Op, Sequelize } from "sequelize";
+import { Post } from "./models/post.js";
+import { User } from "./models/index.js";
+import { follow } from "./utils/follow.js";
+import { getAdminUser } from "./utils/getAdminAndDeletedUser.js";
 
 const PORT = completeEnvironment.port;
 const app = express();
@@ -74,13 +79,86 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
 });
 
 const queryInterface = sequelize.getQueryInterface();
+
+if (completeEnvironment.autoFollowAdmin) {
+  try {
+    const users = await User.findAll({
+      where: {
+        banned: {
+          [Op.ne]: true,
+        },
+        email: {
+          [Op.ne]: null,
+        },
+      },
+    });
+    const adminUser = await getAdminUser();
+    await Promise.all(users.map((x) => follow(x.id, adminUser.id)));
+  } catch {}
+}
 let postIndexes = await queryInterface.showIndex("posts");
+
 if (
   !(postIndexes as Array<any>).some((index) => index.name === "post_bsky_uri")
 ) {
-  // well turns out that we dont have indexes
-  //   await queryInterface.sequelize.query(`UPDATE "posts" SET "bskyUri" = NULL WHERE "id" IN (select "id" from "posts" ou
-  // where "bskyUri" IS NOT NULL and (select count(*) from "posts" inr
-  // where inr."bskyUri" IS NOT NULL AND ou."bskyUri" IS NOT NULL AND inr."bskyUri" = ou."bskyUri") > 1);`);
-  //await  queryInterface.sequelize.query(`CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`);
+  logger.info(
+    `ATTENTION: your server doesnt seem to have an unique index on bskyuri. this is a bug. we will investigate soon in a future release`
+  );
+  // clearDuplicatedBskyUris().then(async (res) => {
+  //   // well turns out that we dont have indexes
+  //   // we have cleaned duplicated before. if a duplicate apears here we just crash and do it again :3
+  //   await queryInterface.sequelize.query(
+  //     `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`
+  //   );
+  // });
+}
+
+async function clearDuplicatedBskyUris(): Promise<boolean> {
+  let duplicatedURIs: any = await queryInterface.sequelize.query(
+    `SELECT "a"."id" FROM "posts" as "a" LEFT JOIN "posts" as "b" ON "a"."bskyUri" = "b"."bskyUri" WHERE "a"."bskyUri" IS NOT NULL AND "a"."id" != "b"."id" LIMIT 50`
+  );
+  while (duplicatedURIs[1].rowCount) {
+    const postIds: string[] = duplicatedURIs[0].map((elem: any) => elem.id);
+    for await (const postId of postIds) {
+      const originalPost = await Post.findByPk(postId);
+      if (originalPost && originalPost.bskyUri) {
+        const duplicatePosts = await Post.findAll({
+          where: {
+            id: {
+              [Op.ne]: postId,
+            },
+            bskyUri: originalPost.bskyUri,
+          },
+        });
+        if (duplicatePosts && duplicatePosts.length > 0) {
+          // TIME TO CLEAN.
+          const duplicatedPostIds = duplicatePosts.map((elem) => elem.id);
+          await Post.update(
+            {
+              parentId: postId,
+            },
+            {
+              where: {
+                parentId: {
+                  [Op.in]: duplicatedPostIds,
+                },
+              },
+            }
+          );
+          await Post.destroy({
+            where: {
+              id: {
+                [Op.in]: duplicatedPostIds,
+              },
+            },
+          });
+        }
+      }
+    }
+    duplicatedURIs = await queryInterface.sequelize.query(
+      `SELECT "a"."id" FROM "posts" as "a" LEFT JOIN "posts" as "b" ON "a"."bskyUri" = "b"."bskyUri" WHERE "a"."bskyUri" IS NOT NULL AND "a"."id" != "b"."id" LIMIT 50`
+    );
+  }
+
+  return true;
 }

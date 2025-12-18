@@ -5,6 +5,7 @@ import { getUserOptions } from '../cacheGetters/getUserOptions.js'
 import { logger } from '../logger.js'
 import { redisCache } from '../redis.js'
 import { emojiToAPTag } from './emojiToAPTag.js'
+import { existsSync } from 'fs'
 
 export async function userToJSONLD(user: User) {
   const userCacheResult = await redisCache.get('fediverse:user:base:' + user.id)
@@ -45,6 +46,10 @@ export async function userToJSONLD(user: User) {
         })
       }
     }
+    let customCSS: string | undefined = undefined
+    if (existsSync(`uploads/themes/${user.id}.css`)) {
+      customCSS = new URL(`/api/uploads/themes/${user.id}.css`, completeEnvironment.frontendUrl).href
+    }
     userForFediverse = {
       '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
       id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
@@ -58,6 +63,12 @@ export async function userToJSONLD(user: User) {
       preferredUsername: user.url.toLowerCase(),
       name: user.name,
       summary: user.description,
+      ...(!!user.userMigratedTo ? {
+        movedTo: user.userMigratedTo
+      } : {}),
+      ...(customCSS ? {
+        _wafrn_customCSS: customCSS
+      } : {}),
       url: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
       manuallyApprovesFollowers: user.manuallyAcceptsFollows,
       discoverable: true,

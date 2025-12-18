@@ -43,4 +43,6 @@ EXPOSE ${PORT}
 # set up configuration from environment, then run tini as entrypoint to be able to handle kernel signals
 ENTRYPOINT ["tini","--","./docker-entrypoint.sh"]
 
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+
 CMD ["npm","start"]

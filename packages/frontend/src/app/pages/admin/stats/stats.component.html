@@ -27,6 +27,14 @@
     <p class="value">{{ backendReply?.deletePostAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
+    <p>Websocket awaiting</p>
+    <p class="value">{{ backendReply?.socketPending ?? '-' }}</p>
+  </div>
+  <div class="data-pair">
+    <p>Get user fediverse waiting</p>
+    <p class="value">{{ backendReply?.getRemoteActorWaiting ?? '-' }}</p>
+  </div>
+  <div class="data-pair">
     <p>Generate Private and public key for new user</p>
     <p class="value">{{ backendReply?.createKeyPairWaiting ?? '-' }}</p>
   </div>

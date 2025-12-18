@@ -12,6 +12,16 @@ import {
   sequelize,
   Ask,
   Notification,
+  EmojiReaction,
+  PostAncestor,
+  PostReport,
+  QuestionPoll,
+  Quotes,
+  RemoteUserPostView,
+  SilencedPost,
+  UserBitesPostRelation,
+  UserBookmarkedPosts,
+  UserLikesPostRelations,
 } from "../../models/index.js";
 import { completeEnvironment } from "../backendOptions.js";
 import { logger } from "../logger.js";
@@ -25,8 +35,16 @@ import { Queue } from "bullmq";
 import { bulkCreateNotifications } from "../pushNotifications.js";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { Privacy } from "../../models/post.js";
-import { getAtProtoThread } from "../../atproto/utils/getAtProtoThread.js";
+import {
+  getAtProtoThread,
+  getPostThreadSafe,
+  processSinglePost,
+} from "../../atproto/utils/getAtProtoThread.js";
 import * as cheerio from "cheerio";
+import {
+  PostView,
+  ThreadViewPost,
+} from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -252,6 +270,65 @@ async function getPostThreadRecursive(
         if (createdAt.getTime() > new Date().getTime()) {
           createdAt = new Date();
         }
+
+        let bskyUri: string | undefined, bskyCid: string | undefined;
+        let existingBskyPost: Post | undefined;
+        // check if it's a bridgy post or a post from a wafrn by checking a valid FEP-fffd
+        if (postPetition.url && Array.isArray(postPetition.url)) {
+          const url = postPetition.url as Array<
+            string | { type: string; href: string }
+          >;
+          const firstFffd = url.find((x) => typeof x !== "string");
+          // check if it starts at at:// then its a bridged post, we do not touch it if it's not
+          if (firstFffd && firstFffd.href.startsWith("at://")) {
+            // get it's bsky counterparts first, we need the cid
+            const thread = await getPostThreadSafe({
+              uri: firstFffd.href,
+            });
+            if (thread && thread.success) {
+              try {
+                const threadView = thread.data.thread as ThreadViewPost;
+                bskyCid = threadView.post.cid;
+                bskyUri = threadView.post.uri;
+                // check if it cames from wafrn
+                if (
+                  !(
+                    threadView.post.record as {
+                      fediverseId: string | undefined;
+                    }
+                  ).fediverseId
+                ) {
+                  // this is a bridgy fed post, assume main post is on bsky, use bsky user
+                  const postId = await processSinglePost(threadView.post);
+                  if (postId) {
+                    const post = await Post.findByPk(postId);
+                    if (post) {
+                      post.remotePostId = postPetition.id;
+                      await post.save();
+                      return post;
+                    }
+                  }
+                } else {
+                  // now this is a wafrn post, where we do a thing little bit different
+                  // first we going to check if the post is already on db because this can break everything
+                  let existingPost = await Post.findOne({
+                    where: {
+                      bskyCid: threadView.post.cid,
+                      remotePostId: null,
+                    },
+                  });
+                  if (existingPost) {
+                    existingBskyPost = existingPost;
+                    // do not attempt to merge it right now, this will crash backend
+                    bskyCid = undefined;
+                    bskyUri = undefined;
+                  }
+                }
+              } catch {}
+            }
+          }
+        }
+
         const postToCreate: any = {
           content: "" + postTextContent,
           content_warning: postPetition.summary
@@ -267,6 +344,17 @@ async function getPostThreadRecursive(
               : remoteUser.id,
           remotePostId: postPetition.id,
           privacy: privacy,
+          bskyUri: postPetition.blueskyUri,
+          displayUrl: Array.isArray(postPetition.url)
+            ? postPetition.url[0]
+            : postPetition.url,
+          bskyCid: postPetition.blueskyCid,
+          ...(bskyCid && bskyUri
+            ? {
+                bskyCid,
+                bskyUri,
+              }
+            : {}),
         };
 
         if (postPetition.name) {
@@ -433,6 +521,170 @@ async function getPostThreadRecursive(
             apObject: JSON.stringify(postPetition),
           });
         }
+
+        if (existingBskyPost) {
+          // very expensive updates! but only happens when bsky
+          // post is already on db but the fedi post is not
+          await EmojiReaction.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await Notification.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await PostReport.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          try {
+            await PostAncestor.update(
+              {
+                postsId: newPost.id,
+              },
+              {
+                where: {
+                  postsId: existingBskyPost.id,
+                },
+              }
+            );
+          } catch {}
+          await QuestionPoll.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await Quotes.update(
+            {
+              quoterPostId: newPost.id,
+            },
+            {
+              where: {
+                quoterPostId: existingBskyPost.id,
+              },
+            }
+          );
+          if (
+            !(await Quotes.findOne({
+              where: {
+                quotedPostId: newPost.id,
+              },
+            }))
+          ) {
+            await Quotes.update(
+              {
+                quotedPostId: newPost.id,
+              },
+              {
+                where: {
+                  quotedPostId: existingBskyPost.id,
+                },
+              }
+            );
+          }
+          await RemoteUserPostView.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await SilencedPost.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await SilencedPost.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await UserBitesPostRelation.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await UserBookmarkedPosts.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await UserLikesPostRelations.update(
+            {
+              postId: newPost.id,
+            },
+            {
+              where: {
+                postId: existingBskyPost.id,
+              },
+            }
+          );
+          await Post.update(
+            {
+              parentId: newPost.id,
+            },
+            {
+              where: {
+                parentId: existingBskyPost.id,
+              },
+            }
+          );
+
+          // now we delete the existing bsky post
+          await existingBskyPost.destroy();
+
+          // THEN we merge it
+          newPost.bskyCid = existingBskyPost.bskyCid;
+          newPost.bskyUri = existingBskyPost.bskyUri;
+          await newPost.save();
+        }
+
         return newPost;
       }
     } catch (error) {

@@ -23,6 +23,7 @@ import { completeEnvironment } from "../backendOptions.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
 import { include } from "underscore";
+import { wait } from "../wait.js";
 
 const processPostViewQueue = new Queue("processRemoteView", {
   connection: completeEnvironment.bullmqConnection,
@@ -50,18 +51,6 @@ const sendPostQueue = new Queue("sendPostToInboxes", {
   },
 });
 
-const sendPostBskyQueue = new Queue("sendPostBsky", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "fixed",
-      delay: 500,
-    },
-    removeOnFail: true,
-  },
-});
 async function prepareSendRemotePostWorker(job: Job) {
   let highPriorityInboxes: string[] = [];
   //async function sendRemotePost(localUser: any, post: any) {
@@ -71,14 +60,6 @@ async function prepareSendRemotePostWorker(job: Job) {
   }
 
   const localUser = await User.scope("full").findByPk(post.userId);
-  if (
-    post.privacy === Privacy.Public &&
-    localUser?.enableBsky &&
-    completeEnvironment.enableBsky
-  ) {
-    await sendPostBskyQueue.add("sendPostBsky", job.data);
-  }
-
   const parents = await post.getAncestors({
     include: [
       {
@@ -88,8 +69,8 @@ async function prepareSendRemotePostWorker(job: Job) {
     ],
   });
   // we check if we need to send the post to fedi
-  const isBskyPost = parents.some((elem) => elem.isRemoteBlueskyPost);
-  if (localUser && !isBskyPost) {
+  const sendPostToFedi = parents.every((elem) => elem.postShouldGoFedi);
+  if (localUser && sendPostToFedi) {
     // we get quote authorizations
     const quotes = (
       await Quotes.findAll({
@@ -120,7 +101,7 @@ async function prepareSendRemotePostWorker(job: Job) {
         }/fediverse/blog/${localUser.url.toLowerCase()}`,
         id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${post.id}`,
         type: "QuoteRequest",
-        object: getPostUrlForQuote(quote.dataValues.quotedPost),
+        object: await getPostUrlForQuote(quote.dataValues.quotedPost),
         instrument: await postToJSONLD(post.id),
       };
       await RemoteUserPostView.findOrCreate({

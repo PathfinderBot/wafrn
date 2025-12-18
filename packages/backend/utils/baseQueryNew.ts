@@ -361,6 +361,7 @@ async function getUnjointedPosts(
       "banned",
       "bskyDid",
       "federatedHostId",
+      "isBot"
     ],
     where: {
       id: {
@@ -517,7 +518,7 @@ async function getUnjointedPosts(
   let finalPostsToSend = await Promise.all(postsToSend);
   const userIsAdult = isAdult(user?.birthDate);
 
-  if (!userIsAdult) {
+  if (!userIsAdult && user?.role !== 10) {
     finalPostsToSend = finalPostsToSend.filter((x) => {
       const cwToFilter = (x.content_warning || "").toLowerCase();
       return (
@@ -563,8 +564,8 @@ function filterPost(
     const ancestorsLength = res.ancestors ? res.ancestors.length : 0;
     res.ancestors = res.ancestors
       ? res.ancestors
-          .map((elem: any) => filterPost(elem, postIdsToFullySend, donotHide))
-          .filter((elem: any) => !!elem)
+        .map((elem: any) => filterPost(elem, postIdsToFullySend, donotHide))
+        .filter((elem: any) => !!elem)
       : [];
     res.ancestors = res.ancestors.filter((elem: any) => !(elem == undefined));
     if (ancestorsLength != res.ancestors.length && !donotHide) {
@@ -593,8 +594,8 @@ async function canInteract(
   let userFollowers = userFollowersInput
     ? userFollowersInput
     : getFollowedsIds(userId, false, {
-        getFollowersInstead: true,
-      });
+      getFollowersInstead: true,
+    });
   let mentions = mentionsInput ? mentionsInput : getMentionedUserIds([postId]);
   let post: Promise<Post | null> | Post | null = Post.findByPk(postId);
   await Promise.all([usersFollowing, userFollowers, mentions, post]);

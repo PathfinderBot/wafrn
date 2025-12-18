@@ -97,7 +97,7 @@ async function processSinglePost(
     if ("bridgyOriginalUrl" in post.record) {
       const res = await fetch(
         "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
-          `?identifier=${post.author.did}`
+        `?identifier=${post.author.did}`
       );
       if (res.ok) {
         const json = (await res.json()) as { pds: string };
@@ -114,8 +114,7 @@ async function processSinglePost(
       // prob wafrn post, but lets verify it
       try {
         const waf = await fetch(
-          `https://${
-            new URL(post.record.fediverseId as string).hostname
+          `https://${new URL(post.record.fediverseId as string).hostname
           }/api/environment`
         );
         if (waf.ok) {
@@ -152,12 +151,12 @@ async function processSinglePost(
   if (verifiedFedi) {
     try {
       const remotePost = await getPostThreadRecursive(
-        postCreator,
+        await getAdminUser(),
         verifiedFedi
       );
       if (remotePost) {
         await getPostThreadRecursive(
-          postCreator,
+          await getAdminUser(),
           verifiedFedi,
           undefined,
           remotePost.id
@@ -220,7 +219,7 @@ async function processSinglePost(
                 },
               }
             );
-          } catch {}
+          } catch { }
           await QuestionPoll.update(
             {
               postId: remotePost.id,
@@ -408,9 +407,8 @@ async function processSinglePost(
           const href = `${completeEnvironment.frontendUrl}/blog/${segment.mention?.did}`;
           text += `<a href="${href}" target="_blank">${segment.text}</a>`;
         } else if (segment.isTag()) {
-          const href = `${
-            completeEnvironment.frontendUrl
-          }/dashboard/search/${segment.text.substring(1)}`;
+          const href = `${completeEnvironment.frontendUrl
+            }/dashboard/search/${segment.text.substring(1)}`;
           text += `<a href="${href}" target="_blank">${segment.text}</a>`;
           tags.push(segment.text.substring(1));
         } else {
@@ -750,10 +748,10 @@ async function getAtProtoThread(
   const postExisting = forceUpdate
     ? undefined
     : await Post.findOne({
-        where: {
-          bskyUri: uri,
-        },
-      });
+      where: {
+        bskyUri: uri,
+      },
+    });
   if (postExisting) {
     return postExisting.id;
   }
@@ -835,7 +833,7 @@ function getQuotedPostUri(post: PostView): string | undefined {
   return res;
 }
 
-async function getPostThreadSafe(options: any) {
+export async function getPostThreadSafe(options: any) {
   try {
     const agent = await getAdminAtprotoSession();
     return await agent.getPostThread(options);

@@ -1,76 +1,93 @@
-import { createHash, createSign } from 'node:crypto'
-import { completeEnvironment } from '../backendOptions.js'
-import { logger } from '../logger.js'
-import { removeUser } from './removeUser.js'
-import { User } from '../../models/index.js'
-import axios from 'axios'
+import { createHash, createSign } from "node:crypto";
+import { completeEnvironment } from "../backendOptions.js";
+import { logger } from "../logger.js";
+import { removeUser } from "./removeUser.js";
+import { User } from "../../models/index.js";
+import { Agent, fetch } from "undici";
 
-async function postPetitionSigned(message: object, userInput: User, target: string): Promise<any> {
-  const user = (await User.scope('full').findByPk(userInput.id)) as User
-
-  if(!user) {
+async function postPetitionSigned(
+  message: object,
+  userInput: User,
+  target: string
+): Promise<any> {
+  const user = (await User.scope("full").findByPk(userInput.id)) as User;
+  let petition: any;
+  if (!user) {
     return;
   }
 
-  let res
+  let res;
   if (user.url === completeEnvironment.deletedUser) {
-    return {}
+    return {};
   }
   if (user.url === completeEnvironment.deletedUser) {
     console.debug({
       warning: `POST petition to ${target} made by deleted user`,
-      object: message
-    })
+      object: message,
+    });
   }
   try {
-    const url = new URL(target)
-    const digest = createHash('sha256').update(JSON.stringify(message)).digest('base64')
-    const signer = createSign('sha256')
-    const sendDate = new Date()
+    const url = new URL(target);
+    const digest = createHash("sha256")
+      .update(JSON.stringify(message))
+      .digest("base64");
+    const signer = createSign("sha256");
+    const sendDate = new Date();
     const stringToSign = `(request-target): post ${url.pathname}\nhost: ${
       url.host
-    }\ndate: ${sendDate.toUTCString()}\nalgorithm: rsa-sha256\ndigest: SHA-256=${digest}`
-    signer.update(stringToSign)
-    signer.end()
-    const signature = signer.sign(user.privateKey as string).toString('base64')
+    }\ndate: ${sendDate.toUTCString()}\nalgorithm: rsa-sha256\ndigest: SHA-256=${digest}`;
+    signer.update(stringToSign);
+    signer.end();
+    const signature = signer.sign(user.privateKey as string).toString("base64");
     const header = `keyId="${
       completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date algorithm digest",signature="${signature}"`
+    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date algorithm digest",signature="${signature}"`;
     const headers = {
-      'Content-Type': 'application/activity+json',
-      'User-Agent': completeEnvironment.instanceUrl,
-      Accept: 'application/activity+json',
-      Algorithm: 'rsa-sha256',
+      "Content-Type": "application/activity+json",
+      "User-Agent": completeEnvironment.instanceUrl,
+      Accept: "application/activity+json",
+      Algorithm: "rsa-sha256",
       Host: url.host,
       Date: sendDate.toUTCString(),
       Digest: `SHA-256=${digest}`,
-      Signature: header
+      Signature: header,
+    };
+    petition = await fetch(target, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(message),
+    });
+    if (petition.ok) {
+      res = await petition.json();
+    } else {
+      logger.trace({
+        message: "error post petition signed",
+        url: target,
+      });
     }
-
-    res = await axios.post(target, message, { headers: headers })
   } catch (error: any) {
-    if (error?.response?.status === 410) {
-      logger.trace(`should remove user ${target}`)
+    if (petition.status === 410) {
+      logger.trace(`should remove user ${target}`);
       const userToRemove = await User.findOne({
         where: {
-          remoteInbox: target
-        }
-      })
+          remoteInbox: target,
+        },
+      });
       if (userToRemove) {
-        logger.trace(`removing user ${userToRemove.url} because got a 410`)
-        removeUser(userToRemove.id)
+        logger.trace(`removing user ${userToRemove.url} because got a 410`);
+        removeUser(userToRemove.id);
       }
     } else {
       logger.trace({
-        message: 'error with signed post petition',
+        message: "error with signed post petition",
         error: error,
         inputMessage: message,
         target: target,
-        user: user.url
-      })
+        user: user.url,
+      });
     }
   }
-  return res
+  return res;
 }
 
-export { postPetitionSigned }
+export { postPetitionSigned };

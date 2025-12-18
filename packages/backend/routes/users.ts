@@ -78,6 +78,7 @@ import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.
 import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
 import { InviteCode } from "../models/inviteCode.js";
 import { isAdult } from "../utils/isAdult.js";
+import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -170,7 +171,42 @@ const slurs = [
   "yid",
 ];
 
+const adminUser = await getAdminAtprotoSession();
+
 function userRoutes(app: Application) {
+  app.get("/api/fromBluesky/:did", async function (req, res) {
+    if (!req.params.did) {
+      return res.redirect(completeEnvironment.frontendUrl);
+    }
+
+    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`);
+    if (cacheUrl) return res.redirect(cacheUrl);
+
+    let did = "";
+    if (!req.params.did.startsWith("did:")) {
+      const doc = await adminUser.resolveHandle({
+        handle: req.params.did,
+      });
+      if (!doc.success) {
+        return res.redirect(completeEnvironment.frontendUrl);
+      }
+      did = doc.data.did;
+    }
+
+    const user = await User.findOne({
+      where: {
+        bskyDid: did,
+      },
+    });
+
+    if (!user) {
+      return res.redirect(completeEnvironment.frontendUrl);
+    }
+
+    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl);
+    return res.redirect(user.fullUrl);
+  });
+
   app.post(
     "/api/register",
     ...(completeEnvironment.registrationLevel === "PRIVATE"
@@ -197,7 +233,9 @@ function userRoutes(app: Application) {
         ) {
           const birthDate = new Date(req.body.birthDate);
           const minimumAge = new Date();
-          minimumAge.setFullYear(new Date().getFullYear() - completeEnvironment.minimumAgeToRegister);
+          minimumAge.setFullYear(
+            new Date().getFullYear() - completeEnvironment.minimumAgeToRegister
+          );
           if (birthDate.getTime() > minimumAge.getTime()) {
             res
               .status(403)
@@ -218,28 +256,34 @@ function userRoutes(app: Application) {
 
           let inviteCode: InviteCode | undefined;
           if (!emailExists) {
-            const id = randomUUID()
-            if (completeEnvironment.registrationLevel === 'INVITE') {
+            const id = randomUUID();
+            if (completeEnvironment.registrationLevel === "INVITE") {
               // we get invite code first
               if (!req.body.inviteCode) {
-                return res.status(403)
-                  .send({ success: false, error: true, message: "Invalid invite code" })
+                return res
+                  .status(403)
+                  .send({
+                    success: false,
+                    error: true,
+                    message: "Invalid invite code",
+                  });
               }
 
-              const invite = req.body.inviteCode as string
+              const invite = req.body.inviteCode as string;
 
               const inviteDef = await InviteCode.findOne({
                 where: {
-                  code: invite
-                }
-              })
+                  code: invite,
+                },
+              });
 
               if (!inviteDef || inviteDef.isUsedOrExpired) {
-                return res.status(400)
-                  .send({ success: false, message: "Invalid invite code" })
+                return res
+                  .status(400)
+                  .send({ success: false, message: "Invalid invite code" });
               }
 
-              inviteCode = inviteDef
+              inviteCode = inviteDef;
             }
 
             let avatarURL = ""; // Empty user avatar in case of error let frontend do stuff
@@ -286,9 +330,14 @@ function userRoutes(app: Application) {
             const userWithEmail = User.create(user);
 
             if (inviteCode) {
-              await follow(id, inviteCode.createdByUserId)
-              inviteCode.usedByUserId = id
-              await inviteCode.save()
+              await follow(id, inviteCode.createdByUserId);
+              inviteCode.usedByUserId = id;
+              await inviteCode.save();
+            }
+
+            if (completeEnvironment.autoFollowAdmin) {
+              const adminUser = await getAdminUser();
+              await follow(id, adminUser.id);
             }
 
             const instanceUrl = completeEnvironment.instanceUrl.startsWith(
@@ -402,6 +451,9 @@ function userRoutes(app: Application) {
           res.send({ error: true });
         }
       }
+      // also federate changes
+      const user = await User.findByPk(posterId);
+      if (user) await sendUpdateProfile(user);
     }
   );
 
@@ -438,6 +490,7 @@ function userRoutes(app: Application) {
           user.hideProfileNotLoggedIn = hideProfileNotLoggedIn == "true";
           user.disableEmailNotifications =
             req.body.disableEmailNotifications == "true";
+          user.isBot = req.body.isBot == "true";
           if (description) {
             const descriptionHtml = markdownConverter.makeHtml(description);
             user.description = descriptionHtml;
@@ -1076,6 +1129,7 @@ function userRoutes(app: Application) {
             "description",
             "descriptionMarkdown",
             "remoteId",
+            "isBot",
             "avatar",
             "federatedHostId",
             "headerImage",
@@ -1083,7 +1137,9 @@ function userRoutes(app: Application) {
             "followerCount",
             "manuallyAcceptsFollows",
             "bskyDid",
+            "role",
             "userMigratedTo",
+            "displayUrl",
             [
               sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
               "enableBsky",
@@ -1130,7 +1186,12 @@ function userRoutes(app: Application) {
             },
           },
         });
-        if (blog && !isAdult(req.jwtData?.birthDate)) {
+        if (
+          blog &&
+          !isAdult(req.jwtData?.birthDate) &&
+          req.jwtData?.role !== 10 &&
+          blog.id !== req.jwtData?.userId
+        ) {
           const user = await User.findByPk(blog.id);
           if (user?.NSFW) {
             res.sendStatus(404);
@@ -1251,6 +1312,7 @@ function userRoutes(app: Application) {
             serverBlocked,
             followed,
             followers,
+            isAdmin: blog.dataValues.role === 10,
             publicOptions: await publicOptions,
           });
         }
@@ -2099,6 +2161,8 @@ It is slow because we have to send every fedi server that has ever seen a post o
               // third step: return data and set message to succ ess
               localUser.userMigratedTo = newUserRemoteId;
               await localUser.save();
+              // fourth step: send update profile
+              await sendUpdateProfile(localUser);
               message = `Operation successful!`;
               success = true;
             } else {

@@ -18,6 +18,7 @@ import { Privacy } from "../../models/post.js";
 import { redisCache } from "../redis.js";
 import { htmlToMfm } from "./htmlToMfm.js";
 import showdown from "showdown";
+import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -32,7 +33,7 @@ const markdownConverter = new showdown.Converter({
 async function postToJSONLD(
   postId: string
 ): Promise<activityPubObject | undefined> {
-  let resFromCacheString = undefined; // await redisCache.get("postToJsonLD:" + postId);
+  let resFromCacheString = await redisCache.get("postToJsonLD:" + postId);
   if (resFromCacheString) {
     return JSON.parse(resFromCacheString) as activityPubObject;
   }
@@ -157,13 +158,11 @@ async function postToJSONLD(
   const fediMentions: fediverseTag[] = [];
   const fediTags: fediverseTag[] = [];
   let tagsAndQuotes = "<br>";
+  let misskeyTagsAndQuotes = "";
   const quotedPosts = post.quoted;
 
   const lineBreaksAtEndRegex = /\s*(<br\s*\/?>)+\s*$/g;
 
-  misskeyContent = await htmlToMfm(
-    (misskeyContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, "")
-  );
   if (quotedPosts && quotedPosts.length > 0) {
     const mainQuotedPost = quotedPosts[0];
     quoteAuthorization = (
@@ -173,9 +172,9 @@ async function postToJSONLD(
         },
       })
     )?.authorizationUrl;
-    quotedPostString = getPostUrlForQuote(mainQuotedPost);
-    quotedPosts.forEach((quotedPost: any) => {
-      const postUrl = getPostUrlForQuote(quotedPost);
+    quotedPostString = await getPostUrlForQuote(mainQuotedPost);
+    for await (const quotedPost of quotedPosts) {
+      const postUrl = await getPostUrlForQuote(quotedPost);
       tagsAndQuotes =
         tagsAndQuotes + `<br>RE: <a href="${postUrl}">${postUrl}</a><br>`;
       if (!postUrl.startsWith("https://bsky.app/")) {
@@ -187,8 +186,9 @@ async function postToJSONLD(
           href: postUrl,
         });
       }
-    });
+    }
   }
+  tagsAndQuotes = tagsAndQuotes + "<small>";
   for await (const tag of post.postTags) {
     const externalTagName = tag.tagName
       .replaceAll('"', "'")
@@ -196,7 +196,12 @@ async function postToJSONLD(
     const link = `${
       completeEnvironment.frontendUrl
     }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
-    tagsAndQuotes = `${tagsAndQuotes}<small><a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a></small> `;
+    tagsAndQuotes = `${tagsAndQuotes} <a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a>`;
+    misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} ${
+      tag.tagName.trim().includes(" ")
+        ? "# " + tag.tagName.trim()
+        : "#" + tag.tagName.trim()
+    }`;
     fediTags.push({
       type: "Hashtag",
       name: `#${externalTagName}`,
@@ -208,6 +213,8 @@ async function postToJSONLD(
       name: tag.tagName.replaceAll('"', "'"),
     });
   }
+  tagsAndQuotes = tagsAndQuotes + "</small>";
+
   for await (const userId of mentions) {
     const user =
       (await User.findOne({ where: { id: userId } })) ||
@@ -229,7 +236,14 @@ async function postToJSONLD(
     )
       misskeyMentions.push(url);
   }
-
+  misskeyContent = await htmlToMfm(
+    misskeyContent.replace(lineBreaksAtEndRegex, "")
+  );
+  if (misskeyTagsAndQuotes.length > 0) {
+    misskeyContent =
+      misskeyContent +
+      `\n<small>${await htmlToMfm(misskeyTagsAndQuotes)}</small>`;
+  }
   const misskeyMentionContent =
     misskeyMentions.length > 0 ? `${misskeyMentions.join(" ")}\n\n` : "";
 
@@ -280,6 +294,8 @@ async function postToJSONLD(
     cc: usersToSend.cc,
     object: {
       id: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
+      blueskyUri: post.bskyUri,
+      blueskyCid: post.bskyCid,
       actor: actorUrl,
       type: "Note",
       summary: post.content_warning ? post.content_warning : "",
@@ -460,10 +476,10 @@ function getUserName(user?: User | undefined | null): string {
   return res;
 }
 
-function getPostUrlForQuote(post: any): string {
+async function getPostUrlForQuote(post: any): Promise<string> {
   const isPostFromFedi = !!post.remotePostId;
   let res = `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`;
-  if (post.isRemoteBlueskyPost) {
+  if (post.bskyUri && !(await getAllLocalUserIds()).includes(post.userId)) {
     const parts = post.bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
     res = `https://bsky.app/profile/${userDid}/post/${parts[1]}`;

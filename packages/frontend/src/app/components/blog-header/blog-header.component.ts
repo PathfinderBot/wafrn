@@ -20,6 +20,8 @@ import {
   faCookieBite,
   faCode,
   faPlaneDeparture,
+  faRobot,
+  faScrewdriverWrench,
 } from "@fortawesome/free-solid-svg-icons";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import { BlocksService } from "src/app/services/blocks.service";
@@ -90,6 +92,8 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
 
   userIcon = faUser;
   bskyIcon = faBluesky;
+  botIcon = faRobot;
+  adminIcon = faScrewdriverWrench;
   usersIcon = faUsers;
   blockUserIcon = faUserSlash;
   unblockServerIcon = faServer;
@@ -101,6 +105,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   headerHTML: string | undefined;
 
   rawOutputEnabled = EnvironmentService.environment.enableRawOutput;
+  instanceHostname = new URL(EnvironmentService.environment.frontUrl).hostname;
 
   fediComp = computed<{ name: string; value: string }[]>(() => {
     const fediAttachment = this.blogDetails()?.publicOptions.find(
@@ -116,11 +121,11 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     if (blog === undefined) return;
     this.headerUrl = blog.url.startsWith("@")
       ? EnvironmentService.environment.externalCacheurl +
-        encodeURIComponent(blog.headerImage)
+      encodeURIComponent(blog.headerImage)
       : EnvironmentService.environment.externalCacheurl +
-        encodeURIComponent(
-          EnvironmentService.environment.baseMediaUrl + blog.headerImage
-        );
+      encodeURIComponent(
+        EnvironmentService.environment.baseMediaUrl + blog.headerImage
+      );
     const askLevelOption = blog.publicOptions.find(
       (elem) => elem.optionName == "wafrn.public.asks"
     );
@@ -156,7 +161,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       ).href;
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void { }
 
   async unfollowUser(id: string) {
     const response = await this.postService.unfollowUser(id);

@@ -10,7 +10,7 @@ import {
   faReply,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
-import { asyncScheduler, Subject, Subscription, throttleTime } from "rxjs";
+import { asyncScheduler, firstValueFrom, Subject, Subscription, throttleTime } from "rxjs";
 import { ProcessedPost } from "src/app/interfaces/processed-post";
 import { BlocksService } from "src/app/services/blocks.service";
 import { DashboardService } from "src/app/services/dashboard.service";
@@ -30,6 +30,7 @@ import { SettingsService } from "src/app/services/settings.service";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { SimpleTitleService } from "src/app/services/simple-title.service";
 import { MatTabChangeEvent } from "@angular/material/tabs";
+import { HttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-view-blog",
@@ -38,8 +39,7 @@ import { MatTabChangeEvent } from "@angular/material/tabs";
   standalone: false,
 })
 export class ViewBlogComponent
-  implements OnInit, OnDestroy, SnappyHide, SnappyShow
-{
+  implements OnInit, OnDestroy, SnappyHide, SnappyShow {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly dashboardService = inject(DashboardService);
   readonly loginService = inject(LoginService);
@@ -50,6 +50,7 @@ export class ViewBlogComponent
   private settingService = inject(SettingsService);
   private simpleDialog = inject(SimpleDialogService);
   private simpleTitle = inject(SimpleTitleService);
+  private http = inject(HttpClient);
 
   loading = signal<boolean>(true);
   noMorePosts = false;
@@ -194,7 +195,7 @@ export class ViewBlogComponent
   }
 
   async handleTheme(blogDetails: BlogDetails) {
-    const userHasCustomTheme = !blogDetails.url.startsWith("@");
+    const userHasCustomTheme = await this.themeExists(blogDetails.id);
     const userIsSelf =
       blogDetails.id === this.loginService.currentAccount()?.id;
     if (!userHasCustomTheme || userIsSelf) return;
@@ -243,6 +244,15 @@ export class ViewBlogComponent
   rateLimitLoadPosts() {
     this.loading.set(true);
     this.rateLimitLoadSubject.next();
+  }
+
+  async themeExists(theme: string): Promise<boolean> {
+    const res = await firstValueFrom(
+      this.http.get(`${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css`, {
+        responseType: 'text'
+      })
+    )
+    return res !== undefined && res.trim().length > 0
   }
 
   async loadPosts(page: number, timeScrollStart?: number) {
@@ -300,6 +310,8 @@ export class ViewBlogComponent
       followerCount: 0,
       manuallyAcceptsFollows: true,
       emojis: [],
+      isBot: false,
+      isAdmin: false,
       muted: false,
       blocked: false,
       serverBlocked: false,

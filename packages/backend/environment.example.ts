@@ -112,6 +112,7 @@ export const baseEnvironment: Environment = {
   webpushPublicKey: '${{WEBPUSH_PUBLIC}}',
   // this is a email that will be sent to the distribution services in the users devices in case the owner of the distribution service wants to contact the server that is sending the notifications
   webpushEmail: '${{WEBPUSH_EMAIL}}',
+  autoFollowAdmin: ${{AUTOFOLLOW_MAIN_ADMIN:-true}},
   minimumAgeToRegister: ${{REGISTRATION_MINIMUM_AGE:-18}},
   registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
   disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}},
@@ -129,6 +130,7 @@ export const baseEnvironment: Environment = {
     registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
     privateInstanceRegistrationText: '${{REGISTRATIONS_DISABLED_TEXT:-This instance is a private instance, and does not allow registrations}}',
     minimumAgeToRegister: ${{REGISTRATION_MINIMUM_AGE:-18}},
+    donationUrl: '${{DONATION_URL:-}}',
     disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}}
   }
 }

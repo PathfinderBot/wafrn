@@ -758,14 +758,17 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
         label: 'menu.source',
         url: 'https://codeberg.org/wafrn/wafrn'
       },
-      {
+      ...(EnvironmentService.environment.donationUrl ? [{
+        label: 'menu.donate',
+        url: EnvironmentService.environment.donationUrl
+      }] : [{
         label: 'menu.patreon',
         url: 'https://patreon.com/wafrn'
       },
       {
         label: 'menu.kofi',
         url: 'https://ko-fi.com/wafrn'
-      }
+      }])
     ]
   }
 }
