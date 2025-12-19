@@ -34,6 +34,7 @@ async function postToJSONLD(
   postId: string
 ): Promise<activityPubObject | undefined> {
   let resFromCacheString = await redisCache.get("postToJsonLD:" + postId);
+  let askContent = "";
   if (resFromCacheString) {
     return JSON.parse(resFromCacheString) as activityPubObject;
   }
@@ -143,11 +144,10 @@ async function postToJSONLD(
   let misskeyAskContent = "";
 
   if (ask) {
-    processedContent = `<p>${getUserName(userAsker)} <a href="${
+    askContent = `<p>${getUserName(userAsker)} <a href="${
       completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
-    }">asked</a> </p> <blockquote>${
-      ask.question
-    }</blockquote> ${processedContent}`;
+    }">asked</a> </p> <blockquote>${ask.question}</blockquote> `;
+    processedContent = `${askContent} ${processedContent}`;
     misskeyAskContent = `> ${getUserName(userAsker)} [asked](${
       completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
     }):
@@ -214,6 +214,12 @@ async function postToJSONLD(
     });
   }
   tagsAndQuotes = tagsAndQuotes + "</small>";
+  if (tagsAndQuotes === "<br><small></small>") {
+    tagsAndQuotes = "";
+  }
+  if (tagsAndQuotes.endsWith("<small></small>")) {
+    tagsAndQuotes = tagsAndQuotes.split("<small></small>")[0];
+  }
 
   for await (const userId of mentions) {
     const user =
@@ -260,6 +266,7 @@ async function postToJSONLD(
     fediTags.push({
       type: "AskQuestion",
       name: ask.question,
+      representation: askContent,
       actor: userAsker
         ? userAsker.remoteId
           ? userAsker.remoteId
