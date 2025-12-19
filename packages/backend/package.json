@@ -1,6 +1,6 @@
 {
   "name": "wafrn-backend",
-  "version": "2025.12.04-hotfix1",
+  "version": "2025.12.05",
   "description": "wafrn backend",
   "main": "index.js",
   "type": "module",
