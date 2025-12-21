@@ -50,9 +50,8 @@ async function postToJSONLD(
     userAsker = await User.findByPk(ask.userAsker);
   }
 
-  const stringMyFollowers = `${
-    completeEnvironment.frontendUrl
-  }/fediverse/blog/${localUser.url.toLowerCase()}/followers`;
+  const stringMyFollowers = `${completeEnvironment.frontendUrl
+    }/fediverse/blog/${localUser.url.toLowerCase()}/followers`;
   const dbMentions = post.mentionPost;
   let mentionedUsers: string[] = [];
 
@@ -127,9 +126,8 @@ async function postToJSONLD(
     }
     parentPostString = dbPost?.remotePostId
       ? dbPost.remotePostId
-      : `${completeEnvironment.frontendUrl}/fediverse/post/${
-          dbPost ? dbPost.id : post.parentId
-        }`;
+      : `${completeEnvironment.frontendUrl}/fediverse/post/${dbPost ? dbPost.id : post.parentId
+      }`;
   }
   const postMedias = await post.medias;
   let processedContent = post.content;
@@ -144,14 +142,12 @@ async function postToJSONLD(
   let misskeyAskContent = "";
 
   if (ask) {
-    askContent = `<p>${getUserName(userAsker)} <a href="${
-      completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
-    }">asked</a> </p> <blockquote>${ask.question}</blockquote> `;
+    askContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
+      }">asked</a> </p> <blockquote>${ask.question}</blockquote> `;
     processedContent = `${askContent} ${processedContent}`;
-    misskeyAskContent = `> ${getUserName(userAsker)} [asked](${
-      completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
-    }):
-> ${await htmlToMfm(ask.question.replaceAll("\n", "\n> "))}\n\n`;
+    misskeyAskContent = `$[border.style=solid,width=1,radius=6 $[border.color=0000,width=12 <small>${getUserName(userAsker)} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
+      }):</small>
+${await htmlToMfm(ask.question)}]]\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
   const misskeyMentions: string[] = [];
@@ -193,15 +189,13 @@ async function postToJSONLD(
     const externalTagName = tag.tagName
       .replaceAll('"', "'")
       .replaceAll(" ", "-");
-    const link = `${
-      completeEnvironment.frontendUrl
-    }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
+    const link = `${completeEnvironment.frontendUrl
+      }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
     tagsAndQuotes = `${tagsAndQuotes} <a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a>`;
-    misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} ${
-      tag.tagName.trim().includes(" ")
+    misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} ${tag.tagName.trim().includes(" ")
         ? "# " + tag.tagName.trim()
         : "#" + tag.tagName.trim()
-    }`;
+      }`;
     fediTags.push({
       type: "Hashtag",
       name: `#${externalTagName}`,
@@ -279,9 +273,8 @@ async function postToJSONLD(
     mentionedUsers,
     stringMyFollowers
   );
-  const actorUrl = `${
-    completeEnvironment.frontendUrl
-  }/fediverse/blog/${localUser.url.toLowerCase()}`;
+  const actorUrl = `${completeEnvironment.frontendUrl
+    }/fediverse/blog/${localUser.url.toLowerCase()}`;
   const misskeyMarkdown =
     misskeyMentionContent + misskeyAskContent + misskeyContent;
   let misskeyQuoteURL = quotedPostString;
@@ -316,17 +309,16 @@ async function postToJSONLD(
       },
       url: post.bskyUri
         ? [
-            `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
-            {
-              type: "Link",
-              rel: "alternate",
-              href: post.bskyUri,
-            },
-          ]
+          `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
+          {
+            type: "Link",
+            rel: "alternate",
+            href: post.bskyUri,
+          },
+        ]
         : `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
-      attributedTo: `${
-        completeEnvironment.frontendUrl
-      }/fediverse/blog/${localUser.url.toLowerCase()}`,
+      attributedTo: `${completeEnvironment.frontendUrl
+        }/fediverse/blog/${localUser.url.toLowerCase()}`,
       to: usersToSend.to,
       cc: usersToSend.cc,
       sensitive: !!post.content_warning || contentWarning,
@@ -345,14 +337,14 @@ async function postToJSONLD(
         .map((media: Media) => {
           const extension = media.url
             .split(".")
-            [media.url.split(".").length - 1].toLowerCase();
+          [media.url.split(".").length - 1].toLowerCase();
           return {
             type: "Document",
             mediaType: media.mediaType,
             url:
               media.url.startsWith("?cid") || media.external
                 ? completeEnvironment.externalCacheurl +
-                  encodeURIComponent(media.url)
+                encodeURIComponent(media.url)
                 : completeEnvironment.mediaUrl + media.url,
             sensitive: media.NSFW ? true : false,
             name: media.description,
@@ -400,19 +392,17 @@ async function postToJSONLD(
       "@context": "https://www.w3.org/ns/activitystreams",
       id: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
       type: "Announce",
-      actor: `${
-        completeEnvironment.frontendUrl
-      }/fediverse/blog/${localUser.url.toLowerCase()}`,
+      actor: `${completeEnvironment.frontendUrl
+        }/fediverse/blog/${localUser.url.toLowerCase()}`,
       published: new Date(post.createdAt).toISOString(),
       to:
         post.privacy / 1 === Privacy.DirectMessage
           ? mentionedUsers
           : post.privacy / 1 === Privacy.Public
-          ? ["https://www.w3.org/ns/activitystreams#Public"]
-          : [stringMyFollowers],
+            ? ["https://www.w3.org/ns/activitystreams#Public"]
+            : [stringMyFollowers],
       cc: [
-        `${
-          completeEnvironment.frontendUrl
+        `${completeEnvironment.frontendUrl
         }/fediverse/blog/${localUser.url.toLowerCase()}`,
         stringMyFollowers,
       ],
