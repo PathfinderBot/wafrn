@@ -16,3 +16,5 @@ environment.dev.ts
 /build
 
 .env
+
+/utils/ignore
