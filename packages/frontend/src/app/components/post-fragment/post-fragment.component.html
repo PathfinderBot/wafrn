@@ -110,44 +110,48 @@
       }
     }
     <section class="mt-3" class="flex flex-wrap gap-1 emoji-reactions">
-      @for (emoji of emojiCollection(); track $index) {
-        @if (availableEmojiNames.has(emoji.name) || !emoji.img) {
-          <!--TODO fix this! The function gettooltipusers gets called on every event
-          which slows down the app when there are too many emojis
-          solution: rework the emojis part so its processed only on load with all data there
-          -->
-          <div [matTooltip]="emoji.tooltip">
-            <button
-              [disabled]="userCannotReact() || fragmentType() === 'quote'"
-              [class.reacted]="emoji.includesMe"
-              (click)="toggleEmojiReact(emoji, $event)"
-              mat-raised-button
-              matTooltipTouchGestures="on"
-              class="emojireact-button"
-            >
-              @if (emoji.img) {
-                <img class="post-emoji" [src]="emoji.img" [alt]="emoji.content" />
-              } @else {
-                <span class="force-comic-sans"> {{ emoji.content }}</span>
-              }
-              @if (emoji.users.length > 0) {
-                <span> {{ emoji.users.length }}</span>
-              }
-            </button>
-          </div>
-        } @else {
-          <div [matTooltip]="emoji.tooltip" class="external-emoji">
-            <span>
-              @if (emoji.img) {
-                <img class="post-emoji" [src]="emoji.img" [alt]="emoji.content" />
-              } @else {
-                <span class="force-comic-sans"> {{ emoji.content }}</span>
-              }
-              @if (emoji.users.length > 1) {
-                <span> {{ emoji.users.length }}</span>
-              }
-            </span>
-          </div>
+<!--      @if (wellbeing.reactionCounts) {-->
+      @if (false) {
+<!--      @if (true) {-->
+        @for (emoji of emojiCollection(); track $index) {
+          @if (availableEmojiNames.has(emoji.name) || !emoji.img) {
+            <!--TODO fix this! The function gettooltipusers gets called on every event
+            which slows down the app when there are too many emojis
+            solution: rework the emojis part so its processed only on load with all data there
+            -->
+            <div [matTooltip]="emoji.tooltip">
+              <button
+                [disabled]="userCannotReact() || fragmentType() === 'quote'"
+                [class.reacted]="emoji.includesMe"
+                (click)="toggleEmojiReact(emoji, $event)"
+                mat-raised-button
+                matTooltipTouchGestures="on"
+                class="emojireact-button"
+              >
+                @if (emoji.img) {
+                  <img class="post-emoji" [src]="emoji.img" [alt]="emoji.content" />
+                } @else {
+                  <span class="force-comic-sans"> {{ emoji.content }}</span>
+                }
+                @if (emoji.users.length > 0) {
+                  <span> {{ emoji.users.length }}</span>
+                }
+              </button>
+            </div>
+          } @else {
+            <div [matTooltip]="emoji.tooltip" class="external-emoji">
+              <span>
+                @if (emoji.img) {
+                  <img class="post-emoji" [src]="emoji.img" [alt]="emoji.content" />
+                } @else {
+                  <span class="force-comic-sans"> {{ emoji.content }}</span>
+                }
+                @if (emoji.users.length > 1) {
+                  <span> {{ emoji.users.length }}</span>
+                }
+              </span>
+            </div>
+          }
         }
       }
       @if (!(userId === '' || userId === fragment().userId) && fragmentType() !== 'quote') {
