@@ -1,5 +1,6 @@
 @let blog = blogDetails();
 @let loggedIn = loginService.loggedIn.value;
+@let settings = settingsService.values();
 <mat-card appearance="outlined" class="mb-3 overflow-hidden wafrn-container post-card blog-header">
   <div class="h-14rem mb-3 blog-header-image" [style.background-image]="'url(' + headerUrl + ')'"></div>
   <div class="flex flex-column gap-3 justify-content-between">
@@ -216,11 +217,23 @@
       <p class="m-0 text-xs">Post Count</p>
     </a>
     <a [routerLink]="['/blog', blog?.url, 'following']" class="flex flex-column justify-content-center subtle-link">
-      <b class="m-0 text-lg text-center">{{ (blog && formatBigNumber(blog.followed)) || '-' }}</b>
+      <b class="m-0 text-lg text-center">
+        {{
+          (settings.disableFollowingCounts && '-')
+          || (blog && formatBigNumber(blog.followed))
+          || '-'
+        }}
+      </b>
       <p class="m-0 text-xs">Following</p>
     </a>
     <a [routerLink]="['/blog', blog?.url, 'followers']" class="flex flex-column justify-content-center subtle-link">
-      <b class="m-0 text-lg text-center">{{ (blog && formatBigNumber(blog.followers)) || '-' }}</b>
+      <b class="m-0 text-lg text-center">
+        {{
+          (settings.disableFollowerCounts && '-')
+          || (blog && formatBigNumber(blog.followers))
+          || '-'
+        }}
+      </b>
       <p class="m-0 text-xs">Followers</p>
     </a>
   </footer>

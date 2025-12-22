@@ -38,6 +38,7 @@ import { TranslatePipe } from "@ngx-translate/core";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { BlogService } from "src/app/services/blog.service";
 import { RawJsonDialogComponent } from "../raw-json-dialog/raw-json-dialog.component";
+import { SettingsService } from "src/app/services/settings.service";
 
 @Component({
   selector: "app-blog-header",
@@ -67,6 +68,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   simpleDialog = inject(SimpleDialogService);
   blogService = inject(BlogService);
   utilsService = inject(UtilsService);
+  settingsService = inject(SettingsService);
 
   parser = new DOMParser();
   blogDetails = input<BlogDetails>();
