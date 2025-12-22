@@ -89,7 +89,11 @@ const settingKeyVariants = [
   'disableReplies',
   'confirmOpenCw',
   'confirmOpenCwAnnoyance',
-  'disableLinkPreviews'
+  'disableLinkPreviews',
+  'disableReactCounts',
+  'disableFollowerCounts',
+  'disableFollowingCounts',
+  'disablePostCounts'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -643,6 +647,42 @@ export class SettingsService {
       localStorageKey: 'disableLinkPreviews',
       type: 'checkbox',
       default: false
+    },
+    disableReactCounts: {
+      key: 'disableReactCounts',
+      translationKey: 'settings.disableReactCounts',
+      translationDescriptionKey: 'settings.disableReactCountsDescription',
+      serverKey: 'wafrn.disableReactCounts',
+      localStorageKey: 'disableReactCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disableFollowerCounts: {
+      key: 'disableFollowerCounts',
+      translationKey: 'settings.disableFollowerCounts',
+      translationDescriptionKey: 'settings.disableFollowerCountsDescription',
+      serverKey: 'wafrn.disableFollowerCounts',
+      localStorageKey: 'disableFollowerCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disableFollowingCounts: {
+      key: 'disableFollowingCounts',
+      translationKey: 'settings.disableFollowingCounts',
+      translationDescriptionKey: 'settings.disableFollowingCountsDescription',
+      serverKey: 'wafrn.disableFollowingCounts',
+      localStorageKey: 'disableFollowingCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disablePostCounts: {
+      key: 'disablePostCounts',
+      translationKey: 'settings.disablePostCounts',
+      translationDescriptionKey: 'settings.disablePostCountsDescription',
+      serverKey: 'wafrn.disablePostCounts',
+      localStorageKey: 'disablePostCounts',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -809,6 +849,12 @@ export class SettingsService {
       title: 'settings.sidebar.miscellaneous',
       type: 'generic',
       values: [
+        { type: 'header', value: 'settings.header.wellbeing' },
+        { type: 'key', value: 'disableReactCounts' },
+        { type: 'key', value: 'disableFollowerCounts' },
+        { type: 'key', value: 'disableFollowingCounts' },
+        { type: 'key', value: 'disablePostCounts' },
+        { type: 'separator' },
         { type: 'header', value: 'settings.header.fun' },
         { type: 'key', value: 'replaceAIWithCocaine' },
         { type: 'key', value: 'replaceAIWord' },

@@ -314,7 +314,8 @@
       "mutedBlockedWords": "Muted and Blocked Words",
       "blockBehavior": "Block Behavior",
       "mutedBlockedUsers": "Muted and Blocked Users",
-      "fun": "Fun"
+      "fun": "Fun",
+      "wellbeing": "Wellbeing"
     },
     "fediPropertyKey": "Property Name",
     "fediPropertyValue": "Property Value",
@@ -425,7 +426,15 @@
       "fifteen": "Solve a game of 3x3 Fifteen (EXTREMELY EVIL)"
     },
     "disableLinkPreviews": "Disable link previews",
-    "disableLinkPreviewsDescription": "Hides the link preview cards below messages that have links."
+    "disableLinkPreviewsDescription": "Hides the link preview cards below messages that have links.",
+    "disableReactCounts": "Disable react counts",
+    "disableReactCountsDescription": "Do not show how many times a woot has been reacted to",
+    "disableFollowerCounts": "Disable follower counts",
+    "disableFollowerCountsDescription": "Do not show how many followers any user has",
+    "disableFollowingCounts": "Disable following counts",
+    "disableFollowingCountsDescription": "Do not show how many users any user is following",
+    "disablePostCounts": "Disable post counts",
+    "disablePostCountsDescription": "Do not show how many woots any given user has wooted"
   },
   "dialog": {
     "confirm": "Confirm",
