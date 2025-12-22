@@ -110,8 +110,8 @@
       }
     }
     <section class="mt-3" class="flex flex-wrap gap-1 emoji-reactions">
-<!--      @if (wellbeing.reactionCounts) {-->
-      @if (false) {
+      @if (!settingsService.values().disableReactCounts) {
+<!--      @if (false) {-->
 <!--      @if (true) {-->
         @for (emoji of emojiCollection(); track $index) {
           @if (availableEmojiNames.has(emoji.name) || !emoji.img) {

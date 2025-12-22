@@ -89,7 +89,8 @@ const settingKeyVariants = [
   'disableReplies',
   'confirmOpenCw',
   'confirmOpenCwAnnoyance',
-  'disableLinkPreviews'
+  'disableLinkPreviews',
+  'disableReactCounts'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -643,6 +644,15 @@ export class SettingsService {
       localStorageKey: 'disableLinkPreviews',
       type: 'checkbox',
       default: false
+    },
+    disableReactCounts: {
+      key: 'disableReactCounts',
+      translationKey: 'settings.disableReactCounts',
+      translationDescriptionKey: 'settings.disableReactCountsDescription',
+      serverKey: 'wafrn.disableReactCounts',
+      localStorageKey: 'disableReactCounts',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -809,6 +819,9 @@ export class SettingsService {
       title: 'settings.sidebar.miscellaneous',
       type: 'generic',
       values: [
+        { type: 'header', value: 'settings.header.wellbeing' },
+        { type: 'key', value: 'disableReactCounts' },
+        { type: 'separator' },
         { type: 'header', value: 'settings.header.fun' },
         { type: 'key', value: 'replaceAIWithCocaine' },
         { type: 'key', value: 'replaceAIWord' },
