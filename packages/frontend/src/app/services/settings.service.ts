@@ -90,7 +90,9 @@ const settingKeyVariants = [
   'confirmOpenCw',
   'confirmOpenCwAnnoyance',
   'disableLinkPreviews',
-  'disableReactCounts'
+  'disableReactCounts',
+  'disableFollowerCounts',
+  'disableFollowingCounts'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -653,6 +655,24 @@ export class SettingsService {
       localStorageKey: 'disableReactCounts',
       type: 'checkbox',
       default: false
+    },
+    disableFollowerCounts: {
+      key: 'disableFollowerCounts',
+      translationKey: 'settings.disableFollowerCounts',
+      translationDescriptionKey: 'settings.disableFollowerCountsDescription',
+      serverKey: 'wafrn.disableFollowerCounts',
+      localStorageKey: 'disableFollowerCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disableFollowingCounts: {
+      key: 'disableFollowingCounts',
+      translationKey: 'settings.disableFollowingCounts',
+      translationDescriptionKey: 'settings.disableFollowingCountsDescription',
+      serverKey: 'wafrn.disableFollowingCounts',
+      localStorageKey: 'disableFollowingCounts',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -821,6 +841,8 @@ export class SettingsService {
       values: [
         { type: 'header', value: 'settings.header.wellbeing' },
         { type: 'key', value: 'disableReactCounts' },
+        { type: 'key', value: 'disableFollowerCounts' },
+        { type: 'key', value: 'disableFollowingCounts' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.fun' },
         { type: 'key', value: 'replaceAIWithCocaine' },
