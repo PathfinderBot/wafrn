@@ -432,7 +432,9 @@
     "disableFollowerCounts": "Disable follower counts",
     "disableFollowerCountsDescription": "Do not show how many followers any user has",
     "disableFollowingCounts": "Disable following counts",
-    "disableFollowingCountsDescription": "Do not show how many users any user is following"
+    "disableFollowingCountsDescription": "Do not show how many users any user is following",
+    "disablePostCounts": "Disable post counts",
+    "disablePostCountsDescription": "Do not show how many woots any given user has wooted"
   },
   "dialog": {
     "confirm": "Confirm",
