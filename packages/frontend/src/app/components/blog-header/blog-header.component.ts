@@ -312,9 +312,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
 
   async refetchUserData() {
     await this.blogService.refetchUserData(this.blogDetails()?.url ?? '')
-    this.router.navigate([this.router.url], {
-      onSameUrlNavigation: 'reload'
-    })
+    window.location.reload()
   }
 
   formatBigNumber(n: number) {
