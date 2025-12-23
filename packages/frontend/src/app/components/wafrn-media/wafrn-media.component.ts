@@ -17,6 +17,7 @@ type FitMode = "contain" | "cover";
 })
 export class WafrnMediaComponent implements OnInit, AfterViewInit {
   private mediaService = inject(MediaService);
+  private settingsService = inject(SettingsService);
 
   data = input.required<WafrnMedia>();
   filteredWords = input<string>();
@@ -78,18 +79,17 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
   originallyNsfw = true;
   nsfw = true;
   viewLongImage = false;
-  descriptionVisible = false;
+  descriptionVisible = this.settingsService.values().showMediaDescriptions || false;
   // Icons
   readonly hideIcon = faEyeSlash;
 
   errorMode = false;
   constructor() {
     const mediaService = this.mediaService;
-    const settingsService = inject(SettingsService);
 
     this.disableNSFWFilter = mediaService.checkNSFWFilterDisabled();
     this.hideNoDescriptionMedia = computed(
-      () => settingsService.values().hideNoDescriptionMedia === true
+      () => this.settingsService.values().hideNoDescriptionMedia === true
     );
   }
 

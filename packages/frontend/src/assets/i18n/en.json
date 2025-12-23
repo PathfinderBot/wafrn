@@ -315,7 +315,8 @@
       "blockBehavior": "Block Behavior",
       "mutedBlockedUsers": "Muted and Blocked Users",
       "fun": "Fun",
-      "wellbeing": "Wellbeing"
+      "wellbeing": "Wellbeing",
+      "media": "Media"
     },
     "fediPropertyKey": "Property Name",
     "fediPropertyValue": "Property Value",
@@ -434,7 +435,9 @@
     "disableFollowingCounts": "Disable following counts",
     "disableFollowingCountsDescription": "Do not show how many users any user is following",
     "disablePostCounts": "Disable post counts",
-    "disablePostCountsDescription": "Do not show how many woots any given user has wooted"
+    "disablePostCountsDescription": "Do not show how many woots any given user has wooted",
+    "showMediaDescriptions": "Show media descriptions",
+    "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type."
   },
   "dialog": {
     "confirm": "Confirm",

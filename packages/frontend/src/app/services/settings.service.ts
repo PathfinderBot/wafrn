@@ -93,7 +93,8 @@ const settingKeyVariants = [
   'disableReactCounts',
   'disableFollowerCounts',
   'disableFollowingCounts',
-  'disablePostCounts'
+  'disablePostCounts',
+  'showMediaDescriptions'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -683,6 +684,15 @@ export class SettingsService {
       localStorageKey: 'disablePostCounts',
       type: 'checkbox',
       default: false
+    },
+    showMediaDescriptions: {
+      key: 'showMediaDescriptions',
+      translationKey: 'settings.showMediaDescriptions',
+      translationDescriptionKey: 'settings.showMediaDescriptionsDescription',
+      serverKey: 'wafrn.showMediaDescriptions',
+      localStorageKey: 'showMediaDescriptions',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -854,6 +864,9 @@ export class SettingsService {
         { type: 'key', value: 'disableFollowerCounts' },
         { type: 'key', value: 'disableFollowingCounts' },
         { type: 'key', value: 'disablePostCounts' },
+        { type: 'separator' },
+        { type: 'header', value: 'settings.header.media' },
+        { type: 'key', value: 'showMediaDescriptions' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.fun' },
         { type: 'key', value: 'replaceAIWithCocaine' },
