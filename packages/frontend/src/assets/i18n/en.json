@@ -328,6 +328,7 @@
     "changePasswordTitle": "Request a password change",
     "changePassword": "Change password",
     "autoAcceptFollowsFromFollowing": "Automatically accept follow requests from followed users",
+    "autoRejectFollowsFromUsersYouDoNotFollow": "Automatically reject follow requests from users you don't follow",
     "changePasswordDescription": "A link change your password has been sent to your email.",
     "changePasswordMessage": "A link change your password has been sent to your email.",
     "disableEmailNotifications": "Disable email notifications",
