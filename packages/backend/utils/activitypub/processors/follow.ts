@@ -13,13 +13,13 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
   if (userToBeFollowed) {
     const dbOptionAutoAcceptFollowsFromFollowing = await UserOptions.findOne({
       where: {
-        userId: remoteUser.id,
+        userId: userToBeFollowed.id,
         optionName: 'wafrn.autoAcceptFollowsFromFollowing'
       }
     })
     const dbOptionAutoRejectFollowsFromUsersYouDoNotFollow = await UserOptions.findOne({
       where: {
-        userId: remoteUser.id,
+        userId: userToBeFollowed.id,
         optionName: 'wafrn.autoRejectFollowsFromUsersYouDoNotFollow'
       }
     })
