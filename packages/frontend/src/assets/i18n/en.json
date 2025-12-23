@@ -502,6 +502,7 @@
         "cancel": "No",
         "cancelRemember": "No, don't ask again"
       },
+      "refetchUserData": "Refetch remote user data",
       "hideRewoots": "Hide rewoots made by this user",
       "unhideRewoots": "Unhide rewoots made by this user",
       "unhideQuotes": "Unhide quotes from this user",
