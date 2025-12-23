@@ -311,21 +311,8 @@ async function getRemoteActorIdProcessor(job: Job) {
           userRes &&
           userRes.id &&
           userRes.url != completeEnvironment.deletedUser &&
-          userPetition &&
-          userPetition.attachment &&
-          userPetition.attachment.length
+          userPetition
         ) {
-          await UserOptions.destroy({
-            where: {
-              userId: userRes.id,
-              optionName: {
-                [Op.like]: "fediverse.public.attachment",
-              },
-            },
-          });
-          const properties = userPetition.attachment.filter(
-            (elem: any) => elem.type === "PropertyValue"
-          );
           try {
             if (userPetition._wafrn_customCSS) {
               let customCSS: string | undefined = undefined
@@ -347,6 +334,26 @@ async function getRemoteActorIdProcessor(job: Job) {
           } catch (e) {
             logger.warn(e)
           }
+        }
+        if (
+          userRes &&
+          userRes.id &&
+          userRes.url != completeEnvironment.deletedUser &&
+          userPetition &&
+          userPetition.attachment &&
+          userPetition.attachment.length
+        ) {
+          await UserOptions.destroy({
+            where: {
+              userId: userRes.id,
+              optionName: {
+                [Op.like]: "fediverse.public.attachment",
+              },
+            },
+          });
+          const properties = userPetition.attachment.filter(
+            (elem: any) => elem.type === "PropertyValue"
+          );
           await UserOptions.create({
             userId: userRes.id,
             optionName: `fediverse.public.attachment`,
