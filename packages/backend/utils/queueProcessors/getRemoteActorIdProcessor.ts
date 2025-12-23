@@ -329,6 +329,7 @@ async function getRemoteActorIdProcessor(job: Job) {
           try {
             if (userPetition._wafrn_customCSS) {
               let customCSS: string | undefined = undefined
+              logger.info({ id: userPetition.id }, "found custom css for this user");
               if (URL.canParse(userPetition._wafrn_customCSS)) {
                 const cssRes = await fetch(userPetition._wafrn_customCSS)
                 if (cssRes.ok)

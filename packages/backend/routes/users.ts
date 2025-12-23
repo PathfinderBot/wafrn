@@ -1122,11 +1122,11 @@ function userRoutes(app: Application) {
       });
       const user = await User.findByPk(userId);
       if (!userToRefetch || !userToRefetch.remoteId) {
-        res.sendStatus(404)
+        res.status(404).send({ status: 'not_found' })
         return;
       }
       await getRemoteActor(userToRefetch?.remoteId, user, true);
-      res.sendStatus(200)
+      res.status(200).send({ status: 'ok' })
     }
   )
 
