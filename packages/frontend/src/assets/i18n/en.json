@@ -477,6 +477,7 @@
       "unmuteAccountDescription": "Woots and replies by this user will be shown again.",
       "blockAccountDescription": "Hide woots and replies by this user or woots and replies mentioning this user. They will not be able to interact with your woots.",
       "blockAccountLabel": "Reason (optional)",
+      "refetchUserData": "Refetch remote user data",
       "unblockAccountTitle": "Unblock account",
       "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots.",
       "followLoggedOutTitle": "Follow {{name}}",
@@ -502,7 +503,6 @@
         "cancel": "No",
         "cancelRemember": "No, don't ask again"
       },
-      "refetchUserData": "Refetch remote user data",
       "hideRewoots": "Hide rewoots made by this user",
       "unhideRewoots": "Unhide rewoots made by this user",
       "unhideQuotes": "Unhide quotes from this user",
