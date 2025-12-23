@@ -34,6 +34,7 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
     }
     if (!autoFollowThisUser && dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true') {
       await rejectremoteFollow(userToBeFollowed.id, remoteUser.id)
+      return
     }
     let [remoteFollow, created] = await Follows.findOrCreate({
       where: {
