@@ -5,6 +5,7 @@ import { acceptRemoteFollow } from '../acceptRemoteFollow.js'
 import { getRemoteActor } from '../getRemoteActor.js'
 import { signAndAccept } from '../signAndAccept.js'
 import { rejectremoteFollow } from '../rejectRemoteFollow.js'
+import { logger } from '../../logger.js'
 
 async function FollowActivity(body: activityPubObject, remoteUser: User, user: User) {
   const apObject: activityPubObject = body
@@ -32,7 +33,12 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
         }
       }).then(f => !!f)
     }
-    if (!autoFollowThisUser && dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true') {
+    if (
+      !autoFollowThisUser &&
+      dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' &&
+      dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true'
+    ) {
+      logger.info({ followed: userToBeFollowed.url, follower: remoteUser.id, autoFollowThisUser }, 'Rejecting follow of user')
       await rejectremoteFollow(userToBeFollowed.id, remoteUser.id)
       return
     }
