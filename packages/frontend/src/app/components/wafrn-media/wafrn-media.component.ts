@@ -18,6 +18,7 @@ type FitMode = "contain" | "cover";
 export class WafrnMediaComponent implements OnInit, AfterViewInit {
   private mediaService = inject(MediaService);
   private settingsService = inject(SettingsService);
+  settings = this.settingsService.values();
 
   data = input.required<WafrnMedia>();
   filteredWords = input<string>();
@@ -79,7 +80,7 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
   originallyNsfw = true;
   nsfw = true;
   viewLongImage = false;
-  descriptionVisible = this.settingsService.values().showMediaDescriptions || false;
+  descriptionVisible = this.settings.showMediaDescriptions || false;
   // Icons
   readonly hideIcon = faEyeSlash;
 
@@ -89,7 +90,7 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
 
     this.disableNSFWFilter = mediaService.checkNSFWFilterDisabled();
     this.hideNoDescriptionMedia = computed(
-      () => this.settingsService.values().hideNoDescriptionMedia === true
+      () => this.settings.hideNoDescriptionMedia === true
     );
   }
 
@@ -97,6 +98,7 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
     const noDescription = this.data().description === null;
     const hasFilteredWords = this.filteredWords() !== undefined;
     this.nsfw =
+      (this.settings.markAllMediaAsNSFW === true) ||
       (this.data().NSFW ||
         (noDescription && this.hideNoDescriptionMedia()) ||
         hasFilteredWords) &&

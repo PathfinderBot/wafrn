@@ -437,7 +437,9 @@
     "disablePostCounts": "Disable post counts",
     "disablePostCountsDescription": "Do not show how many woots any given user has wooted",
     "showMediaDescriptions": "Show media descriptions",
-    "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type."
+    "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type.",
+    "markAllMediaAsNSFW": "Mark all media as NSFW",
+    "markAllMediaAsNSFWDescription": "Do not show any media by default until interacted with."
   },
   "dialog": {
     "confirm": "Confirm",

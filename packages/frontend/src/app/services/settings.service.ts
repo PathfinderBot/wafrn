@@ -94,7 +94,8 @@ const settingKeyVariants = [
   'disableFollowerCounts',
   'disableFollowingCounts',
   'disablePostCounts',
-  'showMediaDescriptions'
+  'showMediaDescriptions',
+  'markAllMediaAsNSFW'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -693,6 +694,15 @@ export class SettingsService {
       localStorageKey: 'showMediaDescriptions',
       type: 'checkbox',
       default: false
+    },
+    markAllMediaAsNSFW: {
+      key: 'markAllMediaAsNSFW',
+      translationKey: 'settings.markAllMediaAsNSFW',
+      translationDescriptionKey: 'settings.markAllMediaAsNSFWDescription',
+      serverKey: 'wafrn.markAllMediaAsNSFW',
+      localStorageKey: 'markAllMediaAsNSFW',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -867,6 +877,7 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.media' },
         { type: 'key', value: 'showMediaDescriptions' },
+        { type: 'key', value: 'markAllMediaAsNSFW' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.fun' },
         { type: 'key', value: 'replaceAIWithCocaine' },
