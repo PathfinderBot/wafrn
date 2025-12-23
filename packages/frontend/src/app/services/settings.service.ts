@@ -51,6 +51,8 @@ const settingKeyVariants = [
   // everything else - stored in the options table
   'theme', // This and v
   'lightDarkMode', // this option are weirdly named in localStorage because legacy reasons
+  'autoAcceptFollowsFromFollowing',
+  'autoRejectFollowsFromUsersYouDoNotFollow',
   'additionalStyleModes',
   'useOtherUserCustomThemes',
   'askToUseOtherUserCustomThemes',
@@ -238,6 +240,24 @@ export class SettingsService {
       profileOption: true,
       type: 'checkbox',
       default: false
+    },
+    autoAcceptFollowsFromFollowing: {
+      key: 'autoAcceptFollowsFromFollowing',
+      translationKey: 'settings.autoAcceptFollowsFromFollowing',
+      serverKey: 'wafrn.autoAcceptFollowsFromFollowing',
+      localStorageKey: 'autoAcceptFollowsFromFollowing',
+      type: 'checkbox',
+      default: false,
+      enableIfSetting: (s) => s.manuallyAcceptsFollows === true
+    },
+    autoRejectFollowsFromUsersYouDoNotFollow: {
+      key: 'autoRejectFollowsFromUsersYouDoNotFollow',
+      translationKey: 'settings.autoRejectFollowsFromUsersYouDoNotFollow',
+      serverKey: 'wafrn.autoRejectFollowsFromUsersYouDoNotFollow',
+      localStorageKey: 'autoRejectFollowsFromUsersYouDoNotFollow',
+      type: 'checkbox',
+      default: false,
+      enableIfSetting: (s) => s.autoAcceptFollowsFromFollowing === true
     },
     rssOptions: {
       key: 'rssOptions',
@@ -805,6 +825,8 @@ export class SettingsService {
       values: [
         { type: 'header', value: 'settings.header.profilePrivacy' },
         { type: 'key', value: 'manuallyAcceptsFollows' },
+        { type: 'key', value: 'autoAcceptFollowsFromFollowing' },
+        { type: 'key', value: 'autoRejectFollowsFromUsersYouDoNotFollow' },
         { type: 'key', value: 'enableAsks' },
         { type: 'key', value: 'enableAnonymousAsks' },
         { type: 'key', value: 'hideProfileNotLoggedIn' },

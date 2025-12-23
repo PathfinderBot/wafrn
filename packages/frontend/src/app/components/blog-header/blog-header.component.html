@@ -116,12 +116,22 @@
           </button>
           }
           }
+          @if (!isMe) {
           <button (click)="reportService.report(blog.id)" mat-menu-item class="dangerous-option">
             <span class="flex gap-2">
               <fa-icon [fixedWidth]="true" [icon]="reportUserIcon"></fa-icon>
               {{ 'post-actions.reportUser' | translate }}
             </span>
           </button>
+          }
+          @if (blog.url.startsWith('@')) {
+          <button (click)="refetchUserData()" mat-menu-item>
+            <span class="flex gap-2">
+              <fa-icon [fixedWidth]="true" [icon]="refetchUserIcon"></fa-icon>
+              {{ 'post-actions.refetchUserData' | translate }}
+            </span>
+          </button>
+          }
         </mat-menu>
         }
       </div>
@@ -215,10 +225,10 @@
     <a [routerLink]="['/blog', blog?.url]" class="flex flex-column justify-content-center subtle-link">
       <b class="m-0 text-lg text-center">
         {{
-          (
-            !settings.disablePostCounts
-            && (blog && formatBigNumber(blog.postCount))
-          ) || '-'
+        (
+        !settings.disablePostCounts
+        && (blog && formatBigNumber(blog.postCount))
+        ) || '-'
         }}
       </b>
       <p class="m-0 text-xs">Post Count</p>
@@ -226,10 +236,10 @@
     <a [routerLink]="['/blog', blog?.url, 'following']" class="flex flex-column justify-content-center subtle-link">
       <b class="m-0 text-lg text-center">
         {{
-          (
-            !settings.disableFollowingCounts
-            && (blog && formatBigNumber(blog.followed))
-          ) || '-'
+        (
+        !settings.disableFollowingCounts
+        && (blog && formatBigNumber(blog.followed))
+        ) || '-'
         }}
       </b>
       <p class="m-0 text-xs">Following</p>
@@ -237,10 +247,10 @@
     <a [routerLink]="['/blog', blog?.url, 'followers']" class="flex flex-column justify-content-center subtle-link">
       <b class="m-0 text-lg text-center">
         {{
-          (
-            !settings.disableFollowerCounts
-            && (blog && formatBigNumber(blog.followers))
-          ) || '-'
+        (
+        !settings.disableFollowerCounts
+        && (blog && formatBigNumber(blog.followers))
+        ) || '-'
         }}
       </b>
       <p class="m-0 text-xs">Followers</p>
