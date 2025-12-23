@@ -38,7 +38,6 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
       dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' &&
       dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true'
     ) {
-      logger.info({ followed: userToBeFollowed.url, follower: remoteUser.id, autoFollowThisUser }, 'Rejecting follow of user')
       await rejectremoteFollow(userToBeFollowed.id, remoteUser.id)
       return
     }
