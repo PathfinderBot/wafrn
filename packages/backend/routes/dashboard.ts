@@ -25,6 +25,11 @@ import { navigationRateLimiter } from '../utils/rateLimiters.js'
 import { Privacy } from '../models/post.js'
 import { getFollowedHashtags } from '../utils/getFollowedHashtags.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { logger } from '../utils/logger.js'
+import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
+import { getAtProtoThread } from '../atproto/utils/getAtProtoThread.js'
+import { handleBskyFeed } from '../atproto/utils/handleBskyFeed.js'
+import { promiseRace } from '../atproto/utils/promiseRace.js'
 
 export default function dashboardRoutes(app: Application) {
   app.get(
@@ -125,6 +130,18 @@ export default function dashboardRoutes(app: Application) {
           break
         }
         case 1: {
+          const user = await User.findByPk(posterId)
+          if(completeEnvironment.enableBsky && user && user.enableBsky) {
+            try {
+              // we give bluesky 2.5 seconds to load
+              await promiseRace([handleBskyFeed(user, getStartScrollParam(req))], 2500)
+            } catch (error) {
+              logger.debug({
+                message: `Error obtaining bsky feed of user ${user.url}`,
+                error: error
+              })
+            }
+          }
           const orConditions: any = [
             {
               userId: { [Op.in]: await getFollowedsIds(posterId) }
