@@ -193,7 +193,8 @@
         "followed": "Follows",
         "likesEmojiReacts": "Likes and EmojiReactions",
         "quoted": "Quotes",
-        "rewooted": "Rewoots"
+        "rewooted": "Rewoots",
+        "bitten": "Bites"
       },
       "manuallyAcceptFollows": "Manually accept follows",
       "disableForceAltText": "Allow uploading media without alt text (enable this only if you're evil)",

@@ -102,6 +102,7 @@ export class EditProfileComponent implements OnInit {
     notifyQuotes: new FormControl(true),
     notifyFollows: new FormControl(true),
     notifyRewoots: new FormControl(true),
+    notifyBites: new FormControl(true),
     replaceAIWithCocaine: new FormControl(false),
     replaceAIWord: new FormControl('cocaine'),
     hideQuotes: new FormControl(1),
@@ -295,6 +296,11 @@ export class EditProfileComponent implements OnInit {
       const localStorageNotifyRewoots = localStorage.getItem('notifyRewoots')
       if (localStorageNotifyRewoots) {
         this.editProfileForm.controls['notifyRewoots'].patchValue(localStorageNotifyRewoots == 'true')
+      }
+
+      const localStorageNotifyBites = localStorage.getItem('notifyBites')
+      if(localStorageNotifyBites) {
+        this.editProfileForm.controls['notifyBites'].patchValue(localStorageNotifyBites == 'true')
       }
 
       const localStoragedisplayMentionsOfBlockedUsersFromOtherUsers = localStorage.getItem(

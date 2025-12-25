@@ -72,7 +72,9 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
               'wafrn.notifyReactions',
               'wafrn.notifyQuotes',
               'wafrn.notifyFollows',
-              'wafrn.notifyRewoots'
+              'wafrn.notifyRewoots',
+              'wafrn.notifyBites'
+
             ]
           }
         }
@@ -83,6 +85,7 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
       const optionNotifyReactions = options.find((elem) => elem.optionName == 'wafrn.notifyReactions')
       const optionNotifyFollows = options.find((elem) => elem.optionName == 'wafrn.notifyFollows')
       const optionNotifyRewoots = options.find((elem) => elem.optionName == 'wafrn.notifyRewoots')
+      const optionNotifyBites = options.find((elem) => elem.optionName == 'wafrn.notifyBites')
 
       const notificationTypes = []
       if (!optionNotifyQuotes || optionNotifyQuotes.optionValue != 'false') {
@@ -94,14 +97,17 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
       if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
         notificationTypes.push('EMOJIREACT')
         notificationTypes.push('LIKE')
-        notificationTypes.push('POSTBITE')
-        notificationTypes.push('USERBITE')
+        
       }
       if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
         notificationTypes.push('FOLLOW')
       }
       if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
         notificationTypes.push('REWOOT')
+      }
+      if(!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
+        notificationTypes.push('POSTBITE')
+        notificationTypes.push('USERBITE')
       }
       if (notificationTypes.includes(notification.notificationType)) {
         if (optionNotificationsFrom && optionNotificationsFrom.optionValue != '1') {

@@ -490,7 +490,8 @@ async function getNotificationOptions(userId: string) {
           'wafrn.notifyReactions',
           'wafrn.notifyQuotes',
           'wafrn.notifyFollows',
-          'wafrn.notifyRewoots'
+          'wafrn.notifyRewoots',
+          'wafrn.notifyBites'
         ]
       }
     }
@@ -501,6 +502,7 @@ async function getNotificationOptions(userId: string) {
   const optionNotifyReactions = options.find((elem) => elem.optionName == 'wafrn.notifyReactions')
   const optionNotifyFollows = options.find((elem) => elem.optionName == 'wafrn.notifyFollows')
   const optionNotifyRewoots = options.find((elem) => elem.optionName == 'wafrn.notifyRewoots')
+  const optionNotifyBites = options.find((elem) => elem.optionName == 'wafrn.notifyBites')
 
   const notificationTypes = []
   if (!optionNotifyQuotes || optionNotifyQuotes.optionValue != 'false') {
@@ -512,14 +514,16 @@ async function getNotificationOptions(userId: string) {
   if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
     notificationTypes.push('EMOJIREACT')
     notificationTypes.push('LIKE')
-    notificationTypes.push('POSTBITE')
-    notificationTypes.push('USERBITE')
   }
   if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
     notificationTypes.push('FOLLOW')
   }
   if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
     notificationTypes.push('REWOOT')
+  }
+  if(!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
+    notificationTypes.push('POSTBITE')
+    notificationTypes.push('USERBITE')
   }
 
   let res: any = {

@@ -347,6 +347,7 @@ export class LoginService {
       notifyQuotes: 'wafrn.notifyQuotes',
       notifyFollows: 'wafrn.notifyFollows',
       notifyRewoots: 'wafrn.notifyRewoots',
+      notifyBites: 'wafrn.notifyBites',
       disableSounds: 'wafrn.disableSounds',
       replaceAIWithCocaine: 'wafrn.replaceAIWithCocaine',
       replaceAIWord: 'wafrn.replaceAIWord',
