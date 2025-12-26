@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'
+
 import { Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -15,7 +15,6 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 @Component({
   selector: 'app-manage-followed-hashtags',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatCardModule,
@@ -24,7 +23,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
     LoaderComponent,
     MatFormFieldModule,
     MatInputModule
-  ],
+],
   templateUrl: './manage-followed-hashtags.component.html',
   styleUrl: './manage-followed-hashtags.component.scss'
 })

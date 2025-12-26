@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'
+
 import { Component, signal, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -8,7 +8,7 @@ import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
 @Component({
   selector: 'app-enable-bluesky',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatCardModule, MatButtonModule, MatInputModule],
+  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatButtonModule, MatInputModule],
   templateUrl: './enable-bluesky.component.html',
   styleUrl: './enable-bluesky.component.scss'
 })

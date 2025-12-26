@@ -130,7 +130,7 @@ export class SnappyRouter extends RouterOutlet implements OnInit, OnDestroy {
   override activateWith(activatedRoute: ActivatedRoute, environmentInjector: EnvironmentInjector): void {
     this.currentRoute = activatedRoute;
 
-    if (this.router.getCurrentNavigation()?.trigger === 'popstate') {
+    if (this.router.currentNavigation()?.trigger === 'popstate') {
       if (this.urlStack.length > 1 && (this.urlStack[this.urlStack.length - 2] === this.router.url)) {
         if (this.element.length > 1) {
           this.pop();

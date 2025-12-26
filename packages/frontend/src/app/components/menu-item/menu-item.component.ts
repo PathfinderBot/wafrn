@@ -7,13 +7,12 @@ import { MenuItem } from 'src/app/interfaces/menu-item'
 import { faChevronDown, faDotCircle } from '@fortawesome/free-solid-svg-icons'
 import { MatBadgeModule } from '@angular/material/badge'
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu'
-import { CommonModule } from '@angular/common'
+
 import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-menu-item',
   imports: [
-    CommonModule,
     RouterModule,
     FontAwesomeModule,
     MatButtonModule,
@@ -21,7 +20,7 @@ import { TranslateModule } from '@ngx-translate/core'
     MatBadgeModule,
     MatMenuModule,
     TranslateModule
-  ],
+],
   templateUrl: './menu-item.component.html',
   styleUrl: './menu-item.component.scss'
 })

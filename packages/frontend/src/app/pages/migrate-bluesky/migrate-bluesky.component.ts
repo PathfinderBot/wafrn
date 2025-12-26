@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'
+
 import { Component, signal, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -15,7 +15,6 @@ import { MessageService } from 'src/app/services/message.service'
 @Component({
   selector: 'app-migrate-bluesky',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatCardModule,
@@ -24,7 +23,7 @@ import { MessageService } from 'src/app/services/message.service'
     MatFormFieldModule,
     FontAwesomeModule,
     LoaderComponent
-  ],
+],
   templateUrl: './migrate-bluesky.component.html',
   styleUrl: './migrate-bluesky.component.scss'
 })

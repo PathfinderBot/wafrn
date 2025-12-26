@@ -1,5 +1,9 @@
 <h1 mat-dialog-title>{{ 'dialog.common.rawData' | translate }}</h1>
 <div class="raw-dialog-data" mat-dialog-content>
+    <!--
+    Updated angular 21, nxt json still not available whoops
     <nxt-json-view [data]="data" [levelOpen]="0"></nxt-json-view>
+    -->
+    <div>{{data | json}}</div>
 </div>
 <button mat-flat-button (click)="closeDialog()" class="w-full">{{ 'dialog.close' | translate }}</button>
