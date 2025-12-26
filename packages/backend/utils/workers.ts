@@ -13,6 +13,7 @@ import { generateUserKeyPair } from "./queueProcessors/generateUserKeyPair.js";
 import { completeEnvironment } from "./backendOptions.js";
 import { sendPostBsky } from "./queueProcessors/sendPostBsky.js";
 import { processSinglePostJob } from "../atproto/workers/processSinglePostWorker.js";
+import { follow } from "./follow.js";
 
 logger.info("started worker");
 const workerInbox = new Worker("inbox", (job: Job) => inboxWorker(job), {
@@ -52,6 +53,20 @@ const workerSendPostBsky = new Worker(
 const workerSendPostChunk = new Worker(
   "sendPostToInboxes",
   (job: Job) => sendPostToInboxes(job),
+  {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2,
+    },
+    concurrency: completeEnvironment.workers.high,
+    lockDuration: 120000,
+  }
+);
+
+
+const workerFollow = new Worker(
+  "doFollow",
+  (job: Job) => follow(job.data.followerId, job.data.followedId),
   {
     connection: completeEnvironment.bullmqConnection,
     metrics: {
@@ -194,6 +209,7 @@ const workers = [
   workerSendPushNotification,
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,
+  workerFollow
 ];
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker);
@@ -225,6 +241,7 @@ const workersToLogFail = [
   workerSendPostChunk,
   workerSendPushNotification,
   workerGenerateUserKeyPair,
+  workerFollow
 ];
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker);

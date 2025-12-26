@@ -2176,13 +2176,26 @@ It is slow because we have to send every fedi server that has ever seen a post o
                   },
                 },
               });
-              for await (const localFollow of localFollows) {
-                try {
-                  await follow(localFollow.id, newRemoteUser.id);
-                } catch (error) {
-                  logger.info(error);
-                }
-              }
+              const followQueue = new Queue("doFollow", {
+                connection: completeEnvironment.bullmqConnection,
+                defaultJobOptions: {
+                  removeOnComplete: true,
+                  attempts: 3,
+                  backoff: {
+                    type: "exponential",
+                    delay: 1000,
+                  },
+                  removeOnFail: true,
+                },
+              });
+              followQueue.addBulk(
+                localFollows.map((follow: any) => {
+                  return {
+                    name: `follow${follow.url}-${newRemoteUser.url}`,
+                    data: { followerId: follow.id, followedId: newRemoteUser.id },
+                  };
+                })
+              );
               // third step: return data and set message to succ ess
               localUser.userMigratedTo = newUserRemoteId;
               await localUser.save();
