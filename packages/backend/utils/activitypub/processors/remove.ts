@@ -7,7 +7,7 @@ async function RemoveActivity(body: activityPubObject, remoteUser: User, user: U
   const apObject: activityPubObject = body
   const postToNotFeature = await getPostThreadRecursive(user, apObject.object)
   if (postToNotFeature) {
-    postToNotFeature.featured = false
+    postToNotFeature.featured = null
     await postToNotFeature.save()
   }
   // await signAndAccept({ body: body }, remoteUser, user)

@@ -7,7 +7,7 @@ async function AddActivity(body: activityPubObject, remoteUser: User, user: User
   const apObject: activityPubObject = body
   const postToFeature = await getPostThreadRecursive(user, apObject.object)
   if (postToFeature) {
-    postToFeature.featured = true
+    postToFeature.featured = new Date()
     await postToFeature.save()
   }
   // await signAndAccept({ body: body }, remoteUser, user)
