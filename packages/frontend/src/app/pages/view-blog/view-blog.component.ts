@@ -238,7 +238,7 @@ export class ViewBlogComponent
     this.viewedPostsIds = [];
     const timeScrollStart =
       this.activatedRoute.snapshot.queryParams["startScrollDate"];
-    this.loadPosts(this.currentPage, timeScrollStart);
+    this.loadPosts(this.currentPage, undefined, true).then(()=> this.loadPosts(this.currentPage, timeScrollStart) ) 
   }
 
   rateLimitLoadPosts() {
@@ -255,8 +255,10 @@ export class ViewBlogComponent
     return res !== undefined && res.trim().length > 0
   }
 
-  async loadPosts(page: number, timeScrollStart?: number) {
-    this.currentPage += 1;
+  async loadPosts(page: number, timeScrollStart?: number, featured?: boolean) {
+    if(!featured) {
+      this.currentPage += 1;
+    }
     if (this.blogUrl === "" || !this.blogDetails()) {
       return;
     }
@@ -273,7 +275,8 @@ export class ViewBlogComponent
     const tmpPosts = await this.dashboardService.getBlogPage(
       page,
       this.blogUrl,
-      timeScrollStart
+      timeScrollStart,
+      featured
     );
     const filteredPosts = tmpPosts.filter((post: ProcessedPost[]) => {
       let allFragmentsSeen = true;

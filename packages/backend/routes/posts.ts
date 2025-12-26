@@ -250,6 +250,7 @@ export default function postsRoutes(app: Application) {
     async (req: AuthorizedRequest, res: Response) => {
       let success = false;
       const id = req.query.id as string;
+      const featured = req.query.featured == 'true'
 
       if (id) {
         const blog = await User.findOne({
@@ -293,12 +294,21 @@ export default function postsRoutes(app: Application) {
           ) {
             privacyArray.push(Privacy.FollowersOnly);
           }
+          const queryObject = null
           const postIds = await Post.findAll({
             order: [["createdAt", "DESC"]],
-            limit: completeEnvironment.postsPerPage,
+            limit: featured ? undefined : completeEnvironment.postsPerPage,
             attributes: ["id"],
             where: {
               createdAt: { [Op.lt]: getStartScrollParam(req) },
+              featured: featured ? {
+                [Op.ne]: null
+              } : {
+                [Op.or]: [{
+                [Op.ne]: null
+              }, {[Op.eq]: null}
+            ]
+          },
               userId: blogId,
               privacy: {
                 [Op.in]: privacyArray,

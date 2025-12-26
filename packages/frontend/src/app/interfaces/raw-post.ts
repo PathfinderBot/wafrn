@@ -24,5 +24,6 @@ export interface RawPost {
   remotePostId?: string
   userLikesPostRelations: { userId: string }[]
   emojis: Array<Emoji>
-  questionPoll?: QuestionPoll
+  questionPoll?: QuestionPoll,
+  featured?: Date
 }

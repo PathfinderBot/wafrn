@@ -32,7 +32,7 @@ export interface basicPost {
   title?: string
   remotePostId?: string
   privacy: number
-  featured: boolean
+  featured?: Date
   createdAt: string
   updatedAt: string
   userId: string
