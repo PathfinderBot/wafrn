@@ -27,11 +27,16 @@ export async function userToJSONLD(user: User) {
         const parsedValue = alsoKnownAsList?.optionValue
         if (typeof parsedValue === 'string') {
           for (let elem of parsedValue.split(',')) {
-            let url = new URL(elem)
+            let url = new URL(elem.replaceAll('"', ''))
             alsoKnownAs.push(url.toString())
           }
         }
-      } catch (_) { }
+      } catch (error) {
+        logger.debug({
+          message: 'Error parsing alsoknownas',
+          error: error
+        })
+      }
     }
     if (user.bskyDid) {
       alsoKnownAs.push(`at://${user.bskyDid}`)
