@@ -571,6 +571,8 @@ function userRoutes(app: Application) {
           await updateProfileOptions(JSON.stringify(options), userId);
         }
         await redisCache.del("userOptions:" + userId);
+        await redisCache.del("fediverse:user:base:" + userId);
+
       } catch (error) {
         logger.info({
           message: "Error updating user options",
