@@ -72,7 +72,7 @@ const workerFollow = new Worker(
     metrics: {
       maxDataPoints: MetricsTime.ONE_WEEK * 2,
     },
-    concurrency: completeEnvironment.workers.high,
+    concurrency: completeEnvironment.workers.low,
     lockDuration: 120000,
   }
 );
