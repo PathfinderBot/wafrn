@@ -9,7 +9,7 @@ import { existsSync } from 'fs'
 
 export async function userToJSONLD(user: User) {
   // test remove cache
-  const userCacheResult = undefined //await redisCache.get('fediverse:user:base:' + user.id)
+  const userCacheResult = await redisCache.get('fediverse:user:base:' + user.id)
   let userForFediverse: any
   if (userCacheResult) {
     userForFediverse = JSON.parse(userCacheResult)
