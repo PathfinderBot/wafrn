@@ -167,6 +167,10 @@
   @include gradient-text(#000, #810081, #aaa, #fff, #a8d47a, #3aa63f);
 }
 
+[data-tag='aromantic' i] {
+  @include gradient-text(#3DA542, #A7D379, #fff, #A9A9A9, #000);
+}
+
 [data-tag='demisexual' i] {
   @include gradient-text(#fff, #7c0070, #aaa);
 }
