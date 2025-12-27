@@ -115,7 +115,7 @@ export async function userToJSONLD(user: User) {
     if (user.userMigratedTo) {
       userForFediverse.migratedTo = user.userMigratedTo
     }
-    await redisCache.set('fediverse:user:base:' + user.id, JSON.stringify(userForFediverse), 'EX', 300)
+    await redisCache.set('fediverse:user:base:' + user.id, JSON.stringify(userForFediverse), 'EX', 60)
   }
   return userForFediverse
 }
