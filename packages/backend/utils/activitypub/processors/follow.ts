@@ -1,4 +1,4 @@
-import { Follows, Notification, User, UserOptions } from '../../../models/index.js'
+import { Follows, Notification, ServerBlock, User, UserOptions } from '../../../models/index.js'
 import { activityPubObject } from '../../../interfaces/fediverse/activityPubObject.js'
 import { createNotification } from '../../pushNotifications.js'
 import { acceptRemoteFollow } from '../acceptRemoteFollow.js'
@@ -33,10 +33,16 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
         }
       }).then(f => !!f)
     }
+    const blockExisting = await ServerBlock.findAll({
+      where: {
+        userBlockerId: userToBeFollowed.id,
+        blockedServerId: remoteUser.federatedHostId || '00000000-0000-0000-0000-000000000000'
+      }
+    })
     if (
-      !autoFollowThisUser &&
+      (!autoFollowThisUser &&
       dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' &&
-      dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true'
+      dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true') || blockExisting.length > 0
     ) {
       await rejectremoteFollow(userToBeFollowed.id, remoteUser.id)
       return
