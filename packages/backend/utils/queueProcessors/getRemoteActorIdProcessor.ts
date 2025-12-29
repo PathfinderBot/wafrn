@@ -358,6 +358,11 @@ async function getRemoteActorIdProcessor(job: Job) {
                 logger.info({ atUri, id: userPetition.id }, 'found bsky acc on ap alsoknownas')
                 const atDoc = await getDidDoc(atUri)
                 logger.info(atDoc, 'got did doc')
+                logger.info({
+                  bskyKnownAs: atDoc?.alsoKnownAs,
+                  fediKnownAs: userPetition.alsoKnownAs,
+                  isBridgyFed: userPetition.id.includes('brid.gy/')
+                }, 'merge dbg')
                 if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
                   // make it merged (wafrn user)
                   mergeAcc = 1
