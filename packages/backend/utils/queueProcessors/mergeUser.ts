@@ -3,6 +3,7 @@ import { Follows, Post, User } from '../../models/index.js'
 import { getAtProtoThread } from '../../atproto/utils/getAtProtoThread.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { getAdminUser } from '../getAdminAndDeletedUser.js'
+import { logger } from '../logger.js'
 
 const adminUser = await getAdminUser()
 
@@ -15,6 +16,8 @@ async function mergeUser(job: Job) {
     primaryUserId: string,
     userToMergeId: string
   } = job.data
+
+  logger.info(job.data, 'working on merging 2 users')
 
   // first we get the users
   const primaryUser = await User.findByPk(primaryUserId)
@@ -31,6 +34,7 @@ async function mergeUser(job: Job) {
   })
 
   for (const post of postsFromUserToMerge) {
+    logger.info({ id: post.id }, 'merging post')
     if (post.bskyUri && !post.remotePostId) {
       // bsky post
       await getAtProtoThread(post.bskyUri, true)
@@ -101,6 +105,8 @@ async function mergeUser(job: Job) {
   userToMerge.save()
 
   primaryUser.save()
+
+  logger.info(job.data, 'merged 2 users')
 }
 
 export { mergeUser }
