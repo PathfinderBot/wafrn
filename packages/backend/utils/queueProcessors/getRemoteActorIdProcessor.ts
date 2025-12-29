@@ -385,7 +385,10 @@ async function getRemoteActorIdProcessor(job: Job) {
               }
             }
           } catch (e) {
-            logger.warn(e)
+            logger.warn({
+              error: e,
+              userPetition
+            }, 'cannot merge user')
           }
         }
         if (
