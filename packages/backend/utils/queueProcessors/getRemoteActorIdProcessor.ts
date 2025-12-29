@@ -365,7 +365,7 @@ async function getRemoteActorIdProcessor(job: Job) {
                 } else if (atDoc) {
                   // check if bridgy fed
                   // we can't bridge bridged from web users so hard code to bsky.brid.gy
-                  if (userPetition.id.replace(/^https?:\/\//, '').startsWith('bsky.brid.gy')) {
+                  if (userPetition.id.includes('brid.gy/')) {
                     // make it merged (bridgy fed user)
                     mergeAcc = 2
                     logger.info(atUri, 'user is bridgy user')
