@@ -92,7 +92,10 @@ async function mergeUser(job: Job) {
     primaryUser.publicKey = userToMerge.publicKey
     primaryUser.followersCollectionUrl = userToMerge.followersCollectionUrl
     primaryUser.followingCollectionUrl = userToMerge.followingCollectionUrl
+    primaryUser.isBskyPrimary = true
   }
+
+  primaryUser.alternateUrl = userToMerge.url
 
   userToMerge.bskyDid = null
   userToMerge.remoteId = null

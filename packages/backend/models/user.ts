@@ -93,6 +93,8 @@ export interface UserAttributes {
   userMigratedTo: String | null;
   bskyInviteCode: String | null;
   displayUrl: String | null;
+  isBskyPrimary: Boolean | null;
+  alternateUrl: String | null;
 }
 
 @Table({
@@ -387,6 +389,18 @@ export class User
     type: DataType.STRING,
   })
   declare displayUrl: string;
+
+  @Column({
+    allowNull: true,
+    type: DataType.BOOLEAN,
+  })
+  declare isBskyPrimary: boolean | null;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING,
+  })
+  declare alternateUrl: string | null;
 
   @HasMany(() => MfaDetails, {
     sourceKey: "id",

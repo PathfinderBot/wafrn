@@ -367,7 +367,11 @@ async function getRemoteActorIdProcessor(job: Job) {
                   // make it merged (wafrn user)
                   mergeAcc = 1
                   logger.info({ atUri }, 'user is wafrn user')
-                } else if (atDoc && userPetition.id.includes('brid.gy/')) {
+                } else if (atDoc && (
+                  userPetition.id.includes('brid.gy/') ||
+                  userPetition.id.includes('wafrn.net/') ||
+                  userPetition.id.includes('waf.moe/')
+                )) {
                   // check if bridgy fed
                   // we can't bridge bridged from web users so hard code to bsky.brid.gy
                   mergeAcc = 2
