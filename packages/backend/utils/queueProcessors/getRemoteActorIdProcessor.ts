@@ -366,12 +366,12 @@ async function getRemoteActorIdProcessor(job: Job) {
                 if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
                   // make it merged (wafrn user)
                   mergeAcc = 1
-                  logger.info(atUri, 'user is wafrn user')
+                  logger.info({ atUri }, 'user is wafrn user')
                 } else if (atDoc && userPetition.id.includes('brid.gy/')) {
                   // check if bridgy fed
                   // we can't bridge bridged from web users so hard code to bsky.brid.gy
                   mergeAcc = 2
-                  logger.info(atUri, 'user is bridgy user')
+                  logger.info({ atUri }, 'user is bridgy user')
                 }
                 if (mergeAcc > 0) {
                   const oldUser = await User.findOne({
@@ -380,6 +380,7 @@ async function getRemoteActorIdProcessor(job: Job) {
                     }
                   })
                   if (oldUser) {
+                    logger.info({ oldUser, userRes }, 'merging accs')
                     // put this in a queue so it wont lag entire instance
                     await mergeUsersQueue.add("mergeUsers", {
                       primaryUserId: mergeAcc === 2 ? oldUser.id : userRes.id,

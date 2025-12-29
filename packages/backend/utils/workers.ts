@@ -285,4 +285,5 @@ export {
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,
   workerSendPostBsky,
+  workerMergeUsers
 };
