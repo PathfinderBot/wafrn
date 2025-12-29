@@ -353,23 +353,20 @@ async function getRemoteActorIdProcessor(job: Job) {
           try {
             if (userPetition.alsoKnownAs) {
               const atUri = (userPetition.alsoKnownAs as string[]).find(x => x.startsWith('did:') || x.startsWith('at://'))
-              logger.info({ atUri, id: userPetition.id }, 'found bsky acc on ap alsoknownas')
               let mergeAcc = 0
               if (atUri) {
+                logger.info({ atUri, id: userPetition.id }, 'found bsky acc on ap alsoknownas')
                 const atDoc = await getDidDoc(atUri)
                 logger.info(atDoc, 'got did doc')
                 if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
                   // make it merged (wafrn user)
                   mergeAcc = 1
                   logger.info(atUri, 'user is wafrn user')
-                } else if (atDoc) {
+                } else if (atDoc && userPetition.id.includes('brid.gy/')) {
                   // check if bridgy fed
                   // we can't bridge bridged from web users so hard code to bsky.brid.gy
-                  if (userPetition.id.includes('brid.gy/')) {
-                    // make it merged (bridgy fed user)
-                    mergeAcc = 2
-                    logger.info(atUri, 'user is bridgy user')
-                  }
+                  mergeAcc = 2
+                  logger.info(atUri, 'user is bridgy user')
                 }
                 if (mergeAcc > 0) {
                   const oldUser = await User.findOne({
