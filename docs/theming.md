@@ -14,11 +14,13 @@ a[href*="dQw4w9WgXcQ"]::before {
 }
 ```
 
-### Initial template made by [@vegeta@app.wafrn.net](https://app.wafrn.net/blog/vegeta)
+## Initial template made by [@vegeta@app.wafrn.net](https://app.wafrn.net/blog/vegeta)
 
 This is a theme that adds colored boxes arround everything so you can see what youre touching
 
-````
+<details>
+
+```css
 /* !!!!!!! this first bit puts boxes around everything so you can see what you're clicking on when you're inspecting elements. it is turned off by default but it might help you get your bearings maybe !!!!!!!
 
 * {
@@ -841,8 +843,9 @@ border-radius: 0px !important;
 /* ^ changes the theme editor */
 ```
 
+</details>
 
-### Initial template made by [@fizzyday@app.wafrn.net](https://app.wafrn.net/blog/fizzyday)
+## Initial template made by [@fizzyday@app.wafrn.net](https://app.wafrn.net/blog/fizzyday)
 
 Here is a theming template you can use to customize the appearance of your profile and how the dashboard appears to you.
 
@@ -851,6 +854,8 @@ It is not complete, nor perfect, but the most important elements are there, have
 Watch out for when you copy the CSS into wafrn, it changes the double-space indentations to single spaces, you may have to correct that manually for it to work.
 
 Feel free to leave any improvement as a PR, or any issue in the issues section
+
+<details>
 
 ```css
 /* VARIABLES */
@@ -1577,4 +1582,5 @@ fa-icon[mattooltip="Delete woot"]:hover {
   transition: var(--color-trans);
 }
 ```
-````
+
+</details>
