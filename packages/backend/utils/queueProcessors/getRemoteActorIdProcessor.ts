@@ -351,7 +351,7 @@ async function getRemoteActorIdProcessor(job: Job) {
           }
 
           try {
-            const atUri = (userPetition.alsoKnownAs as string[]).find(x => x.startsWith('at://'))
+            const atUri = (userPetition.alsoKnownAs as string[]).find(x => x.startsWith('did:'))
             let mergeAcc = 0
             if (atUri) {
               const atDoc = await getDidDoc(atUri)
