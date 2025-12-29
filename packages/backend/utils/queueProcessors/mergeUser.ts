@@ -17,6 +17,8 @@ async function mergeUser(job: Job) {
     userToMergeId: string
   } = job.data
 
+  if (primaryUserId === userToMergeId) return
+
   logger.info(job.data, 'working on merging 2 users')
 
   // first we get the users
