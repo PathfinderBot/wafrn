@@ -27,7 +27,7 @@ import { existsSync } from "fs";
 import { getDidDoc } from "../atproto/getDidDoc.js";
 import { getAtprotoUser } from "../../atproto/utils/getAtprotoUser.js";
 
-const mergeUsersQueue = new Queue("mergeUsersQueue", {
+const mergeUsersQueue = new Queue("mergeUsers", {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,

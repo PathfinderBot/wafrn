@@ -254,7 +254,8 @@ const workersToLogFail = [
   workerSendPostChunk,
   workerSendPushNotification,
   workerGenerateUserKeyPair,
-  workerFollow
+  workerFollow,
+  workerMergeUsers
 ];
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker);

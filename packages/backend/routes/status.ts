@@ -74,7 +74,7 @@ export default function statusRoutes(app: Application) {
         },
       });
 
-      const mergeUsersQueue = new Queue("mergeUsersQueue", {
+      const mergeUsersQueue = new Queue("mergeUsers", {
         connection: completeEnvironment.bullmqConnection,
         defaultJobOptions: {
           removeOnComplete: true,
