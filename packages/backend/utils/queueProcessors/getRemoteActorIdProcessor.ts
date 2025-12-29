@@ -351,37 +351,40 @@ async function getRemoteActorIdProcessor(job: Job) {
           }
 
           try {
-            const atUri = (userPetition.alsoKnownAs as string[]).find(x => x.startsWith('did:') || x.startsWith('at://'))
-            let mergeAcc = 0
-            if (atUri) {
-              const atDoc = await getDidDoc(atUri)
-              if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
-                // make it merged (wafrn user)
-                mergeAcc = 1
-              } else if (atDoc) {
-                // check if bridgy fed
-                // we can't bridge bridged from web users so hard code to bsky.brid.gy
-                if (userPetition.id.replace(/^https?:\/\//, '').startsWith('bsky.brid.gy')) {
-                  // make it merged (bridgy fed user)
-                  mergeAcc = 2
-                }
-              }
-              if (mergeAcc > 0) {
-                const oldUser = await User.findOne({
-                  where: {
-                    bskyDid: atUri.replace(/^at:\/\//, '')
+            if (userPetition.alsoKnownAs) {
+              const atUri = (userPetition.alsoKnownAs as string[]).find(x => x.startsWith('did:') || x.startsWith('at://'))
+              logger.info({ atUri, id: userPetition.id }, 'found bsky acc on ap alsoknownas')
+              let mergeAcc = 0
+              if (atUri) {
+                const atDoc = await getDidDoc(atUri)
+                if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
+                  // make it merged (wafrn user)
+                  mergeAcc = 1
+                } else if (atDoc) {
+                  // check if bridgy fed
+                  // we can't bridge bridged from web users so hard code to bsky.brid.gy
+                  if (userPetition.id.replace(/^https?:\/\//, '').startsWith('bsky.brid.gy')) {
+                    // make it merged (bridgy fed user)
+                    mergeAcc = 2
                   }
-                })
-                if (oldUser) {
-                  // put this in a queue so it wont lag entire instance
-                  await mergeUsersQueue.add("mergeUsers", {
-                    primaryUserId: mergeAcc === 2 ? oldUser.id : userRes.id,
-                    userToMergeId: mergeAcc === 1 ? oldUser.id : userRes.id
-                  });
                 }
+                if (mergeAcc > 0) {
+                  const oldUser = await User.findOne({
+                    where: {
+                      bskyDid: atUri.replace(/^at:\/\//, '')
+                    }
+                  })
+                  if (oldUser) {
+                    // put this in a queue so it wont lag entire instance
+                    await mergeUsersQueue.add("mergeUsers", {
+                      primaryUserId: mergeAcc === 2 ? oldUser.id : userRes.id,
+                      userToMergeId: mergeAcc === 1 ? oldUser.id : userRes.id
+                    });
+                  }
 
-                // if bridgy user, to prevent more issues, return the existing bsky user instead
-                if (mergeAcc === 2) return oldUser
+                  // if bridgy user, to prevent more issues, return the existing bsky user instead
+                  if (mergeAcc === 2) return oldUser
+                }
               }
             }
           } catch (e) {
