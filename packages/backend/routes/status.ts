@@ -74,6 +74,19 @@ export default function statusRoutes(app: Application) {
         },
       });
 
+      const mergeUsersQueue = new Queue("mergeUsersQueue", {
+        connection: completeEnvironment.bullmqConnection,
+        defaultJobOptions: {
+          removeOnComplete: true,
+          attempts: 6,
+          backoff: {
+            type: "exponential",
+            delay: 25000,
+          },
+          removeOnFail: false,
+        },
+      });
+
       const getRemoteActorQueue = new Queue("getRemoteActorId", {
         connection: completeEnvironment.bullmqConnection,
         defaultJobOptions: {
@@ -112,6 +125,7 @@ export default function statusRoutes(app: Application) {
       const sendPostBskyAwaiting = sendPostBskyQueue.count();
       const notificationsWSPending = wsWaitingQueue.count();
       const getRemoteActorWaiting = getRemoteActorQueue.count();
+      const mergeUsersAwaiting = mergeUsersQueue.count()
 
       await Promise.allSettled([
         sendPostFailed,
@@ -128,6 +142,7 @@ export default function statusRoutes(app: Application) {
         sendPostBskyAwaiting,
         notificationsWSPending,
         getRemoteActorWaiting,
+        mergeUsersAwaiting
       ]);
 
       res.send({
@@ -140,6 +155,7 @@ export default function statusRoutes(app: Application) {
         sendPostBskyAwaiting: await sendPostBskyAwaiting,
         socketPending: await notificationsWSPending,
         getRemoteActorWaiting: await getRemoteActorWaiting,
+        mergeUsersAwaiting: await mergeUsersAwaiting
       });
     }
   );
