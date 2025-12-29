@@ -367,12 +367,12 @@ async function getRemoteActorIdProcessor(job: Job) {
                 }
               }
               if (mergeAcc > 0) {
-                const oldUser = User.findOne({
+                const oldUser = await User.findOne({
                   where: {
                     bskyDid: atUri.replace(/^at:\/\//, '')
                   }
                 })
-                if (atUri) {
+                if (oldUser) {
                   // put this in a queue so it wont lag entire instance
                   await mergeUsersQueue.add("mergeUsers", {
                     primaryUserId: mergeAcc === 2 ? oldUser.id : userRes.id,

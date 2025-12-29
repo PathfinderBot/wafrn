@@ -160,7 +160,7 @@ function getCheckFediverseSignatureFunction(force = false) {
             if (
               remoteActor &&
               (await jsonld
-                .verifyRsaSignature2017(req.body, remoteActor.publicKey)
+                .verifyRsaSignature2017(req.body, remoteActor.publicKey ?? '')
                 .catch((error) => {
                   logger.debug({
                     message: `Problem with jsonld signature ${hostUrl}: ${remoteUserUrl}`,
@@ -174,8 +174,8 @@ function getCheckFediverseSignatureFunction(force = false) {
                 `POST Signature verifications failed for ${hostUrl}: ${remoteUserUrl}`
               );
               getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
-                .catch(() => {})
-                .then(() => {});
+                .catch(() => { })
+                .then(() => { });
             }
           } else {
             logger.debug(
@@ -198,8 +198,8 @@ function getCheckFediverseSignatureFunction(force = false) {
         if (now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000) {
           // while we will still fail this request, we do initiate an async forced update, so if the client retries it'll likely have an updated signature by that time
           getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
-            .catch(() => {})
-            .then(() => {});
+            .catch(() => { })
+            .then(() => { });
         }
       }
 
