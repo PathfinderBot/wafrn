@@ -158,7 +158,7 @@ async function internalGetDBUser(did: string, url: string) {
   } else {
     // OH WOW SOMETHING OFF
     foundUsers.forEach(async (usr) => {
-      if (!usr.email) {
+      if (!usr.email && !usr.remoteId) {
         usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
         await usr.save();
       }
