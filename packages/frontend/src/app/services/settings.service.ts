@@ -73,6 +73,7 @@ const settingKeyVariants = [
   'defaultDashboard',
   'automaticallyExpandPosts', // misspelled key
   'defaultPostEditorPrivacy',
+  'defaultPostRewootPrivacy',
   'enableAsks',
   'enableAnonymousAsks',
   'displayMentionsOfBlockedUsersFromOtherUsers', // lmao
@@ -486,6 +487,20 @@ export class SettingsService {
         '3': 'settings.postEditorPrivacyOptions.unlisted'
       }
     },
+    defaultPostRewootPrivacy: {
+      key: 'defaultPostRewootPrivacy',
+      translationKey: 'settings.defaultPostRewootPrivacy',
+      serverKey: 'wafrn.defaultPostRewootPrivacy',
+      localStorageKey: 'defaultPostRewootPrivacy',
+      type: 'select',
+      default: '0',
+      variants: {
+        '0': 'settings.postEditorPrivacyOptions.public',
+        '1': 'settings.postEditorPrivacyOptions.followersOnly',
+        '2': 'settings.postEditorPrivacyOptions.instanceOnly',
+        '3': 'settings.postEditorPrivacyOptions.unlisted'
+      }
+    },
     enableAsks: {
       key: 'enableAsks',
       translationKey: 'settings.enableAsks',
@@ -854,6 +869,7 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },
+        { type: 'key', value: 'defaultPostRewootPrivacy' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.followers' },
         {

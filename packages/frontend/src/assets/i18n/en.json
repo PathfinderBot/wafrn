@@ -386,6 +386,7 @@
     "hideFollows": "Hide my follows and followers",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
+    "defaultPostRewootPrivacy": "Default Rewoot privacy",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",

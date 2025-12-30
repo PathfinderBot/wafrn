@@ -641,7 +641,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         mentionedUsers: [],
         content: "",
         idPostToReblog: this.idPostToReblog,
-        privacy: 0,
+        privacy: this.loginService.getUserDefaultRewootPrivacyLevel(),
         media: [],
       });
       // wait 500 milliseconds

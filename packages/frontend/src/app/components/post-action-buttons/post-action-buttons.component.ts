@@ -315,7 +315,7 @@ export class PostActionButtonsComponent implements OnChanges {
         mentionedUsers: [],
         content: '',
         idPostToReblog: this.fragment().id,
-        privacy: 0,
+        privacy: this.loginService.getUserDefaultRewootPrivacyLevel(),
         media: [],
         withToken: accountIndex ? this.accountList().at(accountIndex)?.token : undefined
       })
