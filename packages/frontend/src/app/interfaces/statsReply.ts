@@ -10,4 +10,5 @@ export interface statsReply {
   socketPending: number;
   getRemoteActorWaiting: number;
   mergeUsersAwaiting: number;
+  mergePostsAwaiting: number;
 }
