@@ -69,7 +69,7 @@ export default async function getFollowedsIds(
       local ? baseCacheNameString + ':local:' + userId : baseCacheNameString + ':full:' + userId,
       JSON.stringify(result),
       'EX',
-      600
+      60
     )
     return result as string[]
   } catch (error) {
