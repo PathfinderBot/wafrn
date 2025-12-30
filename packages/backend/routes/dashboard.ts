@@ -322,8 +322,8 @@ export default function dashboardRoutes(app: Application) {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
           ...whereObject,
           ...(!isBskyEnabled ? {
-            bskyUri: {
-              [Op.is]: null
+            remotePostId: {
+              [Op.not]: null
             }
           } : {})
         }
