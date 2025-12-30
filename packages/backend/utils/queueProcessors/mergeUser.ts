@@ -78,27 +78,48 @@ async function mergeUser(job: Job) {
   })
 
   // then we migrate the user info and stuff
+  let notToUpdate = await Follows.findAll({
+    where: {
+      followerId: primaryUserId
+    }
+  })
   await Follows.update({
     followerId: primaryUserId
   }, {
     where: {
-      followerId: userToMergeId
+      followerId: userToMergeId,
+      followedId: {
+        [Op.notIn]: notToUpdate.map(elem => elem.followedId)
+      }
     }
   })
 
+  notToUpdate = await Follows.findAll({
+    where: {
+      followedId: primaryUserId
+    }
+  })
   await Follows.update({
     followedId: primaryUserId
   }, {
     where: {
-      followedId: userToMergeId
+      followedId: userToMergeId,
+      followerId: notToUpdate.map(elem => elem.followerId)
     }
   })
-
+  notToUpdate = await Follows.findAll({
+    where: {
+      followerId: primaryUserId
+    }
+  })
   await Follows.update({
     followerId: primaryUserId
   }, {
     where: {
-      followerId: userToMergeId
+      followerId: userToMergeId,
+      followedId: {
+        [Op.notIn]: notToUpdate.map(elem => elem.followedId)
+      }
     }
   })
 
