@@ -47,6 +47,14 @@
   </button>
   }
   @if (post.length - postsExpanded > 50 && finalPosts()) {
+    @if(!postCanExpand()) {
+      <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
+    Expand woot
+    @if (post.length - postsExpanded > 4) {
+    <span>({{ post.length - postsExpanded }} posts)</span>
+    }
+  </button>
+    }
   <!--We show the 2 final posts if the post is VERY long and there are A LOT of posts to still see-->
   <marquee>Thread collapsed because it's very long but we show you the end of the thread</marquee>
   <hr style="margin-top: 10vh" />

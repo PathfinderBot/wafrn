@@ -15,6 +15,7 @@ import { sendPostBsky } from "./queueProcessors/sendPostBsky.js";
 import { processSinglePostJob } from "../atproto/workers/processSinglePostWorker.js";
 import { follow } from "./follow.js";
 import { mergeUser } from "./queueProcessors/mergeUser.js";
+import { mergePost } from "./queueProcessors/mergePost.js";
 
 logger.info("started worker");
 const workerInbox = new Worker("inbox", (job: Job) => inboxWorker(job), {
@@ -72,9 +73,22 @@ const workerMergeUsers = new Worker(
     metrics: {
       maxDataPoints: MetricsTime.ONE_WEEK * 2,
     },
-    concurrency: 1,
+    concurrency: completeEnvironment.workers.low,
   }
 )
+
+const workerMergePost = new Worker(
+  "mergePosts",
+  (job: Job) => mergePost(job),
+  {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2,
+    },
+    concurrency: completeEnvironment.workers.low,
+    lockDuration: 120000,
+  }
+);
 
 const workerFollow = new Worker(
   "doFollow",
@@ -222,7 +236,8 @@ const workers = [
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,
   workerFollow,
-  workerMergeUsers
+  workerMergeUsers,
+  workerMergePost
 ];
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker);
@@ -255,7 +270,8 @@ const workersToLogFail = [
   workerSendPushNotification,
   workerGenerateUserKeyPair,
   workerFollow,
-  workerMergeUsers
+  workerMergeUsers,
+  workerMergePost
 ];
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker);
@@ -286,5 +302,6 @@ export {
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,
   workerSendPostBsky,
-  workerMergeUsers
+  workerMergeUsers,
+  workerMergePost
 };

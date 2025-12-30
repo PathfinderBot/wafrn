@@ -1,11 +1,11 @@
-import { Job } from 'bullmq'
+import { Job, Queue } from 'bullmq'
 import { Follows, Post, User } from '../../models/index.js'
 import { getAtProtoThread } from '../../atproto/utils/getAtProtoThread.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
-import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import { logger } from '../logger.js'
+import { Op } from 'sequelize'
+import { completeEnvironment } from '../backendOptions.js'
 
-const adminUser = await getAdminUser()
 
 // this thing is compute intensive
 async function mergeUser(job: Job) {
@@ -26,28 +26,47 @@ async function mergeUser(job: Job) {
   const userToMerge = await User.findByPk(userToMergeId)
 
   if (!primaryUser || !userToMerge) return
-
   // then we start the merge
   // we start by force refetching all the posts from usertomerge
   let postsFromUserToMerge = await Post.findAll({
     where: {
-      userId: userToMergeId
+      userId: userToMergeId,
+      [Op.or]: [
+        {
+          remotePostId: {
+            [Op.eq]: null
+          }
+        },
+        {
+          bskyUri: {
+            [Op.eq]: null
+          }
+        }
+      ]
+    }
+  })
+  
+  const mergePostQueue = new Queue('mergePosts', {
+    connection: completeEnvironment.bullmqConnection,
+    defaultJobOptions: {
+      removeOnComplete: true,
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 1000
+      },
+      removeOnFail: true
     }
   })
 
-  for (const post of postsFromUserToMerge) {
-    logger.info({ id: post.id }, 'merging post')
-    if (post.bskyUri && !post.remotePostId) {
-      // bsky post
-      await getAtProtoThread(post.bskyUri, true)
-    } else if (post.remotePostId && !post.bskyUri) {
-      // fedi post
-      const remotePost = await getPostThreadRecursive(adminUser, post.remotePostId)
-      if (remotePost) {
-        await getPostThreadRecursive(adminUser, post.remotePostId, undefined, remotePost.id)
-      }
-    }
-  }
+  mergePostQueue.addBulk(
+    postsFromUserToMerge.map(post => {
+      return {
+      name: `mergePost-${post.id}`,
+      data: { postId: post.id} }
+    })
+    
+  )
 
   // now for the remainings we just migrate all of them to the new user
   await Post.update({
@@ -111,7 +130,9 @@ async function mergeUser(job: Job) {
 
   primaryUser.save()
 
-  logger.info(job.data, 'merged 2 users')
+  logger.info({
+    message: `Merged users ${primaryUser.url} (primary) and ${userToMerge.url}` }
+  )
 }
 
 export { mergeUser }
