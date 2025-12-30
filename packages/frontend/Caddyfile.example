@@ -1,4 +1,4 @@
-cd{
+{
     email ${{ACME_EMAIL}}
 
     log {
