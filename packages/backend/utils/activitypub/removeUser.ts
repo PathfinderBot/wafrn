@@ -85,7 +85,7 @@ async function removeUser(userId: string) {
         }
       })
       //await userToRemove.save()
-      redisCache.del('userRemoteId:' + userToRemove.remoteId.toLocaleLowerCase())
+      redisCache.del('userRemoteId:' + (userToRemove.remoteId as string).toLocaleLowerCase())
       await userToRemove.destroy()
       deleted = true
     }

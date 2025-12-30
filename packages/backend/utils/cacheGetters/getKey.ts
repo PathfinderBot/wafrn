@@ -25,7 +25,7 @@ async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: U
     const userId = await getUserIdFromRemoteId(remoteUserUrl)
     if (userId && userId !== '') {
       user = (await User.findByPk(userId)) || undefined
-      remoteKey = user?.publicKey
+      remoteKey = user?.publicKey ?? ''
     } else {
       await queue.add(
         'getRemoteActorId',

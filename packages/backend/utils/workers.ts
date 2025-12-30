@@ -14,6 +14,8 @@ import { completeEnvironment } from "./backendOptions.js";
 import { sendPostBsky } from "./queueProcessors/sendPostBsky.js";
 import { processSinglePostJob } from "../atproto/workers/processSinglePostWorker.js";
 import { follow } from "./follow.js";
+import { mergeUser } from "./queueProcessors/mergeUser.js";
+import { mergePost } from "./queueProcessors/mergePost.js";
 
 logger.info("started worker");
 const workerInbox = new Worker("inbox", (job: Job) => inboxWorker(job), {
@@ -63,6 +65,30 @@ const workerSendPostChunk = new Worker(
   }
 );
 
+const workerMergeUsers = new Worker(
+  "mergeUsers",
+  (job: Job) => mergeUser(job),
+  {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2,
+    },
+    concurrency: completeEnvironment.workers.low,
+  }
+)
+
+const workerMergePost = new Worker(
+  "mergePosts",
+  (job: Job) => mergePost(job),
+  {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2,
+    },
+    concurrency: completeEnvironment.workers.low,
+    lockDuration: 120000,
+  }
+);
 
 const workerFollow = new Worker(
   "doFollow",
@@ -131,34 +157,34 @@ const workerProcessRemoteMediaData = new Worker(
 
 const workerProcessFirehose = completeEnvironment.enableBsky
   ? new Worker(
-      "firehoseQueue",
-      async (job: Job) => await processFirehose(job),
-      {
-        connection: completeEnvironment.bullmqConnection,
-        metrics: {
-          maxDataPoints: MetricsTime.ONE_WEEK * 2,
-        },
-        concurrency: completeEnvironment.workers.medium,
-        // up to one minute
-        lockDuration: 60000,
-      }
-    )
+    "firehoseQueue",
+    async (job: Job) => await processFirehose(job),
+    {
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2,
+      },
+      concurrency: completeEnvironment.workers.medium,
+      // up to one minute
+      lockDuration: 60000,
+    }
+  )
   : null;
 
 const workerProcessSinglePost = completeEnvironment.enableBsky
   ? new Worker(
-      "processSinglePost",
-      async (job: Job) => await processSinglePostJob(job),
-      {
-        connection: completeEnvironment.bullmqConnection,
-        metrics: {
-          maxDataPoints: MetricsTime.ONE_WEEK * 2,
-        },
-        concurrency: 25,
-        // up to one minute
-        lockDuration: 60000,
-      }
-    )
+    "processSinglePost",
+    async (job: Job) => await processSinglePostJob(job),
+    {
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2,
+      },
+      concurrency: 25,
+      // up to one minute
+      lockDuration: 60000,
+    }
+  )
   : null;
 
 const workerSendPushNotification = new Worker(
@@ -209,7 +235,9 @@ const workers = [
   workerSendPushNotification,
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,
-  workerFollow
+  workerFollow,
+  workerMergeUsers,
+  workerMergePost
 ];
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker);
@@ -241,7 +269,9 @@ const workersToLogFail = [
   workerSendPostChunk,
   workerSendPushNotification,
   workerGenerateUserKeyPair,
-  workerFollow
+  workerFollow,
+  workerMergeUsers,
+  workerMergePost
 ];
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker);
@@ -272,4 +302,6 @@ export {
   workerCheckPushNotificationDelivery,
   workerGenerateUserKeyPair,
   workerSendPostBsky,
+  workerMergeUsers,
+  workerMergePost
 };

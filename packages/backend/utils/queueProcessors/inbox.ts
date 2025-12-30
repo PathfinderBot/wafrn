@@ -194,9 +194,8 @@ async function inboxWorker(job: Job) {
                       "https://www.w3.org/ns/activitystreams",
                       `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
                     ],
-                    actor: `${
-                      completeEnvironment.frontendUrl
-                    }/fediverse/blog/${post?.dataValues.user.url.toLowerCase()}`,
+                    actor: `${completeEnvironment.frontendUrl
+                      }/fediverse/blog/${post?.dataValues.user.url.toLowerCase()}`,
                     id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${quoterPost.id}`,
                     type: "Accept",
                     object: req.body.object,
@@ -206,7 +205,7 @@ async function inboxWorker(job: Job) {
                   await postPetitionSigned(
                     acceptToSend,
                     (await User.scope("full").findByPk(post.userId)) as User,
-                    remoteUser.remoteInbox
+                    remoteUser.remoteInbox ?? ''
                   );
                 }
               }

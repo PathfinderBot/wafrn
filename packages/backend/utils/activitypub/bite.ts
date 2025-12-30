@@ -31,9 +31,8 @@ async function bitePostRemote(biteRelation: UserBitesPostRelation) {
 
   if (!user || !post) return;
 
-  const stringMyFollowers = `${
-    completeEnvironment.frontendUrl
-  }/fediverse/blog/${user.url.toLowerCase()}/followers`;
+  const stringMyFollowers = `${completeEnvironment.frontendUrl
+    }/fediverse/blog/${user.url.toLowerCase()}/followers`;
   const ownerOfBittenPost =
     post.user.remoteId ||
     `${completeEnvironment.frontendUrl}/fediverse/blog/${post.user.url}`;
@@ -42,9 +41,8 @@ async function bitePostRemote(biteRelation: UserBitesPostRelation) {
       "https://www.w3.org/ns/activitystreams",
       { Bite: "https://ns.mia.jetzt/as#Bite" },
     ],
-    actor: `${
-      completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLowerCase()}`,
+    actor: `${completeEnvironment.frontendUrl
+      }/fediverse/blog/${user.url.toLowerCase()}`,
     id: `${completeEnvironment.frontendUrl}/fediverse/bites/${biteRelation.userId}/${biteRelation.postId}`,
     target:
       post.remotePostId ||
@@ -57,8 +55,8 @@ async function bitePostRemote(biteRelation: UserBitesPostRelation) {
       post.privacy / 1 === Privacy.DirectMessage
         ? [ownerOfBittenPost]
         : post.privacy / 1 === Privacy.Public
-        ? ["https://www.w3.org/ns/activitystreams#Public", stringMyFollowers]
-        : [stringMyFollowers],
+          ? ["https://www.w3.org/ns/activitystreams#Public", stringMyFollowers]
+          : [stringMyFollowers],
   };
 
   // servers with shared inbox
@@ -130,12 +128,11 @@ async function biteUserRemote(biter: User, bittenUser: User) {
     ],
     id: `${completeEnvironment.frontendUrl}/fediverse/bites/${biter.id}/${bittenUser.id}`,
     type: "Bite",
-    actor: `${
-      completeEnvironment.frontendUrl
-    }/fediverse/blog/${biter.url.toLowerCase()}`,
-    target: bittenUser.remoteId,
-    object: bittenUser.remoteId,
-    to: [bittenUser.remoteId],
+    actor: `${completeEnvironment.frontendUrl
+      }/fediverse/blog/${biter.url.toLowerCase()}`,
+    target: bittenUser.remoteId ?? '',
+    object: bittenUser.remoteId ?? '',
+    to: [bittenUser.remoteId ?? ''],
   };
 
   // servers with shared inbox

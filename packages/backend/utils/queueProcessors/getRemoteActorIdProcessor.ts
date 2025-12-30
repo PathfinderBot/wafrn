@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import { Job, Queue } from "bullmq";
 import {
   Blocks,
   EmojiReaction,
@@ -24,6 +24,21 @@ import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import processExternalCustomCss from "../processExternalCustomCss.js";
 import { unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
+import { getDidDoc } from "../atproto/getDidDoc.js";
+import { getAtprotoUser } from "../../atproto/utils/getAtprotoUser.js";
+
+const mergeUsersQueue = new Queue("mergeUsers", {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 6,
+    backoff: {
+      type: "exponential",
+      delay: 25000,
+    },
+    removeOnFail: false,
+  },
+});
 
 // This function will return userid after processing it.
 async function getRemoteActorIdProcessor(job: Job) {
@@ -333,6 +348,67 @@ async function getRemoteActorIdProcessor(job: Job) {
             }
           } catch (e) {
             logger.warn(e)
+          }
+
+          try {
+            if (userPetition.alsoKnownAs) {
+              const atUri = (userPetition.alsoKnownAs as string[]).find(x => x.startsWith('did:') || x.startsWith('at://'))
+              let mergeAcc = 0
+              if (atUri) {
+                logger.info({ atUri, id: userPetition.id }, 'found bsky acc on ap alsoknownas')
+                const atDoc = await getDidDoc(atUri)
+                logger.info(atDoc, 'got did doc')
+                logger.info({
+                  bskyKnownAs: atDoc?.alsoKnownAs,
+                  fediKnownAs: userPetition.alsoKnownAs,
+                  isBridgyFed: userPetition.id.includes('brid.gy/')
+                }, 'merge dbg')
+                if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
+                  // make it merged (wafrn user)
+                  mergeAcc = 1
+                  logger.info({ atUri }, 'user is wafrn user')
+                } else if (atDoc && (
+                  userPetition.id.includes('brid.gy/')
+                )) {
+                  // check if bridgy fed
+                  // we can't bridge bridged from web users so hard code to bsky.brid.gy
+                  mergeAcc = 2
+                  logger.info({ atUri }, 'user is bridgy user')
+                } else if (atDoc && (
+                  userPetition.id.includes('wafrn.net/') ||
+                  userPetition.id.includes('waf.moe/') ||
+                  userPetition.id.includes('bark.wolp.chat/') ||
+                  userPetition.id.includes('gabboman.xyz/')
+                )) {
+                  // this is wafrn test
+                  mergeAcc = 1
+                  logger.info({ atUri }, 'user is wafrn user')
+                }
+                if (mergeAcc > 0) {
+                  const oldUser = await User.findOne({
+                    where: {
+                      bskyDid: atUri.replace(/^at:\/\//, '')
+                    }
+                  })
+                  if (oldUser) {
+                    logger.info({ oldUser, userRes }, 'merging accs')
+                    // put this in a queue so it wont lag entire instance
+                    await mergeUsersQueue.add("mergeUsers", {
+                      primaryUserId: mergeAcc === 2 ? oldUser.id : userRes.id,
+                      userToMergeId: mergeAcc === 1 ? oldUser.id : userRes.id
+                    });
+                  }
+
+                  // if bridgy user, to prevent more issues, return the existing bsky user instead
+                  if (mergeAcc === 2) return oldUser
+                }
+              }
+            }
+          } catch (e) {
+            logger.warn({
+              error: e,
+              userPetition
+            }, 'cannot merge user')
           }
         }
         if (
