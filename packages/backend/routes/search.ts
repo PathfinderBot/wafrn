@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op, Sequelize } from 'sequelize'
+import { Op, col, where, Sequelize } from 'sequelize'
 import { Emoji, Post, PostTag, User, UserEmojiRelation } from '../models/index.js'
 import { sequelize } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
@@ -43,9 +43,19 @@ export default function searchRoutes(app: Application) {
       const forceSearchUserObject = await User.findOne({
         attributes: ['url', 'avatar', 'name', 'description', 'remoteId', 'bskyDid', 'federatedHostId', 'id'],
         where: {
-          url: {
-            [Op.iLike]: forceSearchUser
-          }
+          [Op.or]: [
+            {
+              url: {
+                [Op.iLike]: forceSearchUser
+              }
+            },
+            {
+              [Op.and]: [
+                { alternateUrl: { [Op.not]: null } },
+                where(col('alternateUrl'), { [Op.iLike]: forceSearchUser })
+              ]
+            }
+          ]
         }
       })
       if (forceSearchUserObject) {
@@ -154,8 +164,14 @@ export default function searchRoutes(app: Application) {
           banned: {
             [Op.ne]: true
           },
-          url: {
-            [Op.iLike]: searchTerm
+          [Op.or]: {
+            url: {
+              [Op.iLike]: searchTerm
+            },
+            [Op.and]: [
+              { alternateUrl: { [Op.not]: null } },
+              where(col('alternateUrl'), { [Op.iLike]: searchTerm })
+            ]
           }
         }
       })

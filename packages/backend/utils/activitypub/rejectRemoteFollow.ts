@@ -28,7 +28,7 @@ async function rejectremoteFollow(userId: string, remoteUserId: string) {
       type: 'Follow'
     }
   }
-  const response = await postPetitionSigned(apObj, localUser, remoteUser.remoteInbox)
+  const response = await postPetitionSigned(apObj, localUser, remoteUser.remoteInbox ?? '')
   return response
 }
 
