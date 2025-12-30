@@ -47,9 +47,6 @@ export default function dashboardRoutes(app: Application) {
         return
       }
 
-      // making it true by default so if user not logged in they will still see bsky posts
-      let isBskyEnabled = true
-
       let postsWithTags: Promise<PostTag[]> | PostTag[] = []
       let whereObject: any = {
         privacy: Privacy.Public
@@ -134,7 +131,6 @@ export default function dashboardRoutes(app: Application) {
         }
         case 1: {
           const user = await User.findByPk(posterId)
-          isBskyEnabled = !!user?.enableBsky
           if (completeEnvironment.enableBsky && user && user.enableBsky) {
             try {
               // we give bluesky 2.5 seconds to load
@@ -321,11 +317,6 @@ export default function dashboardRoutes(app: Application) {
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
           ...whereObject,
-          ...(!isBskyEnabled ? {
-            remotePostId: {
-              [Op.not]: null
-            }
-          } : {})
         }
       })
 
