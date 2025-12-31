@@ -104,7 +104,9 @@ async function mergeUser(job: Job) {
   }, {
     where: {
       followedId: userToMergeId,
-      followerId: notToUpdate.map(elem => elem.followerId)
+      followerId: {
+        [Op.notIn]: notToUpdate.map(elem => elem.followerId)
+      }
     }
   })
   notToUpdate = await Follows.findAll({
