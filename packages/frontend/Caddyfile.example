@@ -62,7 +62,7 @@ ${{DOMAIN_NAME}} {
         reverse_proxy ${{BACKEND_HOST:-backend:9000}}
     }
 
-    handle_path /api/websocket/notifications {
+    handle_path /api/websocket* {
         reverse_proxy ${{WEBSOCKET_HOST:-backend:9000}}
     }
 

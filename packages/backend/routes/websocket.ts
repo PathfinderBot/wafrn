@@ -107,4 +107,8 @@ export default function websocketRoutes(app: Application) {
       }, 1000);
     }
   );
+
+  app.get('/api/websocket/test', (req, res) => {
+    res.send({ok: true})
+  })
 }
