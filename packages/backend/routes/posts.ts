@@ -97,11 +97,11 @@ export default function postsRoutes(app: Application) {
       const postSlug = req.params?.slug;
       const user = userUrl
         ? await User.findOne({
-            where: sequelize.where(
-              sequelize.fn("lower", sequelize.col("url")),
-              userUrl.toLowerCase()
-            ),
-          })
+          where: sequelize.where(
+            sequelize.fn("lower", sequelize.col("url")),
+            userUrl.toLowerCase()
+          ),
+        })
         : await getAdminUser();
       if (!user) {
         res.sendStatus(404);
@@ -250,6 +250,7 @@ export default function postsRoutes(app: Application) {
     async (req: AuthorizedRequest, res: Response) => {
       let success = false;
       const id = req.query.id as string;
+      const featured = req.query.featured == 'true'
 
       if (id) {
         const blog = await User.findOne({
@@ -293,12 +294,21 @@ export default function postsRoutes(app: Application) {
           ) {
             privacyArray.push(Privacy.FollowersOnly);
           }
+          const queryObject = null
           const postIds = await Post.findAll({
             order: [["createdAt", "DESC"]],
-            limit: completeEnvironment.postsPerPage,
+            limit: featured ? undefined : completeEnvironment.postsPerPage,
             attributes: ["id"],
             where: {
               createdAt: { [Op.lt]: getStartScrollParam(req) },
+              featured: featured ? {
+                [Op.ne]: null
+              } : {
+                [Op.or]: [{
+                  [Op.ne]: null
+                }, { [Op.eq]: null }
+                ]
+              },
               userId: blogId,
               privacy: {
                 [Op.in]: privacyArray,
@@ -353,7 +363,7 @@ export default function postsRoutes(app: Application) {
 
         // we check if this is in reply to bsky if user does not have bsky enabled
         if (!posterUser?.enableBsky && parent) {
-          if (parent.bskyUri) {
+          if (parent.bskyUri && !parent.remotePostId) {
             const parentPoster = await User.findByPk(parent.userId);
             if (parentPoster?.isRemoteUser) {
               return res.status(403).send({
@@ -485,19 +495,19 @@ export default function postsRoutes(app: Application) {
           // only count on reblogs
           const blocksExistingOnParents = parent
             ? await Blocks.count({
-                where: {
-                  [Op.or]: [
-                    {
-                      blockerId: posterId,
-                      blockedId: parent.userId,
-                    },
-                    {
-                      blockedId: posterId,
-                      blockerId: parent.userId,
-                    },
-                  ],
-                },
-              })
+              where: {
+                [Op.or]: [
+                  {
+                    blockerId: posterId,
+                    blockedId: parent.userId,
+                  },
+                  {
+                    blockedId: posterId,
+                    blockerId: parent.userId,
+                  },
+                ],
+              },
+            })
             : 0;
           if (blocksExistingOnParents + bannedUsers > 0) {
             success = false;
@@ -514,8 +524,8 @@ export default function postsRoutes(app: Application) {
         const content_warning = req.body.content_warning
           ? req.body.content_warning.trim()
           : posterUser?.NSFW
-          ? "This user has been marked as NSFW and the post has been labeled automatically as NSFW"
-          : "";
+            ? "This user has been marked as NSFW and the post has been labeled automatically as NSFW"
+            : "";
         let mediaToAdd: any[] = [];
         const avaiableEmojis = await getAvaiableEmojis();
         // we parse the content and we search emojis:

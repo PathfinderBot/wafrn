@@ -8,7 +8,7 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
 
 @Component({
   selector: "app-stats",
-  imports: [MatCardModule, TranslateModule, JsonPipe],
+  imports: [MatCardModule, TranslateModule],
   templateUrl: "./stats.component.html",
   styleUrl: "./stats.component.scss",
 })

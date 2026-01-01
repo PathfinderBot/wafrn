@@ -12,6 +12,14 @@ import { EnvironmentService } from './environment.service'
 export class BlogService {
   private http = inject(HttpClient);
 
+  async refetchUserData(url: string) {
+    const res = await firstValueFrom(
+      this.http.get(
+        EnvironmentService.environment.baseUrl + `/user/${url}/refetchData`
+      )
+    )
+    return true
+  }
 
   async getFollowers(url: string, followed = false): Promise<followsResponse[]> {
     const res = await firstValueFrom(

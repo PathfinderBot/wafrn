@@ -8,13 +8,17 @@ import { emojiToAPTag } from './emojiToAPTag.js'
 import { existsSync } from 'fs'
 
 export async function userToJSONLD(user: User) {
+  // test remove cache
   const userCacheResult = await redisCache.get('fediverse:user:base:' + user.id)
   let userForFediverse: any
   if (userCacheResult) {
     userForFediverse = JSON.parse(userCacheResult)
   } else {
-    const emojis = await getUserEmojis(user.id)
-    const userOptions = await getUserOptions(user.id)
+    let emojisPromise = getUserEmojis(user.id)
+    let userOptionsPromise = getUserOptions(user.id)
+    await Promise.all([emojisPromise, userOptionsPromise])
+    const emojis = await emojisPromise
+    const userOptions = await userOptionsPromise
     let unprocessedAttachments = userOptions.find((elem) => elem.optionName === 'fediverse.public.attachment')
     let alsoKnownAs: any[] = []
     let alsoKnownAsList = userOptions.find((elem) => elem.optionName === 'fediverse.public.alsoKnownAs')
@@ -23,11 +27,18 @@ export async function userToJSONLD(user: User) {
         const parsedValue = alsoKnownAsList?.optionValue
         if (typeof parsedValue === 'string') {
           for (let elem of parsedValue.split(',')) {
-            let url = new URL(elem)
+            let url = new URL(elem.replaceAll('"', ''))
             alsoKnownAs.push(url.toString())
           }
         }
-      } catch (_) { }
+      } catch (error) {
+        logger.debug({
+          message: 'Error parsing alsoknownas',
+          error: error,
+          value: alsoKnownAsList?.optionValue,
+          user: user.url
+        })
+      }
     }
     if (user.bskyDid) {
       alsoKnownAs.push(`at://${user.bskyDid}`)
@@ -106,7 +117,7 @@ export async function userToJSONLD(user: User) {
     if (user.userMigratedTo) {
       userForFediverse.migratedTo = user.userMigratedTo
     }
-    redisCache.set('fediverse:user:base:' + user.id, JSON.stringify(userForFediverse), 'EX', 300)
+    await redisCache.set('fediverse:user:base:' + user.id, JSON.stringify(userForFediverse), 'EX', 60)
   }
   return userForFediverse
 }

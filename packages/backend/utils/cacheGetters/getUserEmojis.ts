@@ -3,8 +3,6 @@ import { Emoji, UserEmojiRelation } from '../../models/index.js'
 import { redisCache } from '../redis.js'
 
 async function getUserEmojis(id: string) {
-  let cacheResult = await redisCache.get('userEmojis:' + id)
-  if (!cacheResult) {
     const emojiIds = await UserEmojiRelation.findAll({
       where: {
         userId: id
@@ -17,11 +15,7 @@ async function getUserEmojis(id: string) {
         }
       }
     })
-    cacheResult = JSON.stringify(emojis.map((elem: any) => elem.dataValues))
-    redisCache.set('userEmojis:' + id, cacheResult, 'EX', 600)
-  }
-
-  return cacheResult ? JSON.parse(cacheResult) : []
+    return emojis.map((elem: any) => elem.dataValues)
 }
 
 export { getUserEmojis }

@@ -175,7 +175,6 @@ export class DashboardComponent
   }
 
   async loadPosts(page: number) {
-    console.log("loading: " + page);
     this.currentPage += 1;
     this.loadingPosts = true;
     let scrollDate = new Date(this.timestamp);

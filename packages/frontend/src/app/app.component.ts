@@ -106,7 +106,6 @@ export class AppComponent implements OnInit {
     if (this.swUpdate.isEnabled) {
       console.log('SOFTWARE UPDATES ACTIVE - This is a PWA')
       this.swUpdate.checkForUpdate().then((updateAvaiable) => {
-        console.log(updateAvaiable)
         if (EnvironmentService.environment.disablePWA) {
           if ('caches' in window) {
             caches.keys().then(function (keyList) {

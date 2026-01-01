@@ -12,6 +12,7 @@ import { logger } from '../utils/logger.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { InviteCode } from '../models/inviteCode.js'
 import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
+import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -475,4 +476,19 @@ We just need a confirmation. Sorry for this and thanks.</p>
       res.send({ success: true })
     }
   )
+
+  app.post('/api/admin/forceContentWarningPost', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    const postId = req.body.postId
+    const content_warning = req.body.content_warning
+
+    const post = await Post.findByPk(postId)
+    if(post) {
+      post.content_warning = content_warning
+      await post.save();
+      await federatePostHasBeenEdited(post);
+      res.send({success: true})
+    } else {
+      res.sendStatus(404)
+    }
+  })
 }

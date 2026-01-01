@@ -45,6 +45,7 @@ import {
   PostView,
   ThreadViewPost,
 } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
+import { getAdminUser } from "../getAdminAndDeletedUser.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -496,6 +497,9 @@ async function getPostThreadRecursive(
         } catch (error) {
           logger.info("problem processing tags");
         }
+        try {
+          await addAsksToPost(newPost, fediTags);
+        } catch (error) {}
         if (mentionedUsersIds.length != 0) {
           await processMentions(newPost, mentionedUsersIds);
         }
@@ -695,6 +699,29 @@ async function getPostThreadRecursive(
         problem: error,
       });
       return null;
+    }
+  }
+}
+
+async function addAsksToPost(post: Post, tags: fediverseTag[]) {
+  const asks = tags.filter((elem) => elem.type === "AskQuestion");
+  if (asks.length) {
+    const ask = asks[0];
+    const userAsker = await getRemoteActor(
+      ask.actor as string,
+      await getAdminUser()
+    );
+    const textToRemove = ask.representation as string;
+    const askText = ask.name;
+    if (textToRemove) {
+      post.content = post.content.replace(textToRemove, "");
+      await Ask.create({
+        answered: true,
+        postId: post.id,
+        userAsker: userAsker ? userAsker.id : undefined,
+        userAsked: post.userId,
+      });
+      await post.save();
     }
   }
 }

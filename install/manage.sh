@@ -123,6 +123,7 @@ case $1 in
         echo "Backing up bluesky data"
         docker run --rm -v "wafrn_pds:/pds" -v "$(pwd):/backup" -w /pds node:20-alpine tar c -f - . | zstd > pds.tar.zst
       fi
+      cp ../../wafrn/.env environment
       echo "Done"
     popd
     if [ -f "$BACKUP_POST_BACKUP_TOOL" ]; then

@@ -328,6 +328,7 @@ export class LoginService {
       asksLevel: 'wafrn.public.asks',
       forceClassicLogo: 'wafrn.forceClassicLogo',
       defaultPostEditorPrivacy: 'wafrn.defaultPostEditorPrivacy',
+      defaultPostRewootPrivacy: 'wafrn.defaultPostRewootPrivacy',
       rssOptions: 'wafrn.enableRSS',
       mutedWords: 'wafrn.mutedWords',
       superMutedWords: 'wafrn.superMutedWords',
@@ -347,6 +348,7 @@ export class LoginService {
       notifyQuotes: 'wafrn.notifyQuotes',
       notifyFollows: 'wafrn.notifyFollows',
       notifyRewoots: 'wafrn.notifyRewoots',
+      notifyBites: 'wafrn.notifyBites',
       disableSounds: 'wafrn.disableSounds',
       replaceAIWithCocaine: 'wafrn.replaceAIWithCocaine',
       replaceAIWord: 'wafrn.replaceAIWord',
@@ -478,6 +480,11 @@ export class LoginService {
 
   getUserDefaultPostPrivacyLevel(): number {
     const res = localStorage.getItem('defaultPostEditorPrivacy')
+    return res ? parseInt(res) : 0
+  }
+
+  getUserDefaultRewootPrivacyLevel(): number {
+    const res = localStorage.getItem('defaultPostRewootPrivacy')
     return res ? parseInt(res) : 0
   }
 

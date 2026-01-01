@@ -29,6 +29,8 @@ import { logger } from '../utils/logger.js'
 import { UserAttributes } from '../models/user.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
+import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
+import { getAtProtoThread } from '../atproto/utils/getAtProtoThread.js'
 
 function notificationRoutes(app: Application) {
   app.get(
@@ -234,8 +236,29 @@ function notificationRoutes(app: Application) {
 
   app.get('/api/v2/notificationsCount', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
-
     const user = await User.findByPk(userId)
+    if(user?.enableBsky) {
+      try {
+        /**
+         * We do this thing asyncronously, no need to wait. we try obtaining replies, as its the most important bit!
+         * No need to block this petition, or if this fails or anything
+         */
+        getAtProtoSession(user).then(async (session) => {
+          let notificationsPetition = await session.listNotifications({
+            reasons: ['mention', 'reply', 'quote'],
+            limit: 25
+          })
+          if(notificationsPetition.success) {
+            await Promise.all(notificationsPetition.data.notifications.map(elem => getAtProtoThread(elem.uri)))
+          }
+        })
+      } catch (error) {
+        logger.info({
+          message: `User ${user.url} issue obtaining bsky notificaitons`,
+          error: error
+        })
+      }
+    }
     const blockedUsers = await getBlockedIds(userId, false)
     const startCountDate = user?.lastTimeNotificationsCheck
     const mutedPostIds = (await getMutedPosts(userId)).concat(await getMutedPosts(userId, true))
@@ -467,7 +490,8 @@ async function getNotificationOptions(userId: string) {
           'wafrn.notifyReactions',
           'wafrn.notifyQuotes',
           'wafrn.notifyFollows',
-          'wafrn.notifyRewoots'
+          'wafrn.notifyRewoots',
+          'wafrn.notifyBites'
         ]
       }
     }
@@ -478,6 +502,7 @@ async function getNotificationOptions(userId: string) {
   const optionNotifyReactions = options.find((elem) => elem.optionName == 'wafrn.notifyReactions')
   const optionNotifyFollows = options.find((elem) => elem.optionName == 'wafrn.notifyFollows')
   const optionNotifyRewoots = options.find((elem) => elem.optionName == 'wafrn.notifyRewoots')
+  const optionNotifyBites = options.find((elem) => elem.optionName == 'wafrn.notifyBites')
 
   const notificationTypes = []
   if (!optionNotifyQuotes || optionNotifyQuotes.optionValue != 'false') {
@@ -489,14 +514,16 @@ async function getNotificationOptions(userId: string) {
   if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
     notificationTypes.push('EMOJIREACT')
     notificationTypes.push('LIKE')
-    notificationTypes.push('POSTBITE')
-    notificationTypes.push('USERBITE')
   }
   if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
     notificationTypes.push('FOLLOW')
   }
   if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
     notificationTypes.push('REWOOT')
+  }
+  if(!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
+    notificationTypes.push('POSTBITE')
+    notificationTypes.push('USERBITE')
   }
 
   let res: any = {

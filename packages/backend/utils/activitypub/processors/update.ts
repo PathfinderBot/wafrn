@@ -33,7 +33,7 @@ async function UpdateActivity(
     case "OrderedCollection": {
       // TODO do something better than this
       // we force an update of the user who asked for this. Not the nicest thing to do but well
-      await getRemoteActor(remoteUser.remoteId, user, true);
+      await getRemoteActor(remoteUser.remoteId ?? '', user, true);
       // await signAndAccept({ body: body }, remoteUser, user)
       break;
     }

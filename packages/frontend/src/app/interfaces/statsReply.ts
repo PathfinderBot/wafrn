@@ -9,4 +9,6 @@ export interface statsReply {
   sendPostBskyAwaiting: number;
   socketPending: number;
   getRemoteActorWaiting: number;
+  mergeUsersAwaiting: number;
+  mergePostsAwaiting: number;
 }

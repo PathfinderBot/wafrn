@@ -2,7 +2,6 @@ import { Component, computed, input, signal, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { LoaderComponent } from '../loader/loader.component';
-import { JsonViewModule } from 'nxt-json-view';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatInputModule } from '@angular/material/input';
 import { EnvironmentService } from 'src/app/services/environment.service';
@@ -15,7 +14,6 @@ import { CommonModule } from '@angular/common';
     MatButtonModule,
     MatDialogTitle,
     MatDialogContent,
-    JsonViewModule,
     TranslateModule,
     CommonModule
   ],

@@ -193,7 +193,8 @@
         "followed": "Follows",
         "likesEmojiReacts": "Likes and EmojiReactions",
         "quoted": "Quotes",
-        "rewooted": "Rewoots"
+        "rewooted": "Rewoots",
+        "bitten": "Bites"
       },
       "manuallyAcceptFollows": "Manually accept follows",
       "disableForceAltText": "Allow uploading media without alt text (enable this only if you're evil)",
@@ -314,7 +315,9 @@
       "mutedBlockedWords": "Muted and Blocked Words",
       "blockBehavior": "Block Behavior",
       "mutedBlockedUsers": "Muted and Blocked Users",
-      "fun": "Fun"
+      "fun": "Fun",
+      "wellbeing": "Wellbeing",
+      "media": "Media"
     },
     "fediPropertyKey": "Property Name",
     "fediPropertyValue": "Property Value",
@@ -326,6 +329,8 @@
     "description": "Description",
     "changePasswordTitle": "Request a password change",
     "changePassword": "Change password",
+    "autoAcceptFollowsFromFollowing": "Automatically accept follow requests from followed users",
+    "autoRejectFollowsFromUsersYouDoNotFollow": "Automatically reject follow requests from users you don't follow",
     "changePasswordDescription": "A link change your password has been sent to your email.",
     "changePasswordMessage": "A link change your password has been sent to your email.",
     "disableEmailNotifications": "Disable email notifications",
@@ -381,6 +386,7 @@
     "hideFollows": "Hide my follows and followers",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
+    "defaultPostRewootPrivacy": "Default Rewoot privacy",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
@@ -425,7 +431,19 @@
       "fifteen": "Solve a game of 3x3 Fifteen (EXTREMELY EVIL)"
     },
     "disableLinkPreviews": "Disable link previews",
-    "disableLinkPreviewsDescription": "Hides the link preview cards below messages that have links."
+    "disableLinkPreviewsDescription": "Hides the link preview cards below messages that have links.",
+    "disableReactCounts": "Disable react counts",
+    "disableReactCountsDescription": "Do not show how many times a woot has been reacted to",
+    "disableFollowerCounts": "Disable follower counts",
+    "disableFollowerCountsDescription": "Do not show how many followers any user has",
+    "disableFollowingCounts": "Disable following counts",
+    "disableFollowingCountsDescription": "Do not show how many users any user is following",
+    "disablePostCounts": "Disable post counts",
+    "disablePostCountsDescription": "Do not show how many woots any given user has wooted",
+    "showMediaDescriptions": "Show media descriptions",
+    "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type.",
+    "markAllMediaAsNSFW": "Mark all media as NSFW",
+    "markAllMediaAsNSFWDescription": "Do not show any media by default until interacted with."
   },
   "dialog": {
     "confirm": "Confirm",
@@ -582,6 +600,7 @@
     "quotePost": "Quote woot",
     "bookmarkPost": "Bookmark woot",
     "unbookmarkPost": "Unbookmark woot",
+    "refetchUserData": "Refetch remote user data",
     "likePost": "Like woot",
     "dislikePost": "Remove like",
     "reportPost": "Report woot",

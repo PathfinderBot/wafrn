@@ -1,11 +1,7 @@
 import { Application, Response } from 'express'
-import { Op, Sequelize } from 'sequelize'
+import { Op, col, where, Sequelize } from 'sequelize'
 import { Emoji, Post, PostTag, User, UserEmojiRelation } from '../models/index.js'
 import { sequelize } from '../models/index.js'
-
-import getStartScrollParam from '../utils/getStartScrollParam.js'
-import getPosstGroupDetails from '../utils/getPostGroupDetails.js'
-import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 
 import { searchRemoteUser } from '../utils/activitypub/searchRemoteUser.js'
@@ -15,8 +11,6 @@ import checkIpBlocked from '../utils/checkIpBlocked.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getUnjointedPosts } from '../utils/baseQueryNew.js'
-import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
-import { getUserEmojis } from '../utils/cacheGetters/getUserEmojis.js'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
 import { getAtProtoThread } from '../atproto/utils/getAtProtoThread.js'
 import { logger } from '../utils/logger.js'
@@ -49,9 +43,19 @@ export default function searchRoutes(app: Application) {
       const forceSearchUserObject = await User.findOne({
         attributes: ['url', 'avatar', 'name', 'description', 'remoteId', 'bskyDid', 'federatedHostId', 'id'],
         where: {
-          url: {
-            [Op.iLike]: forceSearchUser
-          }
+          [Op.or]: [
+            {
+              url: {
+                [Op.iLike]: forceSearchUser
+              }
+            },
+            {
+              [Op.and]: [
+                { alternateUrl: { [Op.not]: null } },
+                where(col('alternateUrl'), { [Op.iLike]: forceSearchUser })
+              ]
+            }
+          ]
         }
       })
       if (forceSearchUserObject) {
@@ -160,8 +164,14 @@ export default function searchRoutes(app: Application) {
           banned: {
             [Op.ne]: true
           },
-          url: {
-            [Op.iLike]: searchTerm
+          [Op.or]: {
+            url: {
+              [Op.iLike]: searchTerm
+            },
+            [Op.and]: [
+              { alternateUrl: { [Op.not]: null } },
+              where(col('alternateUrl'), { [Op.iLike]: searchTerm })
+            ]
           }
         }
       })

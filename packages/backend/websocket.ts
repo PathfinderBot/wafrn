@@ -104,61 +104,21 @@ if (
   logger.info(
     `ATTENTION: your server doesnt seem to have an unique index on bskyuri. this is a bug. we will investigate soon in a future release`
   );
-  // clearDuplicatedBskyUris().then(async (res) => {
+  clearDuplicatedBskyUris().then(async (res) => {
   //   // well turns out that we dont have indexes
   //   // we have cleaned duplicated before. if a duplicate apears here we just crash and do it again :3
-  //   await queryInterface.sequelize.query(
-  //     `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`
-  //   );
-  // });
+  await queryInterface.sequelize.query(
+    `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`
+  );
+   });
 }
 
 async function clearDuplicatedBskyUris(): Promise<boolean> {
   let duplicatedURIs: any = await queryInterface.sequelize.query(
-    `SELECT "a"."id" FROM "posts" as "a" LEFT JOIN "posts" as "b" ON "a"."bskyUri" = "b"."bskyUri" WHERE "a"."bskyUri" IS NOT NULL AND "a"."id" != "b"."id" LIMIT 50`
+    `UPDATE "posts" SET "bskyUri"= NULL WHERE "bskyUri" IN (SELECT "bskyUri" FROM (SELECT "bskyUri", COUNT(*)
+FROM "posts" WHERE "bskyUri" IS NOT NULL
+GROUP BY "bskyUri"
+HAVING COUNT(*) > 1))`
   );
-  while (duplicatedURIs[1].rowCount) {
-    const postIds: string[] = duplicatedURIs[0].map((elem: any) => elem.id);
-    for await (const postId of postIds) {
-      const originalPost = await Post.findByPk(postId);
-      if (originalPost && originalPost.bskyUri) {
-        const duplicatePosts = await Post.findAll({
-          where: {
-            id: {
-              [Op.ne]: postId,
-            },
-            bskyUri: originalPost.bskyUri,
-          },
-        });
-        if (duplicatePosts && duplicatePosts.length > 0) {
-          // TIME TO CLEAN.
-          const duplicatedPostIds = duplicatePosts.map((elem) => elem.id);
-          await Post.update(
-            {
-              parentId: postId,
-            },
-            {
-              where: {
-                parentId: {
-                  [Op.in]: duplicatedPostIds,
-                },
-              },
-            }
-          );
-          await Post.destroy({
-            where: {
-              id: {
-                [Op.in]: duplicatedPostIds,
-              },
-            },
-          });
-        }
-      }
-    }
-    duplicatedURIs = await queryInterface.sequelize.query(
-      `SELECT "a"."id" FROM "posts" as "a" LEFT JOIN "posts" as "b" ON "a"."bskyUri" = "b"."bskyUri" WHERE "a"."bskyUri" IS NOT NULL AND "a"."id" != "b"."id" LIMIT 50`
-    );
-  }
-
   return true;
 }

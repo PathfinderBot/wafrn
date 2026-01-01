@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +12,7 @@ import { BlogLinkModule } from "src/app/directives/blog-link/blog-link.module";
 
 @Component({
   selector: "app-avatar-small",
-  imports: [CommonModule, RouterModule, BlogLinkModule],
+  imports: [RouterModule, BlogLinkModule],
   templateUrl: "./avatar-small.component.html",
   styleUrl: "./avatar-small.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,

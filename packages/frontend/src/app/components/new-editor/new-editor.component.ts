@@ -1,4 +1,4 @@
-import { CommonModule, Location } from "@angular/common";
+import { Location } from "@angular/common";
 import {
   Component,
   computed,
@@ -99,7 +99,6 @@ type EmojiSuggestion = {
 @Component({
   selector: "app-new-editor",
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatCardModule,
@@ -122,8 +121,8 @@ type EmojiSuggestion = {
     MatBadgeModule,
     MatChipsModule,
     MatProgressBarModule,
-    MatTooltipModule,
-  ],
+    MatTooltipModule
+],
   templateUrl: "./new-editor.component.html",
   styleUrl: "./new-editor.component.scss",
 })
@@ -642,7 +641,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         mentionedUsers: [],
         content: "",
         idPostToReblog: this.idPostToReblog,
-        privacy: 0,
+        privacy: this.loginService.getUserDefaultRewootPrivacyLevel(),
         media: [],
       });
       // wait 500 milliseconds

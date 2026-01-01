@@ -13,6 +13,8 @@ import {
   workerProcessRemotePostView,
   workerProcessRemoteMediaData,
   workerGenerateUserKeyPair,
+  workerMergeUsers,
+  workerMergePost,
 } from "./utils/workers.js";
 
 import { SignedRequest } from "./interfaces/fediverse/signedRequest.js";
@@ -149,6 +151,8 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
     workerProcessRemotePostView,
     workerProcessRemoteMediaData,
     workerGenerateUserKeyPair,
+    workerMergeUsers,
+    workerMergePost
   ];
   if (completeEnvironment.enableBsky) {
     workers.push(workerProcessFirehose as Worker);

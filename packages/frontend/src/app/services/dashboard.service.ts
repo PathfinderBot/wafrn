@@ -136,7 +136,8 @@ export class DashboardService {
   async getBlogPage(
     page: number,
     blogId: string,
-    startScrollDate?: number
+    startScrollDate?: number,
+    featured?: boolean
   ): Promise<ProcessedPost[][]> {
     try {
       let result: ProcessedPost[][] = [];
@@ -155,6 +156,9 @@ export class DashboardService {
         this.startScrollDate.getTime().toString()
       );
       petitionData = petitionData.set("id", blogId);
+      if(featured) {
+        petitionData = petitionData.set('featured', true)
+      }
       const dashboardPetition: unlinkedPosts = await firstValueFrom(
         this.http.get<unlinkedPosts>(
           `${EnvironmentService.environment.baseUrl}/v2/blog`,

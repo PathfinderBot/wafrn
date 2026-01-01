@@ -103,7 +103,8 @@ async function getAtprotoUser(
     userFound = userFound
       ? userFound
       : await internalGetDBUser(newData.bskyDid, newData.url);
-    if (userFound?.email) {
+      // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
+    if (userFound?.email || (userFound?.remoteId && !userFound.isBskyPrimary)) {
       return (await User.findByPk(userFound.id)) as User;
     }
     if (userFound && !userFound.email) {
@@ -157,7 +158,7 @@ async function internalGetDBUser(did: string, url: string) {
   } else {
     // OH WOW SOMETHING OFF
     foundUsers.forEach(async (usr) => {
-      if (!usr.email) {
+      if (!usr.email && !usr.remoteId) {
         usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
         await usr.save();
       }

@@ -13,7 +13,7 @@
         class="input-height-btn"
         [matTooltip]="getPrivacyIconName()"
         [disabled]="editing"
-      >
+        >
         <fa-icon size="lg" [icon]="getPrivacyIcon()"></fa-icon>
       </button>
       <button
@@ -23,7 +23,7 @@
         [disabled]="data?.quote"
         class="input-height-btn"
         matTooltip="{{ 'editor.quoteButton' | translate }}"
-      >
+        >
         <fa-icon size="lg" [icon]="quoteIcon"></fa-icon>
       </button>
       @if (pollQuestions.length === 0) {
@@ -36,7 +36,7 @@
         mat-icon-button
         (click)="showContentWarning = !showContentWarning"
         matTooltip="{{ 'editor.contentWarningTooltip' | translate }}"
-      >
+        >
         @if (contentWarning.includes('meta')) {
           <fa-icon size="lg" [icon]="skull"></fa-icon>
         } @else {
@@ -48,11 +48,11 @@
         mat-icon-button
         (click)="openEmojiSelection()"
         matTooltip="{{ 'editor.insertEmojiTooltip' | translate }}"
-      >
+        >
         <svg width="20px" height="20px" viewBox="0 0 1000 1000" fill="currentColor" class="vertical-align-middle">
           <path
             d="M958 104h-62V43q0-17-12-29T855 2h-87q-17 0-29 12t-12 29v61h-62q-17 0-29 12t-12 29v4q-81-34-169-34-116 0-217 59-97 57-154 154-58 100-58 216.5T84 761q57 98 154 155 101 58 217.5 58T672 916q97-57 154-155 59-100 59-216 0-88-34-168h4q17 0 29-12t12-29v-62h62q17 0 29-12t12-29v-88q0-17-12-29t-29-12zM644 348q29 0 49.5 20.5t20.5 49-20.5 49T644 487t-49.5-20.5-20.5-49 20.5-49T644 348zm-377 0q29 0 49.5 20.5t20.5 49-20.5 49T267 487t-49.5-20.5-20.5-49 20.5-49T267 348zm473 255q-10 70-50.5 126.5t-102 88.5-132 32-132-32-102-88.5T171 603q-2-16 8.5-27.5T206 564h499q16 0 26.5 11.5T740 603zm218-370H855v103h-87V233H665v-88h103V43h87v102h103v88z"
-          />
+            />
         </svg>
       </button>
       <!--
@@ -78,7 +78,7 @@
           (postCreatorForm.value.content === initialContent && tags.length === 0 && uploadedMedias.length === 0)
         "
         matTooltip="{{ 'editor.publishWoot' | translate }}"
-      >
+        >
         <fa-icon size="lg" [icon]="postIcon"></fa-icon>
       </button>
     </div>
@@ -90,7 +90,7 @@
       class="mb-2 bsky-progress-bar"
       [class.length-overflow]="calculateBskyPostLengthPercent() > 1"
       [value]="calculateBskyPostLengthPercent() * 100"
-    >
+      >
     </mat-progress-bar>
   } @else {
     <hr class="mt-0 mb-2 editor-separator" />
@@ -144,7 +144,7 @@
             [(ngModel)]="contentWarning"
             placeholder="{{ 'editor.sensitivePlaceholder' | translate }}"
             matNativeControl
-          />
+            />
         </mat-form-field>
       </section>
       <hr class="mb-2 menu-hr" />
@@ -152,20 +152,21 @@
 
     @if (showMentionedUsersList) {
       <section class="px-2">
-        <mat-chip-grid
-          *ngIf="mentionedUsers.length >= 1"
-          #chipGrid
-          aria-label="Mentioned users"
-          class="mb-2 mention-chip-grid"
-        >
-          @for (user of mentionedUsers; track $index) {
-            <mat-chip-row [editable]="true" (removed)="removeMention($index)">
-              {{ user.url }}
-              <button matChipRemove [attr.aria-label]="'remove ' + user.url">x</button>
-            </mat-chip-row>
-          }
-          <input [hidden]="true" placeholder="Add mention (FEATURE NOT DONE YET)" [matChipInputFor]="chipGrid" />
-        </mat-chip-grid>
+        @if (mentionedUsers.length >= 1) {
+          <mat-chip-grid
+            #chipGrid
+            aria-label="Mentioned users"
+            class="mb-2 mention-chip-grid"
+            >
+            @for (user of mentionedUsers; track $index) {
+              <mat-chip-row [editable]="true" (removed)="removeMention($index)">
+                {{ user.url }}
+                <button matChipRemove [attr.aria-label]="'remove ' + user.url">x</button>
+              </mat-chip-row>
+            }
+            <input [hidden]="true" placeholder="Add mention (FEATURE NOT DONE YET)" [matChipInputFor]="chipGrid" />
+          </mat-chip-grid>
+        }
       </section>
     }
 
@@ -174,7 +175,7 @@
         class="mb-3 w-full mat-form-field-no-background mat-form-field-no-padding woot-textfield"
         appearance="fill"
         floatLabel="always"
-      >
+        >
         <mat-label>{{ 'editor.wootTextLabel' | translate }}</mat-label>
         <textarea
           #postContent
@@ -259,7 +260,7 @@
       <mat-form-field
         class="w-full mat-form-field-no-outline mat-form-field-no-padding woot-tagfield"
         appearance="outline"
-      >
+        >
         <mat-label>{{ 'editor.tagFieldLabel' | translate }}</mat-label>
         <input [(ngModel)]="tags" placeholder="{{ 'common.commaSeparation' | translate }}" matNativeControl />
       </mat-form-field>
@@ -269,174 +270,174 @@
             @if (tag && tag !== '' && tag.trim() !== '') {
               <span class="tag" [attr.data-tag]="tagMap(tag)"
                 ><span class="tag-text">#{{ tagMap(tag) }}</span></span
-              >
+                >
+              }
             }
-          }
-        </div>
+          </div>
+        }
+      </section>
+
+      @if (data && data.post && !editing) {
+        <section class="px-3 pt-2">
+          <p class="mb-2">{{ 'editor.inReplyTo' | translate }}</p>
+          <div class="quoted-post">
+            @if (data.post) {
+              <app-post-header [fragment]="data.post" [disableLink]="true"></app-post-header>
+            }
+            <app-post-fragment [fragment]="data.post"></app-post-fragment>
+          </div>
+        </section>
       }
-    </section>
 
-    @if (data && data.post && !editing) {
-      <section class="px-3 pt-2">
-        <p class="mb-2">{{ 'editor.inReplyTo' | translate }}</p>
-        <div class="quoted-post">
-          @if (data.post) {
-            <app-post-header [fragment]="data.post" [disableLink]="true"></app-post-header>
-          }
-          <app-post-fragment [fragment]="data.post"></app-post-fragment>
-        </div>
-      </section>
-    }
-
-    @if (quoteOpen && !data?.quote && !quoteLoading) {
-      <section class="px-3 mt-3 flex gap-3 align-items-center">
-        <mat-form-field class="w-full mat-form-field-no-padding add-quote-input" appearance="outline">
-          <mat-label> {{ 'editor.wootQuoteBoxLabel' | translate }} </mat-label>
-          <input
-            [(ngModel)]="urlPostToQuote"
-            placeholder="{{ 'editor.wootQuoteBoxPlaceholder' | translate }}"
-            matNativeControl
-          />
-        </mat-form-field>
-        <button
-          (click)="loadQuote()"
-          mat-stroked-button
-          color="primary"
-          class="mat-circle-button"
-          [disabled]="urlPostToQuote === ''"
-        >
-          <fa-icon [icon]="addIcon"></fa-icon>
-        </button>
-      </section>
-    }
-    @if (quoteLoading || data?.quote) {
-      <section class="px-3 pt-2" id="quote">
-        <p class="mb-1 quote-label">{{ 'editor.quoteTitle' | translate }}</p>
-        <div class="quoted-post">
-          @if (quoteLoading) {
-            <div class="flex align-items-center justify-content-center">
-              <mat-spinner class="my-4" color="accent" diameter="32"></mat-spinner>
-            </div>
-          }
-          @if (data && data.quote) {
-            <button
-              mat-flat-button
-              class="mat-circle-button delete-btn"
-              color="warn"
-              (click)="data ? (data.quote = undefined) : null; quoteOpen = false"
+      @if (quoteOpen && !data?.quote && !quoteLoading) {
+        <section class="px-3 mt-3 flex gap-3 align-items-center">
+          <mat-form-field class="w-full mat-form-field-no-padding add-quote-input" appearance="outline">
+            <mat-label> {{ 'editor.wootQuoteBoxLabel' | translate }} </mat-label>
+            <input
+              [(ngModel)]="urlPostToQuote"
+              placeholder="{{ 'editor.wootQuoteBoxPlaceholder' | translate }}"
+              matNativeControl
+              />
+          </mat-form-field>
+          <button
+            (click)="loadQuote()"
+            mat-stroked-button
+            color="primary"
+            class="mat-circle-button"
+            [disabled]="urlPostToQuote === ''"
             >
-              <fa-icon size="lg" [icon]="closeIcon"></fa-icon>
-            </button>
-            <div class="mr-6">
-              <app-post-header [fragment]="data.quote"></app-post-header>
-            </div>
-            <app-post-fragment [fragment]="data.quote" fragmentType="quote"></app-post-fragment>
-          }
-        </div>
-      </section>
-    }
+            <fa-icon [icon]="addIcon"></fa-icon>
+          </button>
+        </section>
+      }
+      @if (quoteLoading || data?.quote) {
+        <section class="px-3 pt-2" id="quote">
+          <p class="mb-1 quote-label">{{ 'editor.quoteTitle' | translate }}</p>
+          <div class="quoted-post">
+            @if (quoteLoading) {
+              <div class="flex align-items-center justify-content-center">
+                <mat-spinner class="my-4" color="accent" diameter="32"></mat-spinner>
+              </div>
+            }
+            @if (data && data.quote) {
+              <button
+                mat-flat-button
+                class="mat-circle-button delete-btn"
+                color="warn"
+                (click)="data ? (data.quote = undefined) : null; quoteOpen = false"
+                >
+                <fa-icon size="lg" [icon]="closeIcon"></fa-icon>
+              </button>
+              <div class="mr-6">
+                <app-post-header [fragment]="data.quote"></app-post-header>
+              </div>
+              <app-post-fragment [fragment]="data.quote" fragmentType="quote"></app-post-fragment>
+            }
+          </div>
+        </section>
+      }
 
-    <div class="px-3 pt-3 bottom-information-bar">
-      <div class="min-w-0">
-        <div class="posting-label">{{ 'editor.usernameLabel' | translate }}</div>
-        @if (accountList().length > 1) {
-          <button mat-button [mat-menu-trigger-for]="accountMenu" class="user-info-button">
+      <div class="px-3 pt-3 bottom-information-bar">
+        <div class="min-w-0">
+          <div class="posting-label">{{ 'editor.usernameLabel' | translate }}</div>
+          @if (accountList().length > 1) {
+            <button mat-button [mat-menu-trigger-for]="accountMenu" class="user-info-button">
+              <div class="user-info">
+                <img [src]="toAvatarUrl(currentUser())" class="user-avatar" />
+                <span [innerHTML]="currentUser()?.url ?? 'No one?!'" class="user-name"></span>
+                <fa-icon [icon]="dropdownIcon" class="icon-dropdown"></fa-icon>
+              </div>
+            </button>
+          } @else {
             <div class="user-info">
               <img [src]="toAvatarUrl(currentUser())" class="user-avatar" />
               <span [innerHTML]="currentUser()?.url ?? 'No one?!'" class="user-name"></span>
-              <fa-icon [icon]="dropdownIcon" class="icon-dropdown"></fa-icon>
             </div>
-          </button>
-        } @else {
-          <div class="user-info">
-            <img [src]="toAvatarUrl(currentUser())" class="user-avatar" />
-            <span [innerHTML]="currentUser()?.url ?? 'No one?!'" class="user-name"></span>
-          </div>
-        }
-      </div>
-      @if (showBlueskyOptions) {
-        <div
-          class="ml-auto post-length-note"
-          [class.warning-text]="calculateBskyPostLengthPercent() > 1"
+          }
+        </div>
+        @if (showBlueskyOptions) {
+          <div
+            class="ml-auto post-length-note"
+            [class.warning-text]="calculateBskyPostLengthPercent() > 1"
           [matTooltip]="
             (calculateBskyPostLength() > 300 ? 'editor.bskyLengthWarning' : 'editor.bskyLengthNotice') | translate
           "
-        >
-          <p>{{ calculateBskyPostLength() }}/300 {{ 'common.characters' | translate }}</p>
-          <p class="post-length-warning">
-            {{ 'editor.bskyLengthLabel' | translate }} <fa-icon [icon]="infoIcon"></fa-icon>
-          </p>
-        </div>
-      }
-    </div>
+            >
+            <p>{{ calculateBskyPostLength() }}/300 {{ 'common.characters' | translate }}</p>
+            <p class="post-length-warning">
+              {{ 'editor.bskyLengthLabel' | translate }} <fa-icon [icon]="infoIcon"></fa-icon>
+            </p>
+          </div>
+        }
+      </div>
 
-    <!-- Popup Menus -->
-    <mat-menu #accountMenu="matMenu">
-      @for (account of accountList(); track $index) {
-        <button mat-menu-item (click)="setPoster($index)">
-          <div class="user-info"
-            ><img [src]="toAvatarUrl(account.blog)" class="user-avatar" />
-            <span [innerHTML]="account.blog.url" class="user-name"></span
-          ></div>
-        </button>
-      }
-    </mat-menu>
-    <mat-menu #menu="matMenu">
-      @for (option of privacyOptions; track $index) {
-        @if (option.level != 20) {
-          <button (click)="this.privacy = option.level" mat-menu-item>
-            <fa-icon [icon]="option.icon"></fa-icon>
-            {{ option.name }}
-          </button>
-        }
-      }
-    </mat-menu>
-    <div
-      #suggestionsMenu
-      class="suggestions-menu"
-      [hidden]="!suggestionLoading() && !suggestionMatches()"
-      [style.left.px]="cursorPosition.x"
-      [style.top.px]="cursorPosition.y"
-    >
-      <div class="flex flex-column">
-        @if (suggestionLoading()) {
-          <div class="flex gap-3 align-items-center suggestion-item">
-            <app-avatar-small></app-avatar-small>
-            <mat-progress-bar class="max-w-16rem suggestion-text-placeholder" mode="indeterminate"></mat-progress-bar>
-          </div>
-        } @else if (suggestions.length === 0 && emojiSuggestions.length === 0) {
-          <div class="suggestion-item">{{ 'editor.noResults' | translate }}</div>
-        }
-        @for (emoji of emojiSuggestions; track $index) {
-          <div (click)="insertEmoji(emoji)" class="flex gap-2 align-items-center suggestion-item">
-            @if (emoji.img) {
-              <img [src]="emoji.img" class="emoji-suggestion-image" />
+      <!-- Popup Menus -->
+      <mat-menu #accountMenu="matMenu">
+        @for (account of accountList(); track $index) {
+          <button mat-menu-item (click)="setPoster($index)">
+            <div class="user-info"
+              ><img [src]="toAvatarUrl(account.blog)" class="user-avatar" />
+              <span [innerHTML]="account.blog.url" class="user-name"></span
+              ></div>
+            </button>
+          }
+        </mat-menu>
+        <mat-menu #menu="matMenu">
+          @for (option of privacyOptions; track $index) {
+            @if (option.level != 20) {
+              <button (click)="this.privacy = option.level" mat-menu-item>
+                <fa-icon [icon]="option.icon"></fa-icon>
+                {{ option.name }}
+              </button>
             }
-            {{ emoji.id }}
-            @if (emoji.id !== emoji.name) {
-              {{ emoji.name }}
+          }
+        </mat-menu>
+        <div
+          #suggestionsMenu
+          class="suggestions-menu"
+          [hidden]="!suggestionLoading() && !suggestionMatches()"
+          [style.left.px]="cursorPosition.x"
+          [style.top.px]="cursorPosition.y"
+          >
+          <div class="flex flex-column">
+            @if (suggestionLoading()) {
+              <div class="flex gap-3 align-items-center suggestion-item">
+                <app-avatar-small></app-avatar-small>
+                <mat-progress-bar class="max-w-16rem suggestion-text-placeholder" mode="indeterminate"></mat-progress-bar>
+              </div>
+            } @else if (suggestions.length === 0 && emojiSuggestions.length === 0) {
+              <div class="suggestion-item">{{ 'editor.noResults' | translate }}</div>
             }
-          </div>
-        }
-        @for (user of suggestions; track $index) {
-          <div (click)="insertMention(user)" class="flex gap-2 align-items-center suggestion-item">
-            <app-avatar-small
-              [disabled]="true"
+            @for (emoji of emojiSuggestions; track $index) {
+              <div (click)="insertEmoji(emoji)" class="flex gap-2 align-items-center suggestion-item">
+                @if (emoji.img) {
+                  <img [src]="emoji.img" class="emoji-suggestion-image" />
+                }
+                {{ emoji.id }}
+                @if (emoji.id !== emoji.name) {
+                  {{ emoji.name }}
+                }
+              </div>
+            }
+            @for (user of suggestions; track $index) {
+              <div (click)="insertMention(user)" class="flex gap-2 align-items-center suggestion-item">
+                <app-avatar-small
+                  [disabled]="true"
               [user]="{
                 avatar: user.img,
                 url: user.text,
                 name: user.text,
                 id: ''
               }"
-            ></app-avatar-small>
-            {{ user.text }}
+                ></app-avatar-small>
+                {{ user.text }}
+              </div>
+            }
           </div>
-        }
+        </div>
       </div>
-    </div>
-  </div>
-</mat-card>
+    </mat-card>
 
-<p style="text-align: center">
-  <span [innerHTML]="'editor.editorGuide' | translate" addClass="mb-3"> </span>
-</p>
+    <p style="text-align: center">
+      <span [innerHTML]="'editor.editorGuide' | translate" addClass="mb-3"> </span>
+    </p>

@@ -51,6 +51,8 @@ const settingKeyVariants = [
   // everything else - stored in the options table
   'theme', // This and v
   'lightDarkMode', // this option are weirdly named in localStorage because legacy reasons
+  'autoAcceptFollowsFromFollowing',
+  'autoRejectFollowsFromUsersYouDoNotFollow',
   'additionalStyleModes',
   'useOtherUserCustomThemes',
   'askToUseOtherUserCustomThemes',
@@ -71,6 +73,7 @@ const settingKeyVariants = [
   'defaultDashboard',
   'automaticallyExpandPosts', // misspelled key
   'defaultPostEditorPrivacy',
+  'defaultPostRewootPrivacy',
   'enableAsks',
   'enableAnonymousAsks',
   'displayMentionsOfBlockedUsersFromOtherUsers', // lmao
@@ -89,7 +92,13 @@ const settingKeyVariants = [
   'disableReplies',
   'confirmOpenCw',
   'confirmOpenCwAnnoyance',
-  'disableLinkPreviews'
+  'disableLinkPreviews',
+  'disableReactCounts',
+  'disableFollowerCounts',
+  'disableFollowingCounts',
+  'disablePostCounts',
+  'showMediaDescriptions',
+  'markAllMediaAsNSFW'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -234,6 +243,24 @@ export class SettingsService {
       profileOption: true,
       type: 'checkbox',
       default: false
+    },
+    autoAcceptFollowsFromFollowing: {
+      key: 'autoAcceptFollowsFromFollowing',
+      translationKey: 'settings.autoAcceptFollowsFromFollowing',
+      serverKey: 'wafrn.autoAcceptFollowsFromFollowing',
+      localStorageKey: 'autoAcceptFollowsFromFollowing',
+      type: 'checkbox',
+      default: false,
+      enableIfSetting: (s) => s.manuallyAcceptsFollows === true
+    },
+    autoRejectFollowsFromUsersYouDoNotFollow: {
+      key: 'autoRejectFollowsFromUsersYouDoNotFollow',
+      translationKey: 'settings.autoRejectFollowsFromUsersYouDoNotFollow',
+      serverKey: 'wafrn.autoRejectFollowsFromUsersYouDoNotFollow',
+      localStorageKey: 'autoRejectFollowsFromUsersYouDoNotFollow',
+      type: 'checkbox',
+      default: false,
+      enableIfSetting: (s) => s.autoAcceptFollowsFromFollowing === true
     },
     rssOptions: {
       key: 'rssOptions',
@@ -460,6 +487,20 @@ export class SettingsService {
         '3': 'settings.postEditorPrivacyOptions.unlisted'
       }
     },
+    defaultPostRewootPrivacy: {
+      key: 'defaultPostRewootPrivacy',
+      translationKey: 'settings.defaultPostRewootPrivacy',
+      serverKey: 'wafrn.defaultPostRewootPrivacy',
+      localStorageKey: 'defaultPostRewootPrivacy',
+      type: 'select',
+      default: '0',
+      variants: {
+        '0': 'settings.postEditorPrivacyOptions.public',
+        '1': 'settings.postEditorPrivacyOptions.followersOnly',
+        '2': 'settings.postEditorPrivacyOptions.instanceOnly',
+        '3': 'settings.postEditorPrivacyOptions.unlisted'
+      }
+    },
     enableAsks: {
       key: 'enableAsks',
       translationKey: 'settings.enableAsks',
@@ -643,6 +684,60 @@ export class SettingsService {
       localStorageKey: 'disableLinkPreviews',
       type: 'checkbox',
       default: false
+    },
+    disableReactCounts: {
+      key: 'disableReactCounts',
+      translationKey: 'settings.disableReactCounts',
+      translationDescriptionKey: 'settings.disableReactCountsDescription',
+      serverKey: 'wafrn.disableReactCounts',
+      localStorageKey: 'disableReactCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disableFollowerCounts: {
+      key: 'disableFollowerCounts',
+      translationKey: 'settings.disableFollowerCounts',
+      translationDescriptionKey: 'settings.disableFollowerCountsDescription',
+      serverKey: 'wafrn.disableFollowerCounts',
+      localStorageKey: 'disableFollowerCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disableFollowingCounts: {
+      key: 'disableFollowingCounts',
+      translationKey: 'settings.disableFollowingCounts',
+      translationDescriptionKey: 'settings.disableFollowingCountsDescription',
+      serverKey: 'wafrn.disableFollowingCounts',
+      localStorageKey: 'disableFollowingCounts',
+      type: 'checkbox',
+      default: false
+    },
+    disablePostCounts: {
+      key: 'disablePostCounts',
+      translationKey: 'settings.disablePostCounts',
+      translationDescriptionKey: 'settings.disablePostCountsDescription',
+      serverKey: 'wafrn.disablePostCounts',
+      localStorageKey: 'disablePostCounts',
+      type: 'checkbox',
+      default: false
+    },
+    showMediaDescriptions: {
+      key: 'showMediaDescriptions',
+      translationKey: 'settings.showMediaDescriptions',
+      translationDescriptionKey: 'settings.showMediaDescriptionsDescription',
+      serverKey: 'wafrn.showMediaDescriptions',
+      localStorageKey: 'showMediaDescriptions',
+      type: 'checkbox',
+      default: false
+    },
+    markAllMediaAsNSFW: {
+      key: 'markAllMediaAsNSFW',
+      translationKey: 'settings.markAllMediaAsNSFW',
+      translationDescriptionKey: 'settings.markAllMediaAsNSFWDescription',
+      serverKey: 'wafrn.markAllMediaAsNSFW',
+      localStorageKey: 'markAllMediaAsNSFW',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -765,6 +860,8 @@ export class SettingsService {
       values: [
         { type: 'header', value: 'settings.header.profilePrivacy' },
         { type: 'key', value: 'manuallyAcceptsFollows' },
+        { type: 'key', value: 'autoAcceptFollowsFromFollowing' },
+        { type: 'key', value: 'autoRejectFollowsFromUsersYouDoNotFollow' },
         { type: 'key', value: 'enableAsks' },
         { type: 'key', value: 'enableAnonymousAsks' },
         { type: 'key', value: 'hideProfileNotLoggedIn' },
@@ -772,6 +869,7 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },
+        { type: 'key', value: 'defaultPostRewootPrivacy' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.followers' },
         {
@@ -809,6 +907,16 @@ export class SettingsService {
       title: 'settings.sidebar.miscellaneous',
       type: 'generic',
       values: [
+        { type: 'header', value: 'settings.header.wellbeing' },
+        { type: 'key', value: 'disableReactCounts' },
+        { type: 'key', value: 'disableFollowerCounts' },
+        { type: 'key', value: 'disableFollowingCounts' },
+        { type: 'key', value: 'disablePostCounts' },
+        { type: 'separator' },
+        { type: 'header', value: 'settings.header.media' },
+        { type: 'key', value: 'showMediaDescriptions' },
+        { type: 'key', value: 'markAllMediaAsNSFW' },
+        { type: 'separator' },
         { type: 'header', value: 'settings.header.fun' },
         { type: 'key', value: 'replaceAIWithCocaine' },
         { type: 'key', value: 'replaceAIWord' },

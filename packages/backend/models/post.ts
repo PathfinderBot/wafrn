@@ -81,7 +81,7 @@ export interface PostAttributes {
   bskyUri?: string | null;
   bskyCid?: string | null;
   privacy?: PrivacyType;
-  featured?: boolean;
+  featured?: Date | null;
   isReblog?: boolean;
   isDeleted?: boolean;
   userId?: string;
@@ -166,10 +166,10 @@ export class Post
 
   @Column({
     allowNull: true,
-    type: DataType.BOOLEAN,
-    defaultValue: false,
+    type: DataType.DATE,
+    defaultValue: null,
   })
-  declare featured: boolean;
+  declare featured: Date | null;
 
   @Column({
     allowNull: true,

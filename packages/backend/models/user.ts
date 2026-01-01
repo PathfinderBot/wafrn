@@ -66,18 +66,18 @@ export interface UserAttributes {
   lastLoginIp?: string;
   lastTimeNotificationsCheck?: Date;
   privateKey?: string | null;
-  publicKey?: string;
+  publicKey?: string | null;
   federatedHostId?: string | null;
-  remoteInbox?: string;
-  remoteId?: string;
-  remoteMentionUrl?: string;
+  remoteInbox?: string | null;
+  remoteId?: string | null;
+  remoteMentionUrl?: string | null;
   isBot?: boolean;
   banned?: boolean | null;
   role?: number;
   manuallyAcceptsFollows?: boolean;
   headerImage?: string;
-  followersCollectionUrl?: string;
-  followingCollectionUrl?: string;
+  followersCollectionUrl?: string | null;
+  followingCollectionUrl?: string | null;
   followerCount?: number;
   followingCount?: number;
   disableEmailNotifications?: boolean;
@@ -93,6 +93,8 @@ export interface UserAttributes {
   userMigratedTo: String | null;
   bskyInviteCode: String | null;
   displayUrl: String | null;
+  isBskyPrimary: Boolean | null;
+  alternateUrl: String | null;
 }
 
 @Table({
@@ -122,8 +124,7 @@ export interface UserAttributes {
 })
 export class User
   extends Model<UserAttributes, UserAttributes>
-  implements UserAttributes
-{
+  implements UserAttributes {
   @Column({
     primaryKey: true,
     type: DataType.UUID,
@@ -237,7 +238,7 @@ export class User
     allowNull: true,
     type: DataType.STRING,
   })
-  declare publicKey: string;
+  declare publicKey: string | null;
 
   @ForeignKey(() => FederatedHost)
   @Column({
@@ -250,19 +251,19 @@ export class User
     allowNull: true,
     type: DataType.STRING,
   })
-  declare remoteInbox: string;
+  declare remoteInbox: string | null;
 
   @Column({
     allowNull: true,
     type: DataType.STRING(768),
   })
-  declare remoteId: string;
+  declare remoteId: string | null;
 
   @Column({
     allowNull: true,
     type: DataType.STRING,
   })
-  declare remoteMentionUrl: string;
+  declare remoteMentionUrl: string | null;
 
   @Column({
     allowNull: true,
@@ -302,13 +303,13 @@ export class User
     allowNull: true,
     type: DataType.STRING,
   })
-  declare followersCollectionUrl: string;
+  declare followersCollectionUrl: string | null;
 
   @Column({
     allowNull: true,
     type: DataType.STRING,
   })
-  declare followingCollectionUrl: string;
+  declare followingCollectionUrl: string | null;
 
   @Column({
     allowNull: true,
@@ -388,6 +389,18 @@ export class User
     type: DataType.STRING,
   })
   declare displayUrl: string;
+
+  @Column({
+    allowNull: true,
+    type: DataType.BOOLEAN,
+  })
+  declare isBskyPrimary: boolean | null;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING,
+  })
+  declare alternateUrl: string | null;
 
   @HasMany(() => MfaDetails, {
     sourceKey: "id",

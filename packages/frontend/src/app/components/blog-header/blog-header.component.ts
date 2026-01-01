@@ -4,7 +4,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatDialog } from "@angular/material/dialog";
 import { MatMenuModule } from "@angular/material/menu";
-import { ActivatedRoute, RouterModule } from "@angular/router";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import {
   faChevronDown,
@@ -22,6 +22,7 @@ import {
   faPlaneDeparture,
   faRobot,
   faScrewdriverWrench,
+  faRefresh,
 } from "@fortawesome/free-solid-svg-icons";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import { BlocksService } from "src/app/services/blocks.service";
@@ -38,6 +39,7 @@ import { TranslatePipe } from "@ngx-translate/core";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { BlogService } from "src/app/services/blog.service";
 import { RawJsonDialogComponent } from "../raw-json-dialog/raw-json-dialog.component";
+import { SettingsService } from "src/app/services/settings.service";
 
 @Component({
   selector: "app-blog-header",
@@ -67,6 +69,8 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   simpleDialog = inject(SimpleDialogService);
   blogService = inject(BlogService);
   utilsService = inject(UtilsService);
+  settingsService = inject(SettingsService);
+  router = inject(Router);
 
   parser = new DOMParser();
   blogDetails = input<BlogDetails>();
@@ -99,6 +103,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   unblockServerIcon = faServer;
   biteUserIcon = faCookieBite;
   movedAccountIcon = faPlaneDeparture;
+  refetchUserIcon = faRefresh
   allowAsk = false;
   allowRemoteAsk = false;
   isBlueskyUser = false;
@@ -303,6 +308,11 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       data: { details: this.blogDetails() },
       width: "800px",
     });
+  }
+
+  async refetchUserData() {
+    await this.blogService.refetchUserData(this.blogDetails()?.url ?? '')
+    window.location.reload()
   }
 
   formatBigNumber(n: number) {
