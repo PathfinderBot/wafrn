@@ -24,7 +24,7 @@ export default function websocketRoutes(app: Application) {
     }
   );
   app.ws(
-    "/api/websocket/notifications",
+    "/notifications",
     async (ws: WebSocket, req: Request) => {
       logger.debug(`Websocket connected`);
       let authorized = false;
@@ -108,7 +108,7 @@ export default function websocketRoutes(app: Application) {
     }
   );
 
-  app.get('/api/websocket/test', (req, res) => {
+  app.get('/test', (req, res) => {
     res.send({ok: true})
   })
 }
