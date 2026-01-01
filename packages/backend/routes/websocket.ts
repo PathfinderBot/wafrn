@@ -7,6 +7,7 @@ import { Job, Queue, Worker } from "bullmq";
 // forgive me @javascript@app.wafrn.net
 import { completeEnvironment } from "../utils/backendOptions.js";
 import EventEmitter from "events";
+import { User } from "../models/index.js";
 
 export default function websocketRoutes(app: Application) {
   const notificationEmitter: EventEmitter = new EventEmitter();
@@ -67,6 +68,8 @@ export default function websocketRoutes(app: Application) {
                     } else {
                       authorized = true;
                       userId = jwtData.userId as string;
+                      const user = (await User.findByPk(userId)) as User
+                      logger.debug(`User ${user.url} conected to websocket`)
                       notificationEmitter.on(userId, (data) => {
                         ws.send(
                           JSON.stringify({
