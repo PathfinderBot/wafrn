@@ -115,50 +115,10 @@ if (
 
 async function clearDuplicatedBskyUris(): Promise<boolean> {
   let duplicatedURIs: any = await queryInterface.sequelize.query(
-    `SELECT "a"."id" FROM "posts" as "a" LEFT JOIN "posts" as "b" ON "a"."bskyUri" = "b"."bskyUri" WHERE "a"."bskyUri" IS NOT NULL AND "a"."id" != "b"."id" LIMIT 50`
+    `UPDATE "posts" SET "bskyUri"= NULL WHERE "bskyUri" IN (SELECT "bskyUri" FROM (SELECT "bskyUri", COUNT(*)
+FROM "posts" WHERE "bskyUri" IS NOT NULL
+GROUP BY "bskyUri"
+HAVING COUNT(*) > 1))`
   );
-  while (duplicatedURIs[1].rowCount) {
-    const postIds: string[] = duplicatedURIs[0].map((elem: any) => elem.id);
-    for await (const postId of postIds) {
-      const originalPost = await Post.findByPk(postId);
-      if (originalPost && originalPost.bskyUri) {
-        const duplicatePosts = await Post.findAll({
-          where: {
-            id: {
-              [Op.ne]: postId,
-            },
-            bskyUri: originalPost.bskyUri,
-          },
-        });
-        if (duplicatePosts && duplicatePosts.length > 0) {
-          // TIME TO CLEAN.
-          const duplicatedPostIds = duplicatePosts.map((elem) => elem.id);
-          await Post.update(
-            {
-              parentId: postId,
-            },
-            {
-              where: {
-                parentId: {
-                  [Op.in]: duplicatedPostIds,
-                },
-              },
-            }
-          );
-          await Post.destroy({
-            where: {
-              id: {
-                [Op.in]: duplicatedPostIds,
-              },
-            },
-          });
-        }
-      }
-    }
-    duplicatedURIs = await queryInterface.sequelize.query(
-      `SELECT "a"."id" FROM "posts" as "a" LEFT JOIN "posts" as "b" ON "a"."bskyUri" = "b"."bskyUri" WHERE "a"."bskyUri" IS NOT NULL AND "a"."id" != "b"."id" LIMIT 50`
-    );
-  }
-
   return true;
 }
