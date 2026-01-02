@@ -121,6 +121,7 @@ export const baseEnvironment: Environment = {
   autoFollowAdmin: true,
   minimumAgeToRegister: 18,
   donationUrl: 'http://localhost/about',
+  bskyRotationKeyK256: '',
   frontendEnvironment: {
     logo: '/assets/logo.png',
     frontUrl: 'http://localhost:4200',

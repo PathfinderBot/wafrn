@@ -83,5 +83,6 @@ export interface Environment {
   minimumAgeToRegister: number
   disableShowingBlockedServers: boolean
   donationUrl?: string
+  bskyRotationKeyK256: string
   frontendEnvironment: any
 }
