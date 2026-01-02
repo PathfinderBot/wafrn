@@ -143,6 +143,23 @@ export class ReportListComponent implements OnInit {
     this.loadReports();
   }
 
+  async forceCw(postId: string) {
+    let confirm = false;
+    let reason = "";
+    const dialogRes = await this.simpleDialog.createPromptDialog({
+        title: "dialog.admin.promptForceCwPostTitle",
+        titleSuffix: '',
+        content: "dialog.admin.promptForceCwPostDescription",
+        label: "",
+      });
+    if(!dialogRes?.confirmed) {
+      return
+    }
+    reason = dialogRes.value;
+    this.adminService.forceCWPost(postId, reason)
+    
+  }
+
   async forceNSFW(report: UserReport) {
     const confirm = await this.simpleDialog.createConfirmDialog({
       title: "dialog.admin.confirmNSFWTitle",

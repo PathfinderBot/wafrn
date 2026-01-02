@@ -483,9 +483,18 @@ We just need a confirmation. Sorry for this and thanks.</p>
 
     const post = await Post.findByPk(postId)
     if(post) {
-      post.content_warning = content_warning
+      post.content_warning = 'Mod team forced CW: ' + content_warning
       await post.save();
       await federatePostHasBeenEdited(post);
+      await PostReport.update(
+        {
+        resolved: true
+      },{
+        where: {
+          postId: post.id
+        }
+      }
+    )
       res.send({success: true})
     } else {
       res.sendStatus(404)
