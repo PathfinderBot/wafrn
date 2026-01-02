@@ -135,7 +135,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         if (user.alternateUrl && !user.isBskyPrimary) {
           postText = postText.replaceAll(
             mentionRegex,
-            `@${user.alternateUrl}`
+            `${user.alternateUrl}`
           );
         } else {
           postText = postText.replaceAll(
