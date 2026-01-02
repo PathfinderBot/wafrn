@@ -10,4 +10,6 @@ Juan D Jara: `@javascript@app.wafrn.net` `@djara.dev` (mobile app!)
 
 Sztupy: `@sztupy@social.sztupy.hu` `@sztupy.bsky.sztupy.hu` (helps A LOT with the backend and made self hosting with docker possible)
 
+Jb: `@jb@waf.moe` `@jbc.lol`
+
 Arch: https://circumstances.run/@aarch (Created the logo, the waffy emoji pack and waffy the mascot!!)
