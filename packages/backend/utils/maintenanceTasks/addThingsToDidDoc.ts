@@ -75,7 +75,7 @@ function getLastPlcOp(logs: IndexedEntryLog) {
 }
 
 async function pushPlcOperation(did: string, operation: any) {
-  const keyHexBytes = fromBase16(completeEnvironment.bskyRotationKeyK256 ?? '')
+  const keyHexBytes = fromBase16(process.env.PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX ?? '')
   const signingRotationKey = await Secp256k1PrivateKey.importRaw(keyHexBytes)
 
   const signedOp = await signOperation(operation, signingRotationKey)
