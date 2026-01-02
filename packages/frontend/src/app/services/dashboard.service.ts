@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
-import { ChangeDetectorRef, EventEmitter, Injectable, inject } from "@angular/core";
+import { EventEmitter, Injectable, inject } from "@angular/core";
 
 import { ProcessedPost } from "../interfaces/processed-post";
 import { SimplifiedUser } from "../interfaces/simplified-user";
@@ -19,7 +19,6 @@ export class DashboardService {
   private http = inject(HttpClient);
   private postService = inject(PostsService);
   private messageService = inject(MessageService);
-  private cdr = inject(ChangeDetectorRef)
 
   public scrollEventEmitter: EventEmitter<string> = new EventEmitter();
   // TODO improve this. will require some changes for stuff but basically
@@ -60,9 +59,6 @@ export class DashboardService {
     this.scrollEventEmitter.emit("scrollingtime");
     // this is a bit dirty but fuck it. price to pay for nuking zonejs
     // god i only do these things on my dayjob
-    setTimeout(() => {
-      this.cdr.detectChanges()
-    },1);
     return result;
   }
 

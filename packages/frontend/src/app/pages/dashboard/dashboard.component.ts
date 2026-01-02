@@ -1,5 +1,5 @@
 import { ViewportScroller } from "@angular/common";
-import { Component, OnDestroy, OnInit, inject } from "@angular/core";
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from "@angular/core";
 import { Meta, Title } from "@angular/platform-browser";
 import { NavigationSkipped, Router } from "@angular/router";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
@@ -36,6 +36,7 @@ export class DashboardComponent
   private metaTagService = inject(Meta);
   private readonly viewportScroller = inject(ViewportScroller);
   private simpleTitle = inject(SimpleTitleService);
+  private cdr = inject(ChangeDetectorRef)
 
   loadingPosts = false;
   noMorePosts = false;
@@ -313,5 +314,6 @@ export class DashboardComponent
       await this.loadPosts(this.currentPage);
     }
     this.loadingPosts = false;
+    this.cdr.detectChanges();
   }
 }
