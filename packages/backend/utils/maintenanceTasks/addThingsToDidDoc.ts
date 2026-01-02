@@ -40,7 +40,7 @@ for await (const user of localUsers) {
         prev: lastOp.base?.cid,
         alsoKnownAs: [
           ...lastOp.lastOperation.alsoKnownAs,
-          user.fullUrl
+          user.fullFediverseUrl
         ],
         services: lastOp.lastOperation.services,
         rotationKeys: lastOp.lastOperation.rotationKeys,
