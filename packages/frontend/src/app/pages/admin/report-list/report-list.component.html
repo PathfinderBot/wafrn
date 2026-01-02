@@ -143,6 +143,10 @@
             (click)="deletePost(element.postId)">{{
             'admin.reportList.forceDelete' | translate
           }}</button>
+          <button mat-flat-button
+            (click)="forceCw(element.postId)">{{
+            'admin.reportList.forceCw' | translate
+          }}</button>
         }
         <button mat-flat-button class="warn" (click)="ban(element)">{{
           'admin.reportList.banUser' | translate

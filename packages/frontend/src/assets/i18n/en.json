@@ -459,8 +459,10 @@
       "userUsedVPNTitle": "Mark user as using a VPN",
       "userUsedVPNDescription": "User will be sent an email that VPNs are not allowed and their registration will be deleted.",
       "promptBanTitle": "Ban",
+      "promptForceCwPostTitle": "Force CW on post",
       "promptBanReasonLabel": "Reason",
       "promptBanReasonDescription": "User will receive this reason in their ban email.",
+      "promptForceCwPostDescription": "Post will get this new content warning.",
       "confirmBanTitle": "Confirm banning",
       "confirmBanContentBluesky": "Bluesky user will be permanently banned.",
       "confirmBanContentFedi": "User will be permanently banned for reason:",
@@ -650,7 +652,8 @@
       "ignoreReport": "Ignore report",
       "forceNSFW": "Mark user as NSFW",
       "banUser": "Ban user",
-      "reopenReport": "Reopen report"
+      "reopenReport": "Reopen report",
+      "forceCw": "Force CW on post"
     }
   },
   "page-not-found": {

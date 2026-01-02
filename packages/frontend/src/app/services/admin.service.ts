@@ -141,6 +141,12 @@ export class AdminService {
     )
   }
 
+  async forceCWPost(id: string, message: string ) {
+    return firstValueFrom(
+      this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceContentWarningPost`, { id: id, content_warning: message })
+    )
+  }
+
   async forceNSFWUser(id: string) {
     return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceNSFWUser`, { id: id }))
   }
