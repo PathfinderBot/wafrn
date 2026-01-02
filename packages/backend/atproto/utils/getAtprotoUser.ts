@@ -80,7 +80,7 @@ async function getAtprotoUser(
     logger.info({
       bskyKnownAs: doc?.alsoKnownAs,
       bskyPds: bskyPds,
-      isBridgyFed: bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')
+      isBridgyFed: bskyPds?.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')
     }, 'merge dbg')
     if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
       // bridgy user. find the alsoknownas user
