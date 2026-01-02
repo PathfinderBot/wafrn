@@ -1165,6 +1165,8 @@ function userRoutes(app: Application) {
             "role",
             "userMigratedTo",
             "displayUrl",
+            "isBskyPrimary",
+            "alternateUrl",
             [
               sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
               "enableBsky",
