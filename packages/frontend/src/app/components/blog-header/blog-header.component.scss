@@ -29,6 +29,10 @@
   // background-color: var(--mat-sys-surface-container-high);
 }
 
+.blog-url-uname {
+  color: var(--mat-sys-on-primary-container);
+}
+
 .blog-url {
   color: var(--mat-sys-outline);
 }
@@ -50,6 +54,13 @@
 
 .subtle-title {
   color: var(--mat-sys-outline);
+}
+
+.fedi-icon {
+  display: var(--fa-display, inline-block);
+  height: 1.2em;
+  overflow: visible;
+  vertical-align: -0.125em;
 }
 
 footer {
