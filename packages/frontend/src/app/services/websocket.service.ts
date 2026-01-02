@@ -30,7 +30,7 @@ export class WebsocketService {
       const url =
         EnvironmentService.environment.baseUrl
           .replace("http://", "ws://")
-          .replace("https://", "wss://") + "/socket/notifications";
+          .replace("https://", "wss://") + "/websocket/notifications";
       this.socket$ = webSocket({
         url: url,
         WebSocketCtor: WebSocket,
