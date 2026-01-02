@@ -78,6 +78,11 @@ async function getAtprotoUser(
     const doc = await getDidDoc(userFound.bskyDid ?? '')
     const bskyPds = doc?.service?.find(x => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
     if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
+      logger.info({
+        bskyKnownAs: doc?.alsoKnownAs,
+        bskyPds: bskyPds,
+        isBridgyFed: bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')
+      }, 'merge dbg')
       // bridgy user. find the alsoknownas user
       const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter(x => x.startsWith('http')) ?? []
       let user: User | undefined = undefined
