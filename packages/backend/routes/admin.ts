@@ -477,8 +477,8 @@ We just need a confirmation. Sorry for this and thanks.</p>
     }
   )
 
-  app.post('/api/admin/forceContentWarningPost', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-    const postId = req.body.postId
+  app.post('/api/admin/forceCWPost', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    const postId = req.body.id
     const content_warning = req.body.content_warning
 
     const post = await Post.findByPk(postId)
