@@ -35,4 +35,6 @@ export interface BlogDetails {
   hideFollows: boolean;
   hideProfileNotLoggedIn: boolean;
   displayUrl?: string;
+  alternateUrl?: string;
+  isBskyPrimary?: boolean;
 }

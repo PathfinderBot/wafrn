@@ -1165,6 +1165,8 @@ function userRoutes(app: Application) {
             "role",
             "userMigratedTo",
             "displayUrl",
+            "isBskyPrimary",
+            "alternateUrl",
             [
               sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
               "enableBsky",
@@ -1205,6 +1207,10 @@ function userRoutes(app: Application) {
               {
                 bskyDid: blogId,
               },
+              sequelize.where(
+                sequelize.fn("lower", sequelize.col("alternateUrl")),
+                blogId
+              ),
             ],
             banned: {
               [Op.ne]: true,

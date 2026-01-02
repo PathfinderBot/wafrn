@@ -51,7 +51,6 @@ export default function dashboardRoutes(app: Application) {
       let whereObject: any = {
         privacy: Privacy.Public
       }
-
       const dbOptiondisableReplies = await UserOptions.findOne({
         where: {
           userId: posterId,

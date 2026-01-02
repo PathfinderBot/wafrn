@@ -6,6 +6,22 @@ import { wait } from "../../utils/wait.js";
 import { logger } from "../../utils/logger.js";
 import { getDeletedUser } from "../../utils/cacheGetters/getDeletedUser.js";
 import { completeEnvironment } from "../../utils/backendOptions.js";
+import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
+import { getRemoteActor } from "../../utils/activitypub/getRemoteActor.js";
+import { Queue } from "bullmq";
+
+const mergeUsersQueue = new Queue("mergeUsers", {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 6,
+    backoff: {
+      type: "exponential",
+      delay: 25000,
+    },
+    removeOnFail: false,
+  },
+});
 
 async function forcePopulateUsers(dids: string[], localUser: User) {
   const userFounds = await User.findAll({
@@ -39,24 +55,55 @@ async function getAtprotoUser(
     handle == "handle.invalid"
       ? undefined
       : await User.scope("full").findOne({
-          where: {
-            [Op.or]: [
-              {
-                bskyDid: handle,
-              },
-              sequelize.where(
-                sequelize.fn("lower", sequelize.col("url")),
-                handle.toLowerCase()
-              ),
-            ],
-          },
-        });
+        where: {
+          [Op.or]: [
+            {
+              bskyDid: handle,
+            },
+            sequelize.where(
+              sequelize.fn("lower", sequelize.col("url")),
+              handle.toLowerCase()
+            ),
+          ],
+        },
+      });
   // sometimes we can get the dids and if its a local user we just return it and thats it
   if (userFound && userFound.email) {
     return (await User.findByPk(userFound.id)) as User;
   }
   if (userFound) {
     avatarString = userFound.avatar;
+
+    // we check if it's bridgy fed pds by getting did doc of course
+    const doc = await getDidDoc(userFound.bskyDid ?? '')
+    const bskyPds = doc?.service?.find(x => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
+    logger.info({
+      bskyKnownAs: doc?.alsoKnownAs,
+      bskyPds: bskyPds,
+      isBridgyFed: bskyPds?.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')
+    }, 'merge dbg')
+    if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
+      // bridgy user. find the alsoknownas user
+      const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter(x => x.startsWith('http')) ?? []
+      let user: User | undefined = undefined
+      for (const fediUser of allHttpsAlsoKnownAs) {
+        const tempUser = await getRemoteActor(fediUser, userFound, true)
+        if (tempUser) {
+          user = tempUser
+          break;
+        }
+      }
+      if (user) {
+        // found remote fedi user, now merge
+        await mergeUsersQueue.add("mergeUsers", {
+          primaryUserId: user.id,
+          userToMergeId: userFound.id
+        });
+
+        // and return the user
+        return user
+      }
+    }
   }
   const agent = await getAtProtoSession(localUser);
   // TODO check if current user exist
@@ -103,7 +150,7 @@ async function getAtprotoUser(
     userFound = userFound
       ? userFound
       : await internalGetDBUser(newData.bskyDid, newData.url);
-      // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
+    // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
     if (userFound?.email || (userFound?.remoteId && !userFound.isBskyPrimary)) {
       return (await User.findByPk(userFound.id)) as User;
     }
