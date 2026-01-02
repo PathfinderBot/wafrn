@@ -23,33 +23,39 @@ const localUsers = await User.findAll({
 })
 
 for await (const user of localUsers) {
-  console.log('updating ' + user.url)
-  const didDoc = await getDidDoc(user.bskyDid ?? '')
-  const handle = didDoc?.alsoKnownAs?.find(x => x.startsWith('at://'))?.replace(/^at:\/\//, '')
-  if (handle) {
-    user.alternateUrl = '@' + handle
-    await user.save()
+  try {
+    console.log('updating ' + user.url)
+    const didDoc = await getDidDoc(user.bskyDid ?? '')
+    const handle = didDoc?.alsoKnownAs?.find(x => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+    if (handle) {
+      user.alternateUrl = '@' + handle
+      await user.save()
 
-    if (user.bskyDid?.startsWith('did:plc')) {
-      console.log('getting plc info')
-      const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
+      if (user.bskyDid?.startsWith('did:plc')) {
+        console.log('getting plc info')
+        const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
-      console.log('editing plc op')
-      const operation = {
-        type: "plc_operation",
-        prev: lastOp.base?.cid,
-        alsoKnownAs: [
-          ...lastOp.lastOperation.alsoKnownAs,
-          user.fullFediverseUrl
-        ],
-        services: lastOp.lastOperation.services,
-        rotationKeys: lastOp.lastOperation.rotationKeys,
-        verificationMethods: lastOp.lastOperation.verificationMethods,
+        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) continue;
+
+        console.log('editing plc op')
+        const operation = {
+          type: "plc_operation",
+          prev: lastOp.base?.cid,
+          alsoKnownAs: [
+            ...lastOp.lastOperation.alsoKnownAs,
+            user.fullFediverseUrl
+          ],
+          services: lastOp.lastOperation.services,
+          rotationKeys: lastOp.lastOperation.rotationKeys,
+          verificationMethods: lastOp.lastOperation.verificationMethods,
+        }
+
+        console.log('pushing operation')
+        await pushPlcOperation(user.bskyDid, operation)
       }
-
-      console.log('pushing operation')
-      await pushPlcOperation(user.bskyDid, operation)
     }
+  } catch (e) {
+    console.error('could not update user', user.url)
   }
 }
 
