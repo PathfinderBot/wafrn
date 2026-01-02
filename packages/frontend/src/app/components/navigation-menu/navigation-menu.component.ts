@@ -1,4 +1,4 @@
-import { Component, computed, OnDestroy, OnInit, Signal, signal, ViewEncapsulation, WritableSignal, inject } from '@angular/core'
+import { Component, computed, OnDestroy, OnInit, Signal, signal, ViewEncapsulation, WritableSignal, inject, ChangeDetectorRef } from '@angular/core'
 import { NavigationEnd, Router } from '@angular/router'
 import { fromEvent, merge, Subscription } from 'rxjs'
 import { Action } from 'src/app/interfaces/editor-launcher-data'
@@ -69,6 +69,8 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
   protected loginService = inject(LoginService);
   private notificationsService = inject(NotificationsService);
   private dashboardService = inject(DashboardService);
+  private cdr = inject(ChangeDetectorRef);
+
 
   menuItems: MenuItem[] = []
   menuItemsMobile: MenuItem[][] = []
@@ -252,6 +254,7 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
       this.router.navigate([currentUrl])
     })
+    this.cdr.detectChanges();
   }
 
   drawMenu() {
