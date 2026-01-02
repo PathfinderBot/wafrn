@@ -131,10 +131,18 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       if (user.remoteMentionUrl) {
         // A Fedi user url already has an @ in the start
         mentionRegex = new RegExp(`(?<=\\s|^)(${escapedUrl})(?=\\s|$)`, "gm");
-        postText = postText.replaceAll(
-          mentionRegex,
-          `[@${user.shortHandle}](${user.remoteMentionUrl})`
-        );
+
+        if (user.alternateUrl && !user.isBskyPrimary) {
+          postText = postText.replaceAll(
+            mentionRegex,
+            `@${user.alternateUrl}`
+          );
+        } else {
+          postText = postText.replaceAll(
+            mentionRegex,
+            `[@${user.shortHandle}](${user.remoteMentionUrl})`
+          );
+        }
         continue;
       }
 
@@ -150,8 +158,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         } else {
           postText = postText.replaceAll(
             mentionRegex,
-            `[@${user.url}](${
-              completeEnvironment.frontendUrl
+            `[@${user.url}](${completeEnvironment.frontendUrl
             }/fediverse/blog/${user.url.toLowerCase()})`
           );
         }
@@ -238,8 +245,8 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       let linkPreview:
         | { url: string; title: string; description: string }
         | undefined = JSON.parse(
-        (await redisCache.get("linkPreviewCache:" + urlHash)) ?? "{}"
-      );
+          (await redisCache.get("linkPreviewCache:" + urlHash)) ?? "{}"
+        );
       if (!linkPreview?.title) {
         try {
           linkPreview = (await getLinkPreview(token.url, {
@@ -304,11 +311,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
   processedContent = processedContent.replaceAll(wafrnMediaRegex, "");
   if (ask) {
-    processedContent = `<p>${getUserName(userAsker)} <a href="${
-      completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
-    }">asked</a> </p> <blockquote>${
-      ask.question
-    }</blockquote> ${processedContent}`;
+    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
+      }">asked</a> </p> <blockquote>${ask.question
+      }</blockquote> ${processedContent}`;
   }
 
   const fullText = processedContent ?? post.content;
@@ -318,7 +323,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       if (
         facet.features[0] &&
         (facet.features[0]["$type"] as string) ==
-          "app.bsky.richtext.facet#mention"
+        "app.bsky.richtext.facet#mention"
       ) {
         let didOfMention = (facet.features[0] as any)["did"];
         res = !!didOfMention;
