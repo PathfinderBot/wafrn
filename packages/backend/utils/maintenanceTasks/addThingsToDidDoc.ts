@@ -28,6 +28,7 @@ for await (const user of localUsers) {
   const handle = didDoc?.alsoKnownAs?.find(x => x.startsWith('at://'))?.replace(/^at:\/\//, '')
   if (handle) {
     user.alternateUrl = '@' + handle
+    await user.save()
 
     if (user.bskyDid?.startsWith('did:plc')) {
       console.log('getting plc info')
