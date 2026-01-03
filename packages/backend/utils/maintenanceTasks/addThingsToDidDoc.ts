@@ -2,6 +2,7 @@ import { Op } from 'sequelize'
 import { getAllLocalUserIds } from '../cacheGetters/getAllLocalUserIds.js'
 import { Post, User } from '../../models/index.js'
 import { updateUserDidDoc } from '../atproto/updateUserDidDoc.js';
+import { wait } from '../wait.js';
 
 const localUserIds = await getAllLocalUserIds()
 
@@ -19,5 +20,6 @@ const localUsers = await User.findAll({
 
 for await (const user of localUsers) {
   await updateUserDidDoc(user)
+  await wait(10000)
 }
 
