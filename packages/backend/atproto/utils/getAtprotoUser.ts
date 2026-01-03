@@ -64,6 +64,10 @@ async function getAtprotoUser(
               sequelize.fn("lower", sequelize.col("url")),
               handle.toLowerCase()
             ),
+            sequelize.where(
+              sequelize.fn("lower", sequelize.col("alternateUrl")),
+              handle.toLowerCase()
+            ),
           ],
         },
       });
@@ -127,7 +131,7 @@ async function getAtprotoUser(
         avatarString = `?cid=${avatarCID.split("@jpeg")[0]}&did=${data.did}`;
       }
     }
-    const newData = {
+    const newDataTmp = {
       hideProfileNotLoggedIn: false,
       hideFollows: false,
       bskyDid: data.did,
@@ -149,7 +153,7 @@ async function getAtprotoUser(
     };
     userFound = userFound
       ? userFound
-      : await internalGetDBUser(newData.bskyDid, newData.url);
+      : await internalGetDBUser(newDataTmp.bskyDid, newDataTmp.url);
     // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
     if (userFound?.email || (userFound?.remoteId && !userFound.isBskyPrimary)) {
       return (await User.findByPk(userFound.id)) as User;
@@ -158,28 +162,37 @@ async function getAtprotoUser(
       // we check just in case that user with url does not exist:
       const oldUser = await User.findOne({
         where: {
-          url: newData.url,
+          url: newDataTmp.url,
           bskyDid: {
-            [Op.ne]: newData.bskyDid,
+            [Op.ne]: newDataTmp.bskyDid,
           },
         },
       });
       if (oldUser) {
         logger.debug({
           message: `Duplicate bsky url event`,
-          new: newData,
+          new: newDataTmp,
           old: oldUser.dataValues,
         });
         oldUser.url = `@handle.invalid${oldUser.bskyDid}${oldUser.url}`;
         await oldUser.save();
       }
+      const newData = !userFound.isBskyPrimary ? {
+        ...newDataTmp,
+        url: userFound.url,
+        alternateUrl:
+          "@" +
+          (data.handle === "handle.invalid"
+            ? `handle.invalid${data.did}`
+            : data.handle)
+      } : newDataTmp
       await userFound.set(newData);
       await userFound.save();
     } else {
       try {
-        userFound = await User.create(newData);
+        userFound = await User.create(newDataTmp);
       } catch (error) {
-        userFound = await internalGetDBUser(newData.bskyDid, newData.url);
+        userFound = await internalGetDBUser(newDataTmp.bskyDid, newDataTmp.url);
       }
     }
     return userFound;
@@ -197,6 +210,10 @@ async function internalGetDBUser(did: string, url: string) {
           sequelize.fn("lower", sequelize.col("url")),
           url.toLowerCase()
         ),
+        sequelize.where(
+          sequelize.fn("lower", sequelize.col("alternateUrl")),
+          url.toLowerCase()
+        ),
       ],
     },
   });
@@ -206,7 +223,10 @@ async function internalGetDBUser(did: string, url: string) {
     // OH WOW SOMETHING OFF
     foundUsers.forEach(async (usr) => {
       if (!usr.email && !usr.remoteId) {
-        usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
+        if (usr.isBskyPrimary)
+          usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
+        else
+          usr.alternateUrl = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
         await usr.save();
       }
     });
