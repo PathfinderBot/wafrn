@@ -60,14 +60,16 @@ async function getAtprotoUser(
             {
               bskyDid: handle,
             },
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("url")),
-              handle.toLowerCase()
-            ),
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("alternateUrl")),
-              handle.toLowerCase()
-            ),
+            {
+              url: {
+                [Op.iLike]: handle
+              }
+            },
+            {
+              alternateUrl: {
+                [Op.iLike]: handle
+              }
+            }
           ],
         },
       });
