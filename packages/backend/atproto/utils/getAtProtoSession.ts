@@ -47,11 +47,10 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
     } catch (error) {
       await redisCache.del('bskySession:' + user.id)
       logger.error({
-        message: `Error logging in with bsky user`,
+        message: `Error logging in with bsky user ${user.url}`,
         user: user.url,
         error: error
       })
-      throw new Error(`Error login with bluesky: ${user.url}`)
     }
   }
   return agent

@@ -1,5 +1,4 @@
 import { Label } from "@atproto/api";
-import { getAtProtoSession } from "../../atproto/utils/getAtProtoSession.js";
 import { promiseRace } from "../../atproto/utils/promiseRace.js";
 import { Post } from "../../models/index.js";
 import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
