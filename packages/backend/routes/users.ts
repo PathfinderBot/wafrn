@@ -2440,4 +2440,21 @@ async function updateBskyPassword(user: User, password: string) {
   );
 }
 
-export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword };
+async function forceUpdateBskyEmail(userIncomplete: User) {
+  const authString = Buffer.from(
+    "admin:" + completeEnvironment.bskyPdsAdminPassword
+  ).toString("base64");
+  const fullUser = (await User.scope('full').findByPk(userIncomplete.id)) as User
+  return await axios.post(
+    serviceUrl + "/xrpc/com.atproto.admin.updateAccountEmail",
+    { account: fullUser.bskyDid, email: fullUser.email },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Basic " + authString,
+      },
+    }
+  );
+}
+
+export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail };

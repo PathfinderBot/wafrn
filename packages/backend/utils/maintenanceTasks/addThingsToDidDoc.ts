@@ -6,7 +6,7 @@ import { wait } from '../wait.js';
 
 const localUserIds = await getAllLocalUserIds()
 
-const localUsers = await User.findAll({
+const localUsers = await User.scope('full').findAll({
   where: {
     id: {
       [Op.in]: localUserIds
@@ -20,6 +20,6 @@ const localUsers = await User.findAll({
 
 for await (const user of localUsers) {
   await updateUserDidDoc(user)
-  await wait(10000)
+  // await wait(10000)
 }
 
