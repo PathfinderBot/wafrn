@@ -7,7 +7,10 @@ import { DataType } from "sequelize-typescript";
 export const up: Migration = async (params) => {
   const queryInterface = params.context;
   await queryInterface.sequelize.query(
-    `CREATE INDEX IF NOT EXISTS users_alternateUrl_and_url  ON "users" USING gin ("alternateUrl" gin_trgm_ops, "url" gin_trgm_ops);`
+    `CREATE INDEX IF NOT EXISTS users_alternateUrl_and_url  ON "users" (lower("alternateUrl"));`
+  );
+  await queryInterface.sequelize.query(
+    `VACUUM ANALYZE;`
   );
 
 };
