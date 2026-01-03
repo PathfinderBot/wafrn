@@ -80,7 +80,7 @@ import { InviteCode } from "../models/inviteCode.js";
 import { isAdult } from "../utils/isAdult.js";
 import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 import { getRemoteActor } from "../utils/activitypub/getRemoteActor.js";
-import { updateUserDidDoc } from "../utils/maintenanceTasks/addThingsToDidDoc.js";
+import { updateUserDidDoc } from "../utils/atproto/updateUserDidDoc.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
