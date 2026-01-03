@@ -2420,6 +2420,7 @@ async function createBskyAppPassword(user: User, agent: AtpAgent) {
   user.bskyAppPassword = appPassword;
   user.enableBsky = true;
   await user.save();
+  await redisCache.del('bskySession:' + user.id)
   return true;
 }
 
