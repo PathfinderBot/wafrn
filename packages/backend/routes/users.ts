@@ -1208,11 +1208,10 @@ function userRoutes(app: Application) {
               {
                 bskyDid: blogId,
               },
-              {
-                alternateUrl: {
-                  [Op.iLike]: blogId
-                }
-              }
+              sequelize.where(
+                sequelize.fn("lower", sequelize.col("alternateUrl")),
+                blogId
+              ),
             ],
             banned: {
               [Op.ne]: true,
