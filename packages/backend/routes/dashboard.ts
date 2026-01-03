@@ -26,8 +26,6 @@ import { Privacy } from '../models/post.js'
 import { getFollowedHashtags } from '../utils/getFollowedHashtags.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
-import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { getAtProtoThread } from '../atproto/utils/getAtProtoThread.js'
 import { handleBskyFeed } from '../atproto/utils/handleBskyFeed.js'
 import { promiseRace } from '../atproto/utils/promiseRace.js'
 

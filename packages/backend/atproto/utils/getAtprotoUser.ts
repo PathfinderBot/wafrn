@@ -9,6 +9,7 @@ import { completeEnvironment } from "../../utils/backendOptions.js";
 import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
 import { getRemoteActor } from "../../utils/activitypub/getRemoteActor.js";
 import { Queue } from "bullmq";
+import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSession.js";
 
 const mergeUsersQueue = new Queue("mergeUsers", {
   connection: completeEnvironment.bullmqConnection,
@@ -109,7 +110,7 @@ async function getAtprotoUser(
       }
     }
   }
-  const agent = await getAtProtoSession(localUser);
+  const agent = await getAdminAtprotoSession()
   // TODO check if current user exist
   let bskyUserResponse = undefined;
   if (!bskyUserResponse) {
