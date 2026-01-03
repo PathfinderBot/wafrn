@@ -46,7 +46,7 @@ export async function updateUserDidDoc(user: User) {
           type: "plc_operation",
           prev: lastOp.base?.cid,
           alsoKnownAs: [
-            ...lastOp.lastOperation.alsoKnownAs,
+            ...lastOp.lastOperation.alsoKnownAs.filter(x => x !== user.fullUrl),
             user.fullFediverseUrl
           ],
           services: lastOp.lastOperation.services,
