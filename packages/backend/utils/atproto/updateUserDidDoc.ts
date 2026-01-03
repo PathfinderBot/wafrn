@@ -3,6 +3,10 @@ import { getDidDoc } from "./getDidDoc.js"
 import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } from "@atcute/did-plc";
 import { fromBase16, toBase64Url } from "@atcute/multibase";
 import { Secp256k1PrivateKey, Secp256k1PrivateKeyExportable } from "@atcute/crypto";
+import { createBskyAppPassword, updateBskyPassword } from "../../routes/users.js";
+import generateRandomString from "../generateRandomString.js";
+import { completeEnvironment } from "../backendOptions.js";
+import { AtpAgent } from "@atproto/api";
 
 export async function updateUserDidDoc(user: User) {
   try {
@@ -17,7 +21,10 @@ export async function updateUserDidDoc(user: User) {
         console.log('getting plc info')
         const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
-        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) return;
+        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
+          await forceUpdateBskyPassword(user)
+          return;
+        }
 
         console.log('editing plc op')
         const operation = {
@@ -34,6 +41,8 @@ export async function updateUserDidDoc(user: User) {
 
         console.log('pushing operation')
         await pushPlcOperation(user.bskyDid, operation)
+        await forceUpdateBskyPassword(user)
+        
       }
     }
   } catch (e) {
@@ -70,3 +79,29 @@ async function pushPlcOperation(did: string, operation: any) {
   const client = new PlcClient();
   await client.submitOperation(did as `did:plc:${string}`, signedOp)
 };
+
+async function forceUpdateBskyPassword(user: User){
+          try {
+          const serviceUrl = completeEnvironment.bskyPds
+            ? completeEnvironment.bskyPds.startsWith("http")
+              ? completeEnvironment.bskyPds
+              : "https://" + completeEnvironment.bskyPds
+            : "";
+          const randomString = generateRandomString()
+          await updateBskyPassword(user, randomString)
+          const agent = new AtpAgent({
+            service: serviceUrl,
+          });
+          await agent.login({
+            identifier: user.bskyDid as string,
+            password: randomString,
+          });
+          await createBskyAppPassword(user, agent);
+          console.log(`Created bsky app password for user ${user.url}`)
+          
+        
+        } catch (error) {
+          console.log('Problem updating user bsky password: ' + user.url)
+          console.log(error)
+        }
+}
