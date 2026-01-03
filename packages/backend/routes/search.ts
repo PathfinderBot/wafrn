@@ -44,16 +44,14 @@ export default function searchRoutes(app: Application) {
         attributes: ['url', 'avatar', 'name', 'description', 'remoteId', 'bskyDid', 'federatedHostId', 'id'],
         where: {
           [Op.or]: [
-            {
-              url: {
-                [Op.iLike]: forceSearchUser
-              }
-            },
-            {
-              alternateUrl: {
-                [Op.iLike]: forceSearchUser
-              }
-            }
+            sequelize.where(
+                          sequelize.fn("lower", sequelize.col("url")),
+                          searchTerm
+                        ),
+            sequelize.where(
+                          sequelize.fn("lower", sequelize.col("alternteUrl")),
+                          searchTerm
+                        )
           ]
         }
       })
@@ -166,12 +164,14 @@ export default function searchRoutes(app: Application) {
             [Op.ne]: true
           },
           [Op.or]: [
-            {
-            url: {
-              [Op.iLike]: searchTerm
-            },
-          },
-          {alternateUrl: {[Op.iLike]: searchTerm}}
+          sequelize.where(
+                          sequelize.fn("lower", sequelize.col("url")),
+                          searchTerm
+                        ),
+          sequelize.where(
+                          sequelize.fn("lower", sequelize.col("alternateUrl")),
+                          searchTerm
+                        )
           ]
           
         }
