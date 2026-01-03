@@ -80,6 +80,7 @@ import { InviteCode } from "../models/inviteCode.js";
 import { isAdult } from "../utils/isAdult.js";
 import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 import { getRemoteActor } from "../utils/activitypub/getRemoteActor.js";
+import { updateUserDidDoc } from "../utils/maintenanceTasks/addThingsToDidDoc.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -2229,6 +2230,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
     await forceUpdateCacheDidsAtThread();
     await getCacheAtDids(true);
+    await updateUserDidDoc(user)
     return await agent.upsertProfile(async (existingProfile) => {
       const profile = existingProfile ?? ({} as AppBskyActorProfile.Record);
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;

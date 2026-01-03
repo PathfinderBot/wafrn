@@ -23,6 +23,10 @@ const localUsers = await User.findAll({
 })
 
 for await (const user of localUsers) {
+  await updateUserDidDoc(user)
+}
+
+export async function updateUserDidDoc(user: User) {
   try {
     console.log('updating ' + user.url)
     const didDoc = await getDidDoc(user.bskyDid ?? '')
@@ -35,7 +39,7 @@ for await (const user of localUsers) {
         console.log('getting plc info')
         const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
-        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) continue;
+        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) return;
 
         console.log('editing plc op')
         const operation = {

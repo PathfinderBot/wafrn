@@ -83,7 +83,9 @@ export default function searchRoutes(app: Application) {
           // try resolving as bsky post
           try {
             urlString = decodeURIComponent(urlString); // done this due to red dwarf
-            const profileAndPost = urlString.split('/profile/')[1].split('/post/')
+            const profileAndPost = urlString.includes('app.bsky.feed.post') ?
+              urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
+              urlString.split('/profile/')[1].split('/post/')
             let bskyProfile = profileAndPost[0]
             let bskyUri = profileAndPost[1]
             if (!bskyProfile.startsWith('did:')) {
