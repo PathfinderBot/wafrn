@@ -50,10 +50,9 @@ export default function searchRoutes(app: Application) {
               }
             },
             {
-              [Op.and]: [
-                { alternateUrl: { [Op.not]: null } },
-                where(col('alternateUrl'), { [Op.iLike]: forceSearchUser })
-              ]
+              alternateUrl: {
+                [Op.iLike]: forceSearchUser
+              }
             }
           ]
         }
@@ -166,15 +165,15 @@ export default function searchRoutes(app: Application) {
           banned: {
             [Op.ne]: true
           },
-          [Op.or]: {
+          [Op.or]: [
+            {
             url: {
               [Op.iLike]: searchTerm
             },
-            [Op.and]: [
-              { alternateUrl: { [Op.not]: null } },
-              where(col('alternateUrl'), { [Op.iLike]: searchTerm })
-            ]
-          }
+          },
+          {alternateUrl: {[Op.iLike]: searchTerm}}
+          ]
+          
         }
       })
     if (page == 0) {

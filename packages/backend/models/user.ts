@@ -94,7 +94,7 @@ export interface UserAttributes {
   bskyInviteCode: String | null;
   displayUrl: String | null;
   isBskyPrimary: Boolean | null;
-  alternateUrl: String | null;
+  alternateUrl?: string;
 }
 
 @Table({
@@ -400,7 +400,7 @@ export class User
     allowNull: true,
     type: DataType.STRING,
   })
-  declare alternateUrl: string | null;
+  declare alternateUrl?: string;
 
   @HasMany(() => MfaDetails, {
     sourceKey: "id",
