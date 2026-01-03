@@ -1,6 +1,4 @@
 // returns the post id
-import { getAtProtoSession } from "./getAtProtoSession.js";
-import { QueryParams } from "@atproto/sync/dist/firehose/lexicons.js";
 import {
   EmojiReaction,
   Media,

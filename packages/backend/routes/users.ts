@@ -730,7 +730,7 @@ function userRoutes(app: Application) {
               identifier: user.bskyDid as string,
               password: req.body.password,
             });
-            await createBskyPassword(user, agent);
+            await createBskyAppPassword(user, agent);
           }
 
           success = true;
@@ -1527,7 +1527,7 @@ function userRoutes(app: Application) {
         }
 
         // create an app password for the newly created user.
-        const bskyPasswordCreated = await createBskyPassword(user, agent);
+        const bskyPasswordCreated = await createBskyAppPassword(user, agent);
         if (!bskyPasswordCreated) {
           return res.status(500).send({
             error: true,
@@ -2399,7 +2399,7 @@ async function createBskyAccount({
   }
 }
 
-async function createBskyPassword(user: User, agent: AtpAgent) {
+async function createBskyAppPassword(user: User, agent: AtpAgent) {
   const appPasswordResponse = await agent.com.atproto.server.createAppPassword({
     name: "wafrn app password DO NOT DELETE",
   });
@@ -2439,4 +2439,4 @@ async function updateBskyPassword(user: User, password: string) {
   );
 }
 
-export { userRoutes, updateBlueskyProfile };
+export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword };
