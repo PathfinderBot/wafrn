@@ -2330,28 +2330,37 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
             opt.name.startsWith("fediverse.public"),
         };
       });
-
-    for (const option of options) {
-      if (option.value) {
-        const userOption = await UserOptions.findOne({
-          where: {
+    const optionNames = options.map(elem => elem.name)
+    const transaction = await sequelize.transaction()
+    try {
+      await UserOptions.destroy({
+        where: {
+          userId: posterId,
+          optionName: {
+            [Op.in]: optionNames
+          }
+        },
+        transaction: transaction
+      })
+      await UserOptions.bulkCreate(
+        options.map(elem => {
+          return {
             userId: posterId,
-            optionName: option.name,
-          },
-        });
-        userOption
-          ? await userOption.update({
-            optionValue: option.value,
-            public: option.public == true,
-          })
-          : await UserOptions.create({
-            userId: posterId,
-            optionName: option.name,
-            optionValue: option.value,
-            public: option.public == true,
-          });
-      }
+            optionName: elem.name,
+            optionValue: elem.value,
+            public: elem.public == true
+          }
+        }), {
+          transaction: transaction
+        }
+      )
+      await transaction.commit()
+    } catch (error) {
+      logger.info({message: `Problem updating user otpions`, error: error})
+      await transaction.rollback()
     }
+
+    
   }
 }
 
