@@ -26,7 +26,6 @@ async function updateUserDidDoc(user: User) {
         const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
         if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
-          await forceUpdateBskyPassword(user)
           return;
         }
 
