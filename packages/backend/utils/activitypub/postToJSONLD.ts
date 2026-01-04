@@ -181,6 +181,8 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
           name: `RE: ${postUrl}`,
           href: postUrl,
         });
+      } else {
+        misskeyTagsAndQuotes = misskeyTagsAndQuotes + `<br>RE: ${postUrl}`
       }
     }
   }
@@ -480,7 +482,8 @@ async function getPostUrlForQuote(post: any): Promise<string> {
     const parts = post.bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
     res = `https://bsky.app/profile/${userDid}/post/${parts[1]}`;
-  } else if (isPostFromFedi) {
+  } 
+  if (isPostFromFedi) {
     res = post.remotePostId;
   }
   return res;
