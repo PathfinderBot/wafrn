@@ -214,12 +214,12 @@ export class ThemeService {
   setup() {
     const theme = this.settingService.values().theme
     if (typeof theme === 'string' && isTheme(theme)) {
-      this.setTheme(theme)
+      this.setTheme(theme, true)
     }
 
     const darkLightMode = this.settingService.values().lightDarkMode
     if (typeof darkLightMode === 'string' && isLightDarkMode(darkLightMode)) {
-      this.setLightDarkMode(darkLightMode)
+      this.setLightDarkMode(darkLightMode, true)
     }
 
     const settingAdditionalStyleModes = this.settingService.values().additionalStyleModes
@@ -246,6 +246,8 @@ export class ThemeService {
     // Forced lightDarkMode
     if (themeData[theme]?.compatibility === 'light') await this.setLightDarkMode('light')
     if (themeData[theme]?.compatibility === 'dark') await this.setLightDarkMode('dark')
+
+    console.log('here')
     this.settingService.forceUpdateValue([{name: 'theme', value: theme}], !doNotSavePreference, !doNotSavePreference)
   }
 
