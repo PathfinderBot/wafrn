@@ -363,7 +363,10 @@ async function getRemoteActorIdProcessor(job: Job) {
                   fediKnownAs: userPetition.alsoKnownAs,
                   isBridgyFed: userPetition.id.includes('brid.gy/')
                 }, 'merge dbg')
-                if (atDoc && atDoc.alsoKnownAs?.includes(userPetition.id)) {
+                if (atDoc && (
+                  atDoc.alsoKnownAs?.includes(userPetition.id) ||
+                  atDoc.alsoKnownAs?.includes(userPetition.id.replace('/fediverse/blog', '/blog'))
+                )) {
                   // make it merged (wafrn user)
                   mergeAcc = 1
                   logger.info({ atUri }, 'user is wafrn user')

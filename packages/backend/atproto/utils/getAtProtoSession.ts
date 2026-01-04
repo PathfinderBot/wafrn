@@ -1,9 +1,12 @@
 import { AtpAgent } from '@atproto/api'
-import { User } from '../../models/index.js'
+import { Notification, Post, PostMentionsUserRelation, User } from '../../models/index.js'
 import { redisCache } from '../../utils/redis.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { logger } from '../../utils/logger.js'
 import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSession.js'
+import { forceUpdateBskyPassword } from '../../utils/atproto/updateUserDidDoc.js'
+import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
+import { createNotification } from '../../utils/pushNotifications.js'
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
   let user = userInput ? ((await User.scope('full').findByPk(userInput.id)) as User) : undefined
@@ -47,11 +50,45 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
     } catch (error) {
       await redisCache.del('bskySession:' + user.id)
       logger.error({
-        message: `Error logging in with bsky user`,
+        message: `Error logging in with bsky user ${user.url}`,
         user: user.url,
         error: error
       })
-      throw new Error(`Error login with bluesky: ${user.url}`)
+      const tmpAgent = await forceUpdateBskyPassword(user)
+      if(tmpAgent) {
+        return tmpAgent
+      }
+      else {
+        user.enableBsky = false;
+        const warningPost = await Post.create({
+          privacy: 10,
+          content: `AUTOMATED MESSAGE FOR THE ADMIN TEAM CREATED BY THE APP. Error with this user's bsky account. This user's bsky account has been disabled. Please do check and contact them. Wait we are the social network that gaslights you. Yes you absolutely wrote this message. `,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: user.id
+        })
+        const adminUser = await getAdminUser();
+        await PostMentionsUserRelation.create({
+          postId: warningPost.id,
+          userId: adminUser.id
+        })
+        await createNotification({
+                      notificationType: 'MENTION',
+                      notifiedUserId: adminUser.id,
+                      userId: user.id,
+                      postId: warningPost.id
+                    },
+                    {
+                      postContent: warningPost.content,
+                      userUrl: user.url
+                    })
+        const error =  new Error(`Error obtaining bsky session for user ${user.url}`)
+        logger.error({
+          message: `Error with user bsky session thing`,
+          error: error,
+          stacktrace: error.stack
+        })
+      }
     }
   }
   return agent

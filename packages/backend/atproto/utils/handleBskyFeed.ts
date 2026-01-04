@@ -6,54 +6,65 @@
 
 import { Post, User } from "../../models/index.js";
 import { completeEnvironment } from "../../utils/backendOptions.js";
+import { logger } from "../../utils/logger.js";
 import { getAtProtoSession } from "./getAtProtoSession.js";
 import { getAtProtoThread } from "./getAtProtoThread.js";
 
 async function handleBskyFeed(user: User, cursor: Date) {
 
-    const session = await getAtProtoSession(user)
-    const bskyFeed = await session.getTimeline({
-        limit: completeEnvironment.postsPerPage,
-        cursor: cursor.toISOString()
-    })
+    try {
+        const session = await getAtProtoSession(user)
+        const bskyFeed = await session.getTimeline({
+            limit: completeEnvironment.postsPerPage,
+            cursor: cursor.toISOString()
+        })
 
-    await Promise.all(bskyFeed.data.feed.map(elem => getAtProtoThread(elem.post.uri)))
+        await Promise.all(bskyFeed.data.feed.map(elem => getAtProtoThread(elem.post.uri)))
 
-    for await (const elem of bskyFeed.data.feed) {
-        if(elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
-            let parentPost = await getAtProtoThread(elem.post.uri)
-            const rewooterDid = (elem.reason as any).by?.did
-            if(parentPost && rewooterDid) {
-                const rewooter = await User.findOne({
-                    where: {
-                        bskyDid: rewooterDid
-                    }
-                })
-                if(rewooter){
-                    let creation = await Post.findOrCreate({
+        for await (const elem of bskyFeed.data.feed) {
+            if(elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
+                let parentPost = await getAtProtoThread(elem.post.uri)
+                const rewooterDid = (elem.reason as any).by?.did
+                if(parentPost && rewooterDid) {
+                    const rewooter = await User.findOne({
                         where: {
-                            userId: rewooter.id,
-                            isReblog: true,
-                            parentId: parentPost,
-                            bskyCid: (elem.reason as any).cid,
-                            bskyUri: (elem.reason as any).uri
-                        },
-                        defaults: {
-                            createdAt: (elem.reason as any).indexedAt,
-                            updatedAt: new Date(),
-                            content: '',
-                            content_warning: '',
-                            privacy: 0
+                            bskyDid: rewooterDid
                         }
-                })
+                    })
+                    if(rewooter){
+                        let creation = await Post.findOrCreate({
+                            where: {
+                                userId: rewooter.id,
+                                isReblog: true,
+                                parentId: parentPost,
+                                bskyCid: (elem.reason as any).cid,
+                                bskyUri: (elem.reason as any).uri
+                            },
+                            defaults: {
+                                createdAt: (elem.reason as any).indexedAt,
+                                updatedAt: new Date(),
+                                content: '',
+                                content_warning: '',
+                                privacy: 0
+                            }
+                    })
+                    }
+                    
+                    
+                    
                 }
-                
-                
-                
             }
+            
         }
-        
+    } catch (error) {
+        logger.info({
+            message: `Error processing bsky feed`,
+            user: user.url,
+            error: error
+        })
     }
+
+    
 
 }
 

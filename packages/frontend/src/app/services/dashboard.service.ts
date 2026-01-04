@@ -57,6 +57,8 @@ export class DashboardService {
     });
     // Remove in the future because we got the websocket!
     this.scrollEventEmitter.emit("scrollingtime");
+    // this is a bit dirty but fuck it. price to pay for nuking zonejs
+    // god i only do these things on my dayjob
     return result;
   }
 

@@ -117,6 +117,7 @@ export const baseEnvironment: Environment = {
   registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
   disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}},
   donationUrl: '${{DONATION_URL:-}}',
+  bskyRotationKeyK256: '${{PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}}',
   frontendEnvironment: {
     logo: '${{FRONTEND_LOGO:-/assets/logo.png}}',
     frontUrl: '${{FRONTEND_FQDN_URL}}',

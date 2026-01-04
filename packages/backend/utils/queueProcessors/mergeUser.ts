@@ -22,10 +22,11 @@ async function mergeUser(job: Job) {
   logger.info(job.data, 'working on merging 2 users')
 
   // first we get the users
-  const primaryUser = await User.findByPk(primaryUserId)
-  const userToMerge = await User.findByPk(userToMergeId)
+  const primaryUser = await User.scope('full').findByPk(primaryUserId)
+  const userToMerge = await User.scope('full').findByPk(userToMergeId)
 
-  if (!primaryUser || !userToMerge) return
+  // if user is local we dont merge lol
+  if (!primaryUser || !userToMerge || primaryUser.email || userToMerge.email) return
   // then we start the merge
   // we start by force refetching all the posts from usertomerge
   let postsFromUserToMerge = await Post.findAll({

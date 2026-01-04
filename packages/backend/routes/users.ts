@@ -80,6 +80,7 @@ import { InviteCode } from "../models/inviteCode.js";
 import { isAdult } from "../utils/isAdult.js";
 import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 import { getRemoteActor } from "../utils/activitypub/getRemoteActor.js";
+import { updateUserDidDoc } from "../utils/atproto/updateUserDidDoc.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -729,7 +730,7 @@ function userRoutes(app: Application) {
               identifier: user.bskyDid as string,
               password: req.body.password,
             });
-            await createBskyPassword(user, agent);
+            await createBskyAppPassword(user, agent);
           }
 
           success = true;
@@ -1165,6 +1166,8 @@ function userRoutes(app: Application) {
             "role",
             "userMigratedTo",
             "displayUrl",
+            "isBskyPrimary",
+            "alternateUrl",
             [
               sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
               "enableBsky",
@@ -1205,6 +1208,10 @@ function userRoutes(app: Application) {
               {
                 bskyDid: blogId,
               },
+              sequelize.where(
+                sequelize.fn("lower", sequelize.col("alternateUrl")),
+                blogId
+              ),
             ],
             banned: {
               [Op.ne]: true,
@@ -1520,7 +1527,7 @@ function userRoutes(app: Application) {
         }
 
         // create an app password for the newly created user.
-        const bskyPasswordCreated = await createBskyPassword(user, agent);
+        const bskyPasswordCreated = await createBskyAppPassword(user, agent);
         if (!bskyPasswordCreated) {
           return res.status(500).send({
             error: true,
@@ -2223,6 +2230,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
     await forceUpdateCacheDidsAtThread();
     await getCacheAtDids(true);
+    await updateUserDidDoc(user)
     return await agent.upsertProfile(async (existingProfile) => {
       const profile = existingProfile ?? ({} as AppBskyActorProfile.Record);
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;
@@ -2391,7 +2399,7 @@ async function createBskyAccount({
   }
 }
 
-async function createBskyPassword(user: User, agent: AtpAgent) {
+async function createBskyAppPassword(user: User, agent: AtpAgent) {
   const appPasswordResponse = await agent.com.atproto.server.createAppPassword({
     name: "wafrn app password DO NOT DELETE",
   });
@@ -2412,6 +2420,7 @@ async function createBskyPassword(user: User, agent: AtpAgent) {
   user.bskyAppPassword = appPassword;
   user.enableBsky = true;
   await user.save();
+  await redisCache.del('bskySession:' + user.id)
   return true;
 }
 
@@ -2431,4 +2440,21 @@ async function updateBskyPassword(user: User, password: string) {
   );
 }
 
-export { userRoutes, updateBlueskyProfile };
+async function forceUpdateBskyEmail(userIncomplete: User) {
+  const authString = Buffer.from(
+    "admin:" + completeEnvironment.bskyPdsAdminPassword
+  ).toString("base64");
+  const fullUser = (await User.scope('full').findByPk(userIncomplete.id)) as User
+  return await axios.post(
+    serviceUrl + "/xrpc/com.atproto.admin.updateAccountEmail",
+    { account: fullUser.bskyDid, email: fullUser.email },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Basic " + authString,
+      },
+    }
+  );
+}
+
+export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail };

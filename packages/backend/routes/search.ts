@@ -44,17 +44,14 @@ export default function searchRoutes(app: Application) {
         attributes: ['url', 'avatar', 'name', 'description', 'remoteId', 'bskyDid', 'federatedHostId', 'id'],
         where: {
           [Op.or]: [
-            {
-              url: {
-                [Op.iLike]: forceSearchUser
-              }
-            },
-            {
-              [Op.and]: [
-                { alternateUrl: { [Op.not]: null } },
-                where(col('alternateUrl'), { [Op.iLike]: forceSearchUser })
-              ]
-            }
+            sequelize.where(
+                          sequelize.fn("lower", sequelize.col("url")),
+                          searchTerm
+                        ),
+            sequelize.where(
+                          sequelize.fn("lower", sequelize.col("alternteUrl")),
+                          searchTerm
+                        )
           ]
         }
       })
@@ -83,7 +80,9 @@ export default function searchRoutes(app: Application) {
           // try resolving as bsky post
           try {
             urlString = decodeURIComponent(urlString); // done this due to red dwarf
-            const profileAndPost = urlString.split('/profile/')[1].split('/post/')
+            const profileAndPost = urlString.includes('app.bsky.feed.post') ?
+              urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
+              urlString.split('/profile/')[1].split('/post/')
             let bskyProfile = profileAndPost[0]
             let bskyUri = profileAndPost[1]
             if (!bskyProfile.startsWith('did:')) {
@@ -164,15 +163,17 @@ export default function searchRoutes(app: Application) {
           banned: {
             [Op.ne]: true
           },
-          [Op.or]: {
-            url: {
-              [Op.iLike]: searchTerm
-            },
-            [Op.and]: [
-              { alternateUrl: { [Op.not]: null } },
-              where(col('alternateUrl'), { [Op.iLike]: searchTerm })
-            ]
-          }
+          [Op.or]: [
+          sequelize.where(
+                          sequelize.fn("lower", sequelize.col("url")),
+                          searchTerm
+                        ),
+          sequelize.where(
+                          sequelize.fn("lower", sequelize.col("alternateUrl")),
+                          searchTerm
+                        )
+          ]
+          
         }
       })
     if (page == 0) {
