@@ -195,6 +195,8 @@ async function getPostThreadRecursive(
             return { href: elem };
           });
         }
+        let federatedAsks: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === "AskQuestion" )
+        
         const fediEmojis: any[] = postPetition.tag?.filter(
           (elem: fediverseTag) => elem.type === "Emoji"
         );
@@ -474,6 +476,34 @@ async function getPostThreadRecursive(
           logger.debug(error);
         }
         newPost.setQuoted(quotes);
+
+        try {
+          if(federatedAsks && federatedAsks.length) {
+          await Ask.destroy({
+            where: {
+              postId: newPost.id
+            }
+          })
+          const askTag = federatedAsks[0]; // only first ask sorryyy
+          if(askTag.actor && askTag.representation && askTag.name) {
+            const asker = askTag.actor != 'anonymous' ? await getRemoteActor(askTag.actor, user ) : undefined;
+            const askText = askTag.name;
+            const htmlToRemove = askTag.representation
+            await Ask.create({
+              postId: newPost.id,
+              userAsked: newPost.userId,
+              userAsker: asker?.id,
+              question: askText
+            })
+            newPost.content = newPost.content.replace(htmlToRemove, '')
+          }
+        }
+        } catch (error) {
+          logger.info({
+            message: `Error setting wafrn ask`,
+            error: error
+          })
+        }
 
         await newPost.save();
 
