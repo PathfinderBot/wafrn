@@ -10,6 +10,7 @@ import { AtpAgent } from "@atproto/api";
 import sendEmail from "../sendEmail.js";
 import { logger } from "../logger.js";
 import { createNotification } from "../pushNotifications.js";
+import { redisCache } from "../redis.js";
 
 async function updateUserDidDoc(user: User) {
   try {
@@ -121,6 +122,7 @@ async function forceUpdateBskyPassword(user: User){
                                 userUrl: user.url
                               })
           logger.debug(`Created bsky password for user ${user.url}`)
+          await redisCache.del('bskySession:' + user.id)
           return agent
         } catch (error) {
           logger.debug('Problem updating user bsky password: ' + user.url)
