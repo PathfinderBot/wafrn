@@ -221,12 +221,12 @@ export class ViewBlogComponent
 
     if (res === "confirm") {
       this.settingService.values().useOtherUserCustomThemes = true;
-      this.settingService.forceUpdateValue("useOtherUserCustomThemes");
+      this.settingService.forceUpdateValue([{name: "useOtherUserCustomThemes", value: 'true'}], false, false);
       this.themeService.customCSS.set(blogDetails.id);
     }
     if (res === "cancelRemember") {
       this.settingService.values().askToUseOtherUserCustomThemes = false;
-      this.settingService.forceUpdateValue("askToUseOtherUserCustomThemes");
+      this.settingService.forceUpdateValue([{name: "useOtherUserCustomThemes", value: 'false'}], false, false);
     }
   }
 

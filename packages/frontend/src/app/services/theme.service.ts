@@ -246,8 +246,7 @@ export class ThemeService {
     // Forced lightDarkMode
     if (themeData[theme]?.compatibility === 'light') await this.setLightDarkMode('light')
     if (themeData[theme]?.compatibility === 'dark') await this.setLightDarkMode('dark')
-
-    this.settingService.forceUpdateValue('theme', !doNotSavePreference)
+    this.settingService.forceUpdateValue([{name: 'theme', value: theme}], !doNotSavePreference, !doNotSavePreference)
   }
 
   public setLightDarkMode = async (lightDarkMode: LightDarkMode, doNotSavePreference = false) => {
@@ -256,21 +255,47 @@ export class ThemeService {
     this.settingService.values.update((v) => v)
 
     document.documentElement.setAttribute('data-theme', lightDarkMode)
-    this.settingService.forceUpdateValue('lightDarkMode', !doNotSavePreference)
+    this.settingService.forceUpdateValue([{name: 'lightDarkMode', value: lightDarkMode}], !doNotSavePreference, !doNotSavePreference)
   }
 
   // When setting additionalStyleMode either call the set method here or modify and call sync afterwards if modifying many settings at once.
   public setAdditionalStyleMode = async (mode: AdditionalStyleMode, value: boolean, doNotSavePreference = false) => {
     this.additionalStyleModes[mode].set(value)
     this.syncAdditionalStyleModeSettings()
+    this.settingService.forceUpdateValue([{ name: 'additionalStyleModes', value: JSON.stringify(this.getAditionalStyleModesAsArray())}], !doNotSavePreference, !doNotSavePreference)
+  }
 
-    this.settingService.forceUpdateValue('additionalStyleModes', !doNotSavePreference)
+  private getAditionalStyleModesAsArray() {
+    const res: string[] = []
+    // This is a bit ugly but fuck it it will work for now. Future me or future contributor Im sorry Im a bit sleepy
+    const modes = this.additionalStyleModes;
+    if(modes.centerLayout()) {
+      res.push('centerLayout')
+    }
+    if(modes.colorfulTags()) {
+      res.push('colorfulTags')
+    }
+    if(modes.horizontalMenu()) {
+      res.push('horizontalMenu')
+    }
+    if(modes.lowContrastSidebar()) {
+      res.push('lowContrastSidebar')
+    }
+    if(modes.oldTags()) {
+      res.push('oldTags')
+    }
+    if(modes.solidCards()) {
+      res.push('solidCards')
+    }
+    if(modes.topToolbar()) {
+      res.push('topToolbar')
+    }
+    return res;
   }
 
   public syncAdditionalStyleMode() {
     this.syncAdditionalStyleModeSettings()
-
-    this.settingService.forceUpdateValue('additionalStyleModes')
+    this.settingService.forceUpdateValue([{ name: 'additionalStyleModes', value: JSON.stringify(this.getAditionalStyleModesAsArray())}], false, false)
   }
 
   // Helper to sync up the settings service values and theme service values
