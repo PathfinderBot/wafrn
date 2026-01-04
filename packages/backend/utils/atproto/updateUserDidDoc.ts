@@ -44,9 +44,7 @@ async function updateUserDidDoc(user: User) {
         }
 
         console.log('pushing operation')
-        await pushPlcOperation(user.bskyDid, operation)
-        await forceUpdateBskyPassword(user)
-        
+        await pushPlcOperation(user.bskyDid, operation)        
       }
     }
   } catch (e) {
