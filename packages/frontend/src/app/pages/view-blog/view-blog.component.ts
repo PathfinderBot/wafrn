@@ -264,7 +264,7 @@ export class ViewBlogComponent
     }
     if (
       !this.loginService.loggedIn.value &&
-      this.blogDetails()!.url.startsWith("@")
+      this.blogDetails()!.url.startsWith("@") && !featured
     ) {
       this.loading.set(false);
       this.noMorePosts = true;
@@ -290,7 +290,9 @@ export class ViewBlogComponent
       return !allFragmentsSeen;
     });
     this.posts = [...this.posts, ...filteredPosts];
-    this.loading.set(false);
+    if(!featured){
+      this.loading.set(false);
+    }
     if (tmpPosts.length === 0) {
       this.noMorePosts = true;
     }
