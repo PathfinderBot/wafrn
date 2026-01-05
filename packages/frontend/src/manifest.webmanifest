@@ -1,6 +1,7 @@
 {
-  "name": "wafrn",
-  "short_name": "wafrn",
+  "name": "${{FRONTEND_SHORT_TITLE:-Wafrn}}",
+  "short_name": "${{FRONTEND_SHORT_TITLE:-Wafrn}}",
+  "description": "${{FRONTEND_DESCRIPTION:-Wafrn}}",
   "theme_color": "#2A323D",
   "background_color": "#2A323D",
   "display": "standalone",
@@ -54,6 +55,43 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create new woot",
+      "url": "/editor"
+    },
+    {
+      "name": "Explore WAFRN",
+      "url": "/dashboard/exploreLocal"
+    },
+    {
+      "name": "WAFRN & friends",
+      "url": "/dashboard/explore"
+    }
+  ],
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "f-droid",
+      "url": "https://f-droid.org/packages/dev.djara.wafrn_rn/",
+      "id": "dev.djara.wafrn_rn"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/us/app/wafrn/id6737332622",
+      "id": "id6737332622"
+    },
+    {
+      "platform": "izzyondroid",
+      "url": "https://apt.izzysoft.de/fdroid/index/apk/dev.djara.wafrn_rn",
+      "id": "dev.djara.wafrn_rn"
+    },
+    {
+      "platform": "obtainium",
+      "url": "http://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://codeberg.org/wafrn/wafrn-rn",
+      "id": "dev.djara.wafrn_rn"
     }
   ]
 }
