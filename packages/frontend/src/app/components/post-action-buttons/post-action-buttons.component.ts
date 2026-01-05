@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, input, OnChanges, signal, viewChild, inject } from '@angular/core'
+import { Component, computed, ElementRef, input, OnChanges, signal, viewChild, inject, ChangeDetectorRef } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -65,13 +65,16 @@ export class PostActionButtonsComponent implements OnChanges {
   private readonly editor = inject(EditorService);
   private settingsService = inject(SettingsService);
   private particle = inject(ParticleService);
+  private cdr = inject(ChangeDetectorRef)
 
   fragment = input.required<ProcessedPost>()
   settingKey = input.required<SettingKey>()
 
   isEmptyReblog = false
   myId = ''
-  loadingAction = false
+  loadingRewoot = false
+  loadingLike = false
+  loadingBookmark = false
   myRewootsIncludePost = computed(() => this.postService.rewootedPosts().has(this.fragment().id))
   bookmarked = signal<boolean>(false)
 
@@ -160,7 +163,7 @@ export class PostActionButtonsComponent implements OnChanges {
   }
 
   async deleteRewoots() {
-    this.loadingAction = true
+    this.loadingRewoot = true
     const success = await firstValueFrom(this.deletePostService.deleteRewoots(this.fragment().id))
     if (success) {
       this.postService.rewootedPosts.update((set) => {
@@ -179,11 +182,12 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingAction = false
+    this.loadingRewoot = false;
+    this.cdr.detectChanges();
   }
 
   async toggleLike() {
-    if (this.loadingAction || this.fragment().userId === this.myId) return
+    if (this.loadingLike || this.fragment().userId === this.myId) return
 
     const hasLikedPost = this.fragment().userLikesPostRelations.includes(this.myId)
     if (!hasLikedPost) {
@@ -195,7 +199,7 @@ export class PostActionButtonsComponent implements OnChanges {
 
   async likePost(event?: MouseEvent) {
     const scrollPos = { x: window.scrollX, y: window.scrollY }
-    this.loadingAction = true
+    this.loadingLike = true
     if (await this.postService.likePost(this.fragment().id)) {
       this.fragment().userLikesPostRelations.push(this.myId)
       this.messages.add({
@@ -212,11 +216,12 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingAction = false
+    this.loadingLike = false
+    this.cdr.detectChanges()
   }
 
   async unlikePost() {
-    this.loadingAction = true
+    this.loadingLike = true
     if (await this.postService.unlikePost(this.fragment().id)) {
       this.fragment().userLikesPostRelations = this.fragment().userLikesPostRelations.filter(
         (elem) => elem != this.myId
@@ -233,7 +238,9 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingAction = false
+    this.loadingLike = false
+    this.cdr.detectChanges()
+
   }
 
   async toggleBookmark() {
@@ -246,7 +253,7 @@ export class PostActionButtonsComponent implements OnChanges {
 
   async bookmarkPost(event?: MouseEvent) {
     const scrollPos = { x: window.scrollX, y: window.scrollY }
-    this.loadingAction = true
+    this.loadingBookmark = true
     if (await this.postService.bookmarkPost(this.fragment().id)) {
       this.fragment().bookmarkers.push(this.myId)
       this.messages.add({
@@ -263,11 +270,12 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingAction = false
+    this.loadingBookmark = false
+    this.cdr.detectChanges()
   }
 
   async unbookmarkPost() {
-    this.loadingAction = true
+    this.loadingBookmark = true
     if (await this.postService.unbookmarkPost(this.fragment().id)) {
       this.fragment().bookmarkers = this.fragment().bookmarkers.filter((elem) => elem != this.myId)
       this.messages.add({
@@ -283,7 +291,8 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingAction = false
+    this.loadingBookmark = false
+    this.cdr.detectChanges()
   }
 
   async toggleReblog() {
@@ -309,7 +318,7 @@ export class PostActionButtonsComponent implements OnChanges {
 
   async quickReblog(accountIndex?: number, event?: MouseEvent) {
     const scrollPos = { x: window.scrollX, y: window.scrollY }
-    this.loadingAction = true
+    this.loadingRewoot = true
     if (this.fragment().privacy !== 10) {
       const response = await this.editor.createPost({
         mentionedUsers: [],
@@ -341,6 +350,7 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingAction = false
+    this.loadingRewoot = false
+    this.cdr.detectChanges()
   }
 }
