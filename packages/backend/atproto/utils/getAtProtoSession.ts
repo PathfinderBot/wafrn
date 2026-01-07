@@ -54,7 +54,7 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
         user: user.url,
         error: error
       })
-      const tmpAgent = await forceUpdateBskyPassword(user)
+      const tmpAgent =  undefined // await forceUpdateBskyPassword(user)
       if(tmpAgent) {
         return tmpAgent
       }
