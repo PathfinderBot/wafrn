@@ -100,6 +100,7 @@ async function forceUpdateBskyPassword(user: User){
               password: randomString,
             });
           await user.save();
+          await createBskyAppPassword(user, agent);
           logger.debug(`Created bsky password for user ${user.url}`)
           await redisCache.del('bskySession:' + user.id)
           return agent
