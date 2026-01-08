@@ -18,6 +18,7 @@ import sequelize from "sequelize/lib/sequelize";
 import { return404 } from "../utils/return404.js";
 import { User } from "../models/user.js";
 import { Emoji } from "../models/emoji.js";
+import { deprecate } from "util";
 
 function sendWithCache(res: Response, localFileName: string) {
   // Does the .mime file exist?
@@ -75,6 +76,8 @@ function writeStream(
   });
 }
 function cacheRoutes(app: Application) {
+
+  // DEPRECATED WE MAY NUKE AT SOME POINT FOR SAFETY
   app.get("/api/cache", async (req: Request, res: Response) => {
     let mediaUrl = String(req.query?.media);
     if (!mediaUrl) {
@@ -89,10 +92,10 @@ function cacheRoutes(app: Application) {
 
   app.get("/api/v2/cache/media/:id", async (req: Request, res: Response) => {
     let mediaId = req.params.id;
-    const media = mediaId ? await Media.findByPk(mediaId) : undefined;
-    if (media) {
+    const mediaUrl = mediaId ? await getMediaUrlCache(mediaId) : undefined;
+    if (mediaUrl) {
       await getMediaFromUrl(
-        media.external ? media.url : completeEnvironment.mediaUrl + media.url,
+        mediaUrl,
         res
       );
     } else {
@@ -100,30 +103,26 @@ function cacheRoutes(app: Application) {
     }
   });
 
+  async function getMediaUrlCache(id: string): Promise<string> {
+    let res = ''
+    let redisData = await redisCache.get('media:' + id)
+    let media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
+    if(!redisData && media) {
+      redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
+    }
+    if(media) {
+      res = media.external ? media.url : completeEnvironment.mediaUrl + media.url
+    }
+
+    return res;
+  }
+
   app.get("/api/v2/cache/avatar/:id", async (req: Request, res: Response) => {
     try {
       let userId = req.params.id;
-      const user = userId
-        ? await User.scope("full").findOne({
-            attributes: ["email", "avatar"],
-            where: {
-              banned: false,
-              [Op.or]: [
-                {
-                  id: userId,
-                },
-                {
-                  url: userId,
-                },
-              ],
-            },
-          })
-        : undefined;
-      if (user) {
-        const url = user.email
-          ? `${completeEnvironment.mediaUrl}${user.avatar}`
-          : user.avatar;
-        await getMediaFromUrl(url, res);
+      let avatarUrl = await getAvatarUrlCache(userId)
+      if (avatarUrl) {
+        await getMediaFromUrl(avatarUrl, res);
       } else {
         res.sendStatus(404);
       }
@@ -136,24 +135,64 @@ function cacheRoutes(app: Application) {
     }
   });
 
+  async function getAvatarUrlCache(id: string): Promise<string> {
+    let res = ''
+    const avatarCache = await redisCache.get('avatar:' + id)
+    const user = avatarCache ? JSON.parse(avatarCache) : await User.scope("full").findOne({
+            attributes: ["email", "avatar"],
+            where: {
+              banned: false,
+              [Op.or]: [
+                {
+                  id: id,
+                },
+                {
+                  url: id,
+                },
+              ],
+            },
+          })
+    if(user) {
+      res = user.email
+          ? `${completeEnvironment.mediaUrl}${user.avatar}`
+          : user.avatar
+    }
+    if(user && !avatarCache) {
+      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60 )
+    }
+    return res;
+  }
+
   app.get("/api/v2/cache/emoji/:id", async (req: Request, res: Response) => {
     let emojiUUID = req.params.id;
-    const emoji = emojiUUID
-      ? await Emoji.findOne({
-          where: {
-            uuid: emojiUUID,
-          },
-        })
-      : undefined;
-    if (emoji) {
+    const url = await getEmojiUrl(emojiUUID)
+    if (url) {
       await getMediaFromUrl(
-        emoji.external ? emoji.url : completeEnvironment.mediaUrl + emoji.url,
+        url,
         res
       );
     } else {
       res.sendStatus(404);
     }
   });
+
+  async function getEmojiUrl(id: string): Promise<string> {
+    let res = ''
+    const cacheData = await redisCache.get('emoji:' + id)
+    const emoji = cacheData ? JSON.parse(cacheData) :
+      await Emoji.findOne({
+          where: {
+            uuid: id,
+          },
+        })
+    if(emoji) {
+      res = emoji.external ? emoji.url : completeEnvironment.mediaUrl + emoji.url
+    }
+    if(emoji && !cacheData) {
+      await redisCache.set('emoji:'+ id, JSON.stringify(emoji.dataValues), 'EX', 600)
+    }
+    return res;
+  }
 
   app.get("/api/v2/cache/youtube/:id", async (req: Request, res: Response) => {
     const youtubeId = decodeURIComponent(req.params.id);
