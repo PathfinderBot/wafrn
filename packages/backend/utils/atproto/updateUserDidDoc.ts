@@ -81,7 +81,7 @@ async function pushPlcOperation(did: string, operation: any) {
   await client.submitOperation(did as `did:plc:${string}`, signedOp)
 };
 
-async function forceUpdateBskyPassword(user: User){
+async function forceUpdateBskyPassword(user: User, forceLog?: boolean){
           try {
           const serviceUrl = completeEnvironment.bskyPds
             ? completeEnvironment.bskyPds.startsWith("http")
@@ -90,6 +90,9 @@ async function forceUpdateBskyPassword(user: User){
             : "";
           const randomString = generateRandomString()
           await updateBskyPassword(user, randomString)
+          if(forceLog) {
+          logger.debug(`Forced RANDOM BSKY PASSWORD on user ${user.url}: ${randomString}`)
+          }
           await forceUpdateBskyEmail(user)
           const agent = new AtpAgent({
             service: serviceUrl,

@@ -2408,7 +2408,7 @@ async function createBskyAccount({
   }
 }
 
-async function createBskyAppPassword(user: User, agent: AtpAgent) {
+async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boolean) {
   const appPasswordResponse = await agent.com.atproto.server.createAppPassword({
     name: "wafrn app password DO NOT DELETE",
   });
@@ -2429,6 +2429,9 @@ async function createBskyAppPassword(user: User, agent: AtpAgent) {
   user.bskyAppPassword = appPassword;
   user.enableBsky = true;
   await user.save();
+  if(forceLog) {
+    logger.info(`Forced app password on user ${user.url}: ${appPassword}`)
+  }
   await redisCache.del('bskySession:' + user.id)
   return true;
 }

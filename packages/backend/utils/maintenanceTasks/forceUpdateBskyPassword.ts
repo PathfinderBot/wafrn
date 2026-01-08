@@ -20,7 +20,7 @@ const user = await User.findOne({
 })
 
 if(user && user.enableBsky && completeEnvironment.enableBsky) {
-    let agent = await forceUpdateBskyPassword(user)
+    let agent = await forceUpdateBskyPassword(user, true)
     if(agent) {
         console.log('succ ess')
     } else {
