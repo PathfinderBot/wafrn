@@ -81,6 +81,7 @@ import { isAdult } from "../utils/isAdult.js";
 import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 import { getRemoteActor } from "../utils/activitypub/getRemoteActor.js";
 import { updateUserDidDoc } from "../utils/atproto/updateUserDidDoc.js";
+import { wait } from "../utils/wait.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -2409,8 +2410,18 @@ async function createBskyAccount({
 }
 
 async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boolean) {
+  const appPasswordsList = await agent.com.atproto.server.listAppPasswords()
+  for await (const element of appPasswordsList.data.passwords) {
+    if(element.name.includes('wafrn')) {
+      await agent.com.atproto.server.revokeAppPassword({
+        name: element.name
+      })
+      await wait(50)
+    }
+  } 
   const appPasswordResponse = await agent.com.atproto.server.createAppPassword({
-    name: "wafrn app password DO NOT DELETE",
+    name: "wafrn app password DO NOT DELETE " + generateRandomString(),
+    privileged: true
   });
 
   if (!appPasswordResponse.success) {
