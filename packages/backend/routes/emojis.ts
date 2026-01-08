@@ -35,57 +35,55 @@ export default function emojiRoutes(app: Application) {
           name: packName
         }
       })
-      if (existingCollection && existingCollection.length) {
+      try {
+        fs.createReadStream(file.destination + file.filename)
+          .on('end', async () => {
+            const pack = await EmojiCollection.findOrCreate({
+              where: {
+                name: packName
+              },
+              defaults: {
+                name: packName
+              }
+            })
+            const fileFormats = /.(jpg|gif|png|webp)$/
+            const emojinames = fs
+              .readdirSync('./uploads/emojipacks/' + packName)
+              .filter((filename) => filename.toLowerCase().match(fileFormats))
+            const emojisToCreate = emojinames.filter(elem => !fs.existsSync(`/emojipacks/${packName}/${elem}`)).map((elem) => {
+              const emojiName = `:${elem.split('.')[0]}:`
+              return {
+                name: emojiName,
+                external: false,
+                url: `/emojipacks/${packName}/${elem}`,
+                id: emojiName,
+                emojiCollectionId: pack[0].id
+              }
+            })
+            const emojisCreated = await Emoji.bulkCreate(emojisToCreate, {
+              ignoreDuplicates: true
+            })
+            await redisCache.del('avaiableEmojis')
+            res.send({
+              success: true,
+              message: 'Pack created succesfuly'
+            })
+          })
+          .on('error', async (error) => {
+            await redisCache.del('avaiableEmojis')
+            res.status(500)
+            logger.info({
+              message: 'Error uploading emojis',
+              error: error
+            })
+          })
+          .pipe(Extract({ path: './uploads/emojipacks/' + packName }))
+      } catch (error) {
+        logger.info({ message: 'Error when creating emoji pack', error: error })
         res.send({
           success: false,
-          message: 'Existing pack'
+          message: 'something went wrong. Check logs'
         })
-      } else {
-        try {
-          fs.createReadStream(file.destination + file.filename)
-            .on('end', async () => {
-              const pack = await EmojiCollection.create({
-                name: packName
-              })
-              const fileFormats = /.(jpg|gif|png|webp)$/
-              const emojinames = fs
-                .readdirSync('./uploads/emojipacks/' + packName)
-                .filter((filename) => filename.toLowerCase().match(fileFormats))
-              const emojisToCreate = emojinames.map((elem) => {
-                const emojiName = `:${elem.split('.')[0]}:`
-                return {
-                  name: emojiName,
-                  external: false,
-                  url: `/emojipacks/${packName}/${elem}`,
-                  id: emojiName,
-                  emojiCollectionId: pack.id
-                }
-              })
-              const emojisCreated = await Emoji.bulkCreate(emojisToCreate, {
-                ignoreDuplicates: true
-              })
-              await redisCache.del('avaiableEmojis')
-              res.send({
-                success: true,
-                message: 'Pack created succesfuly'
-              })
-            })
-            .on('error', async (error) => {
-              await redisCache.del('avaiableEmojis')
-              res.status(500)
-              logger.info({
-                message: 'Error uploading emojis',
-                error: error
-              })
-            })
-            .pipe(Extract({ path: './uploads/emojipacks/' + packName }))
-        } catch (error) {
-          logger.info({ message: 'Error when creating emoji pack', error: error })
-          res.send({
-            success: false,
-            message: 'something went wrong. Check logs'
-          })
-        }
       }
     }
   )
