@@ -150,6 +150,7 @@ async function getRemoteActorIdProcessor(job: Job) {
           displayUrl: Array.isArray(userPetition.url)
             ? userPetition.url[0]
             : userPetition.url,
+          manuallyAcceptsFollows: userPetition.manuallyApprovesFollowers ?? false
         };
         federatedHost.publicInbox = userPetition.endpoints?.sharedInbox;
         await federatedHost.save();
@@ -377,15 +378,6 @@ async function getRemoteActorIdProcessor(job: Job) {
                   // we can't bridge bridged from web users so hard code to bsky.brid.gy
                   mergeAcc = 2
                   logger.info({ atUri }, 'user is bridgy user')
-                } else if (atDoc && (
-                  userPetition.id.includes('wafrn.net/') ||
-                  userPetition.id.includes('waf.moe/') ||
-                  userPetition.id.includes('bark.wolp.chat/') ||
-                  userPetition.id.includes('gabboman.xyz/')
-                )) {
-                  // this is wafrn test
-                  mergeAcc = 1
-                  logger.info({ atUri }, 'user is wafrn user')
                 }
                 if (mergeAcc > 0) {
                   const oldUser = await User.findOne({

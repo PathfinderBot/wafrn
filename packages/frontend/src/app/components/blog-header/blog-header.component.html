@@ -31,7 +31,16 @@
             [ngClass]="{'split-button-left': loggedIn}" (click)="
                   postService.followedUserIds.indexOf(blog.id) === -1 ? followUser(blog.id) : unfollowUser(blog.id)
                 ">
-            {{ postService.followedUserIds.indexOf(blog.id) === -1 ? 'Follow' : 'Unfollow' }}
+            @if (postService.followedUserIds.indexOf(blog.id) === -1) {
+            @if (blog.manuallyAcceptsFollows) {
+            <fa-icon [icon]="lockIcon" class="mr-2"></fa-icon>Request follow
+            }
+            @else {
+            Follow
+            }
+            } @else {
+            Unfollow
+            }
           </button>
           }
           @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
