@@ -57,7 +57,7 @@ export default function emojiRoutes(app: Application) {
                 external: false,
                 url: `/emojipacks/${packName}/${elem}`,
                 id: emojiName,
-                emojiCollectionId: pack.id
+                emojiCollectionId: pack[0].id
               }
             })
             const emojisCreated = await Emoji.bulkCreate(emojisToCreate, {
