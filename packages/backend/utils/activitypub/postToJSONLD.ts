@@ -178,10 +178,15 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
           type: "Link",
           mediaType:
             'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-          name: `RE: ${postUrl}`,
+          name: `RE: RE: <a href="${postUrl}">${postUrl}</a><br>`,
           href: postUrl,
         });
       } else {
+        fediTags.push({
+          type: "BskyQuote",
+          name: `RE: RE: <a href="${postUrl}">${postUrl}</a><br>`,
+          href: postUrl,
+        });
         misskeyTagsAndQuotes = misskeyTagsAndQuotes + `<br>RE: ${postUrl}`
       }
     }
