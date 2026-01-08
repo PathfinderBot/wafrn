@@ -36,22 +36,29 @@ export default function emojiRoutes(app: Application) {
         }
       })
       if (existingCollection && existingCollection.length) {
-        res.send({
-          success: false,
-          message: 'Existing pack'
-        })
+        // why. just update existing pack
+
+        // res.send({
+        //   success: false,
+        //   message: 'Existing pack'
+        // })
       } else {
         try {
           fs.createReadStream(file.destination + file.filename)
             .on('end', async () => {
-              const pack = await EmojiCollection.create({
-                name: packName
+              const pack = await EmojiCollection.findOrCreate({
+                where: {
+                  name: packName
+                },
+                defaults: {
+                  name: packName
+                }
               })
               const fileFormats = /.(jpg|gif|png|webp)$/
               const emojinames = fs
                 .readdirSync('./uploads/emojipacks/' + packName)
                 .filter((filename) => filename.toLowerCase().match(fileFormats))
-              const emojisToCreate = emojinames.map((elem) => {
+              const emojisToCreate = emojinames.filter(elem => !fs.existsSync(`/emojipacks/${packName}/${elem}`)).map((elem) => {
                 const emojiName = `:${elem.split('.')[0]}:`
                 return {
                   name: emojiName,
