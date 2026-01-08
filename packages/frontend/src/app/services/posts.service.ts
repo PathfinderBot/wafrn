@@ -1033,7 +1033,7 @@ export class PostsService {
   }
 
   emojiToHtml(emoji: Emoji): string {
-    return `<img class="post-emoji" src="${`${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${emoji.uuid}`}" title="${emoji.name
+    return `<img class="post-emoji" loading="lazy" src="${`${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${emoji.uuid}`}" title="${emoji.name
       }" alt="${emoji.name}">`;
   }
 

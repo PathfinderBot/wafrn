@@ -20,7 +20,7 @@ function getURL(urlString: string): URL {
 }
 
 function emojiToHtml(emoji: Emoji): string {
-  return `<img class="post-emoji" src="${
+  return `<img class="post-emoji" loading="lazy" src="${
     completeEnvironment.frontendEnvironment.externalCacheurl +
     (emoji.external
       ? encodeURIComponent(emoji.url)
