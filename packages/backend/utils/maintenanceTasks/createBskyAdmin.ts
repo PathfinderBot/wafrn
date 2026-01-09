@@ -17,7 +17,7 @@ const name = args[0]
 
 const user = await getAdminUser()
 
-if(user && !user.enableBsky && completeEnvironment.enableBsky) {
+if(user && (!user.enableBsky || !user.bskyDid) && completeEnvironment.enableBsky) {
     console.log(`Trying to create user: @${name + '.' + completeEnvironment.bskyPds}`)
     const inviteCodeRecord = await BskyInviteCodes.findOne({
               where: {
@@ -45,4 +45,8 @@ if(user && !user.enableBsky && completeEnvironment.enableBsky) {
 
 } else {
     console.log(`It seems that ${user.url} has enabled bsky already or your server has bsky disabled`)
+    console.log(`Server bsky enabled: ${completeEnvironment.enableBsky}`)
+    console.log(`admin account did: ${user.bskyDid}`)
+    console.log(`admin account bskyenabled: ${user.enableBsky}`)
+    console.log(`Hope this can help you debug. Remember to check adminer!`)
 }
