@@ -2370,11 +2370,13 @@ async function createBskyAccount({
   user,
   password,
   inviteCode,
+  url
 }: {
   agent: AtpAgent;
   user: User;
   password: string;
   inviteCode: string;
+  url?: string
 }) {
   const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
     ? completeEnvironment.bskyPdsUrl
@@ -2382,7 +2384,7 @@ async function createBskyAccount({
       .replace("http://", "")
     : completeEnvironment.bskyPdsUrl;
 
-  const sanitizedUrl = user.url
+  const sanitizedUrl = url ? url :user.url
     .replaceAll("_", "-")
     .replaceAll(".", "-")
     .substring(0, 17);
@@ -2480,4 +2482,4 @@ async function forceUpdateBskyEmail(userIncomplete: User) {
   );
 }
 
-export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail };
+export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail, createBskyAccount };
