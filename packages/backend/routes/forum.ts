@@ -88,9 +88,6 @@ export default function forumRoutes(app: Application) {
           [Op.or]: [
             {
               userId: userId,
-              privacy: {
-                [Op.ne]: Privacy.DirectMessage
-              }
             },
             {
               privacy: Privacy.FollowersOnly,
@@ -108,6 +105,7 @@ export default function forumRoutes(app: Application) {
           ]
         }
       })
+      postIds = fullPostsToGet.map(elem => elem.id)
       const quotes = await getQuotes(postIds)
       const quotedPostsIds = quotes.map((quote) => quote.quotedPostId)
       postIds = postIds.concat(quotedPostsIds)
@@ -168,14 +166,16 @@ export default function forumRoutes(app: Application) {
       usersFollowedByPoster = await usersFollowedByPoster
       usersFollowingPoster = await usersFollowingPoster
       const mentionsAwaited = await mentions
-      res.send({
-        posts: await Promise.all(
+      const posts = await Promise.all(
           (await fullPostsToGet)
             .filter((elem: any) => elem.id !== postId)
             .map((elem) =>
               addPostCanInteract(userId, elem.dataValues, usersFollowingPoster, usersFollowedByPoster, mentionsAwaited)
             )
-        ),
+        )
+      if(posts.length) {
+        res.send({
+        posts: posts,
         emojiRelations: await emojis,
         mentions: mentions.postMentionRelation,
         users: await users,
@@ -187,6 +187,7 @@ export default function forumRoutes(app: Application) {
         quotedPosts: await quotedPosts,
         bookmarks: await getBookmarks(postIds, userId)
       })
+      } else { res.sendStatus(404)}
     } else {
       res.sendStatus(404)
     }
