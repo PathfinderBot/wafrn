@@ -187,7 +187,21 @@ export default function forumRoutes(app: Application) {
         quotedPosts: await quotedPosts,
         bookmarks: await getBookmarks(postIds, userId)
       })
-      } else { res.sendStatus(404)}
+      } else { 
+        res.send({
+        posts: [],
+        emojiRelations: [],
+        mentions: [],
+        users: [],
+        polls: [],
+        medias: [],
+        tags: [],
+        likes: [],
+        quotes: [],
+        quotedPosts: [],
+        bookmarks: []
+      })
+      }
     } else {
       res.sendStatus(404)
     }
