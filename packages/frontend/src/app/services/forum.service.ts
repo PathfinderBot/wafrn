@@ -14,9 +14,16 @@ export class ForumService {
 
 
   async getForumThread(id: string) {
-    const response: unlinkedPosts = await firstValueFrom(
-      this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/forum/' + id)
-    )
+    let response: unlinkedPosts | undefined
+    try {
+      response = await firstValueFrom(
+        this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/forum/' + id)
+      )
+    } catch (error) {
+      return []
+    }
+    
+    console.log(response)
     response.rewootIds?.forEach((id) => {
       this.postService.rewootedPosts().add(id)
     })
