@@ -271,7 +271,7 @@ function cacheRoutes(app: Application) {
   );
 }
 
-async function getMediaFromUrl(mediaUrl: string, res?: Response) {
+async function getMediaFromUrl(mediaUrl: string, res?: Response, forceWriteFirst?: boolean) {
   try {
     const mediaLinkHash = crypto
       .createHash("sha256")
@@ -359,9 +359,12 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response) {
         const { stream, mime } = await getMimeType(response.data);
         if (res) {
           res.contentType(mime);
+          if(!forceWriteFirst) {
+            stream.pipe(res)
+          }
         }
         await writeStream(stream, localFileName, mime, altText);
-        if (res) {
+        if (res && forceWriteFirst) {
           return await sendWithCache(res, localFileName);
         }
       } catch (error) {
