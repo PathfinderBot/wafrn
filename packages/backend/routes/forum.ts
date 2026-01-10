@@ -173,7 +173,6 @@ export default function forumRoutes(app: Application) {
               addPostCanInteract(userId, elem.dataValues, usersFollowingPoster, usersFollowedByPoster, mentionsAwaited)
             )
         )
-      if(posts.length) {
         res.send({
         posts: posts,
         emojiRelations: await emojis,
@@ -187,21 +186,7 @@ export default function forumRoutes(app: Application) {
         quotedPosts: await quotedPosts,
         bookmarks: await getBookmarks(postIds, userId)
       })
-      } else { 
-        res.send({
-        posts: [],
-        emojiRelations: [],
-        mentions: [],
-        users: [],
-        polls: [],
-        medias: [],
-        tags: [],
-        likes: [],
-        quotes: [],
-        quotedPosts: [],
-        bookmarks: []
-      })
-      }
+      
     } else {
       res.sendStatus(404)
     }
