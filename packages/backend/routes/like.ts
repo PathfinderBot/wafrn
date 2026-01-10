@@ -51,11 +51,11 @@ export default function likeRoutes(app: Application) {
             return
           }
         }
-        if (!user.enableBsky && !user.bskyDid && post.bskyUri) {
+        if (!user.enableBsky && !user.bskyDid && post.bskyUri ) {
           const userPosterOfPostToBeLiked = (await User.findByPk(post.userId)) as User
           if (userPosterOfPostToBeLiked.isRemoteUser) {
             res.status(403)
-            res.send({ error: true, message: 'You do not have bluesky federation enabled' })
+            res.send({ error: true, message: 'You do not have bluesky enabled' })
             return
           }
         } else {
