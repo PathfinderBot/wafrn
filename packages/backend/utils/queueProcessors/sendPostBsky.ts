@@ -53,6 +53,7 @@ async function sendPostBsky(job: Job) {
       if (
         post.privacy === Privacy.Public &&
         localUser?.enableBsky &&
+        localUser?.bskyDid &&
         completeEnvironment.enableBsky
       ) {
         if (!parent || parent.bskyUri) {

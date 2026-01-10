@@ -362,7 +362,7 @@ export default function postsRoutes(app: Application) {
         }
 
         // we check if this is in reply to bsky if user does not have bsky enabled
-        if (!posterUser?.enableBsky && parent) {
+        if (!posterUser?.enableBsky && parent && !posterUser?.bskyDid) {
           if (parent.bskyUri && !parent.remotePostId) {
             const parentPoster = await User.findByPk(parent.userId);
             if (parentPoster?.isRemoteUser) {
@@ -861,7 +861,8 @@ export default function postsRoutes(app: Application) {
             if (
               post.privacy === Privacy.Public &&
               posterUser?.enableBsky &&
-              completeEnvironment.enableBsky
+              completeEnvironment.enableBsky &&
+              posterUser?.bskyDid
             ) {
               await sendPostBskyQueue.add("sendPostBsky", jobData, {
                 delay: 500,
@@ -935,7 +936,8 @@ export default function postsRoutes(app: Application) {
         if (
           post.privacy === Privacy.Public &&
           user.enableBsky &&
-          completeEnvironment.enableBsky
+          completeEnvironment.enableBsky &&
+          user.bskyDid
         ) {
           await sendPostBskyQueue.add("sendPostBsky", jobData, {
             delay: 500,

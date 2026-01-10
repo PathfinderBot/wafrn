@@ -542,7 +542,7 @@ function userRoutes(app: Application) {
           await user.save();
 
           await updateProfileOptions(optionJSON, posterId);
-          if (user.enableBsky) {
+          if (user.enableBsky && user.bskyDid) {
             const bskySession = await getAtProtoSession(user);
             await updateBlueskyProfile(bskySession, user);
           }
@@ -1421,7 +1421,7 @@ function userRoutes(app: Application) {
           emojis: await localEmojis,
           mutedUsers: await mutedUsers,
           followedHashtags: await followedHashtags,
-          enableBluesky: user.enableBsky,
+          enableBluesky: user.enableBsky && user.bskyDid,
           mutedRewoots,
           mutedQuotes,
         });
@@ -1464,7 +1464,7 @@ function userRoutes(app: Application) {
         });
       }
 
-      if (user.enableBsky && user.bskyAppPassword) {
+      if (user.enableBsky && user.bskyAppPassword && user.bskyDid) {
         return res.status(400).send({
           error: true,
           message: `You already have bluesky enabled`,
