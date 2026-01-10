@@ -2,6 +2,7 @@
 services:
   db:
     image: postgres:17
+    #command: -c 'max_connections=500'
     restart: unless-stopped
     environment:
       POSTGRES_USER: root
@@ -32,6 +33,7 @@ services:
 volumes:
   dbpg:
   redis:
+
 
 networks:
   default:

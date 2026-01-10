@@ -11,7 +11,7 @@
     <div class="flex justify-content-center ribbon-icon">
       @if (image() !== undefined) {
         <fa-icon [fixedWidth]="true" [icon]="plusIcon" size="xs"></fa-icon>
-        <img class="post-emoji" [src]="image()" />
+        <img class="post-emoji"  loading="lazy" [src]="image()" />
       } @else if (icon() !== undefined) {
         <fa-icon [fixedWidth]="true" [icon]="$any(icon())"></fa-icon>
       }

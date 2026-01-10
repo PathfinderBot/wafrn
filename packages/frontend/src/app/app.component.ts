@@ -12,6 +12,7 @@ import { filter, map } from 'rxjs'
 import { MessageService } from './services/message.service'
 import { supportedLanguages } from './lists/languages'
 import { ThemeService } from './services/theme.service'
+import { PostsService } from './services/posts.service'
 
 @Component({
   selector: 'app-root',
@@ -31,6 +32,8 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private messages = inject(MessageService);
   private titleService = inject(Title);
+  private postService = inject(PostsService)
+  
 
   title = 'wafrn'
 
@@ -92,6 +95,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+
     // unregister serviceworkers
     /*navigator.serviceWorker.getRegistrations().then(function (registrations) {
       for (const registration of registrations) {
@@ -170,5 +174,11 @@ export class AppComponent implements OnInit {
         })
     }
     */
+
+
+    this.postService.loadFollowers().then(() => {
+        console.log('followers loaded on init')
+      })
+
   }
 }

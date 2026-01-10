@@ -1125,30 +1125,31 @@ export class SettingsService {
    *
    * @returns whether the server was able to save your value
    */
-  async forceUpdateValue(keyOrKeys: SettingKey | SettingKey[], updateLocalStorage: boolean = true): Promise<boolean> {
-    let keyList: SettingKey[]
-    if (Array.isArray(keyOrKeys)) {
-      keyList = keyOrKeys
-    } else {
-      keyList = [keyOrKeys]
-    }
+  async forceUpdateValue(values: {name: SettingKey, value: string |string[]}[], updateLocalStorage: boolean, sendRemote: boolean): Promise<boolean> {
+    let keyList: SettingKey[] = values.map(elem => elem.name)
 
     // Optionally write to localStorage
     if (updateLocalStorage) {
-      keyList.forEach((key) => {
-        const localStorageKey = this.data[key].localStorageKey
-        const newValue = this.values()[key]
+      values.forEach((elem) => {
+        const localStorageKey = this.data[elem.name].localStorageKey
+        const newValue = elem.value
         if (localStorageKey && newValue !== undefined) {
-          localStorage.setItem(localStorageKey, this.getSettingValueAsString(key))
+          localStorage.setItem(localStorageKey, Array.isArray(elem.value) ? JSON.stringify(elem.value) : elem.value)
         }
       })
     }
 
     // Write options to the server
-    if (this.loginService.loggedIn.value) {
-      const options: { name: string; value: string }[] = this.getSettingsAsOptions()
+    if (this.loginService.loggedIn.value && sendRemote) {
       const res = await lastValueFrom(
-        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/editOptions`, { options }).pipe(
+        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/editOptions`, {
+          options: values.map(elem => {
+            return {
+              name: 'wafrn.' + this.data[elem.name].localStorageKey ,
+              value: elem.value
+            }
+          })
+        }).pipe(
           timeout(60000), // if it doesn't return in a full minute you've got problems
           catchError((_err) => of({ success: false }))
         )
@@ -1217,7 +1218,11 @@ export class SettingsService {
       return JSON.stringify(list)
     }
     console.error('Error converting list to string!', list)
-    return list.toString() // should not happen lmao
+    if(list){
+      return list.toString() // should not happen lmao
+    } else { // well it did happen
+      return ''
+    }
   }
 
   convertAsksTo(): string {

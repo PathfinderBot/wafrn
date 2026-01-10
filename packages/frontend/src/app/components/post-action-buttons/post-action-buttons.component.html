@@ -24,7 +24,7 @@
                 mat-button
                 (click)="deleteRewoots()"
                 class="mat-circle-button delete-rewoot-icon"
-                [disabled]="loadingAction"
+                [disabled]="loadingRewoot"
               >
                 <fa-icon size="lg" [icon]="closeIcon"></fa-icon>
               </button>
@@ -37,7 +37,7 @@
                 (mousedown)="startReblog($event)"
                 (mouseup)="endReblog($event)"
                 class="relative mat-circle-button rewoot-icon"
-                [disabled]="loadingAction"
+                [disabled]="loadingRewoot"
               >
                 <fa-icon size="lg" [icon]="quickReblogIcon"></fa-icon>
                 <button #reblogMenuOpener [mat-menu-trigger-for]="reblogMenu" class="menu-toggle-hidden"></button>
@@ -72,7 +72,7 @@
                 mat-button
                 (click)="unbookmarkPost()"
                 class="mat-circle-button unlike-icon"
-                [disabled]="loadingAction"
+                [disabled]="loadingBookmark"
               >
                 <fa-icon size="lg" [icon]="unbookmarkIcon"></fa-icon>
               </button>
@@ -82,7 +82,7 @@
                 mat-button
                 (click)="bookmarkPost($event)"
                 class="mat-circle-button unlike-icon"
-                [disabled]="loadingAction"
+                [disabled]="loadingBookmark"
               >
                 <fa-icon size="lg" [icon]="bookmarkIcon"></fa-icon>
               </button>
@@ -96,7 +96,7 @@
                   mat-button
                   (click)="unlikePost()"
                   class="mat-circle-button unlike-icon"
-                  [disabled]="loadingAction"
+                  [disabled]="loadingLike"
                 >
                   <fa-icon size="lg" [icon]="clearHeartIcon"></fa-icon>
                 </button>
@@ -107,7 +107,7 @@
                   mat-button
                   (click)="likePost($event)"
                   class="mat-circle-button like-icon"
-                  [disabled]="loadingAction"
+                  [disabled]="loadingLike"
                 >
                   <fa-icon size="lg" [icon]="solidHeartIcon"></fa-icon>
                 </button>

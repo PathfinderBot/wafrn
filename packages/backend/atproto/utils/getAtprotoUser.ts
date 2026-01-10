@@ -82,11 +82,12 @@ async function getAtprotoUser(
     // we check if it's bridgy fed pds by getting did doc of course
     const doc = await getDidDoc(userFound.bskyDid ?? '')
     const bskyPds = doc?.service?.find(x => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
-    logger.info({
+    logger.debug({
+      message: 'merge debug',
       bskyKnownAs: doc?.alsoKnownAs,
       bskyPds: bskyPds,
       isBridgyFed: bskyPds?.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')
-    }, 'merge dbg')
+    },)
     if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
       // bridgy user. find the alsoknownas user
       const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter(x => x.startsWith('http')) ?? []
@@ -178,7 +179,7 @@ async function getAtprotoUser(
         oldUser.url = `@handle.invalid${oldUser.bskyDid}${oldUser.url}`;
         await oldUser.save();
       }
-      const newData = !userFound.isBskyPrimary ? {
+      const newData: any = (!userFound.isBskyPrimary && userFound.url !== newDataTmp.url) ? {
         ...newDataTmp,
         url: userFound.url,
         alternateUrl:
@@ -186,8 +187,16 @@ async function getAtprotoUser(
           (data.handle === "handle.invalid"
             ? `handle.invalid${data.did}`
             : data.handle)
-      } : newDataTmp
-      await userFound.set(newData);
+      } : {
+        ...newDataTmp,
+        isBskyPrimary: true
+      }
+
+      if (userFound.alternateUrl === userFound.url) {
+        newData.alternateUrl = undefined
+      }
+
+      userFound.set(newData);
       await userFound.save();
     } else {
       try {

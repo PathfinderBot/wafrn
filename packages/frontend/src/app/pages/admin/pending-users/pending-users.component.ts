@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core'
+import { Component, signal, inject, ChangeDetectorRef } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
@@ -18,6 +18,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 export class PendingUsersComponent {
   private adminService = inject(AdminService);
   private simpleDialog = inject(SimpleDialogService);
+  private cdr = inject(ChangeDetectorRef)
 
   pendingUsers: SimplifiedUser[] = []
   loading = signal(true)
@@ -68,5 +69,6 @@ export class PendingUsersComponent {
       })
     })
     this.loading.set(false)
+    this.cdr.detectChanges()
   }
 }

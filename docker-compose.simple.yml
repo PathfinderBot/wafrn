@@ -104,6 +104,8 @@ services:
     ports:
       - 80:80
       - 443:443
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
       PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
@@ -129,6 +131,7 @@ services:
 
   db:
     image: postgres:17
+    #command: -c 'max_connections=500'
     restart: unless-stopped
     shm_size: '2gb'
     environment:
@@ -185,6 +188,7 @@ volumes:
   pds:
   frontend:
   redis:
+
 
 networks:
   default:

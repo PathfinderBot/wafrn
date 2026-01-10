@@ -4,6 +4,7 @@
  * This is an EXPERIMENT
  */
 
+import { Op } from "sequelize";
 import { Post, User } from "../../models/index.js";
 import { completeEnvironment } from "../../utils/backendOptions.js";
 import { logger } from "../../utils/logger.js";
@@ -18,8 +19,14 @@ async function handleBskyFeed(user: User, cursor: Date) {
             limit: completeEnvironment.postsPerPage,
             cursor: cursor.toISOString()
         })
-
-        await Promise.all(bskyFeed.data.feed.map(elem => getAtProtoThread(elem.post.uri)))
+        const postsFound = (await Post.findAll({
+            where: {
+                bskyUri: {
+                    [Op.in]: bskyFeed.data.feed.map(elem => elem.post.uri)
+                }
+            }
+        })).map(elem => elem.bskyUri)
+        await Promise.all(bskyFeed.data.feed.filter(elem => !postsFound.includes(elem.post.uri)).map(elem => getAtProtoThread(elem.post.uri)))
 
         for await (const elem of bskyFeed.data.feed) {
             if(elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {

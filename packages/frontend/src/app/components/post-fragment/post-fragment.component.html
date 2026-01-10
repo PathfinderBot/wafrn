@@ -127,7 +127,7 @@
                 class="emojireact-button"
               >
                 @if (emoji.img) {
-                  <img class="post-emoji" [src]="emoji.img" [alt]="emoji.content" />
+                  <img class="post-emoji" loading="lazy" [src]="emoji.img" [alt]="emoji.content" />
                 } @else {
                   <span class="force-comic-sans"> {{ emoji.content }}</span>
                 }
@@ -140,7 +140,7 @@
             <div [matTooltip]="emoji.tooltip" class="external-emoji">
               <span>
                 @if (emoji.img) {
-                  <img class="post-emoji" [src]="emoji.img" [alt]="emoji.content" />
+                  <img class="post-emoji" loading="lazy" [src]="emoji.img" [alt]="emoji.content" />
                 } @else {
                   <span class="force-comic-sans"> {{ emoji.content }}</span>
                 }

@@ -118,6 +118,7 @@ export interface UserAttributes {
         "bskyAppPassword",
         "birthDate",
         "bskyInviteCode",
+        "activationCode"
       ],
     },
   },

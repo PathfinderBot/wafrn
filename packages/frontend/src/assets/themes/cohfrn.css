@@ -1,4 +1,9 @@
 /* FONT OVERRIDE (keep or change if u like it, remove for default fonts) + no rounded corners anywhere */
+/*@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+* {
+  font-family: 'Atkinson Hyperlegible', sans-serif !important;
+  font-feature-settings: normal !important;
+}*/
 
 /* VARIABLES */
 
@@ -54,83 +59,84 @@
 
   --mat-mdc-tooltip-trigger: black;
   /* ^ idk what this is */
+}
 
-  .mdc-button__label {
-    color: var(--button-accent-color);
-    text-shadow: 1px 1px 0px #fff;
-  }
+.mdc-button__label {
+  color: var(--button-accent-color);
+  text-shadow: 1px 1px 0px #fff;
+}
 
-  /* DASHBOARD BACKGROUND */
+/* DASHBOARD BACKGROUND */
 
-  .mat-drawer-content {
-    background-color: var(--main-bgcolor) !important;
-  }
+.mat-drawer-content {
+  background-color: var(--main-bgcolor) !important;
+}
 
-  /* ^ you can put an image here [and a lot of other places] with background-image: url('url.webp');. use a link to a file you have uploaded directly to wafrn*/
+/* ^ you can put an image here [and a lot of other places] with background-image: url('url.webp');. use a link to a file you have uploaded directly to wafrn*/
 
-  /* REFRESH BUTTON */
-  .mat-mdc-mini-fab {
-    background-color: #83254f !important;
-  }
+/* REFRESH BUTTON */
+.mat-mdc-mini-fab {
+  background-color: #83254f !important;
+}
 
-  .mat-mdc-mini-fab fa-icon {
-    color: #f8efe3 !important;
-  }
+.mat-mdc-mini-fab fa-icon {
+  color: #f8efe3 !important;
+}
 
-  /* SIDE MENU */
+/* SIDE MENU */
 
-  .instance-logo {
-    content: url('/assets/img/cohrn.webp');
-  }
+.instance-logo {
+  content: url('/assets/img/cohrn.webp');
+}
 
-  /* ^ use a wafrn upload link here too */
+/* ^ use a wafrn upload link here too */
 
-  .mat-drawer-inner-container {
-    background-color: #83254f;
-  }
+.mat-drawer-inner-container {
+  background-color: #83254f;
+}
 
-  mat-nav-list {
-    background-color: #83254f;
-  }
+mat-nav-list {
+  background-color: #83254f;
+}
 
-  mat-nav-list fa-icon {
-    color: #f8efe3;
-  }
+mat-nav-list fa-icon {
+  color: #f8efe3;
+}
 
-  mat-drawer hr {
-    border-color: #faa55b !important;
-  }
+mat-drawer hr {
+  border-color: #faa55b !important;
+}
 
-  /* ^ side menu container and buttons [respectively]. idk what the rest below do just leave them off or keep digging*/
+/* ^ side menu container and buttons [respectively]. idk what the rest below do just leave them off or keep digging*/
 
-  a.mat-mdc-list-item.route-active,
-  a.mat-mdc-list-item.subroute-active {
-    color: #83254f !important;
-    background: #f8efe3 !important;
-    --mat-list-list-item-label-text-color: #83254f;
-    --mat-list-list-item-container-color: #f8efe3;
-  }
+a.mat-mdc-list-item.route-active,
+a.mat-mdc-list-item.subroute-active {
+  color: #83254f !important;
+  background: #f8efe3 !important;
+  --mat-list-list-item-label-text-color: #83254f;
+  --mat-list-list-item-container-color: #f8efe3;
+}
 
-  mat-nav-list .mdc-list-item__primary-text {
-    color: #f8efe3 !important;
-  }
+mat-nav-list .mdc-list-item__primary-text {
+  color: #f8efe3 !important;
+}
 
-  a.mat-mdc-list-item.route-active .mdc-list-item__primary-text,
-  .mat-mdc-menu-content a.mat-mdc-list-item .mdc-list-item__primary-text,
-  a.mat-mdc-list-item.subroute-active .mdc-list-item__primary-text {
-    color: #83254f !important;
-  }
+a.mat-mdc-list-item.route-active .mdc-list-item__primary-text,
+.mat-mdc-menu-content a.mat-mdc-list-item .mdc-list-item__primary-text,
+a.mat-mdc-list-item.subroute-active .mdc-list-item__primary-text {
+  color: #83254f !important;
+}
 
-  a.mat-mdc-list-item.route-active fa-icon,
-  a.mat-mdc-list-item.subroute-active fa-icon {
-    color: #83254f !important;
-  }
+a.mat-mdc-list-item.route-active fa-icon,
+a.mat-mdc-list-item.subroute-active fa-icon {
+  color: #83254f !important;
+}
 
-  a.mat-mdc-list-item.subroute-active mat-nav-list .mdc-list-item__primary-text {
-    color: #83254f !important;
-  }
+a.mat-mdc-list-item.subroute-active mat-nav-list .mdc-list-item__primary-text {
+  color: #83254f !important;
+}
 
-  /*
+/*
 
 mat-drawer.side-menu {}
 
@@ -144,236 +150,255 @@ mat-nav-list app-menu-item {}
 
 */
 
-  /* BUTTONS - these may be overwritten by the class of the button, see below */
+/* BUTTONS - these may be overwritten by the class of the button, see below */
 
-  button {
-    background: var(--element-bgcolor);
-    color: var(--main-textcolor);
-    border: none;
-    transition: var(--color-trans);
-  }
+button {
+  background: var(--element-bgcolor);
+  color: var(--main-textcolor);
+  border: none;
+  transition: var(--color-trans);
+}
 
-  button:hover {
-    background: var(--element-bgcolor);
-    color: var(--button-accent-color);
-    border-color: var(--button-accent-color-hover);
-    border-style: dotted;
-    border-width: 0px;
-    border-radius: 0px;
-    transition: var(--color-trans);
-  }
+button:hover {
+  background: var(--element-bgcolor);
+  color: var(--button-accent-color);
+  border-color: var(--button-accent-color-hover);
+  border-style: dotted;
+  border-width: 0px;
+  border-radius: 0px;
+  transition: var(--color-trans);
+}
 
-  button:active {
-    background: var(--element-bgcolor);
-    color: var(--button-accent-color);
-    border-color: var(--button-accent-color-hover);
-    border-style: dashed;
-    border-width: 0px;
-    border-radius: 0px;
-    transition: var(--color-trans);
-  }
+button:active {
+  background: var(--element-bgcolor);
+  color: var(--button-accent-color);
+  border-color: var(--button-accent-color-hover);
+  border-style: dashed;
+  border-width: 0px;
+  border-radius: 0px;
+  transition: var(--color-trans);
+}
 
-  /* BUTTONS - use these i think */
+/* BUTTONS - use these i think */
 
-  .mat-mdc-unelevated-button.mat-primary {
-    background-color: #83254f !important;
-    border-color: var(--button-accent-color);
-    border-width: 2px;
-    color: #f8efe3;
-    transition: var(--color-trans);
-  }
+.mat-mdc-unelevated-button.mat-primary {
+  background-color: #83254f !important;
+  border-color: var(--button-accent-color);
+  border-width: 2px;
+  color: #f8efe3;
+  transition: var(--color-trans);
+}
 
-  .mat-mdc-unelevated-button fa-icon {
-    color: #f8efe3;
-  }
+.mat-mdc-unelevated-button fa-icon {
+  color: #f8efe3;
+}
 
-  .mat-mdc-unelevated-button.mat-primary:hover {
-    background-color: var(--button-bgcolor-hover) !important;
-    border-color: var(--button-accent-color-hover);
-    color: var(--main-textcolor);
-    border-width: 0px;
-    transition: var(--color-trans);
-  }
+.mat-mdc-unelevated-button.mat-primary:hover {
+  background-color: var(--button-bgcolor-hover) !important;
+  border-color: var(--button-accent-color-hover);
+  color: var(--main-textcolor);
+  border-width: 0px;
+  transition: var(--color-trans);
+}
 
-  .mat-mdc-unelevated-button {
-    background-color: #83254f !important;
-    border-color: var(--button-accent-color);
-    border-width: 0px;
-    color: #f8efe3;
-    transition: var(--color-trans);
-  }
+.mat-mdc-unelevated-button {
+  background-color: #83254f !important;
+  border-color: var(--button-accent-color);
+  border-width: 0px;
+  color: #f8efe3;
+  transition: var(--color-trans);
+}
 
-  .mat-mdc-unelevated-button:hover {
-    background-color: var(--button-bgcolor-hover) !important;
-    border-color: var(--button-accent-color-hover);
-    color: var(--main-textcolor);
-    border-width: 0px;
-    transition: var(--color-trans);
-  }
+.mat-mdc-unelevated-button:hover {
+  background-color: var(--button-bgcolor-hover) !important;
+  border-color: var(--button-accent-color-hover);
+  color: var(--main-textcolor);
+  border-width: 0px;
+  transition: var(--color-trans);
+}
 
-  /* ^ ALT TEXT / SENSITIVE MEDIA / NOTES ETC COLOR */
+/* ^ ALT TEXT / SENSITIVE MEDIA / NOTES ETC COLOR */
 
-  /* UNIVERSAL WAFRN CONTAINER */
-  .wafrn-container {
-    background-color: transparent;
-    border-radius: 0px;
-    border-width: 0px;
-    border-style: solid;
-    border-color: var(--container-bordercolor);
-  }
+/* UNIVERSAL WAFRN CONTAINER */
+.wafrn-container {
+  background-color: transparent;
+  border-radius: 0px;
+  border-width: 0px;
+  border-style: solid;
+  border-color: var(--container-bordercolor);
+}
 
-  app-post .wafrn-container,
-  app-notifications .mat-mdc-card.mdc-card.wafrn-container,
-  app-forum-component .wafrn-container {
-    background-color: #fff;
-    color: var(--main-textcolor);
-    box-shadow: 0px 0px 8px #a6a4a3 !important;
-    border-radius: 10px 10px 0px 0px;
-    padding: 0;
-  }
+app-post .wafrn-container,
+app-notifications .mat-mdc-card.mdc-card.wafrn-container,
+app-forum-component .wafrn-container {
+  background-color: #fff;
+  color: var(--main-textcolor);
+  box-shadow: 0px 0px 8px #a6a4a3 !important;
+  padding: 0;
+}
 
-  app-post .wafrn-container button,
-  app-notifications .mat-mdc-card.mdc-card.wafrn-container button,
-  app-forum-component .wafrn-container button {
-    background-color: transparent !important;
-  }
+app-post .wafrn-container button,
+app-notifications .mat-mdc-card.mdc-card.wafrn-container button,
+app-forum-component .wafrn-container button {
+  background-color: transparent !important;
+}
 
-  app-forum-component app-post-ribbon .wafrn-container,
-  app-forum-component app-post-ribbon .ribbon-container {
-    border-radius: 10px;
-    padding: 5px 10px 5px 10px !important;
-  }
+app-forum-component app-post-ribbon .wafrn-container,
+app-forum-component app-post-ribbon .ribbon-container {
+  border-radius: 10px;
+  padding: 5px 10px 5px 10px !important;
+}
 
-  app-search .mat-mdc-card {
-    background: #fff;
-  }
+app-search .mat-mdc-card {
+  background: #fff;
+}
 
-  app-settings mat-nav-list {
-    background: #fff9f2;
-  }
+app-settings mat-nav-list {
+  background: #fff9f2;
+}
 
-  app-settings mat-nav-list .mdc-list-item__primary-text {
-    color: #4c4546 !important;
-  }
+app-settings mat-nav-list .mdc-list-item__primary-text {
+  color: #4c4546 !important;
+}
 
-  app-single-notification hr {
-    display: none;
-  }
+app-single-notification hr {
+  display: none;
+}
 
-  app-single-notification .ribbon-container {
-    padding: 5px;
-  }
+app-single-notification .ribbon-container {
+  padding: 5px;
+}
 
-  /* POPUP TOOLTIPS */
+/* POPUP TOOLTIPS */
 
-  .mdc-tooltip__surface {
-    background-color: var(--popup-bgcolor) !important;
+.mdc-tooltip__surface {
+  background-color: var(--popup-bgcolor) !important;
 
-    color: var(--popup-textcolor) !important;
+  color: var(--popup-textcolor) !important;
 
-    border-radius: 2px;
-  }
+  border-radius: 2px;
+}
 
-  /* POST EDITOR */
-  .post-editor-data {
-    padding: 0px 20px 0px 20px;
-  }
+/* POST EDITOR */
+.post-editor-data {
+  padding: 0px 20px 0px 20px;
+}
 
-  .post-editor-data form {
-    padding: 0px 15px 0px 15px;
-  }
+.post-editor-data form {
+  padding: 0px 15px 0px 15px;
+}
 
-  .mat-mdc-icon-button svg {
-    color: #83254f !important;
-  }
+.mat-mdc-icon-button svg {
+  color: #83254f !important;
+}
 
-  .wafrn-container.wafrn-post-editor {
-    background: #fff;
-  }
+.wafrn-container.wafrn-post-editor {
+  background: #fff;
+}
 
-  section#tags.w-full {
-    padding: 0px 15px 0px 15px;
-  }
+section#tags.w-full {
+  padding: 0px 15px 0px 15px;
+}
 
-  /* POSTS */
+/* POSTS */
 
-  /* POST CONTAINER */
+/* POST CONTAINER */
 
-  .mat-mdc-card {
-    color: var(--main-textcolor);
+.mat-mdc-card {
+  color: var(--main-textcolor);
 
-    border-radius: 8px;
+  border-radius: 8px;
 
-    border-color: var(--button-accent-color);
+  border-color: var(--button-accent-color);
 
-    box-shadow: none;
-  }
+  box-shadow: none;
+}
 
-  .initial-post mat-card {
-    background: #fff !important;
-  }
+.initial-post mat-card {
+  background: #fff !important;
+}
 
-  :root .post-card {
-    padding: 0 !important;
-  }
+:root .post-card {
+  padding: 0 !important;
+}
 
-  .fragment-content {
-    padding: 1rem;
-  }
+app-post mat-card > div {
+  padding: 1rem !important;
+}
 
-  /* POST TEXT */
+/* looking at this code is like "jesse wtf are you talking about" */
 
-  div.wafrn-text-default {
-    color: var(--main-textcolor);
+mat-card:not(app-post mat-card) app-post-header {
+  padding: 1rem !important;
+  padding-bottom: 0 !important;
+}
+mat-card:not(app-post mat-card) app-post-fragment {
+  padding: 0 1rem !important;
+}
 
-    font-family: Georgia, serif;
-  }
+app-post mat-card app-post-ribbon {
+  background: #fff9f2;
+  border-bottom: 1px solid #dfd9d1;
+  padding: 0.75rem;
+}
 
-  div.content-warning-text {
-    padding: 0px 0px 0px 20px;
-  }
+/* POST TEXT */
 
-  /* ASK CONTAINER */
-  .ask-container {
-    --ask-background-color: #83254f !important;
-    padding: 5px 20px 0px 20px;
-    color: #f8efe3;
-  }
+div.wafrn-text-default {
+  color: var(--main-textcolor);
 
-  /* LINK TEXT */
+  font-family: Georgia, serif;
+}
 
-  a {
-    color: var(--link-textcolor);
-    transition: var(--color-trans);
-  }
+div.content-warning-text {
+  padding: 0px 0px 0px 20px;
+}
 
-  a:visited {
-    color: var(--link-textcolor-visited);
-  }
+/* ASK CONTAINER */
+.ask-container {
+  --ask-background-color: #83254f !important;
+  padding: 5px 20px 0px 20px;
+  color: #f8efe3;
+}
 
-  a:hover {
-    color: var(--link-textcolor-hover);
-    transition: var(--color-trans);
-  }
+/* LINK TEXT */
 
-  a:active {
-    color: var(--link-textcolor-hover);
-  }
+a {
+  color: var(--link-textcolor);
+  transition: var(--color-trans);
+}
 
-  &a {
-    color: var(--link-textcolor-visited);
-  }
+a:visited {
+  color: var(--link-textcolor-visited);
+}
 
-  /* DIVIDER LINE */
+a:hover {
+  color: var(--link-textcolor-hover);
+  transition: var(--color-trans);
+}
 
-  app-post hr {
-    border-color: var(--button-bgcolor) !important;
-    border-width: 2px;
-  }
+a:active {
+  color: var(--link-textcolor-hover);
+}
 
-  /* POST DATE - you can use these i think but use mat-sys-outline at the top to change both at once*/
+&a {
+  color: var(--link-textcolor-visited);
+}
 
-  /*
+/* DIVIDER LINE */
+
+app-post hr {
+  border-top: 1px solid #dfd9d1 !important;
+}
+
+mat-card > div > hr:first-of-type,
+mat-card hr:has(+ app-bottom-reply-bar) {
+  display: none;
+}
+
+/* POST DATE - you can use these i think but use mat-sys-outline at the top to change both at once*/
+
+/*
 
 div.date-line {}
 
@@ -381,410 +406,410 @@ svg.fa-globe {}
 
 */
 
-  /* POSTER INFO */
+/* POSTER INFO */
 
-  .original-poster-name {
-    color: var(--username-textcolor) !important;
+.original-poster-name {
+  color: var(--username-textcolor) !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  .original-poster-name:hover {
-    color: var(--username-textcolor-hover) !important;
+.original-poster-name:hover {
+  color: var(--username-textcolor-hover) !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  .original-poster-url {
-    color: var(--url-textcolor);
+.original-poster-url {
+  color: var(--url-textcolor);
 
-    font-family: monospace;
-  }
+  font-family: monospace;
+}
 
-  .avatar {
-    height: 45px;
+.avatar {
+  height: 45px;
 
-    width: 45px;
-  }
+  width: 45px;
+}
 
-  .avatar img {
-    border-radius: 3px;
+.avatar img {
+  border-radius: 3px;
 
-    height: 45px;
+  height: 45px;
 
-    width: 45px;
-  }
+  width: 45px;
+}
 
-  .user-name {
-    color: var(--username-textcolor) !important;
+.user-name {
+  color: var(--username-textcolor) !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  .user-name:hover {
-    color: var(--username-textcolor-hover) !important;
+.user-name:hover {
+  color: var(--username-textcolor-hover) !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  span.user-url {
-    color: #aeaeae !important;
-    font-family: monospace;
-    text-shadow: 1px 1px 0px #fff;
-  }
+span.user-url {
+  color: #aeaeae !important;
+  font-family: monospace;
+  text-shadow: 1px 1px 0px #fff;
+}
 
-  /* FOLLOW BUTTON */
+/* FOLLOW BUTTON */
 
-  button.follow-button {
-    background: none !important;
+button.follow-button {
+  background: none !important;
 
-    color: #69f0ae !important;
+  color: #69f0ae !important;
 
-    border: none !important;
+  border: none !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  button.follow-button:hover {
-    background: none !important;
+button.follow-button:hover {
+  background: none !important;
 
-    color: var(--link-textcolor-hover) !important;
+  color: var(--link-textcolor-hover) !important;
 
-    border: none !important;
+  border: none !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  /* CONTENT WARNING */
+/* CONTENT WARNING */
 
-  #fragment-content-warning {
-    color: var(--main-textcolor);
-    background-color: var(--main-bgcolor);
-    font-family: monospace;
-  }
+#fragment-content-warning {
+  color: var(--main-textcolor);
+  background-color: var(--main-bgcolor);
+  font-family: monospace;
+}
 
-  div.fragment-content-warning div.fragment-content {
-    background-color: var(--main-bgcolor);
-  }
+div.fragment-content-warning div.fragment-content {
+  background-color: var(--main-bgcolor);
+}
 
-  div.fragment-content-warning button {
-    background-color: var(--element-bgcolor);
-    border-color: var(--link-textcolor-visited);
-  }
+div.fragment-content-warning button {
+  background-color: var(--element-bgcolor);
+  border-color: var(--link-textcolor-visited);
+}
 
-  /* REACTS */
+/* REACTS */
 
-  /* i have the backgrounds on all these set transparent. they can be a little finicky. button settings change these */
+/* i have the backgrounds on all these set transparent. they can be a little finicky. button settings change these */
 
-  app-bottom-reply-bar {
-    background: #fff9f2;
-    border-top: 1px solid #dfd9d1;
-    padding: 5px 15px 5px 15px;
-  }
+app-bottom-reply-bar {
+  background: #fff9f2;
+  border-top: 1px solid #dfd9d1;
+  padding: 0.5rem;
+}
 
-  app-bottom-reply-bar .mat-mdc-outlined-button {
-    border: none;
-  }
+app-bottom-reply-bar .mat-mdc-outlined-button {
+  border: none;
+}
 
-  section.reply-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.2rem 0.75ch;
-    width: fit-content;
-    border-bottom: none !important;
-    font-size: 0.8rem;
-    margin: 0px 0px 0px 20px;
-    background: #83254f;
-    border-radius: 30px;
-    padding: 0px 10px 0px 10px;
-  }
+section.reply-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75ch;
+  width: fit-content;
+  border-bottom: none !important;
+  font-size: 0.8rem;
+  margin: 0px 0px 0px 20px;
+  background: #83254f;
+  border-radius: 30px;
+  padding: 0px 10px 0px 10px;
+}
 
-  .notes-link {
-    border: none;
-  }
+.notes-link {
+  border: none;
+}
 
-  #emoji-reactions {
-    background: none !important;
-    box-shadow: none !important;
-    border-width: 0px !important;
+#emoji-reactions {
+  background: none !important;
+  box-shadow: none !important;
+  border-width: 0px !important;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  #emoji-reactions button:hover {
-    background: none !important;
-    box-shadow: none !important;
-    transition: var(--color-trans);
-  }
-
-  #emoji-reactions button {
-    background: transparent !important;
-  }
-
-  #emoji-reactions button:hover {
-    background: none !important;
-    box-shadow: none !important;
-    transition: var(--color-trans);
-  }
-
-  #emoji-reactions .mat-mdc-tooltip-trigger:hover {
-    background: none !important;
-    box-shadow: none !important;
-    border-radius: 0px;
-  }
-
-  .mat-mdc-raised-button:not(:disabled) {
-    background: none !important;
-    box-shadow: none !important;
-  }
-
-  /* ^ this is for the stubborn ones */
-
-  /* ^ this is for the stubborn ones */
-
-  .mat-mdc-button-persistent-ripple {
-    color: black !important;
-    box-shadow: none !important;
-    background: none;
-  }
-
-  /* ^ ??? */
-
-  app-emoji-react svg {
-    fill: var(--link-textcolor);
-    background: none !important;
-    transition: var(--color-trans);
-  }
-
-  app-emoji-react svg:hover {
-    fill: var(--link-textcolor-hover);
-    background: none !important;
-    transition: var(--color-trans);
-  }
-
-  /* ^ these two change the color of the emoji react button itself, like the smiley with the plus */
-
-  div.emojireact-overlay {}
-
-  .emoji-reactions {
-    padding: 0px 0px 10px 10px;
-  }
-
-  /* TAGS */
-
-  a.tag {
-    background-color: transparent !important;
-
-    color: #83254f !important;
-
-    transition: var(--color-trans);
-
-    font-family: monospace;
-  }
-
-  a.tag:hover {
-    color: var(--link-textcolor-hover) !important;
-
-    transition: var(--color-trans);
-  }
-
-  .tag-list {
-    padding: 0px 0px 0px 20px;
-  }
-
-  .ql-snow a {
-    color: white;
-  }
-
-  /* ^ changes inline bsky etc. tags*/
-
-
-  /* MENTIONS */
-
-  a.mention {
-    color: #faa55b !important;
-    transition: var(--color-trans);
-  }
-
-  a.mention:hover {
-    color: #f8efe3 !important;
-    transition: var(--color-trans);
-  }
-
-  .mention {
-    background-color: #83254f !important;
-    border-width: 0px !important;
-    border-radius: 0px !important;
-    padding: 0 10px;
-    color: #faa55b !important;
-    border-radius: 30px !important;
-  }
-
-  /* container of quoted post */
-
-  div.quoted-post {
-    border-width: 0px;
-    background: none;
-    border-color: var(--button-accent-color);
-    border-style: dotted;
-    box-shadow: none;
-  }
-
-  .quoted-post.quote-collapsed::before {
-    box-shadow: none !important;
-  }
-
-  .quoted-post.quote-collapsed {
-    max-height: 17.5rem !important;
-    margin: 20px;
-    border: 1px solid #ddd;
-    padding: 0px 0px 10px 0px;
-    box-shadow: 0px 0px 20px #e4ddd5 inset;
-  }
-
-  /* EMBED CONTAINER */
-
-  .embed-container {
-    background: rgba(255, 255, 255, 1);
-    display: inline;
-    border: none !important;
-  }
-
-  /* ^ INLINE STACKS PICTURE ON TOP OF LINK TEXT */
-
-  .embed-link {
-    border-radius: 5px !important;
-    border: 1px solid #bbb8b8 !important;
-    background: none !important;
-  }
-
-  .embed-link .embed-image-container {
-    max-height: 100%;
-    max-width: 14em !important;
-    display: flex;
-  }
-
-  a.embed-link .embed-image {
-    max-width: 100%;
-    max-height: 100%;
-    margin: 0;
-    object-fit: cover;
-    padding: 0;
-  }
-
-  .embed-link .mat-typography h2 {
-    font-size: 1.1em;
-    line-height: 1.1;
-    margin-bottom: 10px;
-  }
-
-  .embed-title,
-  .embed-description,
-  .embed-link,
-  .embed-url {
-    color: black !important;
-  }
-
-  /* MEDIA CONTAINER */
-  .media-content-container {
-    background-color: #fff0 !important;
-    ;
-  }
-
-  .media-container {
-    background-color: #fff !important;
-    border-style: groove;
-    border-width: 0px;
-    border-radius: 0px;
-    border-color: black;
-    display: grid;
-  }
-
-  .media-gallery,
-  .media-carousel {
-    background-color: #fff !important;
-    border-radius: 0px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* IMAGES */
-
-  app-wafrn-media img {
-    filter: brightness(0.7);
-    transition: var(--image-transoff);
-  }
-
-  app-wafrn-media img:hover {
-    filter: brightness(1);
-    transition: var(--image-trans);
-  }
-
-  /* MEDIA DESCRIPTION */
-
-  app-wafrn-media div.media-description {
-    background-color: var(--element-bgcolor) !important;
-    border-radius: 0px;
-    font-family: monospace;
-    font-size: 11px;
-  }
-
-  /* VOTING [lol] */
-
-  /*
+#emoji-reactions button:hover {
+  background: none !important;
+  box-shadow: none !important;
+  transition: var(--color-trans);
+}
+
+#emoji-reactions button {
+  background: transparent !important;
+}
+
+#emoji-reactions button:hover {
+  background: none !important;
+  box-shadow: none !important;
+  transition: var(--color-trans);
+}
+
+#emoji-reactions .mat-mdc-tooltip-trigger:hover {
+  background: none !important;
+  box-shadow: none !important;
+  border-radius: 0px;
+}
+
+.mat-mdc-raised-button:not(:disabled) {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* ^ this is for the stubborn ones */
+
+/* ^ this is for the stubborn ones */
+
+.mat-mdc-button-persistent-ripple {
+  color: black !important;
+  box-shadow: none !important;
+  background: none;
+}
+
+/* ^ ??? */
+
+app-emoji-react svg {
+  fill: var(--link-textcolor);
+  background: none !important;
+  transition: var(--color-trans);
+}
+
+app-emoji-react svg:hover {
+  fill: var(--link-textcolor-hover);
+  background: none !important;
+  transition: var(--color-trans);
+}
+
+/* ^ these two change the color of the emoji react button itself, like the smiley with the plus */
+
+div.emojireact-overlay {
+}
+
+.emoji-reactions {
+}
+
+/* TAGS */
+
+a.tag {
+  background-color: transparent !important;
+
+  color: #83254f !important;
+
+  transition: var(--color-trans);
+
+  font-family: monospace;
+}
+
+a.tag:hover {
+  color: var(--link-textcolor-hover) !important;
+
+  transition: var(--color-trans);
+}
+
+.tag-list {
+  padding: 0px 0px 0px 20px;
+}
+
+.ql-snow a {
+  color: white;
+}
+
+/* ^ changes inline bsky etc. tags*/
+
+/* MENTIONS */
+
+a.mention {
+  color: #faa55b !important;
+  transition: var(--color-trans);
+}
+
+a.mention:hover {
+  color: #f8efe3 !important;
+  transition: var(--color-trans);
+}
+
+.mention {
+  background-color: #83254f !important;
+  border-width: 0px !important;
+  border-radius: 0px !important;
+  padding: 0 10px;
+  color: #faa55b !important;
+  border-radius: 30px !important;
+}
+
+/* container of quoted post */
+
+div.quoted-post {
+  border-width: 0px;
+  background: none;
+  border-color: var(--button-accent-color);
+  border-style: dotted;
+  box-shadow: none;
+}
+
+.quoted-post.quote-collapsed::before {
+  box-shadow: none !important;
+}
+
+.quoted-post.quote-collapsed {
+  max-height: 17.5rem !important;
+  border: 1px solid #ddd;
+  box-shadow: 0px 0px 20px #e4ddd5 inset;
+}
+
+/* EMBED CONTAINER */
+
+.embed-container {
+  background: rgba(255, 255, 255, 1);
+  display: inline;
+  border: none !important;
+}
+
+/* ^ INLINE STACKS PICTURE ON TOP OF LINK TEXT */
+
+.embed-link {
+  border-radius: 5px !important;
+  border: 1px solid #bbb8b8 !important;
+  background: none !important;
+}
+
+.embed-link .embed-image-container {
+  max-height: 100%;
+  max-width: 14em !important;
+  display: flex;
+}
+
+a.embed-link .embed-image {
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  object-fit: cover;
+  padding: 0;
+}
+
+.embed-link .mat-typography h2 {
+  font-size: 1.1em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.embed-title,
+.embed-description,
+.embed-link,
+.embed-url {
+  color: black !important;
+}
+
+/* MEDIA CONTAINER */
+.media-content-container {
+  background-color: #fff0 !important;
+}
+
+.media-container {
+  background-color: #fff !important;
+  border-style: groove;
+  border-width: 0px;
+  border-radius: 0px;
+  border-color: black;
+  display: grid;
+}
+
+.media-gallery,
+.media-carousel {
+  background-color: #fff !important;
+  border-radius: 0px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* IMAGES */
+
+/* bit confused on why theres a brightness thing so if someone wants to argue on adding it back just do */
+
+/*
+app-wafrn-media img {
+  filter: brightness(0.7);
+  transition: var(--image-transoff);
+}
+
+app-wafrn-media img:hover {
+  filter: brightness(1);
+  transition: var(--image-trans);
+}
+*/
+
+/* MEDIA DESCRIPTION */
+
+app-wafrn-media div.media-description {
+  background-color: var(--element-bgcolor) !important;
+  border-radius: 0px;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+/* VOTING [lol] */
+
+/*
 
 .mdc-linear-progress__bar-inner {}
 .mdc-linear-progress__buffer-bar {}
 
 */
 
-  /* POST SHARE */
+/* POST SHARE */
 
-  app-post-actions button:hover {
-    background: none !important;
-    border-width: 0px;
-  }
+app-post-actions button:hover {
+  background: none !important;
+  border-width: 0px;
+}
 
-  svg.fa-share-nodes {
-    color: var(--button-accent-color);
-    transition: var(--color-trans);
-  }
+svg.fa-share-nodes {
+  color: var(--button-accent-color);
+  transition: var(--color-trans);
+}
 
-  svg.fa-share-nodes:hover {
-    color: var(--button-accent-color-hover);
-    transition: var(--color-trans);
-  }
+svg.fa-share-nodes:hover {
+  color: var(--button-accent-color-hover);
+  transition: var(--color-trans);
+}
 
-  svg.fa-chevron-down {
-    color: var(--button-accent-color);
-    transition: var(--color-trans);
-  }
+svg.fa-chevron-down {
+  color: var(--button-accent-color);
+  transition: var(--color-trans);
+}
 
-  svg.fa-chevron-down:hover {
-    color: var(--button-accent-color-hover);
-    transition: var(--color-trans);
-  }
+svg.fa-chevron-down:hover {
+  color: var(--button-accent-color-hover);
+  transition: var(--color-trans);
+}
 
-  svg.theme-toggle__within,
-  .footer-stack fa-icon {
-    color: #faa55b;
-  }
+svg.theme-toggle__within,
+.footer-stack fa-icon {
+  color: #faa55b;
+}
 
-  div.mat-mdc-select-panel {
-    background-color: #fff !important;
-  }
+div.mat-mdc-select-panel {
+  background-color: #fff !important;
+}
 
-  /* SHARE DROPDOWN */
+/* SHARE DROPDOWN */
 
-  .mat-mdc-menu-panel {
-    color: var(--link-textcolor);
-    background-color: var(--main-bgcolor);
-    box-shadow: none !important;
-  }
+.mat-mdc-menu-panel {
+  color: var(--link-textcolor);
+  background-color: var(--main-bgcolor);
+  box-shadow: none !important;
+}
 
-  /* POST ACTIONS [??] */
+/* POST ACTIONS [??] */
 
-  /*
+/*
 
 app-post hr > div a {}
 
@@ -792,19 +817,19 @@ app-post hr > div a:hover {}
 
 */
 
-  /* USE THIS TO CHANGE ALL FA-ICONS AT ONCE, individual settings below for post options. turned off by default and i dont know the rest of them */
+/* USE THIS TO CHANGE ALL FA-ICONS AT ONCE, individual settings below for post options. turned off by default and i dont know the rest of them */
 
-  fa-icon {
-    color: #83254f;
-    transition: var(--color-trans);
-  }
+fa-icon {
+  color: #83254f;
+  transition: var(--color-trans);
+}
 
-  fa-icon:hover {
-    color: #faa55b;
-    transition: var(--color-trans);
-  }
+fa-icon:hover {
+  color: #faa55b;
+  transition: var(--color-trans);
+}
 
-  /*
+/*
 
 fa-icon[mattooltip="Quote woot"] {
   color: #83254f !important;
@@ -894,159 +919,161 @@ fa-icon[mattooltip="Delete woot"]:hover {
 
 /* TEXT EDITOR */
 
-  .mat-mdc-dialog-container,
-  .mdc-dialog--open,
-  .mat-mdc-dialog-inner-container,
-  .mdc-dialog--open,
-  .mat-mdc-dialog-surface {
-    background-color: var(--main-bgcolor) !important;
-    border-radius: 0px !important;
-  }
+.mat-mdc-dialog-container,
+.mdc-dialog--open,
+.mat-mdc-dialog-inner-container,
+.mdc-dialog--open,
+.mat-mdc-dialog-surface {
+  background-color: var(--main-bgcolor) !important;
+  border-radius: 0px !important;
+}
 
-  .mat-mdc-dialog-container {
-    background-color: var(--element-bgcolor);
-    border-width: 4px;
-    border-radius: 0px;
-    border-style: groove;
-    border-color: black;
-  }
+.mat-mdc-dialog-container {
+  background-color: var(--element-bgcolor);
+  border-width: 4px;
+  border-radius: 0px;
+  border-style: groove;
+  border-color: black;
+}
 
-  /* ^ container box */
+/* ^ container box */
 
-  .mdc-floating-label {
-    color: white !important;
-  }
+.mdc-floating-label {
+  color: white !important;
+}
 
-  .mdc-text-field {
-    background-color: #fff !important;
-    border-color: #bdbdbd !important;
-    border-radius: 5px !important;
-    box-shadow: 1px 1px 2px #99938d inset;
-    border-style: solid;
-    border-width: 1px;
-  }
+.mdc-text-field {
+  background-color: #fff !important;
+  border-color: #bdbdbd !important;
+  border-radius: 5px !important;
+  box-shadow: 1px 1px 2px #99938d inset;
+  border-style: solid;
+  border-width: 1px;
+}
 
-  .info-card.caution {
-    background-color: #f8efe3 !important;
-    color: #83254f !important;
-  }
+.info-card.caution {
+  background-color: #f8efe3 !important;
+  color: #83254f !important;
+}
 
-  /* ^ typing field */
+/* ^ typing field */
 
-  /* PROFILE */
+/* PROFILE */
 
-  app-view-blog mat-card.wafrn-container {}
+app-view-blog mat-card.wafrn-container {
+}
 
-  app-view-blog img[alt='user avatar'] {}
+app-view-blog img[alt='user avatar'] {
+}
 
-  .blog-avatar-image {
-    border-radius: 45px !important;
-  }
+.blog-avatar-image {
+  border-radius: 45px !important;
+}
 
-  .mat-mdc-card.blog-header {
-    background-color: #83254f !important;
-    color: #f3e5e3;
-    padding: 15px !important;
-  }
+.mat-mdc-card.blog-header {
+  background-color: #83254f !important;
+  color: #f3e5e3;
+  padding: 15px !important;
+}
 
-  /* UNFOLLOW BUTTON */
+/* UNFOLLOW BUTTON */
 
-  .mat-mdc-unelevated-button.mat-warn {
-    color: var(--main-textcolor);
+.mat-mdc-unelevated-button.mat-warn {
+  color: var(--main-textcolor);
 
-    background-color: #f44336;
+  background-color: #f44336;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  .mat-mdc-unelevated-button.mat-warn:hover {
-    background-color: #f44336;
+.mat-mdc-unelevated-button.mat-warn:hover {
+  background-color: #f44336;
 
-    transition: var(--color-trans);
-  }
+  transition: var(--color-trans);
+}
 
-  /* FOLLOW COUNT */
+/* FOLLOW COUNT */
 
-  /*
+/*
 
 div.follow-counts {}
 
 */
 
-  /*EXTRA STUFF*/
+/*EXTRA STUFF*/
 
-  code {
-    display: inline;
-    padding: 0 0.2em;
-    background-color: white;
-    color: black;
-    border-style: groove;
-    border-width: 2px;
-    border-color: black;
-    border-radius: 0px;
-  }
+code {
+  display: inline;
+  padding: 0 0.2em;
+  background-color: white;
+  color: black;
+  border-style: groove;
+  border-width: 2px;
+  border-color: black;
+  border-radius: 0px;
+}
 
-  pre {
-    display: inline;
-    padding: 0 0.2em;
-    background-color: white;
-    color: black;
-    border-style: groove;
-    border-width: 2px;
-    border-color: black;
-    border-radius: 0px;
-  }
+pre {
+  display: inline;
+  padding: 0 0.2em;
+  background-color: white;
+  color: black;
+  border-style: groove;
+  border-width: 2px;
+  border-color: black;
+  border-radius: 0px;
+}
 
-  /*^ markdown stuff */
+/*^ markdown stuff */
 
-  /* LOADING - not quite sure this works */
+/* LOADING - not quite sure this works */
 
-  mat-spinner {
-    width: 42px;
+mat-spinner {
+  width: 42px;
 
-    height: 42px;
-  }
+  height: 42px;
+}
 
-  circle {
-    color: var(--button-accent-color) !important;
+circle {
+  color: var(--button-accent-color) !important;
 
-    stroke-dasharray: 77px;
+  stroke-dasharray: 77px;
 
-    stroke-width: 33px;
-  }
+  stroke-width: 33px;
+}
 
-  p#if-you-see-this-load-more-posts {
-    color: var(--main-textcolor);
-  }
+p#if-you-see-this-load-more-posts {
+  color: var(--main-textcolor);
+}
 
-  .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
-    color: #5e5e5e !important;
-  }
+.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
+  color: #5e5e5e !important;
+}
 
-  .mdc-text-field--filled:not(.mdc-text-field--disabled) {
-    background-color: #fff !important;
-    border-color: #bdbdbd !important;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 5px !important;
-    box-shadow: 1px 1px 2px #99938d inset;
-  }
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: #fff !important;
+  border-color: #bdbdbd !important;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px !important;
+  box-shadow: 1px 1px 2px #99938d inset;
+}
 
-  p#if-you-see-this-load-more-posts {
-    color: var(--main-textcolor);
-  }
+p#if-you-see-this-load-more-posts {
+  color: var(--main-textcolor);
+}
 
-  .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
-    color: #5e5e5e !important;
-  }
+.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label {
+  color: #5e5e5e !important;
+}
 
-  .mdc-text-field--filled:not(.mdc-text-field--disabled) {
-    background-color: #fff !important;
-    border-color: #bdbdbd !important;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 5px !important;
-    box-shadow: 1px 1px 2px #99938d inset;
-  }
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  background-color: #fff !important;
+  border-color: #bdbdbd !important;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px !important;
+  box-shadow: 1px 1px 2px #99938d inset;
+}
 
-  /* ^ changes the theme editor */
+/* ^ changes the theme editor */

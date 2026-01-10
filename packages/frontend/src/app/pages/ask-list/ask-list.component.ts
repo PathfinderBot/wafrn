@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { SingleAskComponent } from 'src/app/components/single-ask/single-ask.component'
@@ -20,6 +20,7 @@ export class AskListComponent {
   private dashboard = inject(DashboardService);
   private editor = inject(EditorService);
   private blogService = inject(BlogService);
+  private cdr = inject(ChangeDetectorRef)
 
   loading = true
   asks: Ask[] = []
@@ -39,6 +40,8 @@ export class AskListComponent {
     const asks = await this.dashboard.getMyAsks()
     this.asks = asks
     this.loading = false
+    this.cdr.detectChanges()
+
   }
 
   async ignoreAsk(ask: Ask) {

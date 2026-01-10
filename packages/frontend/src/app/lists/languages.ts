@@ -17,7 +17,8 @@ export const supportedLanguages = [
   'ru',
   'sr-Cyrl',
   'sr-Latn',
-  'tok'
+  'tok',
+  'uk',
 ] as const
 type SupportedLanguagesTuple = typeof supportedLanguages
 export type SupportedLanguage = SupportedLanguagesTuple[number]
@@ -37,5 +38,6 @@ export const languageMap: Record<SupportedLanguage, LanguageData> = {
   ru: { name: 'Русский язык' },
   'sr-Cyrl': { name: 'Српски' },
   'sr-Latn': { name: 'Srpski' },
-  tok: { name: 'toki pona' }
+  tok: { name: 'toki pona' },
+  uk: { name: 'Українська' },
 }

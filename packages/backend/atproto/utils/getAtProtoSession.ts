@@ -54,37 +54,14 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
         user: user.url,
         error: error
       })
-      const tmpAgent = await forceUpdateBskyPassword(user)
+      const tmpAgent =  undefined // await forceUpdateBskyPassword(user)
       if(tmpAgent) {
         return tmpAgent
       }
       else {
-        user.enableBsky = false;
-        const warningPost = await Post.create({
-          privacy: 10,
-          content: `AUTOMATED MESSAGE FOR THE ADMIN TEAM CREATED BY THE APP. Error with this user's bsky account. This user's bsky account has been disabled. Please do check and contact them. Wait we are the social network that gaslights you. Yes you absolutely wrote this message. `,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          userId: user.id
-        })
-        const adminUser = await getAdminUser();
-        await PostMentionsUserRelation.create({
-          postId: warningPost.id,
-          userId: adminUser.id
-        })
-        await createNotification({
-                      notificationType: 'MENTION',
-                      notifiedUserId: adminUser.id,
-                      userId: user.id,
-                      postId: warningPost.id
-                    },
-                    {
-                      postContent: warningPost.content,
-                      userUrl: user.url
-                    })
         const error =  new Error(`Error obtaining bsky session for user ${user.url}`)
         logger.error({
-          message: `Error with user bsky session thing`,
+          message: `Error with user bsky session on user ${user.url}`,
           error: error,
           stacktrace: error.stack
         })

@@ -81,6 +81,7 @@ import { isAdult } from "../utils/isAdult.js";
 import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
 import { getRemoteActor } from "../utils/activitypub/getRemoteActor.js";
 import { updateUserDidDoc } from "../utils/atproto/updateUserDidDoc.js";
+import { wait } from "../utils/wait.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -2330,28 +2331,37 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
             opt.name.startsWith("fediverse.public"),
         };
       });
-
-    for (const option of options) {
-      if (option.value) {
-        const userOption = await UserOptions.findOne({
-          where: {
+    const optionNames = options.map(elem => elem.name)
+    const transaction = await sequelize.transaction()
+    try {
+      await UserOptions.destroy({
+        where: {
+          userId: posterId,
+          optionName: {
+            [Op.in]: optionNames
+          }
+        },
+        transaction: transaction
+      })
+      await UserOptions.bulkCreate(
+        options.map(elem => {
+          return {
             userId: posterId,
-            optionName: option.name,
-          },
-        });
-        userOption
-          ? await userOption.update({
-            optionValue: option.value,
-            public: option.public == true,
-          })
-          : await UserOptions.create({
-            userId: posterId,
-            optionName: option.name,
-            optionValue: option.value,
-            public: option.public == true,
-          });
-      }
+            optionName: elem.name,
+            optionValue: elem.value,
+            public: elem.public == true
+          }
+        }), {
+          transaction: transaction
+        }
+      )
+      await transaction.commit()
+    } catch (error) {
+      logger.info({message: `Problem updating user otpions`, error: error})
+      await transaction.rollback()
     }
+
+    
   }
 }
 
@@ -2360,11 +2370,13 @@ async function createBskyAccount({
   user,
   password,
   inviteCode,
+  url
 }: {
   agent: AtpAgent;
   user: User;
   password: string;
   inviteCode: string;
+  url?: string
 }) {
   const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
     ? completeEnvironment.bskyPdsUrl
@@ -2372,7 +2384,7 @@ async function createBskyAccount({
       .replace("http://", "")
     : completeEnvironment.bskyPdsUrl;
 
-  const sanitizedUrl = user.url
+  const sanitizedUrl = url ? url :user.url
     .replaceAll("_", "-")
     .replaceAll(".", "-")
     .substring(0, 17);
@@ -2399,9 +2411,19 @@ async function createBskyAccount({
   }
 }
 
-async function createBskyAppPassword(user: User, agent: AtpAgent) {
+async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boolean) {
+  const appPasswordsList = await agent.com.atproto.server.listAppPasswords()
+  for await (const element of appPasswordsList.data.passwords) {
+    if(element.name.includes('wafrn')) {
+      await agent.com.atproto.server.revokeAppPassword({
+        name: element.name
+      })
+      await wait(50)
+    }
+  } 
   const appPasswordResponse = await agent.com.atproto.server.createAppPassword({
-    name: "wafrn app password DO NOT DELETE",
+    name: "wafrn app password DO NOT DELETE " + generateRandomString(),
+    privileged: true
   });
 
   if (!appPasswordResponse.success) {
@@ -2420,6 +2442,9 @@ async function createBskyAppPassword(user: User, agent: AtpAgent) {
   user.bskyAppPassword = appPassword;
   user.enableBsky = true;
   await user.save();
+  if(forceLog) {
+    logger.info(`Forced app password on user ${user.url}: ${appPassword}`)
+  }
   await redisCache.del('bskySession:' + user.id)
   return true;
 }
@@ -2457,4 +2482,4 @@ async function forceUpdateBskyEmail(userIncomplete: User) {
   );
 }
 
-export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail };
+export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail, createBskyAccount };

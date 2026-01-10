@@ -12,6 +12,13 @@ import { getDeletedUser } from './cacheGetters/getDeletedUser.js'
 
 async function deletePostCommon(id: string) {
   const postToDelete = await Post.findByPk(id)
+  const reblogsDestroyed = await Post.destroy({
+    where: {
+      parentId: id,
+      content: '',
+      isReblog: true
+    }
+  })
   if (postToDelete) {
     if (postToDelete.isReblog) {
       await Notification.destroy({
