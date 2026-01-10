@@ -18,6 +18,7 @@ import { EmojiCollection } from "../interfaces/emoji-collection";
 import { MessageService } from "./message.service";
 import { emojis } from "../lists/emoji-compact";
 import { EnvironmentService } from "./environment.service";
+import { SimpleDialogService } from "./simple-dialog.service";
 @Injectable({
   providedIn: "root",
 })
@@ -26,6 +27,7 @@ export class PostsService {
   private http = inject(HttpClient);
   private jwtService = inject(JwtService);
   private messageService = inject(MessageService);
+  private simpleDialogService = inject(SimpleDialogService)
 
   processedQuotes: ProcessedPost[] = [];
   parser = new DOMParser();
@@ -195,8 +197,17 @@ export class PostsService {
         .toPromise();
       await this.loadFollowers();
       res = response?.success === true;
-    } catch (exception) {
+    } catch (exception: any) {
       console.error(exception);
+      if (exception.error?.message) {
+        this.simpleDialogService.createConfirmDialog({
+          title: 'Error',
+          content: exception.error.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+      }
     }
     this.postLiked.next({
       id: id,
