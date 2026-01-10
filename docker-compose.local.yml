@@ -15,7 +15,7 @@ services:
 
   db:
     image: postgres:17
-    command: -c 'max_connections=500'
+    #command: -c 'max_connections=500'
     restart: unless-stopped
     shm_size: '2gb'
     environment:
