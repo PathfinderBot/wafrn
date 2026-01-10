@@ -4,7 +4,7 @@
 @if (textData.content || textData.contentSuffix) {
   <mat-dialog-content>
     @if (textData.content) {
-      <p>{{ textData.content | translate }}</p>
+      <p [innerHTML]="textData.content | translate"></p>
     }
 
     @if (textData.contentSuffix) {

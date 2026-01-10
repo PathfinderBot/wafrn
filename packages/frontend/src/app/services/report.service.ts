@@ -9,6 +9,7 @@ import { ReportDialogData, ReportPostComponent } from '../components/report-post
 import { UserReport } from '../interfaces/report'
 import { BlocksService } from './blocks.service'
 import { MessageService } from './message.service'
+import { SimpleDialogService } from './simple-dialog.service'
 
 type UserId = string
 
@@ -20,6 +21,7 @@ export class ReportService {
   private dialogService = inject(MatDialog);
   private messages = inject(MessageService);
   private blockService = inject(BlocksService);
+  private simpleDialogService = inject(SimpleDialogService)
 
 
   async report(data: ProcessedPost | UserId) {

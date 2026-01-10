@@ -18,6 +18,7 @@ import {
 import { EnvironmentService } from "src/app/services/environment.service";
 import { Router } from "@angular/router";
 import { JwtService } from "src/app/services/jwt.service";
+import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 
 @Component({
   selector: "app-register",
@@ -29,6 +30,7 @@ export class RegisterComponent {
   private loginService = inject(LoginService);
   private messages = inject(MessageService);
   private router = inject(Router);
+  private simpleDialogService = inject(SimpleDialogService)
   jwtService = inject(JwtService);
 
   isPasswordVisible = false; // Track visibility of password
@@ -339,10 +341,21 @@ export class RegisterComponent {
         });
         this.router.navigate(["/checkMail"]);
       } else {
-        this.messages.add({
+        if(petition.message) {
+          this.simpleDialogService.createConfirmDialog({
+          title: 'Error',
+          content: petition.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+        } else {
+          this.messages.add({
           severity: "warn",
-          summary: petition.message ?? "Email or url in use",
+          summary: "Email or url in use",
         });
+        }
+        
         this.loginForm.enable();
       }
     } catch (exception) {
