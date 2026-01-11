@@ -84,7 +84,16 @@ export class PostsService {
   public usersQuotesDisabled: string[] = [];
   public usersRewootsDisabled: string[] = [];
 
+
+  private lastTimeLoadedFollowers = new Date(0)
+
   async loadFollowers() {
+    // if this was called less than 3 seconds ago lets not do it. I could use RXJS for this but its an old part of the code
+    // TODO move this to a proper service with the name "user options". Use RXJS for time thing instead
+    if(new Date().getTime() - this.lastTimeLoadedFollowers.getTime() < 3000) {
+      return;
+    }
+    this.lastTimeLoadedFollowers = new Date();
     if (!this.jwtService.tokenValid()) return;
 
     const followsAndBlocks = await firstValueFrom(
