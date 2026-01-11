@@ -57,7 +57,7 @@ export default function followsRoutes(app: Application) {
         } else {
           return res.status(403).send({
             error: true,
-            message: 'You are trying to follow a bsky user. You need to enable this on your profile'
+            message: 'You are trying to follow a bsky user. You need to enable bluesky on your profile settings'
           })
         }
       }

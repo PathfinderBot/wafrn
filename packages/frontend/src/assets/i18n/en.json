@@ -675,5 +675,8 @@
       "instructions": "Type the following phrase:",
       "verifyLabel": "Here..."
     }
+  },
+  "serverAnnouncements": {
+    "bsky_account_force_disabled": "Your bluesky account was disconected due an error in wafrn"
   }
 }
