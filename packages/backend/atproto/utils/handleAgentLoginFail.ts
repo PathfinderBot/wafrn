@@ -7,7 +7,7 @@ export default async function handleAgentLoginFail(user: User) {
     await redisCache.del('bskySession:' + user.id)
     user.bskyAppPassword = null
     user.bskyAuthData = null
-    user.bskyDid = null
+    user.enableBsky = false
     await user.save()
   } catch (error) {
     logger.error({
