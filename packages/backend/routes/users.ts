@@ -2138,6 +2138,8 @@ async function createBskyAccount({
       message: `Bsky account created for ${user.url}`,
       response: accountCreation
     })
+    user.bskyDid = agent.assertDid
+    await user.save()
   } catch (error) {
     logger.error({
       message: `Bsky account creation failed for ${user.url}`,
