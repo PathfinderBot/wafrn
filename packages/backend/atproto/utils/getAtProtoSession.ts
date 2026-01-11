@@ -1,19 +1,17 @@
 import { AtpAgent } from '@atproto/api'
-import { Notification, Post, PostMentionsUserRelation, User } from '../../models/index.js'
+import { User } from '../../models/index.js'
 import { redisCache } from '../../utils/redis.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { logger } from '../../utils/logger.js'
 import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSession.js'
-import { forceUpdateBskyPassword } from '../../utils/atproto/updateUserDidDoc.js'
-import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
-import { createNotification } from '../../utils/pushNotifications.js'
+import handleAgentLoginFail from './handleAgentLoginFail.js'
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
   let user = userInput ? ((await User.scope('full').findByPk(userInput.id)) as User) : undefined
   if (true && force && user) {
     await redisCache.del('bskySession:' + user.id)
   }
-  if (!force && user && user.url == completeEnvironment.adminUser) {
+  if (!force && user && user.url === completeEnvironment.adminUser) {
     // a bit dirty innit?
     return await getAdminAtprotoSession()
   }
@@ -34,37 +32,35 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
       message: `Obtaining session for ${user.url}`
     })
     // disabled cache here meanwhile for testing
-    const existingSession = force ? null : null // await redisCache.get('bskySession:' + user.id)
+    const existingSession = null // force ? null : await redisCache.get('bskySession:' + user.id)
     let loggedIn = false
     if (existingSession) {
-      loggedIn = (await agent.sessionManager.resumeSession(JSON.parse(existingSession))).success
+      const { success } = await agent.sessionManager.resumeSession(JSON.parse(existingSession))
+      loggedIn = success
     }
     try {
       if (!loggedIn) {
         await redisCache.del('bskySession:' + user.id)
+        if (!user.bskyDid) {
+          throw new Error(`Cannot log in without a bskyDid on user: ${user.url}`)
+        }
+        if (!user.bskyAppPassword) {
+          throw new Error(`Cannot log in without a bskyAppPassword on user: ${user.url}`)
+        }
+
         await agent.sessionManager.login({
-          identifier: user.bskyDid as string,
-          password: (user.bskyAppPassword || user.bskyAuthData) as string
+          identifier: user.bskyDid,
+          password: user.bskyAppPassword
         })
       }
     } catch (error) {
-      await redisCache.del('bskySession:' + user.id)
       logger.error({
         message: `Error logging in with bsky user ${user.url}`,
         user: user.url,
         error: error
       })
-      const tmpAgent =  undefined // await forceUpdateBskyPassword(user)
-      if(tmpAgent) {
-        return tmpAgent
-      }
-      else {
-        const error =  new Error(`Error obtaining bsky session for user ${user.url}`)
-        logger.error({
-          message: `Error with user bsky session on user ${user.url}`,
-          error: error,
-          stacktrace: error.stack
-        })
+      if (user.url !== completeEnvironment.adminUser) {
+        await handleAgentLoginFail(user)
       }
     }
   }
