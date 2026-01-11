@@ -677,6 +677,6 @@
     }
   },
   "serverAnnouncements": {
-    "bsky_account_force_disabled": "Your bluesky account was disabled due an error, with wafrn"
+    "bsky_account_force_disabled": "Your bluesky account was disconected due an error in wafrn"
   }
 }
