@@ -1244,7 +1244,7 @@ function userRoutes(app: Application) {
       }
 
       const serviceAnnouncements = [] as ServiceAnnouncement[]
-      if (user.enableBsky && !user.bskyDid) {
+      if (user.bskyDid && !user.enableBsky) {
         serviceAnnouncements.push({
           level: 'error',
           code: 'bsky_account_force_disabled',
