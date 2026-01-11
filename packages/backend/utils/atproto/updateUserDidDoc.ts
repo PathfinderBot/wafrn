@@ -8,7 +8,7 @@ async function updateUserDidDoc(user: User) {
   try {
     console.log('updating ' + user.url)
     const didDoc = await getDidDoc(user.bskyDid ?? '')
-    const handle = didDoc?.alsoKnownAs?.find(x => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+    const handle = didDoc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
     if (handle) {
       user.alternateUrl = '@' + handle
       await user.save()
@@ -17,25 +17,22 @@ async function updateUserDidDoc(user: User) {
         console.log('getting plc info')
         const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
-        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
-          return;
+        if (!lastOp || lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
+          return
         }
 
         console.log('editing plc op')
         const operation = {
-          type: "plc_operation",
+          type: 'plc_operation',
           prev: lastOp.base?.cid,
-          alsoKnownAs: [
-            ...lastOp.lastOperation.alsoKnownAs.filter(x => x !== user.fullUrl),
-            user.fullFediverseUrl
-          ],
+          alsoKnownAs: [...lastOp.lastOperation.alsoKnownAs.filter((x) => x !== user.fullUrl), user.fullFediverseUrl],
           services: lastOp.lastOperation.services,
           rotationKeys: lastOp.lastOperation.rotationKeys,
-          verificationMethods: lastOp.lastOperation.verificationMethods,
+          verificationMethods: lastOp.lastOperation.verificationMethods
         }
 
         console.log('pushing operation')
-        await pushPlcOperation(user.bskyDid, operation)        
+        await pushPlcOperation(user.bskyDid, operation)
       }
     }
   } catch (e) {
@@ -44,24 +41,26 @@ async function updateUserDidDoc(user: User) {
 }
 
 async function getPlcAuditLogs(did: string) {
-  const response = await fetch(`https://plc.directory/${did}/log/audit`);
+  const response = await fetch(`https://plc.directory/${did}/log/audit`)
   if (!response.ok) {
-    throw new Error(`got response ${response.status}`);
+    throw new Error(`got response ${response.status}`)
   }
 
-  const json = await response.json();
-  return defs.indexedEntryLog.parse(json);
+  const json = await response.json()
+  return defs.indexedEntryLog.parse(json)
 }
 
 async function getLastPlcOpFromPlc(did: string) {
-  const logs = await getPlcAuditLogs(did);
-  return getLastPlcOp(logs);
+  const logs = await getPlcAuditLogs(did)
+  return getLastPlcOp(logs)
 }
 
 function getLastPlcOp(logs: IndexedEntryLog) {
-  const lastOp = logs.at(-1);
-  //@ts-expect-error
-  return { lastOperation: normalizeOp(lastOp.operation), base: lastOp };
+  const lastOp = logs.at(-1)
+  if (lastOp && lastOp.operation.type !== 'plc_tombstone') {
+    return { lastOperation: normalizeOp(lastOp.operation), base: lastOp }
+  }
+  return null
 }
 
 async function pushPlcOperation(did: string, operation: any) {
@@ -69,7 +68,7 @@ async function pushPlcOperation(did: string, operation: any) {
   const signingRotationKey = await Secp256k1PrivateKey.importRaw(keyHexBytes)
 
   const signedOp = await signOperation(operation, signingRotationKey)
-  const client = new PlcClient();
+  const client = new PlcClient()
   await client.submitOperation(did as `did:plc:${string}`, signedOp)
 }
 
