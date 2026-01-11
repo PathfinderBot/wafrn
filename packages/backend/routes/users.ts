@@ -1304,12 +1304,12 @@ function userRoutes(app: Application) {
       })
     }
 
-    if (user.enableBsky && user.bskyAppPassword && user.bskyDid) {
-      return res.status(400).send({
-        error: true,
-        message: `You already have bluesky enabled`
-      })
-    }
+    // if (user.enableBsky && user.bskyAppPassword && user.bskyDid) {
+    //   return res.status(400).send({
+    //     error: true,
+    //     message: `You already have bluesky enabled`
+    //   })
+    // }
 
     if (!password) {
       return res.status(400).send({
@@ -1328,24 +1328,12 @@ function userRoutes(app: Application) {
         })
       }
 
-      const inviteCodeRecord = await BskyInviteCodes.findOne({
-        where: {
-          masterCode: true
-        }
-      })
-      const inviteCode = inviteCodeRecord?.code
-
-      if (!inviteCode) {
-        return res.status(400).send({
-          error: true,
-          message: `Contact the administrator: no master invite code available`
-        })
-      }
       const agent = new AtpAgent({
         service: serviceUrl
       })
 
-      if (user.enableBsky && user.bskyDid && user.bskyAuthData) {
+      if (user.bskyDid) {
+        // if user has a did, update the bsky password to be the same as the wafrn password and try loggin in with that
         try {
           await updateBskyPassword(user, password)
           await agent.login({
@@ -1354,11 +1342,26 @@ function userRoutes(app: Application) {
           })
         } catch (error) {
           logger.error({
-            message: `Failed to update bsky to new type to ${user.url}`,
+            message: `Failed to update bsky account password for user ${user.url}`,
             error: error
           })
         }
       } else {
+        // if user does not have a did, create a new account for them
+        const inviteCodeRecord = await BskyInviteCodes.findOne({
+          where: {
+            masterCode: true
+          }
+        })
+        const inviteCode = inviteCodeRecord?.code
+
+        if (!inviteCode) {
+          return res.status(400).send({
+            error: true,
+            message: `Contact the administrator: no master invite code available`
+          })
+        }
+
         await createBskyAccount({
           agent,
           user,
@@ -1367,7 +1370,7 @@ function userRoutes(app: Application) {
         })
       }
 
-      // create an app password for the newly created user.
+      // create an app password for the newly created or updated user.
       const bskyPasswordCreated = await createBskyAppPassword(user, agent)
       if (!bskyPasswordCreated) {
         return res.status(500).send({
@@ -1382,8 +1385,7 @@ function userRoutes(app: Application) {
         did: agent.assertDid
       })
     } catch (error) {
-      res.status(500)
-      res.send({
+      res.status(500).send({
         error: true,
         message: `There was an error! Contact an admin for this`
       })
