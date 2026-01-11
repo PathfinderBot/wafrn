@@ -1,16 +1,8 @@
-import { Post, User } from "../../models/index.js"
-import { getDidDoc } from "./getDidDoc.js"
-import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } from "@atcute/did-plc";
-import { fromBase16, toBase64Url } from "@atcute/multibase";
-import { Secp256k1PrivateKey, Secp256k1PrivateKeyExportable } from "@atcute/crypto";
-import { createBskyAppPassword, forceUpdateBskyEmail, updateBskyPassword } from "../../routes/users.js";
-import generateRandomString from "../generateRandomString.js";
-import { completeEnvironment } from "../backendOptions.js";
-import { AtpAgent } from "@atproto/api";
-import sendEmail from "../sendEmail.js";
-import { logger } from "../logger.js";
-import { createNotification } from "../pushNotifications.js";
-import { redisCache } from "../redis.js";
+import { User } from '../../models/index.js'
+import { getDidDoc } from './getDidDoc.js'
+import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } from '@atcute/did-plc'
+import { fromBase16 } from '@atcute/multibase'
+import { Secp256k1PrivateKey } from '@atcute/crypto'
 
 async function updateUserDidDoc(user: User) {
   try {
@@ -79,39 +71,6 @@ async function pushPlcOperation(did: string, operation: any) {
   const signedOp = await signOperation(operation, signingRotationKey)
   const client = new PlcClient();
   await client.submitOperation(did as `did:plc:${string}`, signedOp)
-};
-
-async function forceUpdateBskyPassword(user: User, forceLog?: boolean){
-          try {
-          const serviceUrl = completeEnvironment.bskyPds
-            ? completeEnvironment.bskyPds.startsWith("http")
-              ? completeEnvironment.bskyPds
-              : "https://" + completeEnvironment.bskyPds
-            : "";
-          const randomString = generateRandomString()
-          await updateBskyPassword(user, randomString)
-          if(forceLog) {
-          logger.debug(`Forced RANDOM BSKY PASSWORD on user ${user.url}: ${randomString}`)
-          }
-          await forceUpdateBskyEmail(user)
-          const agent = new AtpAgent({
-            service: serviceUrl,
-          });
-          user.bskyAuthData = randomString;
-          await agent.sessionManager.login({
-              identifier: user.bskyDid as string,
-              password: randomString,
-            });
-          await user.save();
-          await createBskyAppPassword(user, agent);
-          logger.debug(`Created bsky password for user ${user.url}`)
-          await redisCache.del('bskySession:' + user.id)
-          return agent
-        } catch (error) {
-          logger.debug('Problem updating user bsky password: ' + user.url)
-          logger.debug(error)
-        }
 }
 
-
-export {updateUserDidDoc, forceUpdateBskyPassword}
+export { updateUserDidDoc }
