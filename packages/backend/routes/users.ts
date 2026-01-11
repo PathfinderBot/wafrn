@@ -1337,7 +1337,7 @@ function userRoutes(app: Application) {
         try {
           await updateBskyPassword(user, password)
           await agent.login({
-            identifier: user.bskyDid as string,
+            identifier: user.bskyDid,
             password: password
           })
         } catch (error) {
@@ -2058,7 +2058,6 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       error
     })
   }
-  return {}
 }
 
 async function updateProfileOptions(optionsJSON: string, posterId: string) {
@@ -2172,9 +2171,7 @@ async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boo
   }
 
   const appPassword = appPasswordResponse.data.password
-  const userDid = agent.assertDid
 
-  user.bskyDid = userDid
   user.bskyAuthData = null
   user.bskyAppPassword = appPassword
   user.enableBsky = true
