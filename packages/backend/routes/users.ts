@@ -1242,7 +1242,7 @@ function userRoutes(app: Application) {
           level: 'error',
           code: 'bsky_account_force_disabled',
           message:
-            'Bluesky integration for your account was disabled because of an internal error. Please update your password or contact the admin team.'
+            'Bluesky integration for your account was disabled because of an internal error. Please go to the enable bluesky page and re-enable it.'
         })
       }
 
