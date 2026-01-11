@@ -3,40 +3,47 @@ import { getDidDoc } from './getDidDoc.js'
 import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } from '@atcute/did-plc'
 import { fromBase16 } from '@atcute/multibase'
 import { Secp256k1PrivateKey } from '@atcute/crypto'
+import { logger } from '../logger.js'
 
 async function updateUserDidDoc(user: User) {
   try {
-    console.log('updating ' + user.url)
+    logger.debug('updating ' + user.url)
     const didDoc = await getDidDoc(user.bskyDid ?? '')
     const handle = didDoc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
-    if (handle) {
-      user.alternateUrl = '@' + handle
-      await user.save()
+    if (!handle) {
+      logger.debug(`No handle starting with at:// found in DID doc for user ${user.url}. Aborting update.`)
+      return
+    }
 
-      if (user.bskyDid?.startsWith('did:plc')) {
-        console.log('getting plc info')
-        const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
+    user.alternateUrl = '@' + handle
+    await user.save()
 
-        if (!lastOp || lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
-          return
-        }
+    if (user.bskyDid?.startsWith('did:plc')) {
+      logger.debug('getting PLC logs')
+      const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
-        console.log('editing plc op')
-        const operation = {
-          type: 'plc_operation',
-          prev: lastOp.base?.cid,
-          alsoKnownAs: [...lastOp.lastOperation.alsoKnownAs.filter((x) => x !== user.fullUrl), user.fullFediverseUrl],
-          services: lastOp.lastOperation.services,
-          rotationKeys: lastOp.lastOperation.rotationKeys,
-          verificationMethods: lastOp.lastOperation.verificationMethods
-        }
-
-        console.log('pushing operation')
-        await pushPlcOperation(user.bskyDid, operation)
+      if (!lastOp || lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
+        return
       }
+
+      logger.debug('creating PLC operation')
+      const operation = {
+        type: 'plc_operation',
+        prev: lastOp.base?.cid,
+        alsoKnownAs: [...lastOp.lastOperation.alsoKnownAs.filter((x) => x !== user.fullUrl), user.fullFediverseUrl],
+        services: lastOp.lastOperation.services,
+        rotationKeys: lastOp.lastOperation.rotationKeys,
+        verificationMethods: lastOp.lastOperation.verificationMethods
+      }
+
+      logger.debug('pushing PLC operation')
+      await pushPlcOperation(user.bskyDid, operation)
     }
   } catch (e) {
-    console.error('could not update user', user.url)
+    logger.error({
+      message: `Failed updating DID doc for user: ${user.url}`,
+      error: e
+    })
   }
 }
 
