@@ -629,31 +629,7 @@ function userRoutes(app: Application) {
           }
         })
         if (user) {
-          user.emailVerified = true
-          user.password = await bcrypt.hash(req.body.password, completeEnvironment.saltRounds)
-          user.activated = completeEnvironment.reviewRegistrations ? user.activated : true
-          user.requestedPasswordReset = null
-          await user.save()
-
-          // also reset MFA details
-          await MfaDetails.destroy({
-            where: {
-              userId: user.id
-            }
-          })
-
-          // also update the bluesky password
-          if (user.enableBsky && user.bskyDid) {
-            await updateBskyPassword(user, req.body.password)
-            const agent = new AtpAgent({
-              service: serviceUrl
-            })
-            await agent.login({
-              identifier: user.bskyDid as string,
-              password: req.body.password
-            })
-            await createBskyAppPassword(user, agent)
-          }
+          await updatePassword(user, req.body.password)
 
           success = true
         }
@@ -665,6 +641,23 @@ function userRoutes(app: Application) {
     res.send({
       success
     })
+  })
+
+  app.post('/api/changePassword', async (req: AuthorizedRequest, res: Response) => {
+    const user = (await User.findByPk(req.jwtData?.userId as string)) as User
+    const password = req.body.oldPassword
+    const newPassword = req.body.newPassword
+    if(await bcrypt.compare(password, user.password)) {
+      await updatePassword(user, newPassword)
+      res.send({success: true})
+    }
+
+    res.status(403)
+    res.send({
+      success: false,
+      message: 'Incorrect password'
+    })
+
   })
 
   app.post('/api/login', loginRateLimiter, onePerSecondLimiter, async (req, res) => {
@@ -1267,7 +1260,8 @@ function userRoutes(app: Application) {
         // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
         serviceAnnouncements,
         mutedRewoots,
-        mutedQuotes
+        mutedQuotes,
+        showBskyAlert: user.bskyDid && !user.enableBsky
       })
     }
   })
@@ -2212,6 +2206,33 @@ async function forceUpdateBskyEmail(userIncomplete: User) {
       }
     }
   )
+}
+
+async function updatePassword(user: User, password: string) {
+  user.emailVerified = true
+  user.password = await bcrypt.hash(password, completeEnvironment.saltRounds)
+  user.activated = completeEnvironment.reviewRegistrations ? user.activated : true
+  user.requestedPasswordReset = null
+  await user.save()
+  // also reset MFA details
+  await MfaDetails.destroy({
+    where: {
+      userId: user.id
+    }
+  })
+  // also update the bluesky password
+  if (user.enableBsky && user.bskyDid) {
+    await updateBskyPassword(user, password)
+    const agent = new AtpAgent({
+      service: serviceUrl
+    })
+    await agent.login({
+      identifier: user.bskyDid as string,
+      password: password
+    })
+    await createBskyAppPassword(user, agent)
+  }
+  return true
 }
 
 export {
