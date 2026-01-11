@@ -9,6 +9,10 @@ import { redisCache } from '../redis.js'
 
 async function forceUpdateBskyPassword(user: User) {
   try {
+    if (!user.bskyDid) {
+      throw new Error(`Cannot update bsky password for user with no did: ${user.url}`)
+    }
+
     const serviceUrl = completeEnvironment.bskyPds
       ? completeEnvironment.bskyPds.startsWith('http')
         ? completeEnvironment.bskyPds
@@ -24,7 +28,7 @@ async function forceUpdateBskyPassword(user: User) {
       service: serviceUrl
     })
     await agent.sessionManager.login({
-      identifier: user.bskyDid as string,
+      identifier: user.bskyDid,
       password: randomString
     })
     await createBskyAppPassword(user, agent)
