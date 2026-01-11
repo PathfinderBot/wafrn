@@ -1,7 +1,6 @@
 import { Follows, User } from '../../models/index.js'
 import { Op } from 'sequelize'
 import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
-import { cache } from 'sharp'
 import { Queue } from 'bullmq'
 import { UserFollowHashtags } from '../../models/userFollowHashtag.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
@@ -27,7 +26,8 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
   }
   let cacheResult = forceUpdate ? undefined : superCache
   if (!cacheResult) {
-    const follows = await Follows.findAll({
+    const localIds = await getAllLocalUserIds()
+    const followsPromise = Follows.findAll({
       include: [
         {
           model: User,
@@ -44,10 +44,23 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       //group: ['followedId'],
       where: {
         followerId: {
-          [Op.in]: await getAllLocalUserIds()
+          [Op.in]: localIds
         }
       }
     })
+    const localUsersWithDidPromise = User.findAll({
+      attributes: ['bskyDid'],
+      where: {
+        id: {
+          [Op.in]: localIds
+        },
+        bskyDid: {
+          [Op.ne]: null
+        }
+      }
+    })
+    const [follows, localUsersWithDid] = await Promise.all([followsPromise, localUsersWithDidPromise])
+
     const dids = await User.findAll({
       attributes: ['bskyDid', 'id'],
       where: {
@@ -62,17 +75,7 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
         }
       }
     })
-    const localUsersWithDid = await User.findAll({
-      attributes: ['bskyDid'],
-      where: {
-        id: {
-          [Op.in]: await getAllLocalUserIds()
-        },
-        bskyDid: {
-          [Op.ne]: null
-        }
-      }
-    })
+
     const followedUsersLocalIds = new Set<string>(dids.map((elem) => elem.id).filter((elem) => elem != ''))
     const localUserDids = new Set<string>(
       localUsersWithDid.map((elem) => elem.bskyDid || '').filter((elem) => elem != '')
