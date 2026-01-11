@@ -1,5 +1,5 @@
-import { Application, Response } from "express";
-import { Model, Op, UUIDV4 } from "sequelize";
+import { Application, Response } from 'express'
+import { Model, Op, UUIDV4 } from 'sequelize'
 import {
   Ask,
   Blocks,
@@ -14,74 +14,71 @@ import {
   User,
   UserBookmarkedPosts,
   UserEmojiRelation,
-  UserOptions,
-} from "../models/index.js";
-import { adminToken, authenticateToken } from "../utils/authenticateToken.js";
+  UserOptions
+} from '../models/index.js'
+import { adminToken, authenticateToken } from '../utils/authenticateToken.js'
 
-import generateRandomString from "../utils/generateRandomString.js";
-import getIp from "../utils/getIP.js";
-import sendEmail from "../utils/sendEmail.js";
-import validateEmail from "../utils/validateEmail.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { sequelize } from "../models/index.js";
+import generateRandomString from '../utils/generateRandomString.js'
+import getIp from '../utils/getIP.js'
+import sendEmail from '../utils/sendEmail.js'
+import validateEmail from '../utils/validateEmail.js'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import { sequelize } from '../models/index.js'
 
-import optimizeMedia from "../utils/optimizeMedia.js";
-import uploadHandler from "../utils/uploads.js";
-import { generateKeyPairSync, randomUUID } from "crypto";
-import { logger } from "../utils/logger.js";
+import optimizeMedia from '../utils/optimizeMedia.js'
+import uploadHandler from '../utils/uploads.js'
+import { generateKeyPairSync, randomUUID } from 'crypto'
+import { logger } from '../utils/logger.js'
 import {
   createAccountLimiter,
   loginRateLimiter,
   navigationRateLimiter,
-  onePerSecondLimiter,
-} from "../utils/rateLimiters.js";
-import fs from "fs/promises";
-import AuthorizedRequest from "../interfaces/authorizedRequest.js";
-import optionalAuthentication from "../utils/optionalAuthentication.js";
-import checkIpBlocked from "../utils/checkIpBlocked.js";
-import { redisCache } from "../utils/redis.js";
-import getFollowedsIds from "../utils/cacheGetters/getFollowedsIds.js";
-import getBlockedIds from "../utils/cacheGetters/getBlockedIds.js";
-import { getNotYetAcceptedFollowedids } from "../utils/cacheGetters/getNotYetAcceptedFollowedIds.js";
-import { getUserOptions } from "../utils/cacheGetters/getUserOptions.js";
-import { getMutedPosts } from "../utils/cacheGetters/getMutedPosts.js";
-import { getAvaiableEmojis } from "../utils/getAvaiableEmojis.js";
-import { getMutedUsers } from "../utils/cacheGetters/getMutedUsers.js";
-import { getAvaiableEmojisCache } from "../utils/cacheGetters/getAvaiableEmojis.js";
-import { rejectremoteFollow } from "../utils/activitypub/rejectRemoteFollow.js";
-import { acceptRemoteFollow } from "../utils/activitypub/acceptRemoteFollow.js";
-import showdown from "showdown";
-import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from "@atproto/api";
-import { getAtProtoSession } from "../atproto/utils/getAtProtoSession.js";
-import {
-  forceUpdateCacheDidsAtThread,
-  getCacheAtDids,
-} from "../atproto/cache/getCacheAtDids.js";
-import dompurify from "isomorphic-dompurify";
-import { Queue } from "bullmq";
-import * as OTPAuth from "otpauth";
-import verifyTotp from "../utils/verifyTotp.js";
-import { getPetitionSigned } from "../utils/activitypub/getPetitionSigned.js";
-import { isArray } from "underscore";
-import { follow } from "../utils/follow.js";
-import { activityPubObject } from "../interfaces/fediverse/activityPubObject.js";
-import { getFollowedHashtags } from "../utils/getFollowedHashtags.js";
-import { completeEnvironment } from "../utils/backendOptions.js";
-import { sendUpdateProfile } from "../utils/activitypub/sendUpdateProfile.js";
-import axios from "axios";
-import { getAtprotoUser } from "../atproto/utils/getAtprotoUser.js";
-import { getAllLocalUserIds } from "../utils/cacheGetters/getAllLocalUserIds.js";
-import { syncBskyFollowersAndFollowing } from "../utils/atproto/syncBskyFollowersAndFollowing.js";
-import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
-import { Record } from "@atproto/api/dist/client/types/app/bsky/feed/threadgate.js";
-import { SelfLabels } from "@atproto/api/dist/client/types/com/atproto/label/defs.js";
-import { InviteCode } from "../models/inviteCode.js";
-import { isAdult } from "../utils/isAdult.js";
-import { getAdminAtprotoSession } from "../utils/atproto/getAdminAtprotoSession.js";
-import { getRemoteActor } from "../utils/activitypub/getRemoteActor.js";
-import { updateUserDidDoc } from "../utils/atproto/updateUserDidDoc.js";
-import { wait } from "../utils/wait.js";
+  onePerSecondLimiter
+} from '../utils/rateLimiters.js'
+import fs from 'fs/promises'
+import AuthorizedRequest from '../interfaces/authorizedRequest.js'
+import optionalAuthentication from '../utils/optionalAuthentication.js'
+import checkIpBlocked from '../utils/checkIpBlocked.js'
+import { redisCache } from '../utils/redis.js'
+import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
+import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import { getNotYetAcceptedFollowedids } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
+import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
+import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
+import { getAvaiableEmojis } from '../utils/getAvaiableEmojis.js'
+import { getMutedUsers } from '../utils/cacheGetters/getMutedUsers.js'
+import { getAvaiableEmojisCache } from '../utils/cacheGetters/getAvaiableEmojis.js'
+import { rejectremoteFollow } from '../utils/activitypub/rejectRemoteFollow.js'
+import { acceptRemoteFollow } from '../utils/activitypub/acceptRemoteFollow.js'
+import showdown from 'showdown'
+import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from '@atproto/api'
+import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
+import { forceUpdateCacheDidsAtThread, getCacheAtDids } from '../atproto/cache/getCacheAtDids.js'
+import dompurify from 'isomorphic-dompurify'
+import { Queue } from 'bullmq'
+import * as OTPAuth from 'otpauth'
+import verifyTotp from '../utils/verifyTotp.js'
+import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
+import { isArray } from 'underscore'
+import { follow } from '../utils/follow.js'
+import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
+import { getFollowedHashtags } from '../utils/getFollowedHashtags.js'
+import { completeEnvironment } from '../utils/backendOptions.js'
+import { sendUpdateProfile } from '../utils/activitypub/sendUpdateProfile.js'
+import axios from 'axios'
+import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
+import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
+import { syncBskyFollowersAndFollowing } from '../utils/atproto/syncBskyFollowersAndFollowing.js'
+import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
+import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/threadgate.js'
+import { SelfLabels } from '@atproto/api/dist/client/types/com/atproto/label/defs.js'
+import { InviteCode } from '../models/inviteCode.js'
+import { isAdult } from '../utils/isAdult.js'
+import { getAdminAtprotoSession } from '../utils/atproto/getAdminAtprotoSession.js'
+import { getRemoteActor } from '../utils/activitypub/getRemoteActor.js'
+import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
+import { wait } from '../utils/wait.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -89,234 +86,210 @@ const markdownConverter = new showdown.Converter({
   strikethrough: true,
   simpleLineBreaks: true,
   openLinksInNewWindow: true,
-  emoji: true,
-});
-const forbiddenCharacters = [":", "@", "/", "<", ">", '"', "&", "?"];
+  emoji: true
+})
+const forbiddenCharacters = [':', '@', '/', '<', '>', '"', '&', '?']
 
-const generateUserKeyPairQueue = new Queue("generateUserKeyPair", {
+const generateUserKeyPairQueue = new Queue('generateUserKeyPair', {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
     attempts: 3,
     backoff: {
-      type: "exponential",
-      delay: 1000,
+      type: 'exponential',
+      delay: 1000
     },
-    removeOnFail: true,
-  },
-});
+    removeOnFail: true
+  }
+})
 
 const serviceUrl = completeEnvironment.bskyPds
-  ? completeEnvironment.bskyPds.startsWith("http")
+  ? completeEnvironment.bskyPds.startsWith('http')
     ? completeEnvironment.bskyPds
-    : "https://" + completeEnvironment.bskyPds
-  : "";
+    : 'https://' + completeEnvironment.bskyPds
+  : ''
 
-const deletePostQueue = new Queue("deletePostQueue", {
+const deletePostQueue = new Queue('deletePostQueue', {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
     attempts: 3,
     backoff: {
-      type: "exponential",
-      delay: 1000,
+      type: 'exponential',
+      delay: 1000
     },
-    removeOnFail: true,
-  },
-});
+    removeOnFail: true
+  }
+})
 
 const slurs = [
-  "chinaman",
-  "chinamen",
-  "chink",
-  "coolie",
-  "coon",
-  "eskimo",
-  "golliwog",
-  "gook",
-  "gyp",
-  "gypsy",
-  "half-breed",
-  "halfbreed",
-  "heeb",
-  "jap",
-  "kaffer",
-  "kaffir",
-  "kaffir",
-  "kaffre",
-  "kafir",
-  "kike",
-  "kraut",
-  "negress",
-  "negro",
-  "nig",
-  "nig-nog",
-  "nigga",
-  "nigger",
-  "nigguh",
-  "pajeet",
-  "paki",
-  "pickaninnie",
-  "pickaninny",
-  "raghead",
-  "retard",
-  "sambo",
-  "shemale",
-  "soyboy",
-  "spade",
-  "sperg",
-  "spic",
-  "squaw",
-  "tard",
-  "wetback",
-  "wigger",
-  "wop",
-  "yid",
-];
+  'chinaman',
+  'chinamen',
+  'chink',
+  'coolie',
+  'coon',
+  'eskimo',
+  'golliwog',
+  'gook',
+  'gyp',
+  'gypsy',
+  'half-breed',
+  'halfbreed',
+  'heeb',
+  'jap',
+  'kaffer',
+  'kaffir',
+  'kaffir',
+  'kaffre',
+  'kafir',
+  'kike',
+  'kraut',
+  'negress',
+  'negro',
+  'nig',
+  'nig-nog',
+  'nigga',
+  'nigger',
+  'nigguh',
+  'pajeet',
+  'paki',
+  'pickaninnie',
+  'pickaninny',
+  'raghead',
+  'retard',
+  'sambo',
+  'shemale',
+  'soyboy',
+  'spade',
+  'sperg',
+  'spic',
+  'squaw',
+  'tard',
+  'wetback',
+  'wigger',
+  'wop',
+  'yid'
+]
 
 function userRoutes(app: Application) {
-  app.get("/api/fromBluesky/:did", async function (req, res) {
+  app.get('/api/fromBluesky/:did', async function (req, res) {
     if (!req.params.did) {
-      return res.redirect(completeEnvironment.frontendUrl);
+      return res.redirect(completeEnvironment.frontendUrl)
     }
 
-    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`);
-    if (cacheUrl) return res.redirect(cacheUrl);
+    const cacheUrl = await redisCache.get(`fromBsky:${req.params.did}`)
+    if (cacheUrl) return res.redirect(cacheUrl)
 
-    let did = "";
-    if (!req.params.did.startsWith("did:") && completeEnvironment.enableBsky) {
-      const adminUser = await getAdminAtprotoSession();
+    let did = ''
+    if (!req.params.did.startsWith('did:') && completeEnvironment.enableBsky) {
+      const adminUser = await getAdminAtprotoSession()
       const doc = await adminUser.resolveHandle({
-        handle: req.params.did,
-      });
+        handle: req.params.did
+      })
       if (!doc.success) {
-        return res.redirect(completeEnvironment.frontendUrl);
+        return res.redirect(completeEnvironment.frontendUrl)
       }
-      did = doc.data.did;
+      did = doc.data.did
     }
 
     const user = await User.findOne({
       where: {
-        bskyDid: did,
-      },
-    });
+        bskyDid: did
+      }
+    })
 
     if (!user) {
-      return res.redirect(completeEnvironment.frontendUrl);
+      return res.redirect(completeEnvironment.frontendUrl)
     }
 
-    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl);
-    return res.redirect(user.fullUrl);
-  });
+    await redisCache.set(`fromBsky:${req.params.did}`, user.fullUrl)
+    return res.redirect(user.fullUrl)
+  })
 
   app.post(
-    "/api/register",
-    ...(completeEnvironment.registrationLevel === "PRIVATE"
-      ? [
-        authenticateToken,
-        adminToken,
-        createAccountLimiter,
-        onePerSecondLimiter,
-      ]
+    '/api/register',
+    ...(completeEnvironment.registrationLevel === 'PRIVATE'
+      ? [authenticateToken, adminToken, createAccountLimiter, onePerSecondLimiter]
       : [createAccountLimiter, onePerSecondLimiter]),
-    uploadHandler().single("avatar"),
+    uploadHandler().single('avatar'),
     async (req, res) => {
       try {
-        let success = false;
+        let success = false
         if (
           req.body?.email &&
           req.body.url &&
           req.body.url.match(/^[a-z0-9_A-Z]+([\_-]+[a-z0-9_A-Z]+)*$/i) &&
           validateEmail(req.body.email) &&
-          !slurs.includes(
-            req.body.url.toLowerCase() &&
-            slurs.every((elem) => !req.body.url.includes(elem))
-          )
+          !slurs.includes(req.body.url.toLowerCase() && slurs.every((elem) => !req.body.url.includes(elem)))
         ) {
-          const birthDate = new Date(req.body.birthDate);
-          const minimumAge = new Date();
-          minimumAge.setFullYear(
-            new Date().getFullYear() - completeEnvironment.minimumAgeToRegister
-          );
+          const birthDate = new Date(req.body.birthDate)
+          const minimumAge = new Date()
+          minimumAge.setFullYear(new Date().getFullYear() - completeEnvironment.minimumAgeToRegister)
           if (birthDate.getTime() > minimumAge.getTime()) {
-            res
-              .status(403)
-              .send({ success: false, error: true, message: "Invalid age" });
-            return;
+            res.status(403).send({ success: false, error: true, message: 'Invalid age' })
+            return
           }
-          const emailExists = await User.scope("full").findOne({
+          const emailExists = await User.scope('full').findOne({
             where: {
               [Op.or]: [
                 { email: req.body.email.toLowerCase() },
-                sequelize.where(
-                  sequelize.fn("lower", sequelize.col("url")),
-                  req.body.url.toLowerCase()
-                ),
-              ],
-            },
-          });
+                sequelize.where(sequelize.fn('lower', sequelize.col('url')), req.body.url.toLowerCase())
+              ]
+            }
+          })
 
-          let inviteCode: InviteCode | undefined;
+          let inviteCode: InviteCode | undefined
           if (!emailExists) {
-            const id = randomUUID();
-            if (completeEnvironment.registrationLevel === "INVITE") {
+            const id = randomUUID()
+            if (completeEnvironment.registrationLevel === 'INVITE') {
               // we get invite code first
               if (!req.body.inviteCode) {
                 return res.status(403).send({
                   success: false,
                   error: true,
-                  message: "Invalid invite code",
-                });
+                  message: 'Invalid invite code'
+                })
               }
 
-              const invite = req.body.inviteCode as string;
+              const invite = req.body.inviteCode as string
 
               const inviteDef = await InviteCode.findOne({
                 where: {
-                  code: invite,
-                },
-              });
+                  code: invite
+                }
+              })
 
               if (!inviteDef || inviteDef.isUsedOrExpired) {
-                return res
-                  .status(400)
-                  .send({ success: false, message: "Invalid invite code" });
+                return res.status(400).send({ success: false, message: 'Invalid invite code' })
               }
 
-              inviteCode = inviteDef;
+              inviteCode = inviteDef
             }
 
-            let avatarURL = ""; // Empty user avatar in case of error let frontend do stuff
+            let avatarURL = '' // Empty user avatar in case of error let frontend do stuff
             if (req.file != null) {
               avatarURL = `/${await optimizeMedia(req.file.path, {
-                forceImageExtension: "webp",
-              })}`;
+                forceImageExtension: 'webp'
+              })}`
             }
             if (completeEnvironment.removeFolderNameFromFileUploads) {
-              avatarURL = avatarURL.slice("/uploads/".length - 1);
+              avatarURL = avatarURL.slice('/uploads/'.length - 1)
             }
-            const activationCode = generateRandomString();
+            const activationCode = generateRandomString()
             const user = {
               id: id,
               email: req.body.email.toLowerCase(),
               description: req.body.description.trim(),
-              descriptionMarkdown: markdownConverter.makeHtml(
-                req.body.description.trim()
-              ),
-              url: req.body.url.trim().replace(" ", "_"),
-              name: req.body.name
-                ? req.body.name
-                : req.body.url.trim().replace(" ", "_"),
-              NSFW: req.body.nsfw === "true",
-              password: await bcrypt.hash(
-                req.body.password,
-                completeEnvironment.saltRounds
-              ),
+              descriptionMarkdown: markdownConverter.makeHtml(req.body.description.trim()),
+              url: req.body.url.trim().replace(' ', '_'),
+              name: req.body.name ? req.body.name : req.body.url.trim().replace(' ', '_'),
+              NSFW: req.body.nsfw === 'true',
+              password: await bcrypt.hash(req.body.password, completeEnvironment.saltRounds),
               birthDate: new Date(req.body.birthDate),
               avatar: avatarURL,
               activated: false,
               registerIp: getIp(req, true),
-              lastLoginIp: "ACCOUNT_NOT_ACTIVATED",
+              lastLoginIp: 'ACCOUNT_NOT_ACTIVATED',
               banned: false,
               activationCode,
               isBot: false,
@@ -324,155 +297,143 @@ function userRoutes(app: Application) {
               lastActiveAt: new Date(0),
               hideProfileNotLoggedIn: false,
               hideFollows: false,
-              emailVerified: false,
-            };
+              emailVerified: false
+            }
 
-            const userWithEmail = User.create(user);
+            const userWithEmail = User.create(user)
 
             if (inviteCode) {
-              await follow(id, inviteCode.createdByUserId);
-              inviteCode.usedByUserId = id;
-              await inviteCode.save();
+              await follow(id, inviteCode.createdByUserId)
+              inviteCode.usedByUserId = id
+              await inviteCode.save()
             }
 
             if (completeEnvironment.autoFollowAdmin) {
-              const adminUser = await getAdminUser();
-              await follow(id, adminUser.id);
+              const adminUser = await getAdminUser()
+              await follow(id, adminUser.id)
             }
 
-            const instanceUrl = completeEnvironment.instanceUrl.startsWith(
-              "http"
-            )
+            const instanceUrl = completeEnvironment.instanceUrl.startsWith('http')
               ? completeEnvironment.instanceUrl
-              : `https://${completeEnvironment.instanceUrl}`;
-            let instanceHost = completeEnvironment.instanceUrl;
+              : `https://${completeEnvironment.instanceUrl}`
+            let instanceHost = completeEnvironment.instanceUrl
             try {
-              instanceHost = new URL(instanceUrl).host;
+              instanceHost = new URL(instanceUrl).host
             } catch (err) {
-              console.error(
-                "cannot use `completeEnvironment.instanceUrl` in `new URL` constructor"
-              );
+              console.error('cannot use `completeEnvironment.instanceUrl` in `new URL` constructor')
             }
 
-            const email = req.body.email.toLowerCase();
-            const activationLink = `${instanceUrl}/activate/${encodeURIComponent(
-              email
-            )}/${activationCode}`;
+            const email = req.body.email.toLowerCase()
+            const activationLink = `${instanceUrl}/activate/${encodeURIComponent(email)}/${activationCode}`
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
-`,
-              });
-            await Promise.all([userWithEmail, emailSent]);
-            await generateUserKeyPairQueue.add("generateUserKeyPair", {
-              userId: (await userWithEmail).id,
-            });
-            success = true;
-            await redisCache.del("allLocalUserIds");
+`
+                })
+            await Promise.all([userWithEmail, emailSent])
+            await generateUserKeyPairQueue.add('generateUserKeyPair', {
+              userId: (await userWithEmail).id
+            })
+            success = true
+            await redisCache.del('allLocalUserIds')
             res.send({
-              success: true,
-            });
+              success: true
+            })
           } else {
             logger.info({
-              message: "Email exists",
+              message: 'Email exists',
               email: req.body?.email,
               url: req.body.url,
-              forbidChar: !forbiddenCharacters.some((char) =>
-                req.body.url.includes(char)
-              ),
-              emailValid: validateEmail(req.body.email),
-            });
+              forbidChar: !forbiddenCharacters.some((char) => req.body.url.includes(char)),
+              emailValid: validateEmail(req.body.email)
+            })
           }
         } else {
           logger.info({
-            message: "Failed registration",
+            message: 'Failed registration',
             email: req.body?.email,
             url: req.body.url,
-            forbidChar: !forbiddenCharacters.some((char) =>
-              req.body.url.includes(char)
-            ),
-            emailValid: validateEmail(req.body.email),
-          });
+            forbidChar: !forbiddenCharacters.some((char) => req.body.url.includes(char)),
+            emailValid: validateEmail(req.body.email)
+          })
           res.status(400).send({
             success: false,
-            message: "Failed registration",
+            message: 'Failed registration',
             email: req.body?.email,
             url: req.body.url,
-            forbidChar: !forbiddenCharacters.some((char) =>
-              req.body.url.includes(char)
-            ),
-            emailValid: validateEmail(req.body.email),
-          });
-          return;
+            forbidChar: !forbiddenCharacters.some((char) => req.body.url.includes(char)),
+            emailValid: validateEmail(req.body.email)
+          })
+          return
         }
         if (!success) {
           res.status(401).send({
             success: false,
-            message: "Failed registration",
-          });
+            message: 'Failed registration'
+          })
         }
       } catch (error) {
-        logger.error(error);
-        res.status(500).send({ success: false, error });
+        logger.error(error)
+        res.status(500).send({ success: false, error })
       }
     }
-  );
+  )
 
   app.post(
-    "/api/updateCSS",
+    '/api/updateCSS',
     authenticateToken,
     navigationRateLimiter,
     async (req: AuthorizedRequest, res: Response) => {
-      const posterId = req.jwtData?.userId;
-      const cssContent = req.body.css ? req.body.css.trim() : undefined;
+      const posterId = req.jwtData?.userId
+      const cssContent = req.body.css ? req.body.css.trim() : undefined
       if (req.body.css) {
         try {
-          await fs.writeFile(`uploads/themes/${posterId}.css`, req.body.css);
-          res.send({ success: true });
+          await fs.writeFile(`uploads/themes/${posterId}.css`, req.body.css)
+          res.send({ success: true })
         } catch (error) {
-          logger.warn(error);
-          res.status(500);
-          res.send({ error: true });
+          logger.warn(error)
+          res.status(500)
+          res.send({ error: true })
         }
       } else {
         try {
-          await fs.unlink(`uploads/themes/${posterId}.css`);
-          res.send({ success: true });
+          await fs.unlink(`uploads/themes/${posterId}.css`)
+          res.send({ success: true })
         } catch (error) {
-          logger.warn(error);
-          res.status(500);
-          res.send({ error: true });
+          logger.warn(error)
+          res.status(500)
+          res.send({ error: true })
         }
       }
       // also federate changes
-      const user = await User.findByPk(posterId);
-      if (user) await sendUpdateProfile(user);
+      const user = await User.findByPk(posterId)
+      if (user) await sendUpdateProfile(user)
     }
-  );
+  )
 
   app.post(
-    "/api/editProfile",
+    '/api/editProfile',
     authenticateToken,
     uploadHandler().fields([
-      { name: "avatar", maxCount: 1 },
-      { name: "headerImage", maxCount: 1 },
+      { name: 'avatar', maxCount: 1 },
+      { name: 'headerImage', maxCount: 1 }
     ]),
     async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
+      let success = false
       try {
-        const posterId = req.jwtData?.userId as string;
-        const user = await User.scope("full").findOne({
+        const posterId = req.jwtData?.userId as string
+        const user = await User.scope('full').findOne({
           where: {
-            id: posterId,
-          },
-        });
+            id: posterId
+          }
+        })
         if (req.body && user) {
           const {
             hideFollows,
@@ -480,401 +441,347 @@ function userRoutes(app: Application) {
             name,
             description,
             manuallyAcceptsFollows,
-            options: optionJSON,
-          } = req.body;
+            options: optionJSON
+          } = req.body
 
-          const avaiableEmojis = await getAvaiableEmojis();
-          let userEmojis: any[] = [];
-          user.manuallyAcceptsFollows = manuallyAcceptsFollows == "true";
-          user.hideFollows = hideFollows == "true";
-          user.hideProfileNotLoggedIn = hideProfileNotLoggedIn == "true";
-          user.disableEmailNotifications =
-            req.body.disableEmailNotifications == "true";
-          user.isBot = req.body.isBot == "true";
+          const avaiableEmojis = await getAvaiableEmojis()
+          let userEmojis: any[] = []
+          user.manuallyAcceptsFollows = manuallyAcceptsFollows == 'true'
+          user.hideFollows = hideFollows == 'true'
+          user.hideProfileNotLoggedIn = hideProfileNotLoggedIn == 'true'
+          user.disableEmailNotifications = req.body.disableEmailNotifications == 'true'
+          user.isBot = req.body.isBot == 'true'
           if (description) {
-            const descriptionHtml = markdownConverter.makeHtml(description);
-            user.description = descriptionHtml;
-            user.descriptionMarkdown = description;
-            userEmojis = userEmojis.concat(
-              avaiableEmojis?.filter((emoji: any) =>
-                description.includes(emoji.name)
-              )
-            );
+            const descriptionHtml = markdownConverter.makeHtml(description)
+            user.description = descriptionHtml
+            user.descriptionMarkdown = description
+            userEmojis = userEmojis.concat(avaiableEmojis?.filter((emoji: any) => description.includes(emoji.name)))
           }
 
           if (name) {
-            user.name = name;
-            userEmojis = userEmojis.concat(
-              avaiableEmojis?.filter((emoji: any) => name.includes(emoji.name))
-            );
+            user.name = name
+            userEmojis = userEmojis.concat(avaiableEmojis?.filter((emoji: any) => name.includes(emoji.name)))
           }
 
-          const avatar = (req?.files as any)?.avatar?.[0];
-          const headerImage = (req?.files as any)?.headerImage?.[0];
+          const avatar = (req?.files as any)?.avatar?.[0]
+          const headerImage = (req?.files as any)?.headerImage?.[0]
 
           if (avatar != null) {
             let url = `/${await optimizeMedia(avatar.path, {
-              forceImageExtension: "webp",
-            })}`;
+              forceImageExtension: 'webp'
+            })}`
             if (completeEnvironment.removeFolderNameFromFileUploads) {
-              url = url.slice("/uploads/".length - 1);
+              url = url.slice('/uploads/'.length - 1)
             }
-            user.avatar = url;
+            user.avatar = url
           }
           if (headerImage != null) {
             let url = `/${await optimizeMedia(headerImage.path, {
-              forceImageExtension: "webp",
-            })}`;
+              forceImageExtension: 'webp'
+            })}`
             if (completeEnvironment.removeFolderNameFromFileUploads) {
-              url = url.slice("/uploads/".length - 1);
+              url = url.slice('/uploads/'.length - 1)
             }
-            user.headerImage = url;
+            user.headerImage = url
           }
 
           await UserEmojiRelation.destroy({
             where: {
-              userId: user.id,
-            },
-          });
-          await user.removeEmojis();
-          user.setEmojis([...new Set(userEmojis)]);
-          redisCache.del("userOptions:" + posterId);
-          await user.save();
+              userId: user.id
+            }
+          })
+          await user.removeEmojis()
+          user.setEmojis([...new Set(userEmojis)])
+          redisCache.del('userOptions:' + posterId)
+          await user.save()
 
-          await updateProfileOptions(optionJSON, posterId);
+          await updateProfileOptions(optionJSON, posterId)
           if (user.enableBsky && user.bskyDid) {
-            const bskySession = await getAtProtoSession(user);
-            await updateBlueskyProfile(bskySession, user);
+            const bskySession = await getAtProtoSession(user)
+            await updateBlueskyProfile(bskySession, user)
           }
           // force update fedi profile
-          await redisCache.del("fediverse:user:base:" + posterId);
-          await sendUpdateProfile(user);
-          success = true;
+          await redisCache.del('fediverse:user:base:' + posterId)
+          await sendUpdateProfile(user)
+          success = true
         }
       } catch (error) {
-        logger.error(error);
+        logger.error(error)
       }
 
       res.send({
-        success,
-      });
+        success
+      })
     }
-  );
+  )
 
-  app.post(
-    "/api/editOptions",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      try {
-        const userId = req.jwtData?.userId;
-        const options = req.body.options;
-        if (userId && options) {
-          await updateProfileOptions(JSON.stringify(options), userId);
-        }
-        await redisCache.del("userOptions:" + userId);
-        await redisCache.del("fediverse:user:base:" + userId);
-
-      } catch (error) {
-        logger.info({
-          message: "Error updating user options",
-          error: error,
-        });
+  app.post('/api/editOptions', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    try {
+      const userId = req.jwtData?.userId
+      const options = req.body.options
+      if (userId && options) {
+        await updateProfileOptions(JSON.stringify(options), userId)
       }
-      res.send({ success: success });
+      await redisCache.del('userOptions:' + userId)
+      await redisCache.del('fediverse:user:base:' + userId)
+    } catch (error) {
+      logger.info({
+        message: 'Error updating user options',
+        error: error
+      })
     }
-  );
+    res.send({ success: success })
+  })
 
-  app.post(
-    "/api/forgotPassword",
-    createAccountLimiter,
-    onePerSecondLimiter,
-    async (req, res) => {
-      const resetCode = generateRandomString();
-      try {
-        if (req.body?.email && validateEmail(req.body.email)) {
-          const email = req.body.email.toLowerCase();
-          const user = await User.scope("full").findOne({ where: { email } });
-          if (user) {
-            user.activationCode = resetCode;
-            user.requestedPasswordReset = new Date();
-            user.save();
+  app.post('/api/forgotPassword', createAccountLimiter, onePerSecondLimiter, async (req, res) => {
+    const resetCode = generateRandomString()
+    try {
+      if (req.body?.email && validateEmail(req.body.email)) {
+        const email = req.body.email.toLowerCase()
+        const user = await User.scope('full').findOne({ where: { email } })
+        if (user) {
+          user.activationCode = resetCode
+          user.requestedPasswordReset = new Date()
+          user.save()
 
-            const link = `${completeEnvironment.instanceUrl
-              }/resetPassword/${encodeURIComponent(email)}/${resetCode}`;
-            const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(
-              email
-            )}&code=${resetCode}`;
+          const link = `${completeEnvironment.instanceUrl}/resetPassword/${encodeURIComponent(email)}/${resetCode}`
+          const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(email)}&code=${resetCode}`
 
-            await sendEmail({
-              email: req.body.email.toLowerCase(),
-              subject: `Reset ${completeEnvironment.instanceUrl} password`,
-              body: `\
+          await sendEmail({
+            email: req.body.email.toLowerCase(),
+            subject: `Reset ${completeEnvironment.instanceUrl} password`,
+            body: `\
 <h1>So you forgot your ${completeEnvironment.instanceUrl} password</h1>
 <p>If you requested this you may <a href="${link}">reset your password on the web</a> or <a href="${appLink}">reset your password on the app</a></p>
 <p>If you can't see the web link above, copy this link: ${link}</p>
 <p>If you didn't request this, ignore this email.</p>
-`,
-            });
-          }
+`
+          })
         }
-      } catch (error) {
-        logger.error(error);
       }
-
-      res.send({ success: true });
+    } catch (error) {
+      logger.error(error)
     }
-  );
 
-  app.post(
-    "/api/activateUser",
-    onePerSecondLimiter,
-    createAccountLimiter,
-    async (req, res) => {
-      let success = false;
-      if (req.body?.email && validateEmail(req.body.email) && req.body.code) {
-        const user = await User.scope("full").findOne({
-          where: {
-            email: req.body.email.toLowerCase(),
-            activationCode: req.body.code,
-          },
-        });
-        if (user) {
-          user.emailVerified = true;
-          let body = "";
-          let subject = "";
-          if (!completeEnvironment.reviewRegistrations) {
-            user.activated = true;
-            subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`;
-            body = "<p>;D</p>";
-          } else {
-            subject = `The email account for your ${completeEnvironment.instanceUrl} account ${user.url} has been verified`;
-            body = `\
+    res.send({ success: true })
+  })
+
+  app.post('/api/activateUser', onePerSecondLimiter, createAccountLimiter, async (req, res) => {
+    let success = false
+    if (req.body?.email && validateEmail(req.body.email) && req.body.code) {
+      const user = await User.scope('full').findOne({
+        where: {
+          email: req.body.email.toLowerCase(),
+          activationCode: req.body.code
+        }
+      })
+      if (user) {
+        user.emailVerified = true
+        let body = ''
+        let subject = ''
+        if (!completeEnvironment.reviewRegistrations) {
+          user.activated = true
+          subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`
+          body = '<p>;D</p>'
+        } else {
+          subject = `The email account for your ${completeEnvironment.instanceUrl} account ${user.url} has been verified`
+          body = `\
 <p>Thanks for verifying your email, Our admin team will review your registration request soon!</p>
-`;
-          }
-          try {
-            await Promise.all([
-              user.save(),
-              sendEmail({ email: req.body.email.toLowerCase(), subject, body }),
-            ]);
-            success = true;
-          } catch (error) {
-            logger.info({
-              message: `Error while activating account`,
-              error: error,
-            });
-          }
+`
+        }
+        try {
+          await Promise.all([user.save(), sendEmail({ email: req.body.email.toLowerCase(), subject, body })])
+          success = true
+        } catch (error) {
+          logger.info({
+            message: `Error while activating account`,
+            error: error
+          })
         }
       }
-
-      if (!success) {
-        logger.info({
-          message: `Success marked as false on activate account!`,
-          body: req.body,
-        });
-      }
-
-      res.send({
-        success,
-      });
     }
-  );
 
-  app.post("/api/resetPassword", async (req, res) => {
-    let success = false;
+    if (!success) {
+      logger.info({
+        message: `Success marked as false on activate account!`,
+        body: req.body
+      })
+    }
+
+    res.send({
+      success
+    })
+  })
+
+  app.post('/api/resetPassword', async (req, res) => {
+    let success = false
 
     try {
-      if (
-        req.body?.email &&
-        req.body.code &&
-        req.body.password &&
-        validateEmail(req.body.email)
-      ) {
-        const resetPasswordDeadline = new Date();
-        resetPasswordDeadline.setTime(
-          resetPasswordDeadline.getTime() + 3600 * 2 * 1000
-        );
-        const user = await User.scope("full").findOne({
+      if (req.body?.email && req.body.code && req.body.password && validateEmail(req.body.email)) {
+        const resetPasswordDeadline = new Date()
+        resetPasswordDeadline.setTime(resetPasswordDeadline.getTime() + 3600 * 2 * 1000)
+        const user = await User.scope('full').findOne({
           where: {
             email: req.body.email.toLowerCase(),
             activationCode: req.body.code,
-            requestedPasswordReset: { [Op.lt]: resetPasswordDeadline },
-          },
-        });
+            requestedPasswordReset: { [Op.lt]: resetPasswordDeadline }
+          }
+        })
         if (user) {
-          user.emailVerified = true;
-          user.password = await bcrypt.hash(
-            req.body.password,
-            completeEnvironment.saltRounds
-          );
-          user.activated = completeEnvironment.reviewRegistrations
-            ? user.activated
-            : true;
-          user.requestedPasswordReset = null;
-          await user.save();
+          user.emailVerified = true
+          user.password = await bcrypt.hash(req.body.password, completeEnvironment.saltRounds)
+          user.activated = completeEnvironment.reviewRegistrations ? user.activated : true
+          user.requestedPasswordReset = null
+          await user.save()
 
           // also reset MFA details
           await MfaDetails.destroy({
             where: {
-              userId: user.id,
-            },
-          });
+              userId: user.id
+            }
+          })
 
           // also update the bluesky password
           if (user.enableBsky && user.bskyDid) {
-            await updateBskyPassword(user, req.body.password);
+            await updateBskyPassword(user, req.body.password)
             const agent = new AtpAgent({
-              service: serviceUrl,
-            });
+              service: serviceUrl
+            })
             await agent.login({
               identifier: user.bskyDid as string,
-              password: req.body.password,
-            });
-            await createBskyAppPassword(user, agent);
+              password: req.body.password
+            })
+            await createBskyAppPassword(user, agent)
           }
 
-          success = true;
+          success = true
         }
       }
     } catch (error) {
-      logger.error(error);
+      logger.error(error)
     }
 
     res.send({
-      success,
-    });
-  });
+      success
+    })
+  })
 
-  app.post(
-    "/api/login",
-    loginRateLimiter,
-    onePerSecondLimiter,
-    async (req, res) => {
-      let success = false;
-      try {
-        if (req.body?.email && req.body.password) {
-          const userWithEmail = await User.scope("full").findOne({
-            where: {
-              email: req.body.email.toLowerCase().trim(),
-              banned: {
-                [Op.ne]: true,
-              },
-            },
-          });
-          if (userWithEmail && userWithEmail.email) {
-            const correctPassword = await bcrypt.compare(
-              req.body.password,
-              userWithEmail.password
-            );
-            if (correctPassword) {
-              success = true;
-              if (userWithEmail.activated) {
-                const mfaEnabled = await MfaDetails.findAll({
-                  where: {
-                    userId: userWithEmail.id,
-                    enabled: {
-                      [Op.eq]: true,
-                    },
-                  },
-                });
-                if (mfaEnabled.length > 0) {
-                  res.send({
-                    success: true,
-                    mfaRequired: true,
-                    mfaOptions: [
-                      ...new Set(mfaEnabled.map((elem) => elem.type)),
-                    ],
-                    token: jwt.sign(
-                      {
-                        mfaStep: 1,
-                        email: userWithEmail.email.toLowerCase(),
-                      },
-                      completeEnvironment.jwtSecret,
-                      { expiresIn: "300s" }
-                    ),
-                  });
-                } else {
-                  res.send({
-                    success: true,
-                    token: jwt.sign(
-                      {
-                        userId: userWithEmail.id,
-                        email: userWithEmail.email.toLowerCase(),
-                        birthDate: userWithEmail.birthDate,
-                        url: userWithEmail.url,
-                        role: userWithEmail.role,
-                      },
-                      completeEnvironment.jwtSecret,
-                      { expiresIn: "31536000s" }
-                    ),
-                  });
-                  userWithEmail.lastLoginIp = getIp(req, true);
-                  await userWithEmail.save();
+  app.post('/api/login', loginRateLimiter, onePerSecondLimiter, async (req, res) => {
+    let success = false
+    try {
+      if (req.body?.email && req.body.password) {
+        const userWithEmail = await User.scope('full').findOne({
+          where: {
+            email: req.body.email.toLowerCase().trim(),
+            banned: {
+              [Op.ne]: true
+            }
+          }
+        })
+        if (userWithEmail && userWithEmail.email) {
+          const correctPassword = await bcrypt.compare(req.body.password, userWithEmail.password)
+          if (correctPassword) {
+            success = true
+            if (userWithEmail.activated) {
+              const mfaEnabled = await MfaDetails.findAll({
+                where: {
+                  userId: userWithEmail.id,
+                  enabled: {
+                    [Op.eq]: true
+                  }
                 }
+              })
+              if (mfaEnabled.length > 0) {
+                res.send({
+                  success: true,
+                  mfaRequired: true,
+                  mfaOptions: [...new Set(mfaEnabled.map((elem) => elem.type))],
+                  token: jwt.sign(
+                    {
+                      mfaStep: 1,
+                      email: userWithEmail.email.toLowerCase()
+                    },
+                    completeEnvironment.jwtSecret,
+                    { expiresIn: '300s' }
+                  )
+                })
               } else {
                 res.send({
-                  success: false,
-                  message: "Please activate your account! Check your email",
-                });
+                  success: true,
+                  token: jwt.sign(
+                    {
+                      userId: userWithEmail.id,
+                      email: userWithEmail.email.toLowerCase(),
+                      birthDate: userWithEmail.birthDate,
+                      url: userWithEmail.url,
+                      role: userWithEmail.role
+                    },
+                    completeEnvironment.jwtSecret,
+                    { expiresIn: '31536000s' }
+                  )
+                })
+                userWithEmail.lastLoginIp = getIp(req, true)
+                await userWithEmail.save()
               }
+            } else {
+              res.send({
+                success: false,
+                message: 'Please activate your account! Check your email'
+              })
             }
           }
         }
-      } catch (error) {
-        logger.error(error);
       }
-
-      if (!success) {
-        // res.statusCode = 401;
-        res.send({
-          success: false,
-          message: "Please recheck your email and password",
-        });
-      }
+    } catch (error) {
+      logger.error(error)
     }
-  );
+
+    if (!success) {
+      // res.statusCode = 401;
+      res.send({
+        success: false,
+        message: 'Please recheck your email and password'
+      })
+    }
+  })
 
   app.post(
-    "/api/login/mfa",
+    '/api/login/mfa',
     [loginRateLimiter, optionalAuthentication, onePerSecondLimiter],
     async (req: AuthorizedRequest, res: any) => {
-      let success = false;
+      let success = false
       try {
-        if (
-          req.body?.token &&
-          req.jwtData?.mfaStep == 1 &&
-          req.jwtData?.email
-        ) {
-          const userWithEmail = await User.scope("full").findOne({
+        if (req.body?.token && req.jwtData?.mfaStep == 1 && req.jwtData?.email) {
+          const userWithEmail = await User.scope('full').findOne({
             where: {
               email: req.jwtData?.email,
               banned: {
-                [Op.ne]: true,
-              },
-            },
-          });
+                [Op.ne]: true
+              }
+            }
+          })
           if (userWithEmail) {
             const mfaDetails = await MfaDetails.findAll({
               where: {
                 userId: userWithEmail.id,
                 enabled: {
-                  [Op.eq]: true,
-                },
-              },
-            });
+                  [Op.eq]: true
+                }
+              }
+            })
 
-            let mfaPassed = false;
+            let mfaPassed = false
 
             for (let mfaDetail of mfaDetails) {
               if (await verifyTotp(mfaDetail, req.body?.token)) {
-                mfaPassed = true;
-                break;
+                mfaPassed = true
+                break
               }
             }
 
             if (mfaPassed) {
-              success = true;
+              success = true
               res.send({
                 success: true,
                 token: jwt.sign(
@@ -883,1195 +790,1043 @@ function userRoutes(app: Application) {
                     email: userWithEmail.email?.toLowerCase(),
                     birthDate: userWithEmail.birthDate,
                     url: userWithEmail.url,
-                    role: userWithEmail.role,
+                    role: userWithEmail.role
                   },
                   completeEnvironment.jwtSecret,
-                  { expiresIn: "31536000s" }
-                ),
-              });
-              userWithEmail.lastLoginIp = getIp(req, true);
-              await userWithEmail.save();
+                  { expiresIn: '31536000s' }
+                )
+              })
+              userWithEmail.lastLoginIp = getIp(req, true)
+              await userWithEmail.save()
             }
           }
         }
       } catch (error) {
-        logger.error(error);
+        logger.error(error)
       }
 
       if (!success) {
         // res.statusCode = 401;
         res.send({
           success: false,
-          message: "Invalid code provided",
-        });
+          message: 'Invalid code provided'
+        })
       }
     }
-  );
-  app.get(
-    "/api/user/exportFollows",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const user = (await User.findByPk(req.jwtData?.userId as string)) as User;
-      const myFollows = await Follows.findAll({
-        include: [
-          {
-            model: User,
-            attributes: ["url"],
-            as: "followed",
-            required: true,
-          },
-        ],
-      });
+  )
+  app.get('/api/user/exportFollows', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const user = (await User.findByPk(req.jwtData?.userId as string)) as User
+    const myFollows = await Follows.findAll({
+      include: [
+        {
+          model: User,
+          attributes: ['url'],
+          as: 'followed',
+          required: true
+        }
+      ]
+    })
 
-      const followList = myFollows.map((elem: any) =>
-        elem.followed.url.startsWith("@")
-          ? elem.followed.url
-          : `@${elem.followed.url}@${completeEnvironment.instanceUrl}`
-      );
+    const followList = myFollows.map((elem: any) =>
+      elem.followed.url.startsWith('@') ? elem.followed.url : `@${elem.followed.url}@${completeEnvironment.instanceUrl}`
+    )
 
-      res.send(followList);
-    }
-  );
+    res.send(followList)
+  })
   // list all registered MFA options for a user
-  app.get(
-    "/api/user/mfa",
-    authenticateToken,
-    async (req: AuthorizedRequest, res) => {
-      try {
-        if (!req.jwtData?.userId) {
-          // NOTE: 401 means "we need to know who you are", not "you are not authorized to do this" which would be code 403
-          res.status(401).send({ success: false, message: "Invalid JWT" });
-          return;
-        }
-
-        const mfaDetails = await MfaDetails.findAll({
-          where: {
-            userId: req.jwtData?.userId,
-            enabled: {
-              [Op.eq]: true,
-            },
-          },
-        });
-        res.send({
-          success: true,
-          mfa: mfaDetails.map((detail) => ({
-            id: detail.id,
-            name: detail.name,
-            type: detail.type,
-            enabled: detail.enabled,
-          })),
-        });
-      } catch (error) {
-        logger.error(error);
-        res
-          .status(500)
-          .send({ success: false, message: "Error fetching MFA details" });
+  app.get('/api/user/mfa', authenticateToken, async (req: AuthorizedRequest, res) => {
+    try {
+      if (!req.jwtData?.userId) {
+        // NOTE: 401 means "we need to know who you are", not "you are not authorized to do this" which would be code 403
+        res.status(401).send({ success: false, message: 'Invalid JWT' })
+        return
       }
-    }
-  );
 
-  app.post(
-    "/api/user/mfa",
-    authenticateToken,
-    async (req: AuthorizedRequest, res) => {
-      try {
-        if (!req.jwtData?.userId) {
-          res.status(401).send({ success: false, message: "Invalid JWT" });
-          return;
-        }
-        if (req.body?.type !== "totp") {
-          res.status(400).send({ success: false, message: "Invalid MFA type" });
-          return;
-        }
-
-        const totpSettings: any = {
-          algorithm: "SHA1",
-          digits: 6,
-          period: 30,
-          secret: new OTPAuth.Secret({ size: 20 }).base32,
-        };
-
-        const mfaDetail = await MfaDetails.create({
+      const mfaDetails = await MfaDetails.findAll({
+        where: {
           userId: req.jwtData?.userId,
-          type: "totp",
-          name: req.body?.name || "Authenticator App",
-          data: totpSettings,
-          enabled: false,
-        });
-
-        totpSettings.issuer = completeEnvironment.instanceUrl;
-        totpSettings.label = req.jwtData?.email;
-
-        const totp = new OTPAuth.TOTP(totpSettings);
-
-        res.send({
-          success: true,
-          mfa: {
-            id: mfaDetail.id,
-            type: mfaDetail.type,
-            name: mfaDetail.name,
-            secret: totpSettings.secret,
-            qrString: totp.toString(),
-          },
-        });
-      } catch (error) {
-        logger.error(error);
-        res
-          .status(500)
-          .send({ success: false, message: "Error creating MFA detail" });
-      }
-    }
-  );
-
-  app.post(
-    "/api/user/mfa/:id/verify",
-    authenticateToken,
-    async (req: AuthorizedRequest, res) => {
-      try {
-        if (!req.jwtData?.userId) {
-          res.status(401).send({ success: false, message: "Invalid JWT" });
-          return;
-        }
-        if (!req.body?.token) {
-          res
-            .status(400)
-            .send({ success: false, message: "Token is required" });
-          return;
-        }
-
-        const mfaDetail = await MfaDetails.findOne({
-          where: {
-            id: req.params.id,
-            userId: req.jwtData?.userId,
-            enabled: {
-              [Op.eq]: false,
-            },
-          },
-        });
-
-        if (mfaDetail) {
-          if (await verifyTotp(mfaDetail, req.body?.token)) {
-            mfaDetail.enabled = true;
-            await mfaDetail.save();
-            res.send({ success: true });
-            return;
+          enabled: {
+            [Op.eq]: true
           }
-        } else {
-          logger.info({
-            message: "MFA detail not found",
-            userId: req.jwtData?.userId,
-            mfaDetailId: req.params.id,
-          });
-          res.status(500).send({ success: false });
-          // NOTE: explicitly not sending 404 here because
-          // we don't want to leak information about the existence of the MFA detail to the user
         }
-      } catch (error) {
-        logger.error(error);
-        res
-          .status(500)
-          .send({ success: false, message: "Error verifying MFA token" });
-      }
+      })
+      res.send({
+        success: true,
+        mfa: mfaDetails.map((detail) => ({
+          id: detail.id,
+          name: detail.name,
+          type: detail.type,
+          enabled: detail.enabled
+        }))
+      })
+    } catch (error) {
+      logger.error(error)
+      res.status(500).send({ success: false, message: 'Error fetching MFA details' })
     }
-  );
+  })
 
-  app.delete(
-    "/api/user/mfa/:id",
-    authenticateToken,
-    async (req: AuthorizedRequest, res) => {
-      try {
-        if (!req.jwtData?.userId) {
-          res.status(401).send({ success: false, message: "Invalid JWT" });
-          return;
+  app.post('/api/user/mfa', authenticateToken, async (req: AuthorizedRequest, res) => {
+    try {
+      if (!req.jwtData?.userId) {
+        res.status(401).send({ success: false, message: 'Invalid JWT' })
+        return
+      }
+      if (req.body?.type !== 'totp') {
+        res.status(400).send({ success: false, message: 'Invalid MFA type' })
+        return
+      }
+
+      const totpSettings: any = {
+        algorithm: 'SHA1',
+        digits: 6,
+        period: 30,
+        secret: new OTPAuth.Secret({ size: 20 }).base32
+      }
+
+      const mfaDetail = await MfaDetails.create({
+        userId: req.jwtData?.userId,
+        type: 'totp',
+        name: req.body?.name || 'Authenticator App',
+        data: totpSettings,
+        enabled: false
+      })
+
+      totpSettings.issuer = completeEnvironment.instanceUrl
+      totpSettings.label = req.jwtData?.email
+
+      const totp = new OTPAuth.TOTP(totpSettings)
+
+      res.send({
+        success: true,
+        mfa: {
+          id: mfaDetail.id,
+          type: mfaDetail.type,
+          name: mfaDetail.name,
+          secret: totpSettings.secret,
+          qrString: totp.toString()
         }
-        if (!req.params.id) {
-          res
-            .status(400)
-            .send({ success: false, message: "MFA detail ID is required" });
-          return;
+      })
+    } catch (error) {
+      logger.error(error)
+      res.status(500).send({ success: false, message: 'Error creating MFA detail' })
+    }
+  })
+
+  app.post('/api/user/mfa/:id/verify', authenticateToken, async (req: AuthorizedRequest, res) => {
+    try {
+      if (!req.jwtData?.userId) {
+        res.status(401).send({ success: false, message: 'Invalid JWT' })
+        return
+      }
+      if (!req.body?.token) {
+        res.status(400).send({ success: false, message: 'Token is required' })
+        return
+      }
+
+      const mfaDetail = await MfaDetails.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.jwtData?.userId,
+          enabled: {
+            [Op.eq]: false
+          }
         }
-        const mfaDetail = await MfaDetails.findOne({
-          where: {
-            id: req.params.id,
-            userId: req.jwtData?.userId,
-          },
-        });
-        if (mfaDetail) {
-          await mfaDetail.destroy();
+      })
+
+      if (mfaDetail) {
+        if (await verifyTotp(mfaDetail, req.body?.token)) {
+          mfaDetail.enabled = true
+          await mfaDetail.save()
+          res.send({ success: true })
+          return
         }
+      } else {
+        logger.info({
+          message: 'MFA detail not found',
+          userId: req.jwtData?.userId,
+          mfaDetailId: req.params.id
+        })
+        res.status(500).send({ success: false })
         // NOTE: explicitly not sending 404 here because
         // we don't want to leak information about the existence of the MFA detail to the user
-        res.send({ success: true });
-      } catch (error) {
-        logger.error(error);
       }
-      res.send({ success: false });
+    } catch (error) {
+      logger.error(error)
+      res.status(500).send({ success: false, message: 'Error verifying MFA token' })
     }
-  );
+  })
+
+  app.delete('/api/user/mfa/:id', authenticateToken, async (req: AuthorizedRequest, res) => {
+    try {
+      if (!req.jwtData?.userId) {
+        res.status(401).send({ success: false, message: 'Invalid JWT' })
+        return
+      }
+      if (!req.params.id) {
+        res.status(400).send({ success: false, message: 'MFA detail ID is required' })
+        return
+      }
+      const mfaDetail = await MfaDetails.findOne({
+        where: {
+          id: req.params.id,
+          userId: req.jwtData?.userId
+        }
+      })
+      if (mfaDetail) {
+        await mfaDetail.destroy()
+      }
+      // NOTE: explicitly not sending 404 here because
+      // we don't want to leak information about the existence of the MFA detail to the user
+      res.send({ success: true })
+    } catch (error) {
+      logger.error(error)
+    }
+    res.send({ success: false })
+  })
 
   app.get(
-    "/api/user/:url/refetchData",
+    '/api/user/:url/refetchData',
     optionalAuthentication,
     onePerSecondLimiter,
     async (req: AuthorizedRequest, res) => {
-      const url = req.params?.url as string;
-      const userId = req.jwtData?.userId
-        ? req.jwtData?.userId
-        : "00000000-0000-0000-0000-000000000000";
+      const url = req.params?.url as string
+      const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
       const userToRefetch = await User.findOne({
-        where: sequelize.where(
-          sequelize.fn("lower", sequelize.col("url")),
-          url.toLowerCase()
-        ),
-      });
-      const user = await User.findByPk(userId);
+        where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), url.toLowerCase())
+      })
+      const user = await User.findByPk(userId)
       if (!userToRefetch || !userToRefetch.remoteId) {
         res.status(404).send({ status: 'not_found' })
-        return;
+        return
       }
-      await getRemoteActor(userToRefetch?.remoteId, user, true);
+      await getRemoteActor(userToRefetch?.remoteId, user, true)
       res.status(200).send({ status: 'ok' })
     }
   )
 
-  app.get(
-    "/api/user",
-    optionalAuthentication,
-    async (req: AuthorizedRequest, res) => {
-      let success = false;
-      if (req.query?.id) {
-        const userId = req.jwtData?.userId
-          ? req.jwtData?.userId
-          : "00000000-0000-0000-0000-000000000000";
-        const blogId: string = (req.query.id || "")
-          .toString()
-          .toLowerCase()
-          .trim();
-        const blog = await User.findOne({
-          attributes: [
-            "id",
-            "url",
-            "name",
-            "createdAt",
-            "description",
-            "descriptionMarkdown",
-            "remoteId",
-            "isBot",
-            "avatar",
-            "federatedHostId",
-            "headerImage",
-            "followingCount",
-            "followerCount",
-            "manuallyAcceptsFollows",
-            "bskyDid",
-            "role",
-            "userMigratedTo",
-            "displayUrl",
-            "isBskyPrimary",
-            "alternateUrl",
-            [
-              sequelize.literal(`"id" = '${userId}' AND "enableBsky"`),
-              "enableBsky",
-            ],
-            [
-              sequelize.literal(
-                `"id" = '${userId}' AND "disableEmailNotifications"`
-              ),
-              "disableEmailNotifications",
-            ],
-            [
-              sequelize.literal(
-                `"id" = '${userId}' AND "hideProfileNotLoggedIn"`
-              ),
-              "hideProfileNotLoggedIn",
-            ],
-            [
-              sequelize.literal(`"id" = '${userId}' AND "hideFollows"`),
-              "hideFollows",
-            ],
-          ],
-          include: [
-            {
-              model: Emoji,
-              required: false,
-            },
-            {
-              model: FederatedHost,
-              required: false,
-            },
-          ],
-          where: {
-            [Op.or]: [
-              sequelize.where(
-                sequelize.fn("lower", sequelize.col("url")),
-                blogId
-              ),
-              {
-                bskyDid: blogId,
-              },
-              sequelize.where(
-                sequelize.fn("lower", sequelize.col("alternateUrl")),
-                blogId
-              ),
-            ],
-            banned: {
-              [Op.ne]: true,
-            },
-          },
-        });
-        if (
-          blog &&
-          !isAdult(req.jwtData?.birthDate) &&
-          req.jwtData?.role !== 10 &&
-          blog.id !== req.jwtData?.userId
-        ) {
-          const user = await User.findByPk(blog.id);
-          if (user?.NSFW) {
-            res.sendStatus(404);
-            return;
-          }
-        }
-        if (blog && !req.jwtData) {
-          const user = await User.findByPk(blog.id, {
-            attributes: ["hideProfileNotLoggedIn"],
-          });
-          if (user?.hideProfileNotLoggedIn) {
-            res.sendStatus(404);
-            return;
-          }
-        }
-        if (!blog || blog.federatedHost?.blocked) {
-          res.sendStatus(404);
-          return;
-        }
-        let followed = blog.isRemoteUser
-          ? blog.followingCount
-          : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true,
-            },
-          });
-        let followers = blog.isRemoteUser
-          ? blog.followerCount
-          : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true,
-            },
-          });
-        const publicOptions = UserOptions.findAll({
-          where: {
-            userId: blog.id,
-            public: true,
-          },
-        });
-        let muted = false;
-        let blocked = false;
-        let serverBlocked = false || blog?.federatedHost?.blocked;
-        if (req.jwtData?.userId && blog) {
-          const mutedQuery = Mutes.count({
-            where: {
-              muterId: req.jwtData.userId,
-              mutedId: blog.id,
-            },
-          });
-          const blockedQuery = Blocks.count({
-            where: {
-              blockerId: req.jwtData.userId,
-              blockedId: blog.id,
-            },
-          });
-          const serverBlockedQuery = await ServerBlock.count({
-            where: {
-              userBlockerId: req.jwtData.userId as string,
-              blockedServerId: blog.federatedHostId as string,
-            },
-          });
-          await Promise.all([
-            mutedQuery,
-            blockedQuery,
-            serverBlockedQuery,
-            followed,
-            followers,
-            publicOptions,
-          ]);
-          muted = (await mutedQuery) === 1;
-          blocked = (await blockedQuery) === 1;
-          serverBlocked = serverBlocked || (await serverBlockedQuery) === 1;
-        } else {
-          await Promise.all([followed, followers]);
-        }
-
-        const postCount = blog
-          ? await Post.count({
-            where: {
-              userId: blog.id,
-            },
-          })
-          : 0;
-
-        followed = await followed;
-        followers = await followers;
-        let migratedTo: User | null = null;
-        if (blog.userMigratedTo) {
-          let splitMigratedUrl = blog.userMigratedTo.split("/");
-          migratedTo = await User.findOne({
-            where: {
-              [Op.or]: [
-                {
-                  remoteId: blog.userMigratedTo,
-                },
-                {
-                  remoteMentionUrl: blog.userMigratedTo,
-                },
-                {
-                  url: splitMigratedUrl[splitMigratedUrl.length - 1],
-                },
-              ],
-            },
-          });
-        }
-        success = !!blog;
-        if (success) {
-          res.send({
-            ...blog.dataValues,
-            isBlueskyUser: blog.isBlueskyUser,
-            isFediverseUser: blog.isFediverseUser,
-            postCount,
-            migratedTo: migratedTo?.url,
-            muted,
-            blocked,
-            serverBlocked,
-            followed,
-            followers,
-            isAdmin: blog.dataValues.role === 10,
-            publicOptions: await publicOptions,
-          });
-        }
-      }
-
-      if (!success) {
-        res.send({ success: false });
-      }
-    }
-  );
-
-  app.get(
-    "/api/my-ui-options",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const userId = req.jwtData?.userId as string;
-      const followedUsers = getFollowedsIds(userId);
-      const myFollowers = getFollowedsIds(userId, false, {
-        getFollowersInstead: true,
-      });
-
-      const blockedUsers = getBlockedIds(userId);
-      const notAcceptedFollows = getNotYetAcceptedFollowedids(userId);
-      const options = getUserOptions(userId);
-      const localEmojis = getAvaiableEmojisCache();
-      const mutedUsers = getMutedUsers(userId);
-      let userPromise = User.findByPk(req.jwtData?.userId, {
-        attributes: ["banned", "enableBsky"],
-      });
-      const silencedPosts = getMutedPosts(userId);
-      const followedHashtags = getFollowedHashtags(userId);
-      Promise.all([
-        userPromise,
-        followedUsers,
-        blockedUsers,
-        notAcceptedFollows,
-        options,
-        silencedPosts,
-        localEmojis,
-        mutedUsers,
-        followedHashtags,
-        myFollowers,
-      ]);
-      const user = await userPromise;
-      if (!user || user.banned) {
-        res.sendStatus(401);
-      } else {
-        const user = (await userPromise) as User;
-        const mutedQuotes = (
-          await Follows.findAll({
-            where: {
-              followerId: userId,
-              muteQuotes: true,
-            },
-          })
-        ).map((elem) => elem.followedId);
-
-        const mutedRewoots = (
-          await Follows.findAll({
-            where: {
-              followerId: userId,
-              muteRewoots: true,
-            },
-          })
-        ).map((elem) => elem.followedId);
-        res.send({
-          myFollowers: await myFollowers,
-          followedUsers: await followedUsers,
-          blockedUsers: await blockedUsers,
-          notAcceptedFollows: await notAcceptedFollows,
-          options: await options,
-          silencedPosts: await silencedPosts,
-          emojis: await localEmojis,
-          mutedUsers: await mutedUsers,
-          followedHashtags: await followedHashtags,
-          enableBluesky: user.enableBsky && user.bskyDid,
-          mutedRewoots,
-          mutedQuotes,
-        });
-      }
-    }
-  );
-
-  app.post(
-    "/api/v2/enable-bluesky",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      if (!completeEnvironment.enableBsky) {
-        return res.status(500).send({
-          error: true,
-          message: `This instance does not have bluesky enabled at this moment`,
-        });
-      }
-
-      const password = req.body.password;
-      const userId = req.jwtData?.userId as string;
-
-      let user: User | null = null;
-      try {
-        user = await User.scope("full").findByPk(userId);
-      } catch (error) {
-        logger.error({
-          message: `Error finding current user`,
-          error: error,
-        });
-        return res.status(500).send({
-          error: true,
-          message: `Error finding current user`,
-        });
-      }
-
-      if (!user) {
-        return res.status(404).send({
-          error: true,
-          message: `Current user not found in database`,
-        });
-      }
-
-      if (user.enableBsky && user.bskyAppPassword && user.bskyDid) {
-        return res.status(400).send({
-          error: true,
-          message: `You already have bluesky enabled`,
-        });
-      }
-
-      if (!password) {
-        return res.status(400).send({
-          error: true,
-          message: `A "password" field is required in the body`,
-        });
-      }
-
-      try {
-        // ensure that the received password is the same as the password for the wafrn account of this user.
-        const correctPassword = await bcrypt.compare(password, user.password);
-        if (!correctPassword) {
-          return res.status(400).send({
-            error: true,
-            message: `Invalid password`,
-          });
-        }
-
-        const inviteCodeRecord = await BskyInviteCodes.findOne({
-          where: {
-            masterCode: true,
-          },
-        });
-        const inviteCode = inviteCodeRecord?.code;
-
-        if (!inviteCode) {
-          return res.status(400).send({
-            error: true,
-            message: `Contact the administrator: no master invite code available`,
-          });
-        }
-        const agent = new AtpAgent({
-          service: serviceUrl,
-        });
-
-        if (user.enableBsky && user.bskyDid && user.bskyAuthData) {
-          try {
-            await updateBskyPassword(user, password);
-            await agent.login({
-              identifier: user.bskyDid as string,
-              password: password,
-            });
-          } catch (error) {
-            logger.error({
-              message: `Failed to update bsky to new type to ${user.url}`,
-              error: error,
-            });
-          }
-        } else {
-          await createBskyAccount({
-            agent,
-            user,
-            password,
-            inviteCode,
-          });
-        }
-
-        // create an app password for the newly created user.
-        const bskyPasswordCreated = await createBskyAppPassword(user, agent);
-        if (!bskyPasswordCreated) {
-          return res.status(500).send({
-            error: true,
-            message: `Failed to create app password`,
-          });
-        }
-        // now we have to update the profile of the bluesky user coping from the wafrn user profile.
-        await updateBlueskyProfile(agent, user);
-        res.send({
-          success: true,
-          did: agent.assertDid,
-        });
-      } catch (error) {
-        res.status(500);
-        res.send({
-          error: true,
-          message: `There was an error! Contact an admin for this`,
-        });
-        logger.error({
-          message: `Error activating bluesky for user ${user.url}`,
-          error: error,
-        });
-      }
-    }
-  );
-
-  app.get(
-    "/api/get-bsky-invite-code",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      if (!completeEnvironment.enableBsky) {
-        return res.status(500).send({
-          error: true,
-          message: `This instance does not have bluesky enabled at this moment`,
-        });
-      }
-
-      const userId = req.jwtData?.userId as string;
-
-      let user: User | null = null;
-      try {
-        user = await User.scope("full").findByPk(userId);
-      } catch (error) {
-        logger.error({
-          message: `Error finding current user`,
-          error: error,
-        });
-        return res.status(500).send({
-          error: true,
-          message: `Error finding current user`,
-        });
-      }
-
-      if (user && user.url === completeEnvironment.adminUser) {
-        return res.status(500).send({
-          error: true,
-          message: `The main admin account is required and nuking its bluesky account will destroy this wafrn instance`,
-        });
-      }
-
-      if (!user) {
-        return res.status(404).send({
-          error: true,
-          message: `Current user not found in database`,
-        });
-      }
-
-      if (user.bskyInviteCode) {
-        return res.send({ code: user.bskyInviteCode });
-      } else {
-        const authString = Buffer.from(
-          "admin:" + completeEnvironment.bskyPdsAdminPassword
-        ).toString("base64");
-        if (user.bskyDid) {
-          const deleteAccountReply = await axios.post(
-            serviceUrl + "/xrpc/com.atproto.admin.deleteAccount",
-            { did: user.bskyDid },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Basic " + authString,
-              },
-            }
-          );
-          user.bskyDid = null;
-          user.enableBsky = false;
-          await user.save();
-        }
-        try {
-          const inviteCodesReply: { data: { code: string } } = await axios.post(
-            serviceUrl + "/xrpc/com.atproto.server.createInviteCode",
-            { useCount: 1 },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Basic " + authString,
-              },
-            }
-          );
-          user.bskyInviteCode = inviteCodesReply.data.code;
-          await user.save();
-          return res.send({ code: inviteCodesReply.data.code });
-        } catch (error) {
-          logger.error(error);
-          return res.sendStatus(500);
-        }
-      }
-    }
-  );
-
-  app.post(
-    "/api/connect-bsky-account",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      if (!completeEnvironment.enableBsky) {
-        return res.status(500).send({
-          error: true,
-          message: `This instance does not have bluesky enabled at this moment`,
-        });
-      }
-      const userId = req.jwtData?.userId as string;
-      const user = await User.scope("full").findByPk(userId);
-      const bskyUrl = req.body.url;
-      const pasword = req.body.password;
-      if (user && bskyUrl && pasword) {
-        const localIds = await getAllLocalUserIds();
-        const bskyUser = await getAtprotoUser(bskyUrl, await getAdminUser());
-        if (bskyUser && bskyUser.url === user.url) {
-          return res.send({
-            success: true,
-          });
-        }
-        if (bskyUser && bskyUser.bskyDid && !localIds.includes(bskyUser.id)) {
-          const serviceUrl = completeEnvironment.bskyPds.startsWith("http")
-            ? completeEnvironment.bskyPds
-            : "https://" + completeEnvironment.bskyPds;
-          const agent = new AtpAgent({
-            service: serviceUrl,
-          });
-          try {
-            await agent.sessionManager.login({
-              identifier: bskyUser.bskyDid as string,
-              password: pasword,
-            });
-          } catch (error) {
-            res.status(500);
-            return res.send({
-              success: false,
-              error: error,
-            });
-          }
-
-          if (agent.did) {
-            // ok now time to update stuff
-            const newDid = bskyUser.bskyDid;
-            bskyUser.bskyDid = `INVALID_${bskyUser.bskyDid}`;
-            await bskyUser.save();
-            user.bskyDid = newDid;
-            user.enableBsky = true;
-            user.bskyAppPassword = pasword;
-            await user.save();
-            await Post.update(
-              {
-                userId: user.id,
-              },
-              {
-                where: {
-                  userId: bskyUser.id,
-                },
-              }
-            );
-            await syncBskyFollowersAndFollowing(user.id);
-            await forceUpdateCacheDidsAtThread();
-            await redisCache.del("bskySession:" + user.id);
-            return res.send({ success: true });
-          }
-        } else {
-          return res.sendStatus(404);
-        }
-      }
-    }
-  );
-
-  app.get(
-    "/api/user/deleteFollow/:id",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const userId = req.jwtData?.userId as string;
-      const forceUnfollowId = req.params?.id as string;
-      let success = false;
-      try {
-        let follow = await Follows.findOne({
-          where: {
-            followerId: forceUnfollowId,
-            followedId: userId,
-          },
-        });
-        if (follow) {
-          if (follow.remoteFollowId) {
-            await rejectremoteFollow(userId, forceUnfollowId);
-          }
-          await redisCache.del("follows:local:" + forceUnfollowId);
-          await redisCache.del("follows:full:" + forceUnfollowId);
-          await redisCache.del("follows:local:" + userId);
-          await redisCache.del("follows:full:" + userId);
-          await follow.destroy();
-          success = true;
-        }
-      } catch (error) {
-        logger.debug({
-          message: `Remote force unfollow failed`,
-          error: error,
-        });
-        success = false;
-        res.status(500);
-      }
-      res.send({ success: success });
-    }
-  );
-
-  app.get(
-    "/api/user/approveFollow/:id",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const userId = req.jwtData?.userId as string;
-      const approvedFollower = req.params?.id as string;
-      let success = true;
-      try {
-        let follow = await Follows.findOne({
-          where: {
-            followerId: approvedFollower,
-            followedId: userId,
-          },
-        });
-        if (follow) {
-          if (follow.remoteFollowId) {
-            await acceptRemoteFollow(userId, approvedFollower);
-          }
-          follow.accepted = true;
-          await follow.save();
-          await redisCache.del("follows:local:" + approvedFollower);
-          await redisCache.del("follows:full:" + approvedFollower);
-          await redisCache.del("follows:local:" + userId);
-          await redisCache.del("follows:full:" + userId);
-        }
-      } catch (error) {
-        logger.debug({
-          message: `Accept follow failed`,
-          error: error,
-        });
-        success = false;
-        res.status(500);
-      }
-      res.send({ success: success });
-    }
-  );
-
-  app.get(
-    "/api/user/:url/follows",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const url = req.params?.url as string;
-      const followers = req.query?.followers === "true";
-      if (url) {
-        const user = await User.findOne({
-          where: sequelize.where(
-            sequelize.fn("lower", sequelize.col("url")),
-            url.toLowerCase()
-          ),
-        });
-        if (user) {
-          let responseData;
-          if (!followers) {
-            responseData = await user.getFollower({
-              where: {
-                "$follows.accepted$": {
-                  [Op.in]:
-                    req.jwtData?.userId === user.id ? [true, false] : [true],
-                },
-              },
-              attributes: ["id", "url", "avatar", "description"],
-            });
-          } else {
-            // who :url is following
-            responseData = await user.getFollowed({
-              where: {
-                "$follows.accepted$": {
-                  [Op.in]:
-                    req.jwtData?.userId === user.id ? [true, false] : [true],
-                },
-              },
-              attributes: ["id", "url", "avatar", "description"],
-            });
-          }
-          if (user.hideFollows && user.url != req.jwtData?.url) {
-            res.send([]);
-          } else {
-            res.send(responseData);
-          }
-        } else {
-          res.sendStatus(404);
-        }
-      } else {
-        res.sendStatus(404);
-      }
-    }
-  );
-
-  app.get(
-    "/api/user/myAsks",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const userId = req.jwtData?.userId as string;
-      const asks = await Ask.findAll({
+  app.get('/api/user', optionalAuthentication, async (req: AuthorizedRequest, res) => {
+    let success = false
+    if (req.query?.id) {
+      const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
+      const blogId: string = (req.query.id || '').toString().toLowerCase().trim()
+      const blog = await User.findOne({
         attributes: [
-          "userAsker",
-          "question",
-          "apObject",
-          "id",
-          "createdAt",
-          "postId",
+          'id',
+          'url',
+          'name',
+          'createdAt',
+          'description',
+          'descriptionMarkdown',
+          'remoteId',
+          'isBot',
+          'avatar',
+          'federatedHostId',
+          'headerImage',
+          'followingCount',
+          'followerCount',
+          'manuallyAcceptsFollows',
+          'bskyDid',
+          'role',
+          'userMigratedTo',
+          'displayUrl',
+          'isBskyPrimary',
+          'alternateUrl',
+          [sequelize.literal(`"id" = '${userId}' AND "enableBsky"`), 'enableBsky'],
+          [sequelize.literal(`"id" = '${userId}' AND "disableEmailNotifications"`), 'disableEmailNotifications'],
+          [sequelize.literal(`"id" = '${userId}' AND "hideProfileNotLoggedIn"`), 'hideProfileNotLoggedIn'],
+          [sequelize.literal(`"id" = '${userId}' AND "hideFollows"`), 'hideFollows']
+        ],
+        include: [
+          {
+            model: Emoji,
+            required: false
+          },
+          {
+            model: FederatedHost,
+            required: false
+          }
         ],
         where: {
-          userAsked: userId,
-          answered: req.query.answered === "true",
-        },
-        order: [["createdAt", "DESC"]],
-      });
-      const users = await User.findAll({
-        attributes: ["url", "avatar", "name", "id", "description"],
-        where: {
-          id: {
-            [Op.in]: asks.map((ask: any) => ask.userAsker),
-          },
-        },
-      });
-      res.send({
-        asks: asks,
-        users: users,
-      });
-    }
-  );
-
-  app.post(
-    "/api/user/:url/ask",
-    optionalAuthentication,
-    async (req: AuthorizedRequest, res: Response) => {
-      // a bit dirty innit
-      if (req.body.anonymous) {
-        req.jwtData = undefined;
-      }
-      if (req.body.question) {
-        if (
-          slurs.includes(req.body.question.toLowerCase()) ||
-          req.body.question.toLowerCase().includes("kill yourself")
-        ) {
-          res.status(400);
-          return res.send({
-            error: true,
-            message: "Your ask seems to be harmful. Fuck you.",
-          });
+          [Op.or]: [
+            sequelize.where(sequelize.fn('lower', sequelize.col('url')), blogId),
+            {
+              bskyDid: blogId
+            },
+            sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), blogId)
+          ],
+          banned: {
+            [Op.ne]: true
+          }
+        }
+      })
+      if (blog && !isAdult(req.jwtData?.birthDate) && req.jwtData?.role !== 10 && blog.id !== req.jwtData?.userId) {
+        const user = await User.findByPk(blog.id)
+        if (user?.NSFW) {
+          res.sendStatus(404)
+          return
         }
       }
-      const lastHourAsks = await Ask.count({
-        where: {
-          creationIp: getIp(req),
-          createdAt: {
-            [Op.gt]: new Date().setHours(new Date().getHours() - 1),
-          },
-        },
-      });
-      // a bit dirty of a way but yeah limit asks if user is not logged in. if user is logged in we can ban them later
-      if (lastHourAsks >= 5 && !req.jwtData?.userId) {
-        return res.sendStatus(429);
+      if (blog && !req.jwtData) {
+        const user = await User.findByPk(blog.id, {
+          attributes: ['hideProfileNotLoggedIn']
+        })
+        if (user?.hideProfileNotLoggedIn) {
+          res.sendStatus(404)
+          return
+        }
       }
-      const url = req.params?.url as string;
-      const userRecivingAsk = await User.scope("full").findOne({
-        where: sequelize.where(
-          sequelize.fn("lower", sequelize.col("url")),
-          url.toLowerCase()
-        ),
-      });
-      if (!userRecivingAsk) {
-        res.sendStatus(500);
-        logger.warn({
-          message: `Ask invalid user: ${url}`,
-        });
-        return;
+      if (!blog || blog.federatedHost?.blocked) {
+        res.sendStatus(404)
+        return
       }
-      const userAskLevelDBOption = await UserOptions.findOne({
+      let followed = blog.isRemoteUser
+        ? blog.followingCount
+        : Follows.count({
+            where: {
+              followerId: blog.id,
+              accepted: true
+            }
+          })
+      let followers = blog.isRemoteUser
+        ? blog.followerCount
+        : Follows.count({
+            where: {
+              followedId: blog.id,
+              accepted: true
+            }
+          })
+      const publicOptions = UserOptions.findAll({
         where: {
-          userId: userRecivingAsk.id,
-          optionName: "wafrn.public.asks",
-        },
-      });
-      const userAskLevel = userAskLevelDBOption
-        ? parseInt(userAskLevelDBOption.optionValue)
-        : 2;
-      //
-      if (
-        (!req.jwtData?.userId && userAskLevel === 1) ||
-        (req.jwtData?.userId && [1, 2].includes(userAskLevel))
-      ) {
-        // user can recive an ask from this endpoint
-        const userAsking = req.jwtData?.userId;
-        if (userAsking === userRecivingAsk.id) {
+          userId: blog.id,
+          public: true
+        }
+      })
+      let muted = false
+      let blocked = false
+      let serverBlocked = false || blog?.federatedHost?.blocked
+      if (req.jwtData?.userId && blog) {
+        const mutedQuery = Mutes.count({
+          where: {
+            muterId: req.jwtData.userId,
+            mutedId: blog.id
+          }
+        })
+        const blockedQuery = Blocks.count({
+          where: {
+            blockerId: req.jwtData.userId,
+            blockedId: blog.id
+          }
+        })
+        const serverBlockedQuery = await ServerBlock.count({
+          where: {
+            userBlockerId: req.jwtData.userId as string,
+            blockedServerId: blog.federatedHostId as string
+          }
+        })
+        await Promise.all([mutedQuery, blockedQuery, serverBlockedQuery, followed, followers, publicOptions])
+        muted = (await mutedQuery) === 1
+        blocked = (await blockedQuery) === 1
+        serverBlocked = serverBlocked || (await serverBlockedQuery) === 1
+      } else {
+        await Promise.all([followed, followers])
+      }
+
+      const postCount = blog
+        ? await Post.count({
+            where: {
+              userId: blog.id
+            }
+          })
+        : 0
+
+      followed = await followed
+      followers = await followers
+      let migratedTo: User | null = null
+      if (blog.userMigratedTo) {
+        let splitMigratedUrl = blog.userMigratedTo.split('/')
+        migratedTo = await User.findOne({
+          where: {
+            [Op.or]: [
+              {
+                remoteId: blog.userMigratedTo
+              },
+              {
+                remoteMentionUrl: blog.userMigratedTo
+              },
+              {
+                url: splitMigratedUrl[splitMigratedUrl.length - 1]
+              }
+            ]
+          }
+        })
+      }
+      success = !!blog
+      if (success) {
+        res.send({
+          ...blog.dataValues,
+          isBlueskyUser: blog.isBlueskyUser,
+          isFediverseUser: blog.isFediverseUser,
+          postCount,
+          migratedTo: migratedTo?.url,
+          muted,
+          blocked,
+          serverBlocked,
+          followed,
+          followers,
+          isAdmin: blog.dataValues.role === 10,
+          publicOptions: await publicOptions
+        })
+      }
+    }
+
+    if (!success) {
+      res.send({ success: false })
+    }
+  })
+
+  app.get('/api/my-ui-options', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const userId = req.jwtData?.userId as string
+    const followedUsers = getFollowedsIds(userId)
+    const myFollowers = getFollowedsIds(userId, false, {
+      getFollowersInstead: true
+    })
+
+    const blockedUsers = getBlockedIds(userId)
+    const notAcceptedFollows = getNotYetAcceptedFollowedids(userId)
+    const options = getUserOptions(userId)
+    const localEmojis = getAvaiableEmojisCache()
+    const mutedUsers = getMutedUsers(userId)
+    let userPromise = User.findByPk(req.jwtData?.userId, {
+      attributes: ['banned', 'enableBsky']
+    })
+    const silencedPosts = getMutedPosts(userId)
+    const followedHashtags = getFollowedHashtags(userId)
+    Promise.all([
+      userPromise,
+      followedUsers,
+      blockedUsers,
+      notAcceptedFollows,
+      options,
+      silencedPosts,
+      localEmojis,
+      mutedUsers,
+      followedHashtags,
+      myFollowers
+    ])
+    const user = await userPromise
+    if (!user || user.banned) {
+      res.sendStatus(401)
+    } else {
+      const user = (await userPromise) as User
+      const mutedQuotes = (
+        await Follows.findAll({
+          where: {
+            followerId: userId,
+            muteQuotes: true
+          }
+        })
+      ).map((elem) => elem.followedId)
+
+      const mutedRewoots = (
+        await Follows.findAll({
+          where: {
+            followerId: userId,
+            muteRewoots: true
+          }
+        })
+      ).map((elem) => elem.followedId)
+      res.send({
+        myFollowers: await myFollowers,
+        followedUsers: await followedUsers,
+        blockedUsers: await blockedUsers,
+        notAcceptedFollows: await notAcceptedFollows,
+        options: await options,
+        silencedPosts: await silencedPosts,
+        emojis: await localEmojis,
+        mutedUsers: await mutedUsers,
+        followedHashtags: await followedHashtags,
+        enableBluesky: user.enableBsky && user.bskyDid,
+        mutedRewoots,
+        mutedQuotes
+      })
+    }
+  })
+
+  app.post('/api/v2/enable-bluesky', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!completeEnvironment.enableBsky) {
+      return res.status(500).send({
+        error: true,
+        message: `This instance does not have bluesky enabled at this moment`
+      })
+    }
+
+    const password = req.body.password
+    const userId = req.jwtData?.userId as string
+
+    let user: User | null = null
+    try {
+      user = await User.scope('full').findByPk(userId)
+    } catch (error) {
+      logger.error({
+        message: `Error finding current user`,
+        error: error
+      })
+      return res.status(500).send({
+        error: true,
+        message: `Error finding current user`
+      })
+    }
+
+    if (!user) {
+      return res.status(404).send({
+        error: true,
+        message: `Current user not found in database`
+      })
+    }
+
+    if (user.enableBsky && user.bskyAppPassword && user.bskyDid) {
+      return res.status(400).send({
+        error: true,
+        message: `You already have bluesky enabled`
+      })
+    }
+
+    if (!password) {
+      return res.status(400).send({
+        error: true,
+        message: `A "password" field is required in the body`
+      })
+    }
+
+    try {
+      // ensure that the received password is the same as the password for the wafrn account of this user.
+      const correctPassword = await bcrypt.compare(password, user.password)
+      if (!correctPassword) {
+        return res.status(400).send({
+          error: true,
+          message: `Invalid password`
+        })
+      }
+
+      const inviteCodeRecord = await BskyInviteCodes.findOne({
+        where: {
+          masterCode: true
+        }
+      })
+      const inviteCode = inviteCodeRecord?.code
+
+      if (!inviteCode) {
+        return res.status(400).send({
+          error: true,
+          message: `Contact the administrator: no master invite code available`
+        })
+      }
+      const agent = new AtpAgent({
+        service: serviceUrl
+      })
+
+      if (user.enableBsky && user.bskyDid && user.bskyAuthData) {
+        try {
+          await updateBskyPassword(user, password)
+          await agent.login({
+            identifier: user.bskyDid as string,
+            password: password
+          })
+        } catch (error) {
+          logger.error({
+            message: `Failed to update bsky to new type to ${user.url}`,
+            error: error
+          })
+        }
+      } else {
+        await createBskyAccount({
+          agent,
+          user,
+          password,
+          inviteCode
+        })
+      }
+
+      // create an app password for the newly created user.
+      const bskyPasswordCreated = await createBskyAppPassword(user, agent)
+      if (!bskyPasswordCreated) {
+        return res.status(500).send({
+          error: true,
+          message: `Failed to create app password`
+        })
+      }
+      // now we have to update the profile of the bluesky user coping from the wafrn user profile.
+      await updateBlueskyProfile(agent, user)
+      res.send({
+        success: true,
+        did: agent.assertDid
+      })
+    } catch (error) {
+      res.status(500)
+      res.send({
+        error: true,
+        message: `There was an error! Contact an admin for this`
+      })
+      logger.error({
+        message: `Error activating bluesky for user ${user.url}`,
+        error: error
+      })
+    }
+  })
+
+  app.get('/api/get-bsky-invite-code', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!completeEnvironment.enableBsky) {
+      return res.status(500).send({
+        error: true,
+        message: `This instance does not have bluesky enabled at this moment`
+      })
+    }
+
+    const userId = req.jwtData?.userId as string
+
+    let user: User | null = null
+    try {
+      user = await User.scope('full').findByPk(userId)
+    } catch (error) {
+      logger.error({
+        message: `Error finding current user`,
+        error: error
+      })
+      return res.status(500).send({
+        error: true,
+        message: `Error finding current user`
+      })
+    }
+
+    if (user && user.url === completeEnvironment.adminUser) {
+      return res.status(500).send({
+        error: true,
+        message: `The main admin account is required and nuking its bluesky account will destroy this wafrn instance`
+      })
+    }
+
+    if (!user) {
+      return res.status(404).send({
+        error: true,
+        message: `Current user not found in database`
+      })
+    }
+
+    if (user.bskyInviteCode) {
+      return res.send({ code: user.bskyInviteCode })
+    } else {
+      const authString = Buffer.from('admin:' + completeEnvironment.bskyPdsAdminPassword).toString('base64')
+      if (user.bskyDid) {
+        const deleteAccountReply = await axios.post(
+          serviceUrl + '/xrpc/com.atproto.admin.deleteAccount',
+          { did: user.bskyDid },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Basic ' + authString
+            }
+          }
+        )
+        user.bskyDid = null
+        user.enableBsky = false
+        await user.save()
+      }
+      try {
+        const inviteCodesReply: { data: { code: string } } = await axios.post(
+          serviceUrl + '/xrpc/com.atproto.server.createInviteCode',
+          { useCount: 1 },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Basic ' + authString
+            }
+          }
+        )
+        user.bskyInviteCode = inviteCodesReply.data.code
+        await user.save()
+        return res.send({ code: inviteCodesReply.data.code })
+      } catch (error) {
+        logger.error(error)
+        return res.sendStatus(500)
+      }
+    }
+  })
+
+  app.post('/api/connect-bsky-account', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!completeEnvironment.enableBsky) {
+      return res.status(500).send({
+        error: true,
+        message: `This instance does not have bluesky enabled at this moment`
+      })
+    }
+    const userId = req.jwtData?.userId as string
+    const user = await User.scope('full').findByPk(userId)
+    const bskyUrl = req.body.url
+    const pasword = req.body.password
+    if (user && bskyUrl && pasword) {
+      const localIds = await getAllLocalUserIds()
+      const bskyUser = await getAtprotoUser(bskyUrl, await getAdminUser())
+      if (bskyUser && bskyUser.url === user.url) {
+        return res.send({
+          success: true
+        })
+      }
+      if (bskyUser && bskyUser.bskyDid && !localIds.includes(bskyUser.id)) {
+        const serviceUrl = completeEnvironment.bskyPds.startsWith('http')
+          ? completeEnvironment.bskyPds
+          : 'https://' + completeEnvironment.bskyPds
+        const agent = new AtpAgent({
+          service: serviceUrl
+        })
+        try {
+          await agent.sessionManager.login({
+            identifier: bskyUser.bskyDid as string,
+            password: pasword
+          })
+        } catch (error) {
+          res.status(500)
           return res.send({
             success: false,
-          });
+            error: error
+          })
         }
 
-        const question = req.body.question
-          ? req.body.question.substring(0, 10240)
-          : "";
-        const ask = await Ask.create({
-          question: question,
-          apObject: null,
-          creationIp: getIp(req),
-          answered: false,
-          userAsked: userRecivingAsk.id,
-          userAsker: userAsking,
-        });
-        res.send({
-          success: true,
-        });
+        if (agent.did) {
+          // ok now time to update stuff
+          const newDid = bskyUser.bskyDid
+          bskyUser.bskyDid = `INVALID_${bskyUser.bskyDid}`
+          await bskyUser.save()
+          user.bskyDid = newDid
+          user.enableBsky = true
+          user.bskyAppPassword = pasword
+          await user.save()
+          await Post.update(
+            {
+              userId: user.id
+            },
+            {
+              where: {
+                userId: bskyUser.id
+              }
+            }
+          )
+          await syncBskyFollowersAndFollowing(user.id)
+          await forceUpdateCacheDidsAtThread()
+          await redisCache.del('bskySession:' + user.id)
+          return res.send({ success: true })
+        }
       } else {
-        // user can not recive an ask here so we say nope.avi
-        res.send({
-          success: false,
-        });
+        return res.sendStatus(404)
       }
     }
-  );
+  })
 
-  app.post(
-    "/api/user/ignoreAsk",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      const askToIgnore = await Ask.findOne({
+  app.get('/api/user/deleteFollow/:id', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const userId = req.jwtData?.userId as string
+    const forceUnfollowId = req.params?.id as string
+    let success = false
+    try {
+      let follow = await Follows.findOne({
         where: {
-          userAsked: req.jwtData?.userId as string,
-          id: req.body.id,
-        },
-      });
-      res.send({
-        success: askToIgnore ? true : false,
-      });
-      if (askToIgnore) {
-        askToIgnore.answered = true;
-        await askToIgnore.save();
-      }
-    }
-  );
-
-  app.post(
-    "/api/user/bookmarkPost",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      try {
-        if (req.body.postId) {
-          const userId = req.jwtData?.userId as string;
-          const postId = req.body.postId;
-          await UserBookmarkedPosts.findOrCreate({
-            where: {
-              postId: postId,
-              userId: userId,
-            },
-          });
-          success = true;
+          followerId: forceUnfollowId,
+          followedId: userId
         }
-      } catch (error) {
-        logger.info({
-          message: `Error creating bookmark of post`,
-          error: error,
-        });
-      }
-
-      res.send({
-        success: success,
-      });
-    }
-  );
-
-  app.post(
-    "/api/user/unbookmarkPost",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      try {
-        if (req.body.postId) {
-          const userId = req.jwtData?.userId as string;
-          const postId = req.body.postId;
-          await UserBookmarkedPosts.destroy({
-            where: {
-              postId: postId,
-              userId: userId,
-            },
-          });
-          success = true;
+      })
+      if (follow) {
+        if (follow.remoteFollowId) {
+          await rejectremoteFollow(userId, forceUnfollowId)
         }
-      } catch (error) {
-        logger.info({
-          message: `Error deleting bookmark of post`,
-          error: error,
-        });
+        await redisCache.del('follows:local:' + forceUnfollowId)
+        await redisCache.del('follows:full:' + forceUnfollowId)
+        await redisCache.del('follows:local:' + userId)
+        await redisCache.del('follows:full:' + userId)
+        await follow.destroy()
+        success = true
+      }
+    } catch (error) {
+      logger.debug({
+        message: `Remote force unfollow failed`,
+        error: error
+      })
+      success = false
+      res.status(500)
+    }
+    res.send({ success: success })
+  })
+
+  app.get('/api/user/approveFollow/:id', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const userId = req.jwtData?.userId as string
+    const approvedFollower = req.params?.id as string
+    let success = true
+    try {
+      let follow = await Follows.findOne({
+        where: {
+          followerId: approvedFollower,
+          followedId: userId
+        }
+      })
+      if (follow) {
+        if (follow.remoteFollowId) {
+          await acceptRemoteFollow(userId, approvedFollower)
+        }
+        follow.accepted = true
+        await follow.save()
+        await redisCache.del('follows:local:' + approvedFollower)
+        await redisCache.del('follows:full:' + approvedFollower)
+        await redisCache.del('follows:local:' + userId)
+        await redisCache.del('follows:full:' + userId)
+      }
+    } catch (error) {
+      logger.debug({
+        message: `Accept follow failed`,
+        error: error
+      })
+      success = false
+      res.status(500)
+    }
+    res.send({ success: success })
+  })
+
+  app.get('/api/user/:url/follows', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const url = req.params?.url as string
+    const followers = req.query?.followers === 'true'
+    if (url) {
+      const user = await User.findOne({
+        where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), url.toLowerCase())
+      })
+      if (user) {
+        let responseData
+        if (!followers) {
+          responseData = await user.getFollower({
+            where: {
+              '$follows.accepted$': {
+                [Op.in]: req.jwtData?.userId === user.id ? [true, false] : [true]
+              }
+            },
+            attributes: ['id', 'url', 'avatar', 'description']
+          })
+        } else {
+          // who :url is following
+          responseData = await user.getFollowed({
+            where: {
+              '$follows.accepted$': {
+                [Op.in]: req.jwtData?.userId === user.id ? [true, false] : [true]
+              }
+            },
+            attributes: ['id', 'url', 'avatar', 'description']
+          })
+        }
+        if (user.hideFollows && user.url != req.jwtData?.url) {
+          res.send([])
+        } else {
+          res.send(responseData)
+        }
+      } else {
+        res.sendStatus(404)
+      }
+    } else {
+      res.sendStatus(404)
+    }
+  })
+
+  app.get('/api/user/myAsks', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const userId = req.jwtData?.userId as string
+    const asks = await Ask.findAll({
+      attributes: ['userAsker', 'question', 'apObject', 'id', 'createdAt', 'postId'],
+      where: {
+        userAsked: userId,
+        answered: req.query.answered === 'true'
+      },
+      order: [['createdAt', 'DESC']]
+    })
+    const users = await User.findAll({
+      attributes: ['url', 'avatar', 'name', 'id', 'description'],
+      where: {
+        id: {
+          [Op.in]: asks.map((ask: any) => ask.userAsker)
+        }
+      }
+    })
+    res.send({
+      asks: asks,
+      users: users
+    })
+  })
+
+  app.post('/api/user/:url/ask', optionalAuthentication, async (req: AuthorizedRequest, res: Response) => {
+    // a bit dirty innit
+    if (req.body.anonymous) {
+      req.jwtData = undefined
+    }
+    if (req.body.question) {
+      if (
+        slurs.includes(req.body.question.toLowerCase()) ||
+        req.body.question.toLowerCase().includes('kill yourself')
+      ) {
+        res.status(400)
+        return res.send({
+          error: true,
+          message: 'Your ask seems to be harmful. Fuck you.'
+        })
+      }
+    }
+    const lastHourAsks = await Ask.count({
+      where: {
+        creationIp: getIp(req),
+        createdAt: {
+          [Op.gt]: new Date().setHours(new Date().getHours() - 1)
+        }
+      }
+    })
+    // a bit dirty of a way but yeah limit asks if user is not logged in. if user is logged in we can ban them later
+    if (lastHourAsks >= 5 && !req.jwtData?.userId) {
+      return res.sendStatus(429)
+    }
+    const url = req.params?.url as string
+    const userRecivingAsk = await User.scope('full').findOne({
+      where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), url.toLowerCase())
+    })
+    if (!userRecivingAsk) {
+      res.sendStatus(500)
+      logger.warn({
+        message: `Ask invalid user: ${url}`
+      })
+      return
+    }
+    const userAskLevelDBOption = await UserOptions.findOne({
+      where: {
+        userId: userRecivingAsk.id,
+        optionName: 'wafrn.public.asks'
+      }
+    })
+    const userAskLevel = userAskLevelDBOption ? parseInt(userAskLevelDBOption.optionValue) : 2
+    //
+    if ((!req.jwtData?.userId && userAskLevel === 1) || (req.jwtData?.userId && [1, 2].includes(userAskLevel))) {
+      // user can recive an ask from this endpoint
+      const userAsking = req.jwtData?.userId
+      if (userAsking === userRecivingAsk.id) {
+        return res.send({
+          success: false
+        })
       }
 
+      const question = req.body.question ? req.body.question.substring(0, 10240) : ''
+      const ask = await Ask.create({
+        question: question,
+        apObject: null,
+        creationIp: getIp(req),
+        answered: false,
+        userAsked: userRecivingAsk.id,
+        userAsker: userAsking
+      })
       res.send({
-        success: success,
-      });
+        success: true
+      })
+    } else {
+      // user can not recive an ask here so we say nope.avi
+      res.send({
+        success: false
+      })
     }
-  );
+  })
+
+  app.post('/api/user/ignoreAsk', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    const askToIgnore = await Ask.findOne({
+      where: {
+        userAsked: req.jwtData?.userId as string,
+        id: req.body.id
+      }
+    })
+    res.send({
+      success: askToIgnore ? true : false
+    })
+    if (askToIgnore) {
+      askToIgnore.answered = true
+      await askToIgnore.save()
+    }
+  })
+
+  app.post('/api/user/bookmarkPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    try {
+      if (req.body.postId) {
+        const userId = req.jwtData?.userId as string
+        const postId = req.body.postId
+        await UserBookmarkedPosts.findOrCreate({
+          where: {
+            postId: postId,
+            userId: userId
+          }
+        })
+        success = true
+      }
+    } catch (error) {
+      logger.info({
+        message: `Error creating bookmark of post`,
+        error: error
+      })
+    }
+
+    res.send({
+      success: success
+    })
+  })
+
+  app.post('/api/user/unbookmarkPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    try {
+      if (req.body.postId) {
+        const userId = req.jwtData?.userId as string
+        const postId = req.body.postId
+        await UserBookmarkedPosts.destroy({
+          where: {
+            postId: postId,
+            userId: userId
+          }
+        })
+        success = true
+      }
+    } catch (error) {
+      logger.info({
+        message: `Error deleting bookmark of post`,
+        error: error
+      })
+    }
+
+    res.send({
+      success: success
+    })
+  })
 
   app.post(
-    "/api/user/selfDeactivate",
+    '/api/user/selfDeactivate',
     authenticateToken,
     onePerSecondLimiter,
     createAccountLimiter,
     async (req: AuthorizedRequest, res: Response) => {
       // frontend will warn user. User will recive email.
-      const userId = req.jwtData?.userId as string;
-      const user = (await User.scope("full").findByPk(userId)) as User;
-      const password = req.body.password;
+      const userId = req.jwtData?.userId as string
+      const user = (await User.scope('full').findByPk(userId)) as User
+      const password = req.body.password
       if (!password) {
         return res.status(400).send({
           success: false,
-          message: '"password" is required in body',
-        });
+          message: '"password" is required in body'
+        })
       }
-      const passwordMatches = await bcrypt.compare(password, user.password);
+      const passwordMatches = await bcrypt.compare(password, user.password)
       if (!passwordMatches) {
         return res.status(400).send({
-          success: false,
+          success: false
           // TODO: should we send a message to the user here or not?
-        });
+        })
       }
 
-      user.selfDeleted = true;
-      user.activated = false;
-      user.updatedAt = new Date();
-      user.banned = true;
-      await user.save();
+      user.selfDeleted = true
+      user.activated = false
+      user.updatedAt = new Date()
+      user.banned = true
+      await user.save()
       try {
         await sendEmail({
           email: user.email as string,
@@ -2084,240 +1839,208 @@ In 24 hours or less we will complete the destruction process and at that point t
 <p>The deletion task is run every day at night (02:00 UTC). \
 It is slow because we have to send every fedi server that has ever seen a post of yours a "PLEASE DELETE. NOW" message and we send those one by one so this task takes time and slows down the server.</p>
 <p>If within 2 days your account is not deleted, please contact your server admin.</p>
-`,
-        });
+`
+        })
       } catch (error) {
-        logger.info(error);
+        logger.info(error)
       }
 
-      res.send({ success: true });
+      res.send({ success: true })
     }
-  );
+  )
 
   // TODO still not finished
-  app.post(
-    "/api/user/migrateOut",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      const newUserRemoteId: string = req.body.target;
-      const localUser = await User.scope("full").findByPk(req.jwtData?.userId);
-      let message = `User not yet found`;
-      const newRemoteUser = (await User.findOne({
-        where: {
-          remoteId: newUserRemoteId,
-        },
-      })) as User;
-      if (newUserRemoteId && localUser) {
-        message = `User found but new account doesnt seems to have an alias pointing towards you`;
-        try {
-          const localUser = (await User.scope("full").findByPk(
-            req.jwtData?.userId
-          )) as User;
-          const petitionData = await getPetitionSigned(
-            localUser,
-            newUserRemoteId
-          );
-          if (petitionData && petitionData.alsoKnownAs) {
-            const aliasList = isArray(petitionData.alsoKnownAs)
-              ? petitionData.alsoKnownAs.map((elem: string) =>
-                elem.toLowerCase()
-              )
-              : [petitionData.alsoKnownAs.toLowerCase()];
-            if (
-              aliasList.includes(
-                `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url}`.toLowerCase()
-              )
-            ) {
-              // TIME TO MOVE OUT
-              // FIRST STEP: followers. send message to each follower. a move object
-              const followerIds = await Follows.findAll({
-                attributes: ["followerId"],
-                where: {
-                  followedId: localUser.id,
-                },
-              });
-              const followers = await User.findAll({
-                where: {
-                  id: {
-                    [Op.in]: followerIds.map((elem) => elem.followerId),
-                  },
-                },
-              });
-              const moveObjectToSend: activityPubObject = {
-                "@context": "https://www.w3.org/ns/activitystreams",
-                id:
-                  completeEnvironment.frontendUrl +
-                  "/fediverse/blogMove/" +
-                  localUser.url.toLowerCase() +
-                  "/" +
-                  new Date().getTime(),
-                actor:
-                  completeEnvironment.frontendUrl +
-                  "/fediverse/blog/" +
-                  localUser.url.toLowerCase(),
-                type: "Move",
-                object:
-                  completeEnvironment.frontendUrl +
-                  "/fediverse/blog/" +
-                  localUser.url.toLowerCase(),
-                target: newUserRemoteId,
-              };
-              for await (const remoteFollower of followers.filter(
-                (elem) => !!elem.remoteId
-              )) {
-                await deletePostQueue.add("sendChunk", {
-                  objectToSend: moveObjectToSend,
-                  petitionBy: localUser,
-                  inboxList: [remoteFollower.remoteInbox],
-                });
-              }
-
-              // second step: local followers here: create a follow request to new account
-              const localFollows = await User.findAll({
-                where: {
-                  id: {
-                    [Op.in]: followerIds.map((elem) => elem.followerId),
-                  },
-                  email: {
-                    [Op.ne]: null,
-                  },
-                },
-              });
-              const followQueue = new Queue("doFollow", {
-                connection: completeEnvironment.bullmqConnection,
-                defaultJobOptions: {
-                  removeOnComplete: true,
-                  attempts: 3,
-                  backoff: {
-                    type: "exponential",
-                    delay: 1000,
-                  },
-                  removeOnFail: true,
-                },
-              });
-              followQueue.addBulk(
-                localFollows.map((follow: any) => {
-                  return {
-                    name: `follow${follow.url}-${newRemoteUser.url}`,
-                    data: { followerId: follow.id, followedId: newRemoteUser.id },
-                  };
-                })
-              );
-              // third step: return data and set message to succ ess
-              localUser.userMigratedTo = newUserRemoteId;
-              await localUser.save();
-              // fourth step: send update profile
-              await sendUpdateProfile(localUser);
-              message = `Operation successful!`;
-              success = true;
-            } else {
-              message = `Alias not detected`;
-            }
-          }
-        } catch (error) { }
+  app.post('/api/user/migrateOut', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    const newUserRemoteId: string = req.body.target
+    const localUser = await User.scope('full').findByPk(req.jwtData?.userId)
+    let message = `User not yet found`
+    const newRemoteUser = (await User.findOne({
+      where: {
+        remoteId: newUserRemoteId
       }
+    })) as User
+    if (newUserRemoteId && localUser) {
+      message = `User found but new account doesnt seems to have an alias pointing towards you`
+      try {
+        const localUser = (await User.scope('full').findByPk(req.jwtData?.userId)) as User
+        const petitionData = await getPetitionSigned(localUser, newUserRemoteId)
+        if (petitionData && petitionData.alsoKnownAs) {
+          const aliasList = isArray(petitionData.alsoKnownAs)
+            ? petitionData.alsoKnownAs.map((elem: string) => elem.toLowerCase())
+            : [petitionData.alsoKnownAs.toLowerCase()]
+          if (aliasList.includes(`${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url}`.toLowerCase())) {
+            // TIME TO MOVE OUT
+            // FIRST STEP: followers. send message to each follower. a move object
+            const followerIds = await Follows.findAll({
+              attributes: ['followerId'],
+              where: {
+                followedId: localUser.id
+              }
+            })
+            const followers = await User.findAll({
+              where: {
+                id: {
+                  [Op.in]: followerIds.map((elem) => elem.followerId)
+                }
+              }
+            })
+            const moveObjectToSend: activityPubObject = {
+              '@context': 'https://www.w3.org/ns/activitystreams',
+              id:
+                completeEnvironment.frontendUrl +
+                '/fediverse/blogMove/' +
+                localUser.url.toLowerCase() +
+                '/' +
+                new Date().getTime(),
+              actor: completeEnvironment.frontendUrl + '/fediverse/blog/' + localUser.url.toLowerCase(),
+              type: 'Move',
+              object: completeEnvironment.frontendUrl + '/fediverse/blog/' + localUser.url.toLowerCase(),
+              target: newUserRemoteId
+            }
+            for await (const remoteFollower of followers.filter((elem) => !!elem.remoteId)) {
+              await deletePostQueue.add('sendChunk', {
+                objectToSend: moveObjectToSend,
+                petitionBy: localUser,
+                inboxList: [remoteFollower.remoteInbox]
+              })
+            }
 
-      res.status(success ? 200 : 500);
-      res.send({
-        success,
-        message,
-      });
+            // second step: local followers here: create a follow request to new account
+            const localFollows = await User.findAll({
+              where: {
+                id: {
+                  [Op.in]: followerIds.map((elem) => elem.followerId)
+                },
+                email: {
+                  [Op.ne]: null
+                }
+              }
+            })
+            const followQueue = new Queue('doFollow', {
+              connection: completeEnvironment.bullmqConnection,
+              defaultJobOptions: {
+                removeOnComplete: true,
+                attempts: 3,
+                backoff: {
+                  type: 'exponential',
+                  delay: 1000
+                },
+                removeOnFail: true
+              }
+            })
+            followQueue.addBulk(
+              localFollows.map((follow: any) => {
+                return {
+                  name: `follow${follow.url}-${newRemoteUser.url}`,
+                  data: { followerId: follow.id, followedId: newRemoteUser.id }
+                }
+              })
+            )
+            // third step: return data and set message to succ ess
+            localUser.userMigratedTo = newUserRemoteId
+            await localUser.save()
+            // fourth step: send update profile
+            await sendUpdateProfile(localUser)
+            message = `Operation successful!`
+            success = true
+          } else {
+            message = `Alias not detected`
+          }
+        }
+      } catch (error) {}
     }
-  );
+
+    res.status(success ? 200 : 500)
+    res.send({
+      success,
+      message
+    })
+  })
 }
 
 async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
-    await forceUpdateCacheDidsAtThread();
-    await getCacheAtDids(true);
+    await forceUpdateCacheDidsAtThread()
+    await getCacheAtDids(true)
     await updateUserDidDoc(user)
     return await agent.upsertProfile(async (existingProfile) => {
-      const profile = existingProfile ?? ({} as AppBskyActorProfile.Record);
-      const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`;
+      const profile = existingProfile ?? ({} as AppBskyActorProfile.Record)
+      const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`
       profile.displayName = user.name
-        .replace(/:[\S]+:/gm, "")
+        .replace(/:[\S]+:/gm, '')
         .substring(0, 63)
-        .trim();
+        .trim()
       profile.description =
         dompurify.sanitize(
-          user.descriptionMarkdown
-            ? user.descriptionMarkdown.substring(
-              0,
-              248 - fullProfileString.length
-            )
-            : "",
+          user.descriptionMarkdown ? user.descriptionMarkdown.substring(0, 248 - fullProfileString.length) : '',
           { ALLOWED_TAGS: [] }
         ) +
-        "[...]" +
-        fullProfileString;
+        '[...]' +
+        fullProfileString
       if (user.avatar) {
-        let pngAvatar = await optimizeMedia("uploads" + user.avatar, {
-          forceImageExtension: "png",
+        let pngAvatar = await optimizeMedia('uploads' + user.avatar, {
+          forceImageExtension: 'png',
           maxSize: 512,
           keep: true,
-          disableAnimation: true,
-        });
-        const userAvatarFile = Buffer.from(await fs.readFile(pngAvatar));
+          disableAnimation: true
+        })
+        const userAvatarFile = Buffer.from(await fs.readFile(pngAvatar))
         const avatarUpload = await agent.uploadBlob(userAvatarFile, {
-          encoding: "image/png",
-        });
-        const avatarData = avatarUpload.data.blob;
-        profile.avatar = avatarData;
-        await fs.unlink(pngAvatar);
+          encoding: 'image/png'
+        })
+        const avatarData = avatarUpload.data.blob
+        profile.avatar = avatarData
+        await fs.unlink(pngAvatar)
       }
       // it works now yay
       if (user.headerImage) {
-        let jpegHeader = await optimizeMedia("uploads" + user.headerImage, {
-          forceImageExtension: "jpg",
-          keep: true,
-        });
-        const userHeaderFile = Buffer.from(await fs.readFile(jpegHeader));
+        let jpegHeader = await optimizeMedia('uploads' + user.headerImage, {
+          forceImageExtension: 'jpg',
+          keep: true
+        })
+        const userHeaderFile = Buffer.from(await fs.readFile(jpegHeader))
         const headerUpload = await agent.uploadBlob(userHeaderFile, {
-          encoding: "image/jpeg",
-        });
-        const headerData = headerUpload.data.blob;
-        profile.banner = headerData;
-        await fs.unlink(jpegHeader);
+          encoding: 'image/jpeg'
+        })
+        const headerData = headerUpload.data.blob
+        profile.banner = headerData
+        await fs.unlink(jpegHeader)
       }
       if (user.hideProfileNotLoggedIn) {
         profile.labels = {
-          $type: "com.atproto.label.defs#selfLabels",
+          $type: 'com.atproto.label.defs#selfLabels',
           values: [
             {
-              val: "!no-unauthenticated",
+              val: '!no-unauthenticated'
             },
-            ...(profile.labels
-              ? (profile.labels as $Typed<SelfLabels>).values
-              : []),
-          ],
-        };
+            ...(profile.labels ? (profile.labels as $Typed<SelfLabels>).values : [])
+          ]
+        }
       } else {
         profile.labels = {
-          $type: "com.atproto.label.defs#selfLabels",
+          $type: 'com.atproto.label.defs#selfLabels',
           values: [
             ...(profile.labels
-              ? (profile.labels as $Typed<SelfLabels>).values.filter(
-                (x) => x.val !== "!no-unauthenticated"
-              )
-              : []),
-          ],
-        };
+              ? (profile.labels as $Typed<SelfLabels>).values.filter((x) => x.val !== '!no-unauthenticated')
+              : [])
+          ]
+        }
       }
 
-      return profile;
-    });
+      return profile
+    })
   } catch (error) {
     logger.error({
       message: `Error updatig bsky profile: ${user.url}`,
-      error,
-    });
+      error
+    })
   }
-  return {};
+  return {}
 }
 
 async function updateProfileOptions(optionsJSON: string, posterId: string) {
-  const _options = JSON.parse(optionsJSON);
+  const _options = JSON.parse(optionsJSON)
   if (Array.isArray(_options)) {
     const options = _options
       .filter((elem) => elem.name)
@@ -2326,12 +2049,10 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
           ...opt,
           // NOTE: opt.value should be a string result of JSON.stringify, adding this to prevent any potential security issues
           value: String(opt.value),
-          public:
-            opt.name.startsWith("wafrn.public") ||
-            opt.name.startsWith("fediverse.public"),
-        };
-      });
-    const optionNames = options.map(elem => elem.name)
+          public: opt.name.startsWith('wafrn.public') || opt.name.startsWith('fediverse.public')
+        }
+      })
+    const optionNames = options.map((elem) => elem.name)
     const transaction = await sequelize.transaction()
     try {
       await UserOptions.destroy({
@@ -2344,24 +2065,23 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
         transaction: transaction
       })
       await UserOptions.bulkCreate(
-        options.map(elem => {
+        options.map((elem) => {
           return {
             userId: posterId,
             optionName: elem.name,
             optionValue: elem.value,
             public: elem.public == true
           }
-        }), {
+        }),
+        {
           transaction: transaction
         }
       )
       await transaction.commit()
     } catch (error) {
-      logger.info({message: `Problem updating user otpions`, error: error})
+      logger.info({ message: `Problem updating user otpions`, error: error })
       await transaction.rollback()
     }
-
-    
   }
 }
 
@@ -2372,22 +2092,17 @@ async function createBskyAccount({
   inviteCode,
   url
 }: {
-  agent: AtpAgent;
-  user: User;
-  password: string;
-  inviteCode: string;
+  agent: AtpAgent
+  user: User
+  password: string
+  inviteCode: string
   url?: string
 }) {
-  const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith("http")
-    ? completeEnvironment.bskyPdsUrl
-      .replace("https://", "")
-      .replace("http://", "")
-    : completeEnvironment.bskyPdsUrl;
+  const pdsHandleUrl = completeEnvironment.bskyPdsUrl.startsWith('http')
+    ? completeEnvironment.bskyPdsUrl.replace('https://', '').replace('http://', '')
+    : completeEnvironment.bskyPdsUrl
 
-  const sanitizedUrl = url ? url :user.url
-    .replaceAll("_", "-")
-    .replaceAll(".", "-")
-    .substring(0, 17);
+  const sanitizedUrl = url ? url : user.url.replaceAll('_', '-').replaceAll('.', '-').substring(0, 17)
 
   // this try-catch block does not catch very much, it is only used to add the error to the logger.
   try {
@@ -2396,90 +2111,93 @@ async function createBskyAccount({
       email: user.email as string,
       handle: `${sanitizedUrl}.${pdsHandleUrl}`,
       password,
-      inviteCode,
-    });
+      inviteCode
+    })
     logger.info({
       message: `Bsky account created for ${user.url}`,
-      response: accountCreation,
-    });
+      response: accountCreation
+    })
   } catch (error) {
     logger.error({
       message: `Bsky account creation failed for ${user.url}`,
-      error: error,
-    });
-    throw error;
+      error: error
+    })
+    throw error
   }
 }
 
 async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boolean) {
   const appPasswordsList = await agent.com.atproto.server.listAppPasswords()
   for await (const element of appPasswordsList.data.passwords) {
-    if(element.name.includes('wafrn')) {
+    if (element.name.includes('wafrn')) {
       await agent.com.atproto.server.revokeAppPassword({
         name: element.name
       })
       await wait(50)
     }
-  } 
+  }
   const appPasswordResponse = await agent.com.atproto.server.createAppPassword({
-    name: "wafrn app password DO NOT DELETE " + generateRandomString(),
+    name: 'wafrn app password DO NOT DELETE ' + generateRandomString(),
     privileged: true
-  });
+  })
 
   if (!appPasswordResponse.success) {
     logger.error({
       message: `Error creating bluesky app password for user ${user.url}`,
-      response: appPasswordResponse,
-    });
-    return false;
+      response: appPasswordResponse
+    })
+    return false
   }
 
-  const appPassword = appPasswordResponse.data.password;
-  const userDid = agent.assertDid;
+  const appPassword = appPasswordResponse.data.password
+  const userDid = agent.assertDid
 
-  user.bskyDid = userDid;
-  user.bskyAuthData = null;
-  user.bskyAppPassword = appPassword;
-  user.enableBsky = true;
-  await user.save();
-  if(forceLog) {
+  user.bskyDid = userDid
+  user.bskyAuthData = null
+  user.bskyAppPassword = appPassword
+  user.enableBsky = true
+  await user.save()
+  if (forceLog) {
     logger.info(`Forced app password on user ${user.url}: ${appPassword}`)
   }
   await redisCache.del('bskySession:' + user.id)
-  return true;
+  return true
 }
 
 async function updateBskyPassword(user: User, password: string) {
-  const authString = Buffer.from(
-    "admin:" + completeEnvironment.bskyPdsAdminPassword
-  ).toString("base64");
+  const authString = Buffer.from('admin:' + completeEnvironment.bskyPdsAdminPassword).toString('base64')
   return await axios.post(
-    serviceUrl + "/xrpc/com.atproto.admin.updateAccountPassword",
+    serviceUrl + '/xrpc/com.atproto.admin.updateAccountPassword',
     { did: user.bskyDid, password: password },
     {
       headers: {
-        "Content-Type": "application/json",
-        Authorization: "Basic " + authString,
-      },
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + authString
+      }
     }
-  );
+  )
 }
 
 async function forceUpdateBskyEmail(userIncomplete: User) {
-  const authString = Buffer.from(
-    "admin:" + completeEnvironment.bskyPdsAdminPassword
-  ).toString("base64");
+  const authString = Buffer.from('admin:' + completeEnvironment.bskyPdsAdminPassword).toString('base64')
   const fullUser = (await User.scope('full').findByPk(userIncomplete.id)) as User
   return await axios.post(
-    serviceUrl + "/xrpc/com.atproto.admin.updateAccountEmail",
+    serviceUrl + '/xrpc/com.atproto.admin.updateAccountEmail',
     { account: fullUser.bskyDid, email: fullUser.email },
     {
       headers: {
-        "Content-Type": "application/json",
-        Authorization: "Basic " + authString,
-      },
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + authString
+      }
     }
-  );
+  )
 }
 
-export { userRoutes, updateBlueskyProfile, createBskyAppPassword, updateBskyPassword, forceUpdateBskyEmail, createBskyAccount };
+export {
+  userRoutes,
+  updateBlueskyProfile,
+  createBskyAppPassword,
+  updateBskyPassword,
+  forceUpdateBskyEmail,
+  createBskyAccount
+}
