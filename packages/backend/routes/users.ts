@@ -1261,7 +1261,6 @@ function userRoutes(app: Application) {
         serviceAnnouncements,
         mutedRewoots,
         mutedQuotes,
-        showBskyAlert: user.bskyDid && !user.enableBsky
       })
     }
   })
