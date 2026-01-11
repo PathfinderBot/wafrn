@@ -1197,7 +1197,7 @@ function userRoutes(app: Application) {
     const localEmojis = getAvaiableEmojisCache()
     const mutedUsers = getMutedUsers(userId)
     let userPromise = User.findByPk(req.jwtData?.userId, {
-      attributes: ['banned', 'enableBsky']
+      attributes: ['banned', 'enableBsky', 'bskyDid']
     })
     const silencedPosts = getMutedPosts(userId)
     const followedHashtags = getFollowedHashtags(userId)
@@ -1235,6 +1235,24 @@ function userRoutes(app: Application) {
           }
         })
       ).map((elem) => elem.followedId)
+
+      // TODO: get this type from a database model object (maybe add more info?)
+      type ServiceAnnouncement = {
+        level: 'error' | 'info' | 'warning'
+        code: string // code can be used to quickly identify the type of message, for example to take action depending on that (it can be a different depending on client: web, app, ...etc)
+        message: string
+      }
+
+      const serviceAnnouncements = [] as ServiceAnnouncement[]
+      if (user.enableBsky && !user.bskyDid) {
+        serviceAnnouncements.push({
+          level: 'error',
+          code: 'bsky_account_force_disabled',
+          message:
+            'Bluesky integration for your account was disabled because of an internal error. Please try enabling it again on settings or talk to your instance admin.'
+        })
+      }
+
       res.send({
         myFollowers: await myFollowers,
         followedUsers: await followedUsers,
@@ -1246,6 +1264,8 @@ function userRoutes(app: Application) {
         mutedUsers: await mutedUsers,
         followedHashtags: await followedHashtags,
         enableBluesky: user.enableBsky && user.bskyDid,
+        // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
+        serviceAnnouncements,
         mutedRewoots,
         mutedQuotes
       })
