@@ -49,7 +49,7 @@ export default function searchRoutes(app: Application) {
                           searchTerm
                         ),
             sequelize.where(
-                          sequelize.fn("lower", sequelize.col("alternteUrl")),
+                          sequelize.fn("lower", sequelize.col("alternateUrl")),
                           searchTerm
                         )
           ]
