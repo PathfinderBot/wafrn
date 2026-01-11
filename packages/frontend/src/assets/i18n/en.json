@@ -675,5 +675,8 @@
       "instructions": "Type the following phrase:",
       "verifyLabel": "Here..."
     }
+  },
+  "serverAnnouncements": {
+    "bsky_account_force_disabled": "Your bluesky account was disabled due an error, with wafrn"
   }
 }

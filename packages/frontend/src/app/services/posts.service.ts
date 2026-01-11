@@ -19,6 +19,7 @@ import { MessageService } from "./message.service";
 import { emojis } from "../lists/emoji-compact";
 import { EnvironmentService } from "./environment.service";
 import { SimpleDialogService } from "./simple-dialog.service";
+import { ServiceAnnouncement } from "../interfaces/service-announcement";
 @Injectable({
   providedIn: "root",
 })
@@ -100,9 +101,20 @@ export class PostsService {
         mutedRewoots: string[];
         mutedQuotes: string[];
         enableBluesky: boolean;
+        serviceAnnouncements: ServiceAnnouncement[]
       }>(`${EnvironmentService.environment.baseUrl}/my-ui-options`)
     );
-
+    if(followsAndBlocks.serviceAnnouncements && followsAndBlocks.serviceAnnouncements.length > 0) {
+      // at this point we only have ONE so we pick up the FIRST ONE.
+      const announcement = followsAndBlocks.serviceAnnouncements[0]
+      this.simpleDialogService.createConfirmDialog({
+          title: 'serverAnnouncements.' + announcement.code ,
+          content: announcement.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+    }
     this.followedHashtags = followsAndBlocks.followedHashtags;
     this.emojiCollections = followsAndBlocks.emojis
       ? followsAndBlocks.emojis
