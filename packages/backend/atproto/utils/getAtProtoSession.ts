@@ -5,8 +5,38 @@ import { completeEnvironment } from '../../utils/backendOptions.js'
 import { logger } from '../../utils/logger.js'
 import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSession.js'
 import handleAgentLoginFail from './handleAgentLoginFail.js'
+import { wait } from '../../utils/wait.js'
+
+
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
+  /*
+    This is a dirty solution, but we want to retry multiple times before saying "fuck off"
+    and disabling bsky for the user!
+    Also there is a posibility multiple tries happen at the same time so we should to account for 
+    the posibility of the password disapearing mid update. At this moment we are NOT gona test for that!
+  */
+  let res: AtpAgent = await getAtProtoSessionInternal(userInput, force)
+  if(res.did) {
+    return res;
+  } else {
+    await wait(1000)
+    res = await getAtProtoSessionInternal(userInput, force)
+    if(res.did) {
+      return res;
+    } else {
+      await wait(2500)
+      res = await getAtProtoSessionInternal(userInput, force)
+      if(!res.did && userInput) {
+          await handleAgentLoginFail(userInput)
+      }
+      return res;
+
+    }
+  }
+}
+
+async function getAtProtoSessionInternal(userInput?: User, force?: boolean): Promise<AtpAgent> {
   let user = userInput ? ((await User.scope('full').findByPk(userInput.id)) as User) : undefined
   if (true && force && user) {
     await redisCache.del('bskySession:' + user.id)
@@ -66,5 +96,7 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
   }
   return agent
 }
+
+
 
 export { getAtProtoSession }
