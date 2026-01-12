@@ -32,7 +32,7 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
       message: `Obtaining session for ${user.url}`
     })
     // disabled cache here meanwhile for testing
-    const existingSession = null // force ? null : await redisCache.get('bskySession:' + user.id)
+    const existingSession = force ? null : await redisCache.get('bskySession:' + user.id)
     let loggedIn = false
     if (existingSession) {
       const { success } = await agent.sessionManager.resumeSession(JSON.parse(existingSession))
