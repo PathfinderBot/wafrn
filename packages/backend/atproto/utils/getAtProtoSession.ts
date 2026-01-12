@@ -21,12 +21,12 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
     return res;
   } else {
     await wait(1000)
-    res = await getAtProtoSessionInternal(userInput, force)
+    res = await getAtProtoSessionInternal(userInput, true)
     if(res.did) {
       return res;
     } else {
       await wait(2500)
-      res = await getAtProtoSessionInternal(userInput, force)
+      res = await getAtProtoSessionInternal(userInput, true)
       if(!res.did && userInput) {
           await handleAgentLoginFail(userInput)
       }
