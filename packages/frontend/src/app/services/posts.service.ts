@@ -587,31 +587,22 @@ export class PostsService {
       }
       newPost.ask = ask;
     }
+    let postContentWithoutHTMLTags = sanitizeHtml(newPost.content)
+    if(newPost.medias) {
+      for (const media of newPost.medias) {
+        postContentWithoutHTMLTags = `${postContentWithoutHTMLTags} ${media.description}`        
+      }
+    }
+    postContentWithoutHTMLTags = postContentWithoutHTMLTags.toLowerCase()
+    const regexMutedWords = new RegExp(mutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
+    const regexSuperMutedWords = new RegExp(superMutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
+
+    const detectedWords = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim())
+    const detectedSuperMutedwords = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.filter(elem => !!elem[0]).map(elem => elem.trim())
     const cwedWords = [
       ...new Set(
-        mutedWords
-          .filter(
-            (word) =>
-              newPost.content.toLowerCase().includes(word.toLowerCase()) ||
-              newPost.medias?.some((media) =>
-                media.description?.toLowerCase().includes(word.toLowerCase())
-              ) ||
-              newPost.tags.some((tag) =>
-                tag.tagName.toLowerCase().includes(word.toLowerCase())
-              )
-          )
-          .concat(
-            superMutedWords.filter(
-              (word) =>
-                newPost.content.toLowerCase().includes(word.toLowerCase()) ||
-                newPost.medias?.some((media) =>
-                  media.description?.toLowerCase().includes(word.toLowerCase())
-                ) ||
-                newPost.tags.some((tag) =>
-                  tag.tagName.toLowerCase().includes(word.toLowerCase())
-                )
-            )
-          )
+        (detectedWords || [])
+          .concat(detectedSuperMutedwords || [])
       ),
     ];
     if (cwedWords.length > 0) {
