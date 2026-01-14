@@ -657,6 +657,13 @@ async function canInteract(
         );
         break;
       }
+      case InteractionControl.FollowersAndFollowing: {
+        // include mentioned users
+        res = mentions.postMentionRelation.find(
+          (elem) => elem.postId == postId && elem.userId == userId
+        ) || userFollowers.includes(post.userId) || usersFollowing.includes(post.userId)
+        break;
+      }
       case InteractionControl.NoOne: {
         // we already check if user is from poster himself. This is a special one for bsky
         res = false;
