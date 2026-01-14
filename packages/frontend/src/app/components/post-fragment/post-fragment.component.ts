@@ -110,7 +110,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
         "ia",
       ];
       let regexpString = wordsToReplace
-        .map((elem) => `\\s${elem}\\s|^${elem}\\s|${elem}$`)
+        .map((elem) => `\\s${elem}\\s|^${elem}\\s|\\s${elem}$`)
         .join("|");
       let regexp = new RegExp(regexpString, "gi");
       this.sanitizedContent = this.sanitizedContent.replaceAll(
