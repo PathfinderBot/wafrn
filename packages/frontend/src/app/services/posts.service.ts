@@ -594,21 +594,20 @@ export class PostsService {
       }
     }
     postContentWithoutHTMLTags = postContentWithoutHTMLTags.toLowerCase()
-
+    let detectedWords: string[] = []
+    let detectedSuperMutedwords: string[] = []
     // Only test these regexes if there are mutedWords, since an
     // empty regex matches all strings.
     if (mutedWords.length > 0) {
       const regexMutedWords = new RegExp(mutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
-      const detectedWords = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim());
-    } else {
-      const detectedWords = [];
+      const matches = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim());
+      detectedWords = matches || []
     }
 
     if (superMutedWords.length > 0) {
       const regexSuperMutedWords = new RegExp(superMutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
-      const detectedSuperMutedwords = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.filter(elem => !!elem[0]).map(elem => elem.trim());
-    } else {
-      const detectedSuperMutedwords = [];
+      const matches = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.map(elem => elem.trim());
+      superMutedWords = matches || []
     }
 
     const cwedWords = [
