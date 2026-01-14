@@ -594,11 +594,23 @@ export class PostsService {
       }
     }
     postContentWithoutHTMLTags = postContentWithoutHTMLTags.toLowerCase()
-    const regexMutedWords = new RegExp(mutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
-    const regexSuperMutedWords = new RegExp(superMutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
 
-    const detectedWords = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim())
-    const detectedSuperMutedwords = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.filter(elem => !!elem[0]).map(elem => elem.trim())
+    // Only test these regexes if there are mutedWords, since an
+    // empty regex matches all strings.
+    if (mutedWords.length > 0) {
+      const regexMutedWords = new RegExp(mutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
+      const detectedWords = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim());
+    } else {
+      const detectedWords = [];
+    }
+
+    if (superMutedWords.length > 0) {
+      const regexSuperMutedWords = new RegExp(superMutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
+      const detectedSuperMutedwords = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.filter(elem => !!elem[0]).map(elem => elem.trim());
+    } else {
+      const detectedSuperMutedwords = [];
+    }
+
     const cwedWords = [
       ...new Set(
         (detectedWords || [])
