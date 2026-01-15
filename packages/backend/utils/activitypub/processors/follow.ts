@@ -24,15 +24,21 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
         optionName: 'wafrn.autoRejectFollowsFromUsersYouDoNotFollow'
       }
     })
-    let autoFollowThisUser = !userToBeFollowed.manuallyAcceptsFollows;
-    if (dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true') {
-      autoFollowThisUser = await Follows.findOne({
+    let autoFollowThisUser = false;
+    let autoAcceptFollow = !user.manuallyAcceptsFollows
+
+    const userIsFollowingNewFollower = await Follows.findOne({
         where: {
           followerId: userToBeFollowed.id,
           followedId: remoteUser.id
         }
-      }).then(f => !!f)
+      })
+
+    if (dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' && userIsFollowingNewFollower) {
+      autoAcceptFollow = true;
     }
+
+
     const blockExisting = await ServerBlock.findAll({
       where: {
         userBlockerId: userToBeFollowed.id,
@@ -56,7 +62,7 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
         followerId: remoteUser.id,
         followedId: userToBeFollowed.id,
         remoteFollowId: apObject.id,
-        accepted: userToBeFollowed.isRemoteUser ? true : autoFollowThisUser,
+        accepted: userToBeFollowed.isRemoteUser ? true : autoAcceptFollow,
         muteQuotes: false,
         muteRewoots: false
       }
