@@ -18,7 +18,16 @@ import { redisCache } from '../redis.js'
 async function removeUser(userId: string) {
   let deleted = false
   try {
-    const userToRemove = await User.findOne({ where: { remoteId: userId } })
+    const userToRemove = await User.findOne({ where: { 
+      [Op.or]: [
+        {
+          remoteId: userId
+        },
+        {
+          id: userId
+        }
+      ]
+    } })
     if (userToRemove) {
       const ownerOfDeletedPost = await User.findOne({
         where: {

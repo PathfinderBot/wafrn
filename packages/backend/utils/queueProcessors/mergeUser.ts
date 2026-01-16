@@ -1,10 +1,11 @@
 import { Job, Queue } from 'bullmq'
-import { Follows, Post, User } from '../../models/index.js'
+import { Follows, Post, User, UserLikesPostRelations } from '../../models/index.js'
 import { getAtProtoThread } from '../../atproto/utils/getAtProtoThread.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { logger } from '../logger.js'
 import { Op } from 'sequelize'
 import { completeEnvironment } from '../backendOptions.js'
+import { removeUser } from '../activitypub/removeUser.js'
 
 
 // this thing is compute intensive
@@ -126,6 +127,8 @@ async function mergeUser(job: Job) {
     }
   })
 
+  const newRemoteId = userToMerge.remoteId || primaryUser.remoteId
+  const did = userToMerge.bskyDid || primaryUser.bskyDid
   // now we update the user to merge to decouple the remote post and mark it as deleted
   // we will not delete it so if somethings wrong admins can still recover info
   if (userToMerge.bskyDid) {
@@ -140,22 +143,24 @@ async function mergeUser(job: Job) {
     primaryUser.isBskyPrimary = true
   }
 
+  primaryUser.remoteId = newRemoteId
+  primaryUser.bskyDid = did
+
   primaryUser.alternateUrl = userToMerge.url
 
   userToMerge.bskyDid = null
   userToMerge.remoteId = null
-  userToMerge.banned = true
   userToMerge.remoteInbox = null
   userToMerge.remoteMentionUrl = null
   userToMerge.publicKey = null
   userToMerge.followersCollectionUrl = null
   userToMerge.followingCollectionUrl = null
   userToMerge.save()
-
   primaryUser.save()
-
+  await removeUser(userToMerge.id)
+  
   logger.info({
-    message: `Merged users ${primaryUser.url} (primary) and ${userToMerge.url}` }
+    message: `Merged users ${primaryUser.url} (primary) and ${userToMerge?.url}` }
   )
 }
 
