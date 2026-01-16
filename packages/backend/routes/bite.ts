@@ -62,7 +62,7 @@ export default function biteRoutes(app: Application) {
           }
         )
 
-        bitePostRemote(bittenPost)
+        await bitePostRemote(bittenPost)
         await sendBiteBsky(userId, postId, undefined)
       } catch (error) {
         logger.debug({
@@ -124,7 +124,7 @@ export default function biteRoutes(app: Application) {
           }
         )
 
-        biteUserRemote(biter, bitten)
+        await biteUserRemote(biter, bitten)
         await sendBiteBsky(biterId, undefined, bittenId)
       } catch (error) {
         logger.debug({
