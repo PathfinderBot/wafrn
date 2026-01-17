@@ -103,7 +103,7 @@ export class PostHeaderComponent implements OnChanges {
   ngOnChanges(): void {
     const relative = DateTime.fromJSDate(this.fragment().createdAt).setLocale('en').toRelative()
     this.timeAgo = relative ? relative : 'Error with date'
-    this.edited = this.fragment().updatedAt.getTime() - this.fragment().createdAt.getTime() > 6000
+    this.edited = this.fragment().updatedAt.getTime() - this.fragment().createdAt.getTime() > 60000
   }
 
   async followUser(post: ProcessedPost) {
