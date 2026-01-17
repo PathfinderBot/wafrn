@@ -145,8 +145,8 @@ async function postToJSONLD(
     askContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
       }">asked</a> </p> <blockquote>${ask.question}</blockquote> `;
     processedContent = `${askContent} ${processedContent}`;
-    misskeyAskContent = `$[border.style=solid,width=1,radius=6 $[border.color=0000,width=12 <small>${getUserName(userAsker)} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
-      }):</small>
+    misskeyAskContent = `$[border.style=solid,width=1,radius=6 $[border.color=0000,width=12 ${getUserName(userAsker)} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
+      }):
 ${await htmlToMfm(ask.question)}]]\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
