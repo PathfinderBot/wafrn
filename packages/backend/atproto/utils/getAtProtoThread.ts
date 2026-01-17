@@ -427,7 +427,11 @@ async function processSinglePost(
         "This user has been marked as NSFW and the post has been labeled automatically as NSFW";
     }
     if(record.reply?.parent && !parentId) {
-      parentId = await getAtProtoThread(record.reply.parent.uri)
+      try {
+        parentId = await getAtProtoThread(record.reply.parent.uri)
+      } catch (error) {
+      }
+      
     }
     const newData = {
       userId: postCreator.id,
