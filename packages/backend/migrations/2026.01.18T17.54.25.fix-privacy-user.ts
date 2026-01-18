@@ -10,7 +10,8 @@ export const up: Migration = async (params) => {
   if(userIdtoFix[0]) {
     let userId = (userIdtoFix[0][0] as {id: string} | undefined)?.id
     if(userId) {
-        await queryInterface.sequelize.query(`UPDATE "posts" SET "privacy"=1 WHERE "userId"='${userId}' AND "privacy"=2`)
+        let tmp = await queryInterface.sequelize.query(`UPDATE "posts" SET "privacy"=1 WHERE "userId"='${userId}' AND "privacy"=3`)
+        console.log(tmp)
     }
   }
 }
