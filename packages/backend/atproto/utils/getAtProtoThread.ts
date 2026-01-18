@@ -430,6 +430,10 @@ async function processSinglePost(
       try {
         parentId = await getAtProtoThread(record.reply.parent.uri)
       } catch (error) {
+        logger.debug({
+          message: `Error obtaining parent:  ${record.reply.parent.uri}`,
+          error: error
+        })
       }
       
     }
