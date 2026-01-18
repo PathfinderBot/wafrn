@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core'
+import { ChangeDetectorRef, Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { MediaService } from 'src/app/services/media.service'
 import { MatCardModule } from '@angular/material/card'
@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common'
 })
 export class LinkPreviewComponent implements OnChanges {
   private mediaService = inject(MediaService)
+  private cdr = inject(ChangeDetectorRef)
 
   @Input() link: string = ''
 
@@ -60,6 +61,7 @@ export class LinkPreviewComponent implements OnChanges {
         if (data.description) {
           this.description = data.description
         }
+        this.cdr.detectChanges();
       })
     }
   }

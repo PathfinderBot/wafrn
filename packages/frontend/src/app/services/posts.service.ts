@@ -18,6 +18,8 @@ import { EmojiCollection } from "../interfaces/emoji-collection";
 import { MessageService } from "./message.service";
 import { emojis } from "../lists/emoji-compact";
 import { EnvironmentService } from "./environment.service";
+import { SimpleDialogService } from "./simple-dialog.service";
+import { ServiceAnnouncement } from "../interfaces/service-announcement";
 @Injectable({
   providedIn: "root",
 })
@@ -26,6 +28,7 @@ export class PostsService {
   private http = inject(HttpClient);
   private jwtService = inject(JwtService);
   private messageService = inject(MessageService);
+  private simpleDialogService = inject(SimpleDialogService)
 
   processedQuotes: ProcessedPost[] = [];
   parser = new DOMParser();
@@ -81,7 +84,16 @@ export class PostsService {
   public usersQuotesDisabled: string[] = [];
   public usersRewootsDisabled: string[] = [];
 
+
+  private lastTimeLoadedFollowers = new Date(0)
+
   async loadFollowers() {
+    // if this was called less than 3 seconds ago lets not do it. I could use RXJS for this but its an old part of the code
+    // TODO move this to a proper service with the name "user options". Use RXJS for time thing instead
+    if(new Date().getTime() - this.lastTimeLoadedFollowers.getTime() < 3000) {
+      return;
+    }
+    this.lastTimeLoadedFollowers = new Date();
     if (!this.jwtService.tokenValid()) return;
 
     const followsAndBlocks = await firstValueFrom(
@@ -98,9 +110,20 @@ export class PostsService {
         mutedRewoots: string[];
         mutedQuotes: string[];
         enableBluesky: boolean;
+        serviceAnnouncements: ServiceAnnouncement[]
       }>(`${EnvironmentService.environment.baseUrl}/my-ui-options`)
     );
-
+    if(followsAndBlocks.serviceAnnouncements && followsAndBlocks.serviceAnnouncements.length > 0) {
+      // at this point we only have ONE so we pick up the FIRST ONE.
+      const announcement = followsAndBlocks.serviceAnnouncements[0]
+      this.simpleDialogService.createConfirmDialog({
+          title: 'serverAnnouncements.' + announcement.code ,
+          content: announcement.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+    }
     this.followedHashtags = followsAndBlocks.followedHashtags;
     this.emojiCollections = followsAndBlocks.emojis
       ? followsAndBlocks.emojis
@@ -195,8 +218,17 @@ export class PostsService {
         .toPromise();
       await this.loadFollowers();
       res = response?.success === true;
-    } catch (exception) {
+    } catch (exception: any) {
       console.error(exception);
+      if (exception.error?.message) {
+        this.simpleDialogService.createConfirmDialog({
+          title: 'Error',
+          content: exception.error.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+      }
     }
     this.postLiked.next({
       id: id,
@@ -555,31 +587,33 @@ export class PostsService {
       }
       newPost.ask = ask;
     }
+    let postContentWithoutHTMLTags = sanitizeHtml(newPost.content)
+    if(newPost.medias) {
+      for (const media of newPost.medias) {
+        postContentWithoutHTMLTags = `${postContentWithoutHTMLTags} ${media.description}`        
+      }
+    }
+    postContentWithoutHTMLTags = postContentWithoutHTMLTags.toLowerCase()
+    let detectedWords: string[] = []
+    let detectedSuperMutedwords: string[] = []
+    // Only test these regexes if there are mutedWords, since an
+    // empty regex matches all strings.
+    if (mutedWords.length > 0) {
+      const regexMutedWords = new RegExp(mutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
+      const matches = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim());
+      detectedWords = matches || []
+    }
+
+    if (superMutedWords.length > 0) {
+      const regexSuperMutedWords = new RegExp(superMutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
+      const matches = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.map(elem => elem.trim());
+      superMutedWords = matches || []
+    }
+
     const cwedWords = [
       ...new Set(
-        mutedWords
-          .filter(
-            (word) =>
-              newPost.content.toLowerCase().includes(word.toLowerCase()) ||
-              newPost.medias?.some((media) =>
-                media.description?.toLowerCase().includes(word.toLowerCase())
-              ) ||
-              newPost.tags.some((tag) =>
-                tag.tagName.toLowerCase().includes(word.toLowerCase())
-              )
-          )
-          .concat(
-            superMutedWords.filter(
-              (word) =>
-                newPost.content.toLowerCase().includes(word.toLowerCase()) ||
-                newPost.medias?.some((media) =>
-                  media.description?.toLowerCase().includes(word.toLowerCase())
-                ) ||
-                newPost.tags.some((tag) =>
-                  tag.tagName.toLowerCase().includes(word.toLowerCase())
-                )
-            )
-          )
+        (detectedWords || [])
+          .concat(detectedSuperMutedwords || [])
       ),
     ];
     if (cwedWords.length > 0) {

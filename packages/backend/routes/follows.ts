@@ -42,7 +42,7 @@ export default function followsRoutes(app: Application) {
       // bsky user
       if (userToBeFollowed && userToBeFollowed.isBlueskyUser) {
         const localUser = await User.findByPk(posterId)
-        if (localUser?.enableBsky) {
+        if (localUser?.enableBsky && localUser?.bskyDid) {
           // follow on bsk
           const agent = await getAtProtoSession(localUser)
           const followResult = (await agent.follow(userToBeFollowed.bskyDid as string)) as any
@@ -57,7 +57,7 @@ export default function followsRoutes(app: Application) {
         } else {
           return res.status(403).send({
             error: true,
-            message: 'You are trying to follow a bsky user. You need to enable this on your profile'
+            message: 'You are trying to follow a bsky user. You need to enable bluesky on your profile settings'
           })
         }
       }

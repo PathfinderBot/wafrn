@@ -237,20 +237,40 @@ function notificationRoutes(app: Application) {
   app.get('/api/v2/notificationsCount', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
     const user = await User.findByPk(userId)
-    if(user?.enableBsky && completeEnvironment.enableBsky) {
+    if(user?.enableBsky && completeEnvironment.enableBsky && user?.bskyDid) {
       try {
         /**
          * We do this thing asyncronously, no need to wait. we try obtaining replies, as its the most important bit!
          * No need to block this petition, or if this fails or anything
          */
         getAtProtoSession(user).then(async (session) => {
-          let notificationsPetition = await session.listNotifications({
+          try{
+            let notificationsPetition = await session.listNotifications({
             reasons: ['mention', 'reply', 'quote'],
-            limit: 25
+            limit: 20
           })
           if(notificationsPetition.success) {
-            await Promise.all(notificationsPetition.data.notifications.map(elem => getAtProtoThread(elem.uri)))
+            const uris = notificationsPetition.data.notifications.map(elem => elem.uri)
+            const foundPosts = await Post.findAll({
+              attributes: ['bskyUri'],
+              where: {
+                bskyUri: {
+                  [Op.in]: uris
+                }
+              }
+            })
+            const foundUris = foundPosts.map(elem => elem.bskyUri)
+            await Promise.all(notificationsPetition.data.notifications
+              .filter(elem => !foundUris.includes(elem.uri) )
+              .map(elem => getAtProtoThread(elem.uri)))
           }
+          } catch (error) {
+            logger.error({
+              message: `Error obtaining bsky notifications for user ${user.url}`,
+              error: error
+            })
+          }
+          
         })
       } catch (error) {
         logger.info({

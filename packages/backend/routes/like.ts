@@ -51,15 +51,15 @@ export default function likeRoutes(app: Application) {
             return
           }
         }
-        if (!user.enableBsky && post.bskyUri) {
+        if (!user.enableBsky && !user.bskyDid && post.bskyUri ) {
           const userPosterOfPostToBeLiked = (await User.findByPk(post.userId)) as User
           if (userPosterOfPostToBeLiked.isRemoteUser) {
             res.status(403)
-            res.send({ error: true, message: 'You do not have bluesky federation enabled' })
+            res.send({ error: true, message: 'You do not have bluesky enabled' })
             return
           }
         } else {
-          if (user.enableBsky && post.bskyUri) {
+          if (user.enableBsky && post.bskyUri && user.bskyDid) {
             try {
               const agent = await getAtProtoSession(user)
               const { uri } = await agent.like(post.bskyUri, post.bskyCid as string)
@@ -123,7 +123,7 @@ export default function likeRoutes(app: Application) {
     })
     if (like && like.bskyPath) {
       const user = await User.findByPk(userId)
-      if (user && user.enableBsky) {
+      if (user && user.enableBsky && user.bskyDid) {
         const agent = await getAtProtoSession(user)
         await agent.deleteLike(like.bskyPath)
       }

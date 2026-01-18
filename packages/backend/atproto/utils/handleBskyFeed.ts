@@ -26,9 +26,9 @@ async function handleBskyFeed(user: User, cursor: Date) {
                 }
             }
         })).map(elem => elem.bskyUri)
-        await Promise.all(bskyFeed.data.feed.filter(elem => !postsFound.includes(elem.post.uri)).map(elem => getAtProtoThread(elem.post.uri)))
-
-        for await (const elem of bskyFeed.data.feed) {
+        const filteredFeed = bskyFeed.data.feed.filter(elem => !postsFound.includes(elem.post.uri))
+        await Promise.allSettled(filteredFeed.map(elem => getAtProtoThread(elem.post.uri)))
+        for await (const elem of filteredFeed) {
             if(elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
                 let parentPost = await getAtProtoThread(elem.post.uri)
                 const rewooterDid = (elem.reason as any).by?.did

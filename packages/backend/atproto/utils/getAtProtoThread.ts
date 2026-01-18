@@ -71,7 +71,7 @@ async function processSinglePost(
         bskyUri: post.uri,
       },
     });
-    if (existingPost) {
+    if (existingPost && !forceUpdate) {
       return existingPost.id;
     }
   }
@@ -425,6 +425,17 @@ async function processSinglePost(
     if (!cw && postCreator.NSFW) {
       cw =
         "This user has been marked as NSFW and the post has been labeled automatically as NSFW";
+    }
+    if(record.reply?.parent && !parentId) {
+      try {
+        parentId = await getAtProtoThread(record.reply.parent.uri)
+      } catch (error) {
+        logger.debug({
+          message: `Error obtaining parent:  ${record.reply.parent.uri}`,
+          error: error
+        })
+      }
+      
     }
     const newData = {
       userId: postCreator.id,

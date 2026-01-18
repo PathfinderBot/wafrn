@@ -10,7 +10,7 @@
     (!extensionsToHideImgTag.includes(extension()) || mimeType() === 'UNKNOWN') && !mimeType().startsWith('video')
     ) {
     @let forceImg = displayUrl();
-    <img loading="lazy" [src]="forceImg" [alt]="data().description" [width]="width()" [height]="height()" class="displayed-image"
+    <img [src]="forceImg" [alt]="data().description" [width]="width()" [height]="height()" class="displayed-image"
       [class.nsfw]="nsfw" />
     }
 

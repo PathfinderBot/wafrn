@@ -84,7 +84,7 @@ export class PostActionsComponent implements OnChanges {
       this.settingsService.values().atprotoLinkDestination || "bsky.app"
     }/profile/${userDid}/post/${parts[1]}`;
   });
-
+  
   externalUrl = computed<string>(() =>
     this.bskyUrl() &&
     this.post()

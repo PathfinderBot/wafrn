@@ -16,6 +16,7 @@ import { MessageService } from './message.service'
 import { SimplifiedUser } from '../interfaces/simplified-user'
 import { Router } from '@angular/router'
 import { AUTH_OVERRIDE } from '../interceptors/wafrn-auth.interceptor'
+import { SimpleDialogService } from './simple-dialog.service'
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class EditorService implements OnDestroy {
   private dialogService = inject(MatDialog);
   private messages = inject(MessageService);
   private router = inject(Router);
+  private simpleDialogService = inject(SimpleDialogService)
 
   base_url = EnvironmentService.environment.baseUrl
   public launchPostEditorEmitter: BehaviorSubject<EditorLauncherData> = new BehaviorSubject<EditorLauncherData>({
@@ -89,10 +91,13 @@ export class EditorService implements OnDestroy {
       }
     } catch (exception: any) {
       if (exception.error?.message) {
-        this.messages.add({
-          severity: 'warn',
-          summary: exception.error.message
-        })
+        this.simpleDialogService.createConfirmDialog({
+          title: 'Error',
+          content: exception.error.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
       } else {
         this.messages.add({
           severity: 'warn',

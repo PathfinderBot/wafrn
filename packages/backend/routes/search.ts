@@ -49,7 +49,7 @@ export default function searchRoutes(app: Application) {
                           searchTerm
                         ),
             sequelize.where(
-                          sequelize.fn("lower", sequelize.col("alternteUrl")),
+                          sequelize.fn("lower", sequelize.col("alternateUrl")),
                           searchTerm
                         )
           ]
@@ -74,6 +74,7 @@ export default function searchRoutes(app: Application) {
         if (
           completeEnvironment.enableBsky &&
           userPoster.enableBsky &&
+          userPoster.bskyDid &&
           urlString.toLowerCase().includes('/profile/') &&
           urlString.toLowerCase().includes('/post/')
         ) {
@@ -274,7 +275,7 @@ export default function searchRoutes(app: Application) {
 
     let result: User | null = null
 
-    if (completeEnvironment.enableBsky && usr.enableBsky && searchData.type === 'bluesky') {
+    if (completeEnvironment.enableBsky && usr.enableBsky && searchData.type === 'bluesky' && usr.bskyDid) {
       try {
         const bskySearchResult = await getAtprotoUser(searchData.handle, usr)
         if (bskySearchResult && bskySearchResult.url != completeEnvironment.deletedUser) {

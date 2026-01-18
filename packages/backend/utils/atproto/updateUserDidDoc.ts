@@ -1,75 +1,73 @@
-import { Post, User } from "../../models/index.js"
-import { getDidDoc } from "./getDidDoc.js"
-import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } from "@atcute/did-plc";
-import { fromBase16, toBase64Url } from "@atcute/multibase";
-import { Secp256k1PrivateKey, Secp256k1PrivateKeyExportable } from "@atcute/crypto";
-import { createBskyAppPassword, forceUpdateBskyEmail, updateBskyPassword } from "../../routes/users.js";
-import generateRandomString from "../generateRandomString.js";
-import { completeEnvironment } from "../backendOptions.js";
-import { AtpAgent } from "@atproto/api";
-import sendEmail from "../sendEmail.js";
-import { logger } from "../logger.js";
-import { createNotification } from "../pushNotifications.js";
-import { redisCache } from "../redis.js";
+import { User } from '../../models/index.js'
+import { getDidDoc } from './getDidDoc.js'
+import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } from '@atcute/did-plc'
+import { fromBase16 } from '@atcute/multibase'
+import { Secp256k1PrivateKey } from '@atcute/crypto'
+import { logger } from '../logger.js'
 
 async function updateUserDidDoc(user: User) {
   try {
-    console.log('updating ' + user.url)
+    logger.debug('updating ' + user.url)
     const didDoc = await getDidDoc(user.bskyDid ?? '')
-    const handle = didDoc?.alsoKnownAs?.find(x => x.startsWith('at://'))?.replace(/^at:\/\//, '')
-    if (handle) {
-      user.alternateUrl = '@' + handle
-      await user.save()
+    const handle = didDoc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+    if (!handle) {
+      logger.debug(`No handle starting with at:// found in DID doc for user ${user.url}. Aborting update.`)
+      return
+    }
 
-      if (user.bskyDid?.startsWith('did:plc')) {
-        console.log('getting plc info')
-        const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
+    user.alternateUrl = '@' + handle
+    await user.save()
 
-        if (lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
-          return;
-        }
+    if (user.bskyDid?.startsWith('did:plc')) {
+      logger.debug('getting PLC logs')
+      const lastOp = await getLastPlcOpFromPlc(user.bskyDid)
 
-        console.log('editing plc op')
-        const operation = {
-          type: "plc_operation",
-          prev: lastOp.base?.cid,
-          alsoKnownAs: [
-            ...lastOp.lastOperation.alsoKnownAs.filter(x => x !== user.fullUrl),
-            user.fullFediverseUrl
-          ],
-          services: lastOp.lastOperation.services,
-          rotationKeys: lastOp.lastOperation.rotationKeys,
-          verificationMethods: lastOp.lastOperation.verificationMethods,
-        }
-
-        console.log('pushing operation')
-        await pushPlcOperation(user.bskyDid, operation)        
+      if (!lastOp || lastOp.lastOperation.alsoKnownAs.includes(user.fullFediverseUrl ?? '')) {
+        return
       }
+
+      logger.debug('creating PLC operation')
+      const operation = {
+        type: 'plc_operation',
+        prev: lastOp.base?.cid,
+        alsoKnownAs: [...lastOp.lastOperation.alsoKnownAs.filter((x) => x !== user.fullUrl), user.fullFediverseUrl],
+        services: lastOp.lastOperation.services,
+        rotationKeys: lastOp.lastOperation.rotationKeys,
+        verificationMethods: lastOp.lastOperation.verificationMethods
+      }
+
+      logger.debug('pushing PLC operation')
+      await pushPlcOperation(user.bskyDid, operation)
     }
   } catch (e) {
-    console.error('could not update user', user.url)
+    logger.error({
+      message: `Failed updating DID doc for user: ${user.url}`,
+      error: e
+    })
   }
 }
 
 async function getPlcAuditLogs(did: string) {
-  const response = await fetch(`https://plc.directory/${did}/log/audit`);
+  const response = await fetch(`https://plc.directory/${did}/log/audit`)
   if (!response.ok) {
-    throw new Error(`got response ${response.status}`);
+    throw new Error(`got response ${response.status}`)
   }
 
-  const json = await response.json();
-  return defs.indexedEntryLog.parse(json);
+  const json = await response.json()
+  return defs.indexedEntryLog.parse(json)
 }
 
 async function getLastPlcOpFromPlc(did: string) {
-  const logs = await getPlcAuditLogs(did);
-  return getLastPlcOp(logs);
+  const logs = await getPlcAuditLogs(did)
+  return getLastPlcOp(logs)
 }
 
 function getLastPlcOp(logs: IndexedEntryLog) {
-  const lastOp = logs.at(-1);
-  //@ts-expect-error
-  return { lastOperation: normalizeOp(lastOp.operation), base: lastOp };
+  const lastOp = logs.at(-1)
+  if (lastOp && lastOp.operation.type !== 'plc_tombstone') {
+    return { lastOperation: normalizeOp(lastOp.operation), base: lastOp }
+  }
+  return null
 }
 
 async function pushPlcOperation(did: string, operation: any) {
@@ -77,41 +75,8 @@ async function pushPlcOperation(did: string, operation: any) {
   const signingRotationKey = await Secp256k1PrivateKey.importRaw(keyHexBytes)
 
   const signedOp = await signOperation(operation, signingRotationKey)
-  const client = new PlcClient();
+  const client = new PlcClient()
   await client.submitOperation(did as `did:plc:${string}`, signedOp)
-};
-
-async function forceUpdateBskyPassword(user: User, forceLog?: boolean){
-          try {
-          const serviceUrl = completeEnvironment.bskyPds
-            ? completeEnvironment.bskyPds.startsWith("http")
-              ? completeEnvironment.bskyPds
-              : "https://" + completeEnvironment.bskyPds
-            : "";
-          const randomString = generateRandomString()
-          await updateBskyPassword(user, randomString)
-          if(forceLog) {
-          logger.debug(`Forced RANDOM BSKY PASSWORD on user ${user.url}: ${randomString}`)
-          }
-          await forceUpdateBskyEmail(user)
-          const agent = new AtpAgent({
-            service: serviceUrl,
-          });
-          user.bskyAuthData = randomString;
-          await agent.sessionManager.login({
-              identifier: user.bskyDid as string,
-              password: randomString,
-            });
-          await user.save();
-          await createBskyAppPassword(user, agent);
-          logger.debug(`Created bsky password for user ${user.url}`)
-          await redisCache.del('bskySession:' + user.id)
-          return agent
-        } catch (error) {
-          logger.debug('Problem updating user bsky password: ' + user.url)
-          logger.debug(error)
-        }
 }
 
-
-export {updateUserDidDoc, forceUpdateBskyPassword}
+export { updateUserDidDoc }

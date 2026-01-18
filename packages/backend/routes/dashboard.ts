@@ -128,7 +128,7 @@ export default function dashboardRoutes(app: Application) {
         }
         case 1: {
           const user = await User.findByPk(posterId)
-          if (completeEnvironment.enableBsky && user && user.enableBsky) {
+          if (completeEnvironment.enableBsky && user && user.enableBsky && user.bskyDid) {
             try {
               // we give bluesky 2.5 seconds to load
               await promiseRace([handleBskyFeed(user, getStartScrollParam(req))], 2500)

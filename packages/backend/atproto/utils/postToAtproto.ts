@@ -148,7 +148,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       // Local users
       if (!user.isBlueskyUser) {
-        if (user.bskyDid && user.enableBsky) {
+        if (user.bskyDid && user.enableBsky ) {
           const response = await agent.getProfile({ actor: user.bskyDid });
           if (response.data)
             postText = postText.replaceAll(

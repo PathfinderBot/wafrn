@@ -55,7 +55,7 @@ async function getPetitionSigned(
       res = await petitionResponse.json();
     } else {
       logger.trace({
-        message: "Error petition: " + petitionResponse.status,
+        message: "Error petition: " + petitionResponse?.status,
         url: target,
       });
     }
@@ -64,7 +64,7 @@ async function getPetitionSigned(
       message: `Problem doing petition to ${target}`,
       error,
     });
-    if (petitionResponse.status === 410) {
+    if (petitionResponse?.status === 410) {
       const webfingerUrl = target.split(
         ".well-known/webfinger/?resource=acct:"
       )[1];

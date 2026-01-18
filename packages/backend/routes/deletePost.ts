@@ -66,7 +66,7 @@ export default function deletePost(app: Application) {
           }
         }
         // bsky delete
-        if (postToDelete.bskyUri && user.enableBsky) {
+        if (postToDelete.bskyUri && user.enableBsky && user.bskyDid) {
           const agent = await getAtProtoSession(user)
           if (postToDelete.bskyCid) {
             await agent.deletePost(postToDelete.bskyUri)
@@ -204,7 +204,7 @@ export default function deletePost(app: Application) {
         if (!reblogsToDelete) {
           return res.send({ success: true })
         }
-        if (user.enableBsky) {
+        if (user.enableBsky && user.bskyDid) {
           const agent = await getAtProtoSession(user)
           postsToDeleteUnfiltered
             .filter((elem) => elem.bskyUri && !elem.bskyCid)

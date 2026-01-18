@@ -1,19 +1,47 @@
 import { AtpAgent } from '@atproto/api'
-import { Notification, Post, PostMentionsUserRelation, User } from '../../models/index.js'
+import { User } from '../../models/index.js'
 import { redisCache } from '../../utils/redis.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { logger } from '../../utils/logger.js'
 import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSession.js'
-import { forceUpdateBskyPassword } from '../../utils/atproto/updateUserDidDoc.js'
-import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
-import { createNotification } from '../../utils/pushNotifications.js'
+import handleAgentLoginFail from './handleAgentLoginFail.js'
+import { wait } from '../../utils/wait.js'
+
+
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
+  /*
+    This is a dirty solution, but we want to retry multiple times before saying "fuck off"
+    and disabling bsky for the user!
+    Also there is a posibility multiple tries happen at the same time so we should to account for 
+    the posibility of the password disapearing mid update. At this moment we are NOT gona test for that!
+  */
+  let res: AtpAgent = await getAtProtoSessionInternal(userInput, force)
+  if(res.did) {
+    return res;
+  } else {
+    await wait(1000)
+    res = await getAtProtoSessionInternal(userInput, true)
+    if(res.did) {
+      return res;
+    } else {
+      await wait(2500)
+      res = await getAtProtoSessionInternal(userInput, true)
+      if(!res.did && userInput) {
+          await handleAgentLoginFail(userInput)
+      }
+      return res;
+
+    }
+  }
+}
+
+async function getAtProtoSessionInternal(userInput?: User, force?: boolean): Promise<AtpAgent> {
   let user = userInput ? ((await User.scope('full').findByPk(userInput.id)) as User) : undefined
   if (true && force && user) {
     await redisCache.del('bskySession:' + user.id)
   }
-  if (!force && user && user.url == completeEnvironment.adminUser) {
+  if (!force && user && user.url === completeEnvironment.adminUser) {
     // a bit dirty innit?
     return await getAdminAtprotoSession()
   }
@@ -34,41 +62,41 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
       message: `Obtaining session for ${user.url}`
     })
     // disabled cache here meanwhile for testing
-    const existingSession = force ? null : null // await redisCache.get('bskySession:' + user.id)
+    const existingSession = force ? null : await redisCache.get('bskySession:' + user.id)
     let loggedIn = false
     if (existingSession) {
-      loggedIn = (await agent.sessionManager.resumeSession(JSON.parse(existingSession))).success
+      const { success } = await agent.sessionManager.resumeSession(JSON.parse(existingSession))
+      loggedIn = success
     }
     try {
       if (!loggedIn) {
         await redisCache.del('bskySession:' + user.id)
+        if (!user.bskyDid) {
+          throw new Error(`Cannot log in without a bskyDid on user: ${user.url}`)
+        }
+        if (!user.bskyAppPassword) {
+          throw new Error(`Cannot log in without a bskyAppPassword on user: ${user.url}`)
+        }
+
         await agent.sessionManager.login({
-          identifier: user.bskyDid as string,
-          password: (user.bskyAppPassword || user.bskyAuthData) as string
+          identifier: user.bskyDid,
+          password: user.bskyAppPassword
         })
       }
     } catch (error) {
-      await redisCache.del('bskySession:' + user.id)
       logger.error({
         message: `Error logging in with bsky user ${user.url}`,
         user: user.url,
         error: error
       })
-      const tmpAgent =  undefined // await forceUpdateBskyPassword(user)
-      if(tmpAgent) {
-        return tmpAgent
-      }
-      else {
-        const error =  new Error(`Error obtaining bsky session for user ${user.url}`)
-        logger.error({
-          message: `Error with user bsky session on user ${user.url}`,
-          error: error,
-          stacktrace: error.stack
-        })
+      if (user.url !== completeEnvironment.adminUser) {
+        await handleAgentLoginFail(user)
       }
     }
   }
   return agent
 }
+
+
 
 export { getAtProtoSession }

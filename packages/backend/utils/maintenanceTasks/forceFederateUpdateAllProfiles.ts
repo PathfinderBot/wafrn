@@ -17,7 +17,7 @@ const localUsers = await User.findAll({
 console.log(`---- Starting force update of ${localUsers.length} federated profiles ----`)
 for await (const user of localUsers) {
   await sendUpdateProfile(user)
-  if (user.enableBsky) {
+  if (user.enableBsky && user.bskyDid) {
     const bskySession = await getAtProtoSession(user)
     await updateBlueskyProfile(bskySession, user)
   }

@@ -170,9 +170,9 @@ function getCheckFediverseSignatureFunction(force = false) {
             ) {
               success = true;
             } else {
-              logger.debug(
-                `POST Signature verifications failed for ${hostUrl}: ${remoteUserUrl}`
-              );
+              // logger.debug(
+              //   `POST Signature verifications failed for ${hostUrl}: ${remoteUserUrl}`
+              // );
               getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
                 .catch(() => { })
                 .then(() => { });

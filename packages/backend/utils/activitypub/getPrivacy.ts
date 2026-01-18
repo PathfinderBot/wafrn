@@ -20,8 +20,8 @@ function getApObjectPrivacy(apObject: activityPubObject, remoteUser: any): Priva
     // post is PUBLIC
     privacy = Privacy.Public
   }
-  if (remoteUser.isBot) {
-    privacy = privacy >= Privacy.Unlisted ? privacy : Privacy.Unlisted
+  if (remoteUser.isBot && privacy == Privacy.Public) {
+    privacy = Privacy.Unlisted
   }
 
   return privacy
