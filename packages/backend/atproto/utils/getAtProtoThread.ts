@@ -99,7 +99,7 @@ async function processSinglePost(
       );
       if (res.ok) {
         const json = (await res.json()) as { pds: string };
-        if (json.pds.replace(/^https?:\/\//, "") === "atproto.brid.gy") {
+        if (json.pds.toLowerCase().replace(/^https?:\/\//, "").startsWith("atproto.brid.gy")) {
           // if user is on bridgy pds, verify it
           verifiedFedi = post.record.bridgyOriginalUrl as string;
           logger.info(
