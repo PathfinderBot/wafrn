@@ -30,27 +30,28 @@ function cssToMfm(child: string, types: Record<string, string>): string {
   if (types['color']) {
     try {
       const c = Color(types['color'])
-      mfm = `$[fg.${c.hex().replace('#', '')} ${mfm}]`
+      mfm = `$[fg.color=${c.hex().replace('#', '')} ${mfm}]`
     } catch {
-      mfm = `$[fg.${types['color'].replace('#', '')} ${mfm}]`
+      mfm = `$[fg.color=${types['color'].replace('#', '')} ${mfm}]`
     }
   }
   if (types['background-color']) {
     try {
       const c = Color(types['background-color'])
-      mfm = `$[bg.${c.hex().replace('#', '')} ${mfm}]`
+      mfm = `$[bg.color=${c.hex().replace('#', '')} ${mfm}]`
     } catch {
-      mfm = `$[bg.${types['background-color'].replace('#', '')} ${mfm}]`
+      mfm = `$[bg.color=${types['background-color'].replace('#', '')} ${mfm}]`
     }
   }
   if (types['background']) {
     try {
       const c = Color(types['background'])
-      mfm = `$[bg.${c.hex().replace('#', '')} ${mfm}]`
+      mfm = `$[bg.color=${c.hex().replace('#', '')} ${mfm}]`
     } catch {
-      mfm = `$[bg.${types['background'].replace('#', '')} ${mfm}]`
+      mfm = `$[bg.color=${types['background'].replace('#', '')} ${mfm}]`
     }
   }
+
   if (types['font-weight'] === 'bold') mfm = `**${mfm}**`
   if (types['font-style'] === 'italic') mfm = `*${mfm}*`
   if (types['text-decoration']?.includes('line-through')) mfm = `~~${mfm}~~`
