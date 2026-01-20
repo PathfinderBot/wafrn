@@ -51,6 +51,7 @@ function cssToMfm(child: string, types: Record<string, string>): string {
       mfm = `$[bg.color=${types['background'].replace('#', '')} ${mfm}]`
     }
   }
+
   if (types['font-weight'] === 'bold') mfm = `**${mfm}**`
   if (types['font-style'] === 'italic') mfm = `*${mfm}*`
   if (types['text-decoration']?.includes('line-through')) mfm = `~~${mfm}~~`
