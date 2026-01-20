@@ -184,6 +184,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     where: {
       postId: post.id,
     },
+    order: [['mediaOrder', 'ASC']]
   });
 
   let postShortened = false;
