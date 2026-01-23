@@ -376,13 +376,15 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     });
     return { media, blob: data.blob };
   });
-
-  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4) {
-    const bskyMedias = await Promise.all(bskyMediaPromises);
+  const bskyMedias = await Promise.all(bskyMediaPromises);
+  const isNotValidMedia = bskyMedias.some((media) => 
+      media.media.mediaType?.includes('pdf')
+    )
+  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4 && !isNotValidMedia) {
+    
     const video = bskyMedias.find((media) =>
       media.media.mediaType?.startsWith("video/")
     );
-
     if (video) {
       res.embed = {
         $type: "app.bsky.embed.video",
@@ -406,7 +408,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       };
     }
     // Shortening when media is present is handled earlier
-  } else if (postShortened || bskyMediaPromises.length > 4) {
+  } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
     res.embed = {
       $type: "app.bsky.embed.external",
       external: {

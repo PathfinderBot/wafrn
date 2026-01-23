@@ -29,7 +29,7 @@ export class FileUploadComponent {
   readonly config = input({
     url: `/uploadMedia`,
     formdataName: 'image',
-    formats: `image/*, video/*, audio/*`,
+    formats: `image/*, video/*, audio/*, application/pdf`,
     buttonText: ``
   })
   @Output() fileUpload = new EventEmitter<WafrnMedia>()
