@@ -10,6 +10,8 @@ import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
 import { getRemoteActor } from "../../utils/activitypub/getRemoteActor.js";
 import { Queue } from "bullmq";
 import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSession.js";
+import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
+import { resolveHandle } from "../../utils/atproto/resolveHandleToDid.js";
 
 const mergeUsersQueue = new Queue("mergeUsers", {
   connection: completeEnvironment.bullmqConnection,
@@ -36,7 +38,7 @@ async function forcePopulateUsers(dids: string[], localUser: User) {
   const notFoundUsers = dids.filter((elem) => !foundUsersDids.includes(elem));
   if (notFoundUsers.length > 0) {
     for await (const did of notFoundUsers) {
-      await getAtprotoUser(did, localUser);
+      await getAtprotoUser(did);
       await wait(100);
     }
   }
@@ -44,10 +46,10 @@ async function forcePopulateUsers(dids: string[], localUser: User) {
 
 async function getAtprotoUser(
   inputHandle: string,
-  localUser: User
 ): Promise<User | undefined> {
   // we check if we found the user
   let avatarString = ``;
+  let headerString = ``;
   if (!inputHandle) {
     return (await getDeletedUser()) as User;
   }
@@ -76,11 +78,12 @@ async function getAtprotoUser(
   if (userFound && userFound.email) {
     return (await User.findByPk(userFound.id)) as User;
   }
+  const did = (await resolveHandle(handle)) as string
+  const doc = await getDidDoc(did)
   if (userFound) {
     avatarString = userFound.avatar;
 
     // we check if it's bridgy fed pds by getting did doc of course
-    const doc = await getDidDoc(userFound.bskyDid ?? '')
     const bskyPds = doc?.service?.find(x => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
     if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
       // bridgy user. find the alsoknownas user
@@ -105,12 +108,16 @@ async function getAtprotoUser(
       }
     }
   }
-  const agent = await getAdminAtprotoSession()
   // TODO check if current user exist
   let bskyUserResponse = undefined;
-  if (!bskyUserResponse) {
     try {
-      bskyUserResponse = await agent.getProfile({ actor: handle });
+      const pds = await getServerFromDid(did)
+      const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`)).json()
+      console.log(response)
+      if(response && response.records && response.records[0]) {
+        const pdsData = response.records[0]
+        bskyUserResponse = pdsData
+      }
     } catch (error) {
       return (await User.findOne({
         where: {
@@ -118,30 +125,38 @@ async function getAtprotoUser(
         },
       })) as User;
     }
-  }
-  if (bskyUserResponse.success) {
-    const data = bskyUserResponse.data;
-    if (data.avatar) {
-      let avatarCID = data.avatar.split("/")[7];
+  
+  if (bskyUserResponse) {
+    const data = bskyUserResponse;
+    if (data.value.avatar) {
+      let avatarCID = data.value.avatar.ref['$link'];
       if (avatarCID) {
-        avatarString = `?cid=${avatarCID.split("@jpeg")[0]}&did=${data.did}`;
+        avatarString = `?cid=${avatarCID}&did=${did}`;
       }
     }
+    if(data.value.banner) {
+      let bannerCID = data.value.banner.ref['$link'];
+      if(bannerCID) {
+        headerString = `?cid=${bannerCID}&did=${did}`
+      }
+    }
+    
+    const handle = (doc && doc.alsoKnownAs) ? doc.alsoKnownAs.filter(elem => elem.startsWith('at://'))[0].split('at://')[1] : 'handle.invalid'
     const newDataTmp = {
       hideProfileNotLoggedIn: false,
       hideFollows: false,
-      bskyDid: data.did,
+      bskyDid: did,
       url:
         "@" +
-        (data.handle === "handle.invalid"
+        (handle === "handle.invalid"
           ? `handle.invalid${data.did}`
-          : data.handle),
-      name: data.displayName ? data.displayName : data.handle,
+          : handle),
+      name: data.value.displayName ? data.value.displayName : handle,
       avatar: avatarString,
-      description: data.description ? (data.description as string) : "",
-      followingCount: data.followsCount as number,
-      followerCount: data.followersCount as number,
-      headerImage: data.banner as string,
+      description: data.value.description ||  "",
+      //followingCount: data.followsCount as number,
+      //followerCount: data.followersCount as number,
+      headerImage: headerString,
       // bsky does not has this function lol
       manuallyAcceptsFollows: false,
       updatedAt: new Date(),

@@ -1,13 +1,14 @@
-import { PlcClient } from '@atcute/did-plc'
 import { DidDocument } from '@atcute/identity'
+import { getServerFromDid } from './getServerFromDid.js'
 
-const client = new PlcClient()
 
 export async function getDidDoc(did: string): Promise<DidDocument | undefined> {
   if (did.startsWith('at://')) did = did.replace(/^at:\/\//, '')
   if (did.startsWith('did:plc:')) {
     try {
-      return await client.getDocument(did as `did:plc:${string}`)
+      const server = await getServerFromDid(did)
+      let petitionRes = await (await (fetch(`${server}/xrpc/com.atproto.repo.describeRepo?repo=${encodeURIComponent(did)}`))).json()
+      return petitionRes.didDoc as DidDocument
     } catch {
       return undefined
     }
