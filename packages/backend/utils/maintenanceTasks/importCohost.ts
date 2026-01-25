@@ -6,6 +6,7 @@ import optimizeMedia from '../optimizeMedia.js'
 import generateRandomString from '../generateRandomString.js'
 import { Ask, Media, Post } from '../../models/index.js'
 import { Privacy } from '../../models/post.js'
+import escapeHTML from 'escape-html'
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
   literalMidWordUnderscores: true,
@@ -67,7 +68,7 @@ for await (const postToImportFolder of postsToImportFolder) {
       case 'ask': {
         // TODO attach ask to post.
         const askData = await Ask.create({
-          question: block.ask?.content,
+          question: escapeHTML(block.ask?.content),
           createdAt: new Date(block.ask?.sentAt as string),
           updatedAt: new Date(block.ask?.sentAt as string),
           answered: true,
