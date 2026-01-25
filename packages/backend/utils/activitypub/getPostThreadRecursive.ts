@@ -46,6 +46,7 @@ import {
   ThreadViewPost,
 } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
+import escapeHTML from "escape-html";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -195,17 +196,16 @@ async function getPostThreadRecursive(
             return { href: elem };
           });
         }
-        let federatedAsks: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === "AskQuestion" )
-        
+        let federatedAsks: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === "AskQuestion")
+
         const fediEmojis: any[] = postPetition.tag?.filter(
           (elem: fediverseTag) => elem.type === "Emoji"
         );
 
         const privacy = getApObjectPrivacy(postPetition, remoteUser);
 
-        let postTextContent = `${
-          postPetition.content ? postPetition.content : ""
-        }`; // Fix for bridgy giving this as undefined
+        let postTextContent = `${postPetition.content ? postPetition.content : ""
+          }`; // Fix for bridgy giving this as undefined
         if (postPetition.type == "Video") {
           // peertube federation. We just add a link to the video, federating this is HELL
           postTextContent =
@@ -236,8 +236,8 @@ async function getPostThreadRecursive(
                 userId:
                   remoteUserServerBaned || remoteUser.banned
                     ? (
-                        await deletedUser
-                      )?.id
+                      await deletedUser
+                    )?.id
                     : remoteUser.id,
                 description: remoteFile.name,
                 ipUpload: "IMAGE_FROM_OTHER_FEDIVERSE_INSTANCE",
@@ -327,7 +327,7 @@ async function getPostThreadRecursive(
                     bskyUri = undefined;
                   }
                 }
-              } catch {}
+              } catch { }
             }
           }
         }
@@ -337,8 +337,8 @@ async function getPostThreadRecursive(
           content_warning: postPetition.summary
             ? postPetition.summary
             : remoteUser.NSFW
-            ? "User is marked as NSFW by this instance staff. Possible NSFW without tagging"
-            : "",
+              ? "User is marked as NSFW by this instance staff. Possible NSFW without tagging"
+              : "",
           createdAt: createdAt,
           updatedAt: createdAt,
           userId:
@@ -354,9 +354,9 @@ async function getPostThreadRecursive(
           bskyCid: postPetition.blueskyCid,
           ...(bskyCid && bskyUri
             ? {
-                bskyCid,
-                bskyUri,
-              }
+              bskyCid,
+              bskyUri,
+            }
             : {}),
         };
 
@@ -478,26 +478,26 @@ async function getPostThreadRecursive(
         newPost.setQuoted(quotes);
 
         try {
-          if(federatedAsks && federatedAsks.length) {
-          await Ask.destroy({
-            where: {
-              postId: newPost.id
-            }
-          })
-          const askTag = federatedAsks[0]; // only first ask sorryyy
-          if(askTag.actor && askTag.representation && askTag.name) {
-            const asker = askTag.actor != 'anonymous' ? await getRemoteActor(askTag.actor, user ) : undefined;
-            const askText = askTag.name;
-            const htmlToRemove = askTag.representation
-            await Ask.create({
-              postId: newPost.id,
-              userAsked: newPost.userId,
-              userAsker: asker?.id,
-              question: askText
+          if (federatedAsks && federatedAsks.length) {
+            await Ask.destroy({
+              where: {
+                postId: newPost.id
+              }
             })
-            newPost.content = newPost.content.replace(htmlToRemove, '')
+            const askTag = federatedAsks[0]; // only first ask sorryyy
+            if (askTag.actor && askTag.representation && askTag.name) {
+              const asker = askTag.actor != 'anonymous' ? await getRemoteActor(askTag.actor, user) : undefined;
+              const askText = askTag.name;
+              const htmlToRemove = askTag.representation
+              await Ask.create({
+                postId: newPost.id,
+                userAsked: newPost.userId,
+                userAsker: asker?.id,
+                question: escapeHTML(askText)
+              })
+              newPost.content = newPost.content.replace(htmlToRemove, '')
+            }
           }
-        }
         } catch (error) {
           logger.info({
             message: `Error setting wafrn ask`,
@@ -529,7 +529,7 @@ async function getPostThreadRecursive(
         }
         try {
           await addAsksToPost(newPost, fediTags);
-        } catch (error) {}
+        } catch (error) { }
         if (mentionedUsersIds.length != 0) {
           await processMentions(newPost, mentionedUsersIds);
         }
@@ -548,7 +548,7 @@ async function getPostThreadRecursive(
             )[1];
           }
           await Ask.create({
-            question: askContent,
+            question: escapeHTML(askContent),
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,
@@ -600,7 +600,7 @@ async function getPostThreadRecursive(
                 },
               }
             );
-          } catch {}
+          } catch { }
           await QuestionPoll.update(
             {
               postId: newPost.id,
