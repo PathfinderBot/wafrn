@@ -1480,7 +1480,7 @@ function userRoutes(app: Application) {
     const pasword = req.body.password
     if (user && bskyUrl && pasword) {
       const localIds = await getAllLocalUserIds()
-      const bskyUser = await getAtprotoUser(bskyUrl, await getAdminUser())
+      const bskyUser = await getAtprotoUser(bskyUrl)
       if (bskyUser && bskyUser.url === user.url) {
         return res.send({
           success: true

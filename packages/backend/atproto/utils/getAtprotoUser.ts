@@ -78,7 +78,7 @@ async function getAtprotoUser(
   if (userFound && userFound.email) {
     return (await User.findByPk(userFound.id)) as User;
   }
-  const did = (await resolveHandle(handle)) as string
+  const did = handle.startsWith('did:') ? handle : (await resolveHandle(handle)) as string
   const doc = await getDidDoc(did)
   if (userFound) {
     avatarString = userFound.avatar;
@@ -113,7 +113,6 @@ async function getAtprotoUser(
     try {
       const pds = await getServerFromDid(did)
       const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`)).json()
-      console.log(response)
       if(response && response.records && response.records[0]) {
         const pdsData = response.records[0]
         bskyUserResponse = pdsData

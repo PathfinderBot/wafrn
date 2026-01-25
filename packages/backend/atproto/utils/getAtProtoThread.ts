@@ -45,6 +45,10 @@ import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSessi
 import { getPostThreadRecursive } from "../../utils/activitypub/getPostThreadRecursive.js";
 import { Queue, QueueEvents } from "bullmq";
 import { getAdminUser } from "../../utils/getAdminAndDeletedUser.js";
+import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
+import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
+import { DidDocument } from "@atcute/identity";
+import { extractUriComponents } from "./obtainUriComponents.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -58,17 +62,16 @@ const markdownConverter = new showdown.Converter({
 const adminUser = getAdminUser();
 
 async function processSinglePost(
-  post: PostView,
-  parentId?: string,
-  forceUpdate?: boolean
+  uri: string,
+  forceUpdate = false
 ): Promise<string | undefined> {
-  if (!post || !completeEnvironment.enableBsky) {
+  if (!completeEnvironment.enableBsky) {
     return undefined;
   }
   if (!forceUpdate) {
     const existingPost = await Post.findOne({
       where: {
-        bskyUri: post.uri,
+        bskyUri: uri,
       },
     });
     if (existingPost && !forceUpdate) {
@@ -77,47 +80,48 @@ async function processSinglePost(
   }
   let postCreator: User | undefined;
   try {
+    const did = uri.replace('at://', '').split('/')[0]
+    const doc = (await getDidDoc(did)) as DidDocument
+
+    const handle = (doc.alsoKnownAs as string[]).filter(elem => elem.startsWith('at://'))[0].split('at://')[1]
     postCreator = await getAtprotoUser(
-      post.author.did,
-      (await adminUser) as User
+      handle
     );
   } catch (error) {
     logger.debug({
       message: `Problem obtaining user from post`,
-      post,
-      parentId,
+      uri,
       forceUpdate,
-      error,
+      error: error,
     });
   }
   let verifiedFedi: string | undefined;
-  if ("fediverseId" in post.record || "bridgyOriginalUrl" in post.record) {
-    if ("bridgyOriginalUrl" in post.record) {
+  const postPetitionPds = await getPostThreadPDSDirect(uri)
+  const parentUri = postPetitionPds.value.reply?.parent?.uri ? postPetitionPds.value.reply.parent.uri : undefined;
+    const parentId = parentUri ? await processSinglePost(parentUri, false) : undefined
+  if ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value) {
+    if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
         "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
-        `?identifier=${post.author.did}`
+        `?identifier=${postPetitionPds.value.author.did}`
       );
       if (res.ok) {
         const json = (await res.json()) as { pds: string };
         if (json.pds.toLowerCase().replace(/^https?:\/\//, "").startsWith("atproto.brid.gy")) {
           // if user is on bridgy pds, verify it
-          verifiedFedi = post.record.bridgyOriginalUrl as string;
-          logger.info(
-            { uri: post.uri, url: post.record.bridgyOriginalUrl },
-            "fedi bridged post is bridgy fed"
-          );
+          verifiedFedi = postPetitionPds.value.bridgyOriginalUrl as string;
         }
       }
     } else {
       // prob wafrn post, but lets verify it
       try {
         const waf = await fetch(
-          `https://${new URL(post.record.fediverseId as string).hostname
+          `https://${new URL(postPetitionPds.value.fediverseId as string).hostname
           }/api/environment`
         );
         if (waf.ok) {
           const res = await fetch(
-            (post.record.fediverseId as string).replace(
+            (postPetitionPds.value.fediverseId as string).replace(
               "fediverse/",
               "api/v2/"
             ),
@@ -129,19 +133,15 @@ async function processSinglePost(
           );
           if (res.ok) {
             const json = (await res.json()) as { posts: { bskyCid: string }[] };
-            if (json.posts[0].bskyCid === post.cid) {
-              verifiedFedi = post.record.fediverseId as string;
-              logger.info(
-                { uri: post.uri, url: post.record.fediverseId },
-                "fedi bridged post is wafrn"
-              );
+            if (json.posts[0].bskyCid === postPetitionPds.cid) {
+              verifiedFedi = postPetitionPds.value.fediverseId as string;
             }
           }
         }
       } catch (error) {
         logger.debug({
           error,
-          message: `Error in obtaining fedi post ${post.record.fediverseId}`,
+          message: `Error in obtaining fedi post ${postPetitionPds.value.fediverseId}`,
         });
       }
     }
@@ -159,14 +159,14 @@ async function processSinglePost(
           undefined,
           remotePost.id
         );
-        remotePost.bskyCid = post.cid;
-        remotePost.bskyUri = post.uri;
+        remotePost.bskyCid = postPetitionPds.cid;
+        remotePost.bskyUri = postPetitionPds.uri;
         // if there's already a bsky post about
         // this that doesn't have any fedi urls, delete it
         // and prob update the things
         let existingPost = await Post.findOne({
           where: {
-            bskyCid: post.cid,
+            bskyCid: postPetitionPds.cid,
             remotePostId: null,
           },
         });
@@ -329,7 +329,7 @@ async function processSinglePost(
 
           await Post.destroy({
             where: {
-              bskyCid: post.cid,
+              bskyCid: postPetitionPds.cid,
               remotePostId: null,
               userId: {
                 [Op.notIn]: await getAllLocalUserIds(),
@@ -347,11 +347,11 @@ async function processSinglePost(
       });
     }
   }
-  if (!postCreator || !post) {
+  if (!postCreator || !postPetitionPds) {
     const usr = postCreator
       ? postCreator
       : await User.findOne({ where: { url: completeEnvironment.deletedUser } });
-
+    
     const invalidPost = await Post.create({
       userId: usr?.id,
       content: `Failed to get atproto post`,
@@ -363,10 +363,10 @@ async function processSinglePost(
     return invalidPost.id;
   }
   if (postCreator) {
-    const medias = getPostMedias(post);
+    const medias = getPostMedias(postPetitionPds);
     let tags: string[] = [];
     let mentions: string[] = [];
-    let record = post.record as any;
+    let record = postPetitionPds.value as any;
     let postText = record.text;
     let federatedWoot = false;
     if (record.fullText || record.bridgyOriginalText) {
@@ -417,7 +417,7 @@ async function processSinglePost(
     }
     if (!federatedWoot) postText = postText.replaceAll("\n", "<br>");
 
-    const labels = getPostLabels(post);
+    const labels = getPostLabels(postPetitionPds.value);
     let cw =
       labels.length > 0
         ? `Post is labeled as: ${labels.join(", ")}`
@@ -426,27 +426,16 @@ async function processSinglePost(
       cw =
         "This user has been marked as NSFW and the post has been labeled automatically as NSFW";
     }
-    if(record.reply?.parent && !parentId) {
-      try {
-        parentId = await getAtProtoThread(record.reply.parent.uri)
-      } catch (error) {
-        logger.debug({
-          message: `Error obtaining parent:  ${record.reply.parent.uri}`,
-          error: error
-        })
-      }
-      
-    }
     const newData = {
       userId: postCreator.id,
-      bskyCid: post.cid,
-      bskyUri: post.uri,
+      bskyCid: postPetitionPds.cid,
+      bskyUri: postPetitionPds.uri,
       content: postText,
-      createdAt: new Date((post.record as any).createdAt),
+      createdAt: new Date((postPetitionPds.value as any).createdAt),
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...getPostInteractionLevels(post, parentId),
+      ...getPostInteractionLevels(postPetitionPds, parentId),
     };
     if (!parentId) {
       delete newData.parentId;
@@ -457,7 +446,7 @@ async function processSinglePost(
       await wait(1500);
     }
     let [postToProcess, created] = await Post.findOrCreate({
-      where: { bskyUri: post.uri },
+      where: { bskyUri: postPetitionPds.uri },
       defaults: newData,
     });
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
@@ -544,9 +533,9 @@ async function processSinglePost(
           })
         );
       }
-      const quotedPostUri = getQuotedPostUri(post);
+      const quotedPostUri = getQuotedPostUri(postPetitionPds);
       if (quotedPostUri) {
-        const quotedPostId = await getAtProtoThread(quotedPostUri);
+        const quotedPostId = await processSinglePost(quotedPostUri);
         if (quotedPostId) {
           const quotedPost = await Post.findByPk(quotedPostId);
           if (quotedPost) {
@@ -577,10 +566,10 @@ async function processSinglePost(
   }
 }
 
-function getPostMedias(post: PostView) {
+function getPostMedias(post: any) {
   let res: MediaAttributes[] = [];
   const labels = getPostLabels(post);
-  const embed = (post.record as any).embed;
+  const embed = post.value.embed;
   if (embed) {
     if (embed.external) {
       res = res.concat([
@@ -618,7 +607,7 @@ function getPostMedias(post: PostView) {
             const cid = media.image.ref["$link"]
               ? media.image.ref["$link"]
               : media.image.ref.toString();
-            const did = post.author.did;
+            const {did} = extractUriComponents(post.uri)
             return {
               mediaType: media.image.mimeType,
               description: media.alt,
@@ -749,86 +738,13 @@ function getPostInteractionLevels(
   };
 }
 
-async function getAtProtoThread(
-  uri: string,
-  forceUpdate?: boolean,
-  ignoreDescendents?: boolean
-): Promise<string | undefined> {
-  const postExisting = forceUpdate
-    ? undefined
-    : await Post.findOne({
-      where: {
-        bskyUri: uri,
-      },
-    });
-  if (postExisting) {
-    return postExisting.id;
-  }
-
-  // TODO optimize this a bit if post is not in reply to anything that we dont have
-  const preThread = await getPostThreadSafe({
-    uri: uri,
-    depth: ignoreDescendents ? 0 : 50,
-    parentHeight: 1000,
-  });
-  if (preThread) {
-    const thread: ThreadViewPost = preThread.data.thread as ThreadViewPost;
-    //const tmpDids = getDidsFromThread(thread)
-    //forcePopulateUsers(tmpDids, (await adminUser) as Model<any, any>)
-    let parentId: string | undefined = undefined;
-    if (thread.parent) {
-      parentId = (await processParents(
-        thread.parent as ThreadViewPost
-      )) as string;
-    }
-    const procesedPost = await processSinglePost(
-      thread.post,
-      parentId,
-      forceUpdate
-    );
-    if (thread.replies && procesedPost) {
-      for await (const repliesThread of thread.replies) {
-        processReplies(repliesThread as ThreadViewPost, procesedPost);
-      }
-    }
-    return procesedPost as string;
-  } else {
-  }
+async function processReplies(uri: string) {
+  // TODO we need to get constelations
 }
 
-async function processReplies(thread: ThreadViewPost, parentId: string) {
-  if (thread && thread.post) {
-    try {
-      const post = await processSinglePost(thread.post, parentId);
-      if (thread.replies && post) {
-        for await (const repliesThread of thread.replies) {
-          processReplies(repliesThread as ThreadViewPost, post);
-        }
-      }
-    } catch (error) {
-      logger.debug({
-        message: `Error processing bluesky replies`,
-        error: error,
-        thread: thread,
-        parentId,
-      });
-    }
-  }
-}
-
-async function processParents(
-  thread: ThreadViewPost
-): Promise<string | undefined> {
-  let parentId: string | undefined = undefined;
-  if (thread.parent) {
-    parentId = await processParents(thread.parent as ThreadViewPost);
-  }
-  return await processSinglePost(thread.post, parentId);
-}
-
-function getQuotedPostUri(post: PostView): string | undefined {
+function getQuotedPostUri(post: any): string | undefined {
   let res: string | undefined = undefined;
-  const embed = (post.record as any).embed;
+  const embed = (post.value as any).embed;
   if (embed && ["app.bsky.embed.record"].includes(embed["$type"])) {
     res = embed.record.uri;
   }
@@ -842,17 +758,19 @@ function getQuotedPostUri(post: PostView): string | undefined {
   return res;
 }
 
-export async function getPostThreadSafe(options: any) {
+async function getPostThreadPDSDirect(inputUri: string) {
   try {
-    const agent = await getAdminAtprotoSession();
-    return await agent.getPostThread(options);
+    const {did, collection, rKey} = extractUriComponents(inputUri)
+    const pdsUrl = await getServerFromDid(did)
+    const petition = await (await fetch(`${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`)).json()
+    return petition
   } catch (error) {
     logger.debug({
-      message: `Error trying to get atproto thread`,
-      options: options,
-      error: error,
-    });
+      message: `Error obtaining from pds: ${inputUri}`,
+      error: error
+    })
   }
+  
 }
 
-export { getAtProtoThread, getQuotedPostUri, processSinglePost };
+export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect };

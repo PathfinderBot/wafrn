@@ -1,9 +1,9 @@
 import { Job } from "bullmq";
 import { Post } from "../../models/post.js";
-import { getAtProtoThread } from "../../atproto/utils/getAtProtoThread.js";
 import { getPostThreadRecursive } from "../activitypub/getPostThreadRecursive.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 import { logger } from "../logger.js";
+import { processSinglePost } from "../../atproto/utils/getAtProtoThread.js";
 
 
 async function mergePost(job: Job) {
@@ -14,7 +14,7 @@ async function mergePost(job: Job) {
         logger.info({ message: `merging post`,id: post.id })
         if (post.bskyUri && !post.remotePostId) {
           // bsky post
-          await getAtProtoThread(post.bskyUri, true)
+          await processSinglePost(post.bskyUri, true)
         } else if (post.remotePostId && !post.bskyUri) {
           // fedi post
           const remotePost = await getPostThreadRecursive(adminUser, post.remotePostId)

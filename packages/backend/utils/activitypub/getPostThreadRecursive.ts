@@ -36,8 +36,6 @@ import { bulkCreateNotifications } from "../pushNotifications.js";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { Privacy } from "../../models/post.js";
 import {
-  getAtProtoThread,
-  getPostThreadSafe,
   processSinglePost,
 } from "../../atproto/utils/getAtProtoThread.js";
 import * as cheerio from "cheerio";
@@ -106,7 +104,7 @@ async function getPostThreadRecursive(
     if (postInDatabase) {
       return postInDatabase;
     } else if (!remotePostObject) {
-      const postId = await getAtProtoThread(remotePostId);
+      const postId = await processSinglePost(remotePostId);
       return await Post.findByPk(postId);
     }
   }
@@ -285,50 +283,8 @@ async function getPostThreadRecursive(
           // check if it starts at at:// then its a bridged post, we do not touch it if it's not
           if (firstFffd && firstFffd.href.startsWith("at://")) {
             // get it's bsky counterparts first, we need the cid
-            const thread = await getPostThreadSafe({
-              uri: firstFffd.href,
-            });
-            if (thread && thread.success) {
-              try {
-                const threadView = thread.data.thread as ThreadViewPost;
-                bskyCid = threadView.post.cid;
-                bskyUri = threadView.post.uri;
-                // check if it cames from wafrn
-                if (
-                  !(
-                    threadView.post.record as {
-                      fediverseId: string | undefined;
-                    }
-                  ).fediverseId
-                ) {
-                  // this is a bridgy fed post, assume main post is on bsky, use bsky user
-                  const postId = await processSinglePost(threadView.post);
-                  if (postId) {
-                    const post = await Post.findByPk(postId);
-                    if (post) {
-                      post.remotePostId = postPetition.id;
-                      await post.save();
-                      return post;
-                    }
-                  }
-                } else {
-                  // now this is a wafrn post, where we do a thing little bit different
-                  // first we going to check if the post is already on db because this can break everything
-                  let existingPost = await Post.findOne({
-                    where: {
-                      bskyCid: threadView.post.cid,
-                      remotePostId: null,
-                    },
-                  });
-                  if (existingPost) {
-                    existingBskyPost = existingPost;
-                    // do not attempt to merge it right now, this will crash backend
-                    bskyCid = undefined;
-                    bskyUri = undefined;
-                  }
-                }
-              } catch {}
-            }
+            const thread = await processSinglePost(firstFffd.href);
+            // TODO did i fuck the fusion of bsky posts and fedi posts?
           }
         }
 

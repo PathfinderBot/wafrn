@@ -9,7 +9,7 @@ import { Post, User } from "../../models/index.js";
 import { completeEnvironment } from "../../utils/backendOptions.js";
 import { logger } from "../../utils/logger.js";
 import { getAtProtoSession } from "./getAtProtoSession.js";
-import { getAtProtoThread } from "./getAtProtoThread.js";
+import { processSinglePost } from "./getAtProtoThread.js";
 
 async function handleBskyFeed(user: User, cursor: Date) {
 
@@ -17,7 +17,7 @@ async function handleBskyFeed(user: User, cursor: Date) {
         const session = await getAtProtoSession(user)
         const bskyFeed = await session.getTimeline({
             limit: completeEnvironment.postsPerPage,
-            cursor: cursor.toISOString()
+            cursor: cursor.toISOString(),  
         })
         const postsFound = (await Post.findAll({
             where: {
@@ -27,10 +27,10 @@ async function handleBskyFeed(user: User, cursor: Date) {
             }
         })).map(elem => elem.bskyUri)
         const filteredFeed = bskyFeed.data.feed.filter(elem => !postsFound.includes(elem.post.uri))
-        await Promise.allSettled(filteredFeed.map(elem => getAtProtoThread(elem.post.uri)))
+        await Promise.allSettled(filteredFeed.map(elem => processSinglePost(elem.post.uri)))
         for await (const elem of filteredFeed) {
             if(elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
-                let parentPost = await getAtProtoThread(elem.post.uri)
+                let parentPost = await processSinglePost(elem.post.uri)
                 const rewooterDid = (elem.reason as any).by?.did
                 if(parentPost && rewooterDid) {
                     const rewooter = await User.findOne({

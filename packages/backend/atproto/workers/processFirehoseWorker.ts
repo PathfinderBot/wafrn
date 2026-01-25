@@ -15,7 +15,7 @@ import {
 import { Op, Model } from 'sequelize'
 import { logger } from '../../utils/logger.js'
 import { DeleteOp, RepoOp } from '@skyware/firehose'
-import { getAtProtoThread } from '../utils/getAtProtoThread.js'
+import { processSinglePost } from '../utils/getAtProtoThread.js'
 import { getCacheAtDids } from '../cache/getCacheAtDids.js'
 import { deletePostCommon } from '../../utils/deletePost.js'
 import { redisCache } from '../../utils/redis.js'
@@ -29,7 +29,7 @@ import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 const adminUser = getAdminUser()
 async function processFirehose(job: Job) {
   // FIRST VERSION. THIS IS GONA BE DIRTY
-  const remoteUser = await getAtprotoUser(job.data.repo, (await adminUser) as User)
+  const remoteUser = await getAtprotoUser(job.data.repo)
   const operation: RepoOp = job.data.operation
   if (remoteUser && operation) {
     switch (operation.action) {
@@ -40,7 +40,7 @@ async function processFirehose(job: Job) {
             let subject = record.subject as string
             if (subject.includes('app.bsky.feed.post')) {
               // this is a bluesky post
-              const postId = await getAtProtoThread(subject)
+              const postId = await processSinglePost(subject)
               if (postId) {
                 const post = await Post.findByPk(postId);
                 if (post) {
@@ -65,7 +65,7 @@ async function processFirehose(job: Job) {
               }
             } else {
               // this is a bluesky user
-              const user = await getAtprotoUser(subject.replace('at://', ''), (await adminUser) as User);
+              const user = await getAtprotoUser(subject.replace('at://', ''));
               if (user) {
                 await Bites.create({
                   biterId: user.id,
@@ -93,7 +93,7 @@ async function processFirehose(job: Job) {
             try {
               if ((await getCacheAtDids()).followedDids.has(job.data.repo)) {
                 const postLikedUri = record.subject.uri
-                const postId = await getAtProtoThread(postLikedUri)
+                const postId = await processSinglePost(postLikedUri)
                 if (postId) {
                   user = remoteUser.url
                   likedPostId = postId
@@ -174,7 +174,7 @@ async function processFirehose(job: Job) {
           }
           case 'app.bsky.feed.post': {
             const postBskyUri = `at://${job.data.repo}/${operation.path}`
-            const postCreated = await getAtProtoThread(postBskyUri)
+            const postCreated = await processSinglePost(postBskyUri)
             if(!postCreated) {
               logger.debug(`Failed to obtain post: ${postBskyUri}`)
             }
@@ -188,7 +188,7 @@ async function processFirehose(job: Job) {
                 record})
               break
             }
-            const postToBeRewooted = await getAtProtoThread(record.subject.uri, false, false)
+            const postToBeRewooted = await processSinglePost(record.subject.uri, false)
             if (postToBeRewooted) {
               try {
                 const parent = await Post.findByPk(postToBeRewooted)
@@ -240,7 +240,7 @@ async function processFirehose(job: Job) {
             break
           }
           case 'app.bsky.graph.follow': {
-            const userFollowed = await getAtprotoUser(record.subject, (await adminUser) as User)
+            const userFollowed = await getAtprotoUser(record.subject)
             if (userFollowed) {
               let tmp = await Follows.findOrCreate({
                 where: {
@@ -266,7 +266,7 @@ async function processFirehose(job: Job) {
             break
           }
           case 'app.bsky.graph.block': {
-            const userBlocked = await getAtprotoUser(record.subject, (await adminUser) as User)
+            const userBlocked = await getAtprotoUser(record.subject)
             if (userBlocked) {
               await Blocks.create({
                 blockedId: userBlocked.id,
@@ -279,7 +279,7 @@ async function processFirehose(job: Job) {
           case 'app.bsky.feed.threadgate': {
             const postBskyUri = (operation.record as any).post
             if (postBskyUri) {
-              await getAtProtoThread(postBskyUri, true)
+              await processSinglePost(postBskyUri, true)
             }
             break
           }
@@ -423,7 +423,7 @@ async function processFirehose(job: Job) {
           case 'app.bsky.feed.threadgate': {
             const postBskyUri = (operation.record as any).post
             if (postBskyUri) {
-              await getAtProtoThread(postBskyUri, true)
+              await processSinglePost(postBskyUri, true)
             }
             break
           }
