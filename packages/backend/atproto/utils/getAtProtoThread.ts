@@ -103,7 +103,7 @@ async function processSinglePost(
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
         "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
-        `?identifier=${postPetitionPds.value.author.did}`
+        `?identifier=${extractUriComponents(uri).did}`
       );
       if (res.ok) {
         const json = (await res.json()) as { pds: string };

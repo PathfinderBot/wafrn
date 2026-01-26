@@ -36,6 +36,7 @@ import { bulkCreateNotifications } from "../pushNotifications.js";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { Privacy } from "../../models/post.js";
 import {
+  getPostThreadPDSDirect,
   processSinglePost,
 } from "../../atproto/utils/getAtProtoThread.js";
 import * as cheerio from "cheerio";
@@ -283,8 +284,28 @@ async function getPostThreadRecursive(
           // check if it starts at at:// then its a bridged post, we do not touch it if it's not
           if (firstFffd && firstFffd.href.startsWith("at://")) {
             // get it's bsky counterparts first, we need the cid
-            const thread = await processSinglePost(firstFffd.href);
+            const postBskyVersionId = await processSinglePost(firstFffd.href);
+            const postBskyVersion = postBskyVersionId ? await Post.findByPk(postBskyVersionId) : undefined
+
             // TODO did i fuck the fusion of bsky posts and fedi posts?
+            if(postBskyVersion) {
+              bskyCid = postBskyVersion.bskyCid || undefined;
+              bskyUri = postBskyVersion.bskyUri || undefined;
+              const directPetition = await getPostThreadPDSDirect(bskyUri as string)
+              if(directPetition.value.fediverseId) {
+                // This is a wafrn post
+                // first we going to check if the post is already on db because this can break everything
+                existingBskyPost = postBskyVersion;
+                bskyCid = undefined
+                bskyUri = undefined
+              } else {
+                postBskyVersion.remotePostId = postPetition.id;
+                await postBskyVersion.save()
+                return postBskyVersion;
+              }
+              const tmp = ''
+            }
+
           }
         }
 
