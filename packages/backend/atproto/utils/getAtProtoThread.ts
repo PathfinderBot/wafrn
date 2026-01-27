@@ -418,7 +418,7 @@ async function processSinglePost(
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...getPostInteractionLevels(uri, parentId),
+      ...await getPostInteractionLevels(uri, parentId),
     };
     if (!parentId) {
       delete newData.parentId;
@@ -653,29 +653,31 @@ function getPostLabels(post: PostView) {
   return Array.from(labels);
 }
 
-function getPostInteractionLevels(
+async function getPostInteractionLevels(
   uri: string,
   parentId: string | undefined
-): {
+): Promise<{
   replyControl: InteractionControlType;
   likeControl: InteractionControlType;
   reblogControl: InteractionControlType;
   quoteControl: InteractionControlType;
-} {
+}> {
   let canQuote = InteractionControl.Anyone;
   let canReply: InteractionControlType = InteractionControl.Anyone;
-  if (post.viewer && post.viewer.embeddingDisabled) {
+  const {did, collection, rKey} = extractUriComponents(uri)
+  const [threadGate, postGate] = await Promise.all([getPostThreadPDSDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`), getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)])
+
+  if (postGate?.value?.embeddingRules.length) {
     canQuote = InteractionControl.NoOne;
   }
   if (parentId) {
     canReply = InteractionControl.SameAsOp;
     canQuote = InteractionControl.SameAsOp;
   } else if (
-    post.threadgate &&
-    post.threadgate.record &&
-    (post.threadgate.record as any).allow
+    threadGate.value &&
+    (threadGate.value as any).allow
   ) {
-    const allowList = (post.threadgate.record as any).allow;
+    const allowList = (threadGate.value as any).allow;
     if (allowList.length == 0) {
       canReply = InteractionControl.NoOne;
     } else {
@@ -752,8 +754,9 @@ async function getPostThreadPDSDirect(inputUri: string) {
       message: `Error obtaining from pds: ${inputUri}`,
       error: error
     })
+    return undefined
   }
   
 }
 
-export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect };
+export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels };
