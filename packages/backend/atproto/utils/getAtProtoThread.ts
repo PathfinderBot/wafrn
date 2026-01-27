@@ -518,7 +518,7 @@ async function processSinglePost(
       }
       const quotedPostUri = getQuotedPostUri(postPetitionPds);
       if (quotedPostUri) {
-        const quotedPostId = await processSinglePost(quotedPostUri);
+        const quotedPostId = await processSinglePost(quotedPostUri, forceUpdate);
         if (quotedPostId) {
           const quotedPost = await Post.findByPk(quotedPostId);
           if (quotedPost) {
@@ -616,7 +616,7 @@ function getPostMedias(post: any) {
       const cid = video.ref["$link"]
         ? video.ref["$link"]
         : video.ref.toString();
-      const did = post.author.did;
+      const did = extractUriComponents(post.uri).did;
       res = res.concat([
         {
           mediaType: embed.video.mimeType,
