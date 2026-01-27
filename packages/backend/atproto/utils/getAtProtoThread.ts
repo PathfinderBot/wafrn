@@ -49,6 +49,8 @@ import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
 import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
 import { DidDocument } from "@atcute/identity";
 import { extractUriComponents } from "./obtainUriComponents.js";
+import { getPetitionSigned } from "../../utils/activitypub/getPetitionSigned.js";
+import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -97,8 +99,8 @@ async function processSinglePost(
   }
   let verifiedFedi: string | undefined;
   const postPetitionPds = await getPostThreadPDSDirect(uri)
-  const parentUri = postPetitionPds.value.reply?.parent?.uri ? postPetitionPds.value.reply.parent.uri : undefined;
-    const parentId = parentUri ? await processSinglePost(parentUri, false) : undefined
+  const parentUri = postPetitionPds.value?.reply?.parent?.uri ? postPetitionPds.value.reply.parent.uri : undefined;
+  const parentId = parentUri ? await processSinglePost(parentUri, false) : undefined
   if ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value) {
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
@@ -115,28 +117,10 @@ async function processSinglePost(
     } else {
       // prob wafrn post, but lets verify it
       try {
-        const waf = await fetch(
-          `https://${new URL(postPetitionPds.value.fediverseId as string).hostname
-          }/api/environment`
-        );
-        if (waf.ok) {
-          const res = await fetch(
-            (postPetitionPds.value.fediverseId as string).replace(
-              "fediverse/",
-              "api/v2/"
-            ),
-            {
-              headers: {
-                Accept: "application/json",
-              },
-            }
-          );
-          if (res.ok) {
-            const json = (await res.json()) as { posts: { bskyCid: string }[] };
-            if (json.posts[0].bskyCid === postPetitionPds.cid) {
-              verifiedFedi = postPetitionPds.value.fediverseId as string;
-            }
-          }
+        const fediPostObject = await getPetitionSigned(await getAdminUser(), postPetitionPds.value.fediverseId)
+        if(fediPostObject && fediPostObject.blueskyUri && postPetitionPds.uri == fediPostObject.blueskyUri && fediPostObject.blueskyCid && postPetitionPds.cid == fediPostObject.blueskyCid  ) {
+          // the post is real and they point each other.
+          verifiedFedi = postPetitionPds.value.fediverseId
         }
       } catch (error) {
         logger.debug({
@@ -150,15 +134,14 @@ async function processSinglePost(
     try {
       const remotePost = await getPostThreadRecursive(
         await getAdminUser(),
-        verifiedFedi
+        verifiedFedi,
+        undefined,
+        undefined,
+        {
+          forceNotBsky: true
+        }
       );
       if (remotePost) {
-        await getPostThreadRecursive(
-          await getAdminUser(),
-          verifiedFedi,
-          undefined,
-          remotePost.id
-        );
         remotePost.bskyCid = postPetitionPds.cid;
         remotePost.bskyUri = postPetitionPds.uri;
         // if there's already a bsky post about
@@ -435,7 +418,7 @@ async function processSinglePost(
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...getPostInteractionLevels(postPetitionPds, parentId),
+      ...getPostInteractionLevels(uri, parentId),
     };
     if (!parentId) {
       delete newData.parentId;
@@ -671,7 +654,7 @@ function getPostLabels(post: PostView) {
 }
 
 function getPostInteractionLevels(
-  post: PostView,
+  uri: string,
   parentId: string | undefined
 ): {
   replyControl: InteractionControlType;

@@ -67,6 +67,7 @@ async function getPostThreadRecursive(
   localPostToForceUpdate?: string,
   options?: any
 ) {
+  const checkBluesky = completeEnvironment.enableBsky && ! (options?.forceNotBsky)
   if (remotePostId === null) return;
 
   const deletedUser = getDeletedUser();
@@ -96,7 +97,7 @@ async function getPostThreadRecursive(
       },
     });
   }
-  if (completeEnvironment.enableBsky && remotePostId.startsWith("at://")) {
+  if (checkBluesky && remotePostId.startsWith("at://")) {
     // Bluesky post. Likely coming from an import
     const postInDatabase = await Post.findOne({
       where: {
@@ -282,7 +283,7 @@ async function getPostThreadRecursive(
           >;
           const firstFffd = url.find((x) => typeof x !== "string");
           // check if it starts at at:// then its a bridged post, we do not touch it if it's not
-          if (firstFffd && firstFffd.href.startsWith("at://")) {
+          if (checkBluesky && firstFffd && firstFffd.href.startsWith("at://")) {
             // get it's bsky counterparts first, we need the cid
             const postBskyVersionId = await processSinglePost(firstFffd.href);
             const postBskyVersion = postBskyVersionId ? await Post.findByPk(postBskyVersionId) : undefined
