@@ -11,13 +11,14 @@ import {
   QuestionPoll,
   Quotes,
   RemoteUserPostView,
+  sequelize,
   SilencedPost,
   User,
   UserBitesPostRelation,
   UserBookmarkedPosts,
   UserLikesPostRelations,
 } from "../../models/index.js";
-import { Model, Op } from "sequelize";
+import { Model, Op, QueryTypes } from "sequelize";
 import {
   PostView,
   ThreadViewPost,
@@ -62,6 +63,19 @@ const markdownConverter = new showdown.Converter({
 });
 
 const adminUser = getAdminUser();
+
+const processSinglePostQueue = new Queue("processSinglePost", {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 6,
+    backoff: {
+      type: "exponential",
+      delay: 2500,
+    },
+    removeOnFail: false,
+  },
+});
 
 async function processSinglePost(
   uri: string,
@@ -321,6 +335,9 @@ async function processSinglePost(
           });
         }
         await remotePost.save();
+        if(forceUpdate){
+          await processReplies(remotePost.bskyUri as string)
+        }
         return remotePost.id;
       }
     } catch (error) {
@@ -544,7 +561,9 @@ async function processSinglePost(
         }
       }
     }
-
+    if(forceUpdate){
+      await processReplies(postToProcess.bskyUri as string)
+    }
     return postToProcess.id;
   }
 }
@@ -723,8 +742,58 @@ async function getPostInteractionLevels(
   };
 }
 
-async function processReplies(uri: string) {
+async function processReplies(uri: string, cursor?: string) {
   // TODO we need to get constelations
+  await processSinglePost(uri, false)
+  const localPost = await Post.findOne({
+    where: {
+      bskyUri: uri
+    }
+  })
+  if(localPost){
+    let uriToSearch = localPost.bskyUri as string
+    if(localPost.hierarchyLevel != 1) {
+      const ancestors = (await sequelize.query(
+          `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
+          {
+            type: QueryTypes.SELECT
+          }
+        )
+      ).map((elem: any) => elem.postsId)
+      const rootPost = (await Post.findOne({
+        where: {
+          id: {
+            [Op.in]: ancestors
+          },
+          hierarchyLevel: 1
+        }
+      })) as Post
+      uriToSearch = rootPost.bskyUri as string
+
+    }
+    let url = `https://constellation.microcosm.blue/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
+    if(cursor) {
+      url = url + `&cursor=${cursor}`
+    }
+    const constellationPetition = await (await fetch(url)).json()
+    const uris = constellationPetition.linking_records.map((elem: any) => `at://${elem.did}/${elem.collection}/${elem.rkey}`)
+    await processSinglePostQueue.addBulk(uris.map((elem: string) => {
+      return {
+        name: 'processSinglePost',
+        data: {
+          post: elem,
+          forceUpdate: false
+        }
+      }
+    }))
+    if(constellationPetition.cursor) {
+      await processReplies(uri, constellationPetition.cursor)
+    }
+  }
+
+
+
+  
 }
 
 function getQuotedPostUri(post: any): string | undefined {
@@ -759,4 +828,4 @@ async function getPostThreadPDSDirect(inputUri: string) {
   
 }
 
-export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels };
+export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies };
