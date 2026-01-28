@@ -1528,6 +1528,7 @@ function userRoutes(app: Application) {
           await syncBskyFollowersAndFollowing(user.id)
           await forceUpdateCacheDidsAtThread()
           await redisCache.del('bskySession:' + user.id)
+          await updateUserDidDoc(user)
           return res.send({ success: true })
         }
       } else {
@@ -2171,6 +2172,7 @@ async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boo
   user.bskyAppPassword = appPassword
   user.enableBsky = true
   await user.save()
+  await updateUserDidDoc(user)
   if (forceLog) {
     logger.info(`Forced app password on user ${user.url}: ${appPassword}`)
   }
