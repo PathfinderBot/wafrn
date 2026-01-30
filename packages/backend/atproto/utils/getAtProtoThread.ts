@@ -132,7 +132,7 @@ async function processSinglePost(
       // prob wafrn post, but lets verify it
       try {
         const fediPostObject = await getPetitionSigned(await getAdminUser(), postPetitionPds.value.fediverseId)
-        if(fediPostObject && fediPostObject.blueskyUri && postPetitionPds.uri == fediPostObject.blueskyUri && fediPostObject.blueskyCid && postPetitionPds.cid == fediPostObject.blueskyCid  ) {
+        if (fediPostObject && fediPostObject.blueskyUri && postPetitionPds.uri == fediPostObject.blueskyUri && fediPostObject.blueskyCid && postPetitionPds.cid == fediPostObject.blueskyCid) {
           // the post is real and they point each other.
           verifiedFedi = postPetitionPds.value.fediverseId
         }
@@ -155,7 +155,15 @@ async function processSinglePost(
           forceNotBsky: true
         }
       );
-      if (remotePost) {
+      if (remotePost && remotePost.remotePostId) {
+        remotePost.bskyCid = postPetitionPds.cid;
+        remotePost.bskyUri = postPetitionPds.uri;
+        if (forceUpdate) {
+          await processReplies(remotePost.bskyUri as string)
+        }
+        await remotePost.save()
+        return remotePost.id;
+      } else if (remotePost) {
         remotePost.bskyCid = postPetitionPds.cid;
         remotePost.bskyUri = postPetitionPds.uri;
         // if there's already a bsky post about
@@ -335,7 +343,7 @@ async function processSinglePost(
           });
         }
         await remotePost.save();
-        if(forceUpdate){
+        if (forceUpdate) {
           await processReplies(remotePost.bskyUri as string)
         }
         return remotePost.id;
@@ -351,7 +359,7 @@ async function processSinglePost(
     const usr = postCreator
       ? postCreator
       : await User.findOne({ where: { url: completeEnvironment.deletedUser } });
-    
+
     const invalidPost = await Post.create({
       userId: usr?.id,
       content: `Failed to get atproto post`,
@@ -561,7 +569,7 @@ async function processSinglePost(
         }
       }
     }
-    if(forceUpdate){
+    if (forceUpdate) {
       await processReplies(postToProcess.bskyUri as string)
     }
     return postToProcess.id;
@@ -609,7 +617,7 @@ function getPostMedias(post: any) {
             const cid = media.image.ref["$link"]
               ? media.image.ref["$link"]
               : media.image.ref.toString();
-            const {did} = extractUriComponents(post.uri)
+            const { did } = extractUriComponents(post.uri)
             return {
               mediaType: media.image.mimeType,
               description: media.alt,
@@ -683,7 +691,7 @@ async function getPostInteractionLevels(
 }> {
   let canQuote = InteractionControl.Anyone;
   let canReply: InteractionControlType = InteractionControl.Anyone;
-  const {did, collection, rKey} = extractUriComponents(uri)
+  const { did, collection, rKey } = extractUriComponents(uri)
   const [threadGate, postGate] = await Promise.all([getPostThreadPDSDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`), getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)])
 
   if (postGate?.value?.embeddingRules.length) {
@@ -750,15 +758,15 @@ async function processReplies(uri: string, cursor?: string) {
       bskyUri: uri
     }
   })
-  if(localPost){
+  if (localPost) {
     let uriToSearch = localPost.bskyUri as string
-    if(localPost.hierarchyLevel != 1) {
+    if (localPost.hierarchyLevel != 1) {
       const ancestors = (await sequelize.query(
-          `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
-          {
-            type: QueryTypes.SELECT
-          }
-        )
+        `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
+        {
+          type: QueryTypes.SELECT
+        }
+      )
       ).map((elem: any) => elem.postsId)
       const rootPost = (await Post.findOne({
         where: {
@@ -772,7 +780,7 @@ async function processReplies(uri: string, cursor?: string) {
 
     }
     let url = `https://constellation.microcosm.blue/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
-    if(cursor) {
+    if (cursor) {
       url = url + `&cursor=${cursor}`
     }
     const constellationPetition = await (await fetch(url)).json()
@@ -786,14 +794,14 @@ async function processReplies(uri: string, cursor?: string) {
         }
       }
     }))
-    if(constellationPetition.cursor) {
+    if (constellationPetition.cursor) {
       await processReplies(uri, constellationPetition.cursor)
     }
   }
 
 
 
-  
+
 }
 
 function getQuotedPostUri(post: any): string | undefined {
@@ -814,7 +822,7 @@ function getQuotedPostUri(post: any): string | undefined {
 
 async function getPostThreadPDSDirect(inputUri: string) {
   try {
-    const {did, collection, rKey} = extractUriComponents(inputUri)
+    const { did, collection, rKey } = extractUriComponents(inputUri)
     const pdsUrl = await getServerFromDid(did)
     const petition = await (await fetch(`${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`)).json()
     return petition
@@ -825,7 +833,7 @@ async function getPostThreadPDSDirect(inputUri: string) {
     })
     return undefined
   }
-  
+
 }
 
 export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies };

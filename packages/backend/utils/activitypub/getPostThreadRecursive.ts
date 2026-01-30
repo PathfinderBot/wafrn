@@ -67,7 +67,7 @@ async function getPostThreadRecursive(
   localPostToForceUpdate?: string,
   options?: any
 ) {
-  const checkBluesky = completeEnvironment.enableBsky && ! (options?.forceNotBsky)
+  const checkBluesky = completeEnvironment.enableBsky && !(options?.forceNotBsky)
   if (remotePostId === null) return;
 
   const deletedUser = getDeletedUser();
@@ -287,18 +287,14 @@ async function getPostThreadRecursive(
             // get it's bsky counterparts first, we need the cid
             const postBskyVersionId = await processSinglePost(firstFffd.href);
             const postBskyVersion = postBskyVersionId ? await Post.findByPk(postBskyVersionId) : undefined
-
-            // TODO did i fuck the fusion of bsky posts and fedi posts?
-            if(postBskyVersion) {
+            if (postBskyVersion) {
               bskyCid = postBskyVersion.bskyCid || undefined;
               bskyUri = postBskyVersion.bskyUri || undefined;
               const directPetition = await getPostThreadPDSDirect(bskyUri as string)
-              if(directPetition.value.fediverseId) {
+              if (directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything
-                existingBskyPost = postBskyVersion;
-                bskyCid = undefined
-                bskyUri = undefined
+                return postBskyVersion;
               } else {
                 postBskyVersion.remotePostId = postPetition.id;
                 await postBskyVersion.save()
