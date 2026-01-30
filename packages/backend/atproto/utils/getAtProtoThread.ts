@@ -115,7 +115,7 @@ async function processSinglePost(
   const postPetitionPds = await getPostThreadPDSDirect(uri)
   const parentUri = postPetitionPds.value?.reply?.parent?.uri ? postPetitionPds.value.reply.parent.uri : undefined;
   const parentId = parentUri ? await processSinglePost(parentUri, false) : undefined
-  if ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value) {
+  if (postPetitionPds && ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value)) {
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
         "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
