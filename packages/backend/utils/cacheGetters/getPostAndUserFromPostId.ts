@@ -15,7 +15,7 @@ import { Privacy } from "../../models/post.js";
 async function getPostAndUserFromPostId(
   postId: string
 ): Promise<{ found: boolean; data?: any }> {
-  const cacheResult = undefined; //  await redisCache.get("postAndUser:" + postId);
+  const cacheResult = await redisCache.get("postAndUser:" + postId);
   let res: { found: boolean; data?: any } = cacheResult
     ? JSON.parse(cacheResult)
     : { found: false };
@@ -141,7 +141,7 @@ async function getPostAndUserFromPostId(
         "postAndUser:" + postId,
         JSON.stringify(res),
         "EX",
-        300
+        15
       );
     } else {
       // await redisCache.set('postAndUser:' + postId, JSON.stringify(res), 'EX', 60)
