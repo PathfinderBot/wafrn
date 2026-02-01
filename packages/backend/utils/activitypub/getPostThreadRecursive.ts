@@ -297,7 +297,25 @@ async function getPostThreadRecursive(
                 return postBskyVersion;
               } else {
                 postBskyVersion.remotePostId = postPetition.id;
-                await postBskyVersion.save()
+                const existingFedi = await Post.findOne({
+                  where: {
+                    remotePostId: postPetition.id
+                  }
+                })
+                if (existingFedi && postBskyVersion.id != existingFedi.id && existingFedi.remotePostId && existingFedi.remotePostId.startsWith('https://bsky.brid.gy/')) {
+                  // the real post is the bsky one
+                  existingFedi.remotePostId = null;
+                  existingFedi.isDeleted = true;
+                  await Post.update({
+                    parentId: postBskyVersion.id
+                  }, {
+                    where: {
+                      parentId: existingFedi.id
+                    }
+                  })
+                  await existingFedi.save()
+
+                }
                 return postBskyVersion;
               }
               const tmp = ''
