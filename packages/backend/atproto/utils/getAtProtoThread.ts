@@ -767,7 +767,7 @@ async function processReplies(uri: string, cursor?: string) {
           type: QueryTypes.SELECT
         }
       )
-      ).map((elem: any) => elem.postsId)
+      ).map((elem: any) => elem.ancestorId)
       const rootPost = (await Post.findOne({
         where: {
           id: {
@@ -777,7 +777,7 @@ async function processReplies(uri: string, cursor?: string) {
         }
       })) as Post
       uriToSearch = rootPost.bskyUri as string
-
+      return processReplies(uriToSearch, cursor)
     }
     let url = `https://constellation.microcosm.blue/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {
