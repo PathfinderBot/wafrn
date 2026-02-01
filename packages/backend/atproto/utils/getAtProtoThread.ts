@@ -96,7 +96,7 @@ async function processSinglePost(
   }
   let postCreator: User | undefined;
   try {
-    const did = uri.replace('at://', '').split('/')[0]
+    const did = extractUriComponents(uri).did
     const doc = (await getDidDoc(did)) as DidDocument
 
     const handle = (doc.alsoKnownAs as string[]).filter(elem => elem.startsWith('at://'))[0].split('at://')[1]
