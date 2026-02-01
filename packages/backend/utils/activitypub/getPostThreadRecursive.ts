@@ -302,23 +302,43 @@ async function getPostThreadRecursive(
                     remotePostId: postPetition.id
                   }
                 })
-                if (existingFedi && postBskyVersion.id != existingFedi.id && existingFedi.remotePostId && existingFedi.remotePostId.startsWith('https://bsky.brid.gy/')) {
-                  // the real post is the bsky one
-                  existingFedi.remotePostId = null;
-                  existingFedi.isDeleted = true;
-                  await Post.update({
-                    parentId: postBskyVersion.id
-                  }, {
-                    where: {
+                if (existingFedi && postBskyVersion.id != existingFedi.id && existingFedi.remotePostId) {
+                  if (existingFedi.remotePostId.startsWith('https://bsky.brid.gy/')) {
+                    // the real post is the bsky one
+                    existingFedi.remotePostId = null;
+                    existingFedi.isDeleted = true;
+                    await Post.update({
+                      parentId: postBskyVersion.id
+                    }, {
+                      where: {
+                        parentId: existingFedi.id
+                      }
+                    })
+                    await existingFedi.save()
+                    return postBskyVersion
+                  } else {
+                    // the real post is fedi one
+                    existingFedi.bskyCid = postBskyVersion.bskyCid
+                    existingFedi.bskyUri = postBskyVersion.bskyUri
+                    postBskyVersion.bskyCid = null
+                    postBskyVersion.bskyUri = null
+                    postBskyVersion.isDeleted = true
+                    await postBskyVersion.save()
+                    await Post.update({
                       parentId: existingFedi.id
-                    }
-                  })
-                  await existingFedi.save()
+                    }, {
+                      where: {
+                        parentId: postBskyVersion.id
+                      }
+                    })
+                    await existingFedi.save()
+                    return existingFedi;
+                  }
+
 
                 }
                 return postBskyVersion;
               }
-              const tmp = ''
             }
 
           }
