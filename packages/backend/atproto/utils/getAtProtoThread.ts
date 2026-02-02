@@ -97,12 +97,25 @@ async function processSinglePost(
   let postCreator: User | undefined;
   try {
     const did = extractUriComponents(uri).did
-    const doc = (await getDidDoc(did)) as DidDocument
+    const existingCreator = await User.findOne({
+      where: {
+        bskyDid: did
+      }
+    })
+    try {
+      const doc = (await getDidDoc(did)) as DidDocument
+      const handle = (doc.alsoKnownAs as string[]).filter(elem => elem.startsWith('at://'))[0].split('at://')[1]
+      postCreator = await getAtprotoUser(
+        handle
+      );
+    } catch (error) {
+      postCreator = existingCreator || undefined
+      logger.info({
+        message: `Problem obtaining bsky user ${did}`,
+        error: error
+      })
+    }
 
-    const handle = (doc.alsoKnownAs as string[]).filter(elem => elem.startsWith('at://'))[0].split('at://')[1]
-    postCreator = await getAtprotoUser(
-      handle
-    );
   } catch (error) {
     logger.debug({
       message: `Problem obtaining user from post`,
