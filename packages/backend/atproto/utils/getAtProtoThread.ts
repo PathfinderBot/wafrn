@@ -854,7 +854,11 @@ async function getPostThreadPDSDirect(inputUri: string) {
   try {
     const { did, collection, rKey } = extractUriComponents(inputUri)
     const pdsUrl = await getServerFromDid(did)
-    const petition = await (await fetch(`${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`)).json()
+    const petition = await (await fetch(`${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`, {
+      headers: {
+        "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+      }
+    })).json()
     return petition
   } catch (error) {
     logger.debug({
