@@ -398,7 +398,7 @@ async function processSinglePost(
     });
     return invalidPost.id;
   }
-  if (postCreator) {
+  if (postCreator && postPetitionPds.value) {
     const medias = getPostMedias(postPetitionPds);
     let tags: string[] = [];
     let mentions: string[] = [];
@@ -601,6 +601,8 @@ async function processSinglePost(
       await processReplies(postToProcess.bskyUri as string)
     }
     return postToProcess.id;
+  } else {
+    throw new Error(`Error obtaining user or pds petition: ${uri}`)
   }
 }
 
