@@ -607,7 +607,7 @@ async function processSinglePost(
 function getPostMedias(post: any) {
   let res: MediaAttributes[] = [];
   const labels = getPostLabels(post);
-  const embed = post.value.embed;
+  const embed = post?.value?.embed;
   if (embed) {
     if (embed.external) {
       res = res.concat([
