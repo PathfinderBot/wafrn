@@ -127,7 +127,16 @@ async function processSinglePost(
   let verifiedFedi: string | undefined;
   const postPetitionPds = await getPostThreadPDSDirect(uri)
   const parentUri = postPetitionPds.value?.reply?.parent?.uri ? postPetitionPds.value.reply.parent.uri : undefined;
-  const parentId = parentUri ? await processSinglePost(parentUri, false) : undefined
+  let parentId: string | undefined = undefined;
+  try {
+    if (parentUri) {
+      parentId = await processSinglePost(parentUri, false)
+    }
+  } catch (error) {
+    logger.debug({
+      message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
+    })
+  }
   if (postPetitionPds && ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value)) {
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
@@ -679,10 +688,10 @@ function getPostMedias(post: any) {
 }
 
 // TODO improve this so we get better nsfw messages lol
-function getPostLabels(post: PostView) {
+function getPostLabels(post: any) {
   let labels = new Set<string>();
-  if (post.labels) {
-    for (const label of post.labels) {
+  if (post?.value?.labels && post.value.labels.values) {
+    for (const label of post.value.labels.values) {
       if (label.neg && labels.has(label.val)) {
         labels.delete(label.val);
       } else {
