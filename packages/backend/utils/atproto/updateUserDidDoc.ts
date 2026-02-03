@@ -4,6 +4,7 @@ import { defs, normalizeOp, PlcClient, signOperation, type IndexedEntryLog } fro
 import { fromBase16 } from '@atcute/multibase'
 import { Secp256k1PrivateKey } from '@atcute/crypto'
 import { logger } from '../logger.js'
+import { completeEnvironment } from '../backendOptions.js'
 
 async function updateUserDidDoc(user: User) {
   try {
@@ -48,7 +49,11 @@ async function updateUserDidDoc(user: User) {
 }
 
 async function getPlcAuditLogs(did: string) {
-  const response = await fetch(`https://plc.directory/${did}/log/audit`)
+  const response = await fetch(`https://plc.directory/${did}/log/audit`, {
+    headers: {
+      "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+    }
+  })
   if (!response.ok) {
     throw new Error(`got response ${response.status}`)
   }

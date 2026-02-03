@@ -110,21 +110,25 @@ async function getAtprotoUser(
   }
   // TODO check if current user exist
   let bskyUserResponse = undefined;
-    try {
-      const pds = await getServerFromDid(did)
-      const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`)).json()
-      if(response && response.records && response.records[0]) {
-        const pdsData = response.records[0]
-        bskyUserResponse = pdsData
+  try {
+    const pds = await getServerFromDid(did)
+    const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`, {
+      headers: {
+        "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
       }
-    } catch (error) {
-      return (await User.findOne({
-        where: {
-          url: completeEnvironment.deletedUser,
-        },
-      })) as User;
+    })).json()
+    if (response && response.records && response.records[0]) {
+      const pdsData = response.records[0]
+      bskyUserResponse = pdsData
     }
-  
+  } catch (error) {
+    return (await User.findOne({
+      where: {
+        url: completeEnvironment.deletedUser,
+      },
+    })) as User;
+  }
+
   if (bskyUserResponse) {
     const data = bskyUserResponse;
     if (data.value.avatar) {
@@ -133,13 +137,13 @@ async function getAtprotoUser(
         avatarString = `?cid=${avatarCID}&did=${did}`;
       }
     }
-    if(data.value.banner) {
+    if (data.value.banner) {
       let bannerCID = data.value.banner.ref['$link'];
-      if(bannerCID) {
+      if (bannerCID) {
         headerString = `?cid=${bannerCID}&did=${did}`
       }
     }
-    
+
     const handle = (doc && doc.alsoKnownAs) ? doc.alsoKnownAs.filter(elem => elem.startsWith('at://'))[0].split('at://')[1] : 'handle.invalid'
     const newDataTmp = {
       hideProfileNotLoggedIn: false,
@@ -152,7 +156,7 @@ async function getAtprotoUser(
           : handle),
       name: data.value.displayName ? data.value.displayName : handle,
       avatar: avatarString,
-      description: data.value.description ||  "",
+      description: data.value.description || "",
       //followingCount: data.followsCount as number,
       //followerCount: data.followersCount as number,
       headerImage: headerString,

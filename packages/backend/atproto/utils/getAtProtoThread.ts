@@ -813,7 +813,11 @@ async function processReplies(uri: string, cursor?: string) {
     if (cursor) {
       url = url + `&cursor=${cursor}`
     }
-    const constellationPetition = await (await fetch(url)).json()
+    const constellationPetition = await (await fetch(url, {
+      headers: {
+        "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+      }
+    })).json()
     const uris = constellationPetition.linking_records.map((elem: any) => `at://${elem.did}/${elem.collection}/${elem.rkey}`)
     await processSinglePostQueue.addBulk(uris.map((elem: string) => {
       return {

@@ -1,15 +1,16 @@
 import { DidDocument } from '@atcute/identity'
 import { getServerFromDid } from './getServerFromDid.js'
 import { redisCache } from '../redis.js'
+import { completeEnvironment } from '../backendOptions.js'
 
 
 export async function getDidDoc(inputDid: string): Promise<DidDocument | undefined> {
   let did = inputDid
-  if (did.startsWith('at://')){
+  if (did.startsWith('at://')) {
     did = did.replace(/^at:\/\//, '')
-  } 
+  }
   let cacheResult = await redisCache.get('didDoc:' + did)
-  if(cacheResult) {
+  if (cacheResult) {
     return JSON.parse(cacheResult) as DidDocument
   }
   if (did.startsWith('did:plc:')) {
@@ -23,7 +24,13 @@ export async function getDidDoc(inputDid: string): Promise<DidDocument | undefin
     }
   } else if (did.startsWith('did:web:')) {
     const didWebHost = did.replace(/^did:web:/, '')
-    const didDocRes = await fetch(`https://${didWebHost}/.well-known/did.json`)
+    const didDocRes = await fetch(`https://${didWebHost}/.well-known/did.json`,
+      {
+        headers: {
+          "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+        }
+      }
+    )
     if (!didDocRes.ok) return undefined
     try {
       const didDoc = await didDocRes.json() as DidDocument

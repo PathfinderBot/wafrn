@@ -334,7 +334,11 @@ async function getRemoteActorIdProcessor(job: Job) {
               let customCSS: string | undefined = undefined
               logger.info({ id: userPetition.id }, "found custom css for this user");
               if (URL.canParse(userPetition._wafrn_customCSS)) {
-                const cssRes = await fetch(userPetition._wafrn_customCSS)
+                const cssRes = await fetch(userPetition._wafrn_customCSS, {
+                  headers: {
+                    "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+                  }
+                })
                 if (cssRes.ok)
                   customCSS = await cssRes.text()
               } else {

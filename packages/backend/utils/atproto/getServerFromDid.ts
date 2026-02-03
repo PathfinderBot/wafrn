@@ -1,23 +1,29 @@
 import { Resolver } from "did-resolver";
 import { getResolver } from "plc-did-resolver";
 import { redisCache } from "../redis.js";
+import { completeEnvironment } from "../backendOptions.js";
 
 async function getServerFromDid(did: string): Promise<string> {
     const cacheRes = await redisCache.get('didServer:' + did)
-    if(cacheRes) {
+    if (cacheRes) {
         return cacheRes
     }
     let res = ''
-    if(did.startsWith('did:web')){
+    if (did.startsWith('did:web')) {
         const docRes = await fetch(
-          `https://${did.split("did:web:")[1]}/.well-known/did.json`
+            `https://${did.split("did:web:")[1]}/.well-known/did.json`,
+            {
+                headers: {
+                    "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+                }
+            }
         );
         const didDoc = await docRes.json();
         const atProtoServer = didDoc.service.find(
             (x: any) =>
-              x.id === "#atproto_pds" ||
-              x.type === "AtprotoPersonalDataServer"
-          );
+                x.id === "#atproto_pds" ||
+                x.type === "AtprotoPersonalDataServer"
+        );
         res = atProtoServer.serviceEndpoint
     } else {
         const plcResolver = getResolver();
@@ -27,7 +33,7 @@ async function getServerFromDid(did: string): Promise<string> {
             res = didData.didDocument.service[0].serviceEndpoint as string
         }
     }
-    if(res) {
+    if (res) {
         redisCache.set('didServer:' + did, res, 'EX', 300)
     }
     return res;
