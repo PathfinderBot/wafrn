@@ -137,7 +137,13 @@ async function processSinglePost(
       message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
     })
   }
-  if (postPetitionPds && ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value)) {
+  if (!postPetitionPds || !postPetitionPds.value) {
+    logger.debug({
+      message: `Petition without data: ${uri}`,
+      data: postPetitionPds
+    })
+  }
+  if (postPetitionPds && postPetitionPds.value && ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value)) {
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
         "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
