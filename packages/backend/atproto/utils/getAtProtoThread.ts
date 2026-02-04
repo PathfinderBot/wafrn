@@ -144,6 +144,8 @@ async function processSinglePost(
     })
   }
   if (postPetitionPds && postPetitionPds.value && ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value)) {
+    // original is fedi. lets wait half second
+    await wait(500)
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
         "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +

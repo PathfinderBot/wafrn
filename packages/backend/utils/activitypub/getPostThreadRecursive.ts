@@ -46,6 +46,7 @@ import {
 } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 import escapeHTML from "escape-html";
+import { wait } from "../wait.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -304,6 +305,7 @@ async function getPostThreadRecursive(
                 })
                 if (existingFedi && postBskyVersion.id != existingFedi.id && existingFedi.remotePostId) {
                   if (existingFedi.remotePostId.startsWith('https://bsky.brid.gy/')) {
+                    await wait(500) // concurrency hell
                     // the real post is the bsky one
                     existingFedi.remotePostId = null;
                     existingFedi.isDeleted = true;
