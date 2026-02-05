@@ -305,7 +305,6 @@ async function getPostThreadRecursive(
                 })
                 if (existingFedi && postBskyVersion.id != existingFedi.id && existingFedi.remotePostId) {
                   if (existingFedi.remotePostId.startsWith('https://bsky.brid.gy/')) {
-                    await wait(500) // concurrency hell
                     // the real post is the bsky one
                     existingFedi.remotePostId = null;
                     existingFedi.isDeleted = true;
@@ -341,6 +340,38 @@ async function getPostThreadRecursive(
                 }
                 return postBskyVersion;
               }
+            } else {
+
+              if (!options.ignoreBridgyRepeat) {
+                const processSinglePostQueue = new Queue("processSinglePost", {
+                  connection: completeEnvironment.bullmqConnection,
+                  defaultJobOptions: {
+                    removeOnComplete: true,
+                    attempts: 6,
+                    backoff: {
+                      type: "exponential",
+                      delay: 2500,
+                    },
+                    removeOnFail: false,
+                  },
+                });
+                processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })
+                const processFediPostQueue = new Queue("processFediPostQueue", {
+                  connection: completeEnvironment.bullmqConnection,
+                  defaultJobOptions: {
+                    removeOnComplete: true,
+                    attempts: 6,
+                    backoff: {
+                      type: "exponential",
+                      delay: 2500,
+                    },
+                    removeOnFail: false,
+                  },
+                });
+                processFediPostQueue.add('processSinglePost', { post: remotePostId }, { delay: 1000 })
+
+              }
+
             }
 
           }
