@@ -242,7 +242,7 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
 
-  app.get('/api/v1/peers', async (req, res) => {
+  app.get('/api/v1/instance/peers', async (req, res) => {
     const cacheResult = await redisCache.get('instancePeerData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))
