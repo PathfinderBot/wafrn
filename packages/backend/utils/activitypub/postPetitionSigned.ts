@@ -4,6 +4,7 @@ import { logger } from "../logger.js";
 import { removeUser } from "./removeUser.js";
 import { User } from "../../models/index.js";
 import { Agent, fetch } from "undici";
+import getUserAgent from "../getUserAgent.js";
 
 async function postPetitionSigned(
   message: object,
@@ -44,7 +45,7 @@ async function postPetitionSigned(
     }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date algorithm digest",signature="${signature}"`;
     const headers = {
       "Content-Type": "application/activity+json",
-      "User-Agent": completeEnvironment.instanceUrl,
+      "User-Agent": getUserAgent('ActivityPubWorker'),
       Accept: "application/activity+json",
       Algorithm: "rsa-sha256",
       Host: url.host,

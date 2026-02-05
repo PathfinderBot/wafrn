@@ -1,17 +1,50 @@
 <app-forum-component></app-forum-component>
 
+@if (
+bubbleHostsShowType === 'PUBLIC' ||
+(bubbleHostsShowType === 'LOGGEDIN' && loggedIn)
+) {
+<mat-card class="p-3 mb-3 lg:mx-4 wafrn-container">
+  @if (!bubbleLoaded && !bubbleLoading) {
+  <button (click)="loadBubbleServers()" color="primary" mat-stroked-button class="w-full">
+    Show list of bubbled servers
+  </button>
+  }
+
+  @if (bubbleLoading) {
+  <app-loader>bubbled servers</app-loader>
+  }
+
+  @if (bubbleLoaded) {
+  <div>
+    <h2>Bubble servers</h2>
+    <p class="mb-3">The instances shown below are the instances part of the "WAFRN & Friends" feed</p>
+    <ul>
+      @for (server of bubbledServers; track $index) {
+      <li class="mb-3">{{ server }}</li>
+      }
+    </ul>
+  </div>
+  }
+</mat-card>
+}
+
+@if (
+blockedHostsShowType === 'PUBLIC' ||
+(blockedHostsShowType === 'LOGGEDIN' && loggedIn)
+) {
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-  @if (!loaded && !loading) {
+  @if (!blockedLoaded && !blockedLoading) {
   <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
     Show list of blocked servers
   </button>
   }
 
-  @if (loading) {
+  @if (blockedLoading) {
   <app-loader>blocked servers</app-loader>
   }
 
-  @if (loaded) {
+  @if (blockedLoaded) {
   <div>
     <h2>Blocked servers</h2>
     @if (!disableShowingBlockedServers) {
@@ -27,3 +60,4 @@
   </div>
   }
 </mat-card>
+}

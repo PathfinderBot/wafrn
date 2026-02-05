@@ -26,6 +26,7 @@ import { unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 import { getDidDoc } from "../atproto/getDidDoc.js";
 import { getAtprotoUser } from "../../atproto/utils/getAtprotoUser.js";
+import getUserAgent from "../getUserAgent.js";
 
 const mergeUsersQueue = new Queue("mergeUsers", {
   connection: completeEnvironment.bullmqConnection,
@@ -336,7 +337,7 @@ async function getRemoteActorIdProcessor(job: Job) {
               if (URL.canParse(userPetition._wafrn_customCSS)) {
                 const cssRes = await fetch(userPetition._wafrn_customCSS, {
                   headers: {
-                    "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+                    "User-Agent": getUserAgent('ActivityPubWorker')
                   }
                 })
                 if (cssRes.ok)

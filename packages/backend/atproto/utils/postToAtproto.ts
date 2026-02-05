@@ -24,6 +24,7 @@ import { getLinkPreview } from "link-preview-js";
 import crypto from "crypto";
 import { redisCache } from "../../utils/redis.js";
 import { logger } from "../../utils/logger.js";
+import getUserAgent from "../../utils/getUserAgent.js";
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -252,7 +253,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         try {
           linkPreview = (await getLinkPreview(token.url, {
             followRedirects: "follow",
-            headers: { "User-Agent": completeEnvironment.instanceUrl },
+            headers: { "User-Agent": getUserAgent('LinkPreview') },
           })) as
             | { url: string; title: string; description: string }
             | undefined;

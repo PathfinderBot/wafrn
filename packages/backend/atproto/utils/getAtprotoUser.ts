@@ -12,6 +12,7 @@ import { Queue } from "bullmq";
 import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSession.js";
 import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
 import { resolveHandle } from "../../utils/atproto/resolveHandleToDid.js";
+import getUserAgent from "../../utils/getUserAgent.js";
 
 const mergeUsersQueue = new Queue("mergeUsers", {
   connection: completeEnvironment.bullmqConnection,
@@ -114,7 +115,7 @@ async function getAtprotoUser(
     const pds = await getServerFromDid(did)
     const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`, {
       headers: {
-        "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+        "User-Agent": getUserAgent('ATProtoWorker')
       }
     })).json()
     if (response && response.records && response.records[0]) {

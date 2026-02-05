@@ -116,6 +116,8 @@ export const baseEnvironment: Environment = {
   minimumAgeToRegister: ${{REGISTRATION_MINIMUM_AGE:-18}},
   registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
   disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}},
+  bubbleHostsShowType: '${{BUBBLE_SERVERS_SHOW_TYPE:-PUBLIC}}',
+  blockedHostsShowType: '${{BLOCKED_SERVERS_SHOW_TYPE:-LOGGEDIN}}',
   donationUrl: '${{DONATION_URL:-}}',
   bskyRotationKeyK256: '${{PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}}',
   frontendEnvironment: {
@@ -132,6 +134,8 @@ export const baseEnvironment: Environment = {
     privateInstanceRegistrationText: '${{REGISTRATIONS_DISABLED_TEXT:-This instance is a private instance, and does not allow registrations}}',
     minimumAgeToRegister: ${{REGISTRATION_MINIMUM_AGE:-18}},
     donationUrl: '${{DONATION_URL:-}}',
-    disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}}
+    disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}},
+    bubbleHostsShowType: '${{BUBBLE_SERVERS_SHOW_TYPE:-PUBLIC}}',
+    blockedHostsShowType: '${{BLOCKED_SERVERS_SHOW_TYPE:-LOGGEDIN}}',
   }
 }
