@@ -1,7 +1,7 @@
 import { Application, Request, Response } from 'express'
 import { Op } from 'sequelize'
 import sequelize from 'sequelize/lib/sequelize'
-import { User, Post } from '../../models/index.js'
+import { User, Post, FederatedHost } from '../../models/index.js'
 import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
 import { return404 } from '../../utils/return404.js'
 import fs from 'fs'
@@ -169,12 +169,12 @@ function wellKnownRoutes(app: Application) {
         nodeAdmins: [
           {
             name: '@' + adminUser.url,
-            email: adminUser.url + '@' + completeEnvironment.instanceUrl
+            email: completeEnvironment.adminEmail
           }
         ],
         maintainer: {
           name: '@' + adminUser.url,
-          email: adminUser.url + '@' + completeEnvironment.instanceUrl
+          email: completeEnvironment.adminEmail
         },
         inquiryUrl: `https://${completeEnvironment.instanceUrl}/fediverse/blog/${adminUser.url}`,
         adminAccount: `https://${completeEnvironment.instanceUrl}/fediverse/blog/${adminUser.url}`,
@@ -242,6 +242,17 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
 
+  app.get('/api/v1/peers', async (req, res) => {
+    const cacheResult = await redisCache.get('instancePeerData')
+    if (cacheResult) {
+      return res.send(JSON.parse(cacheResult))
+    }
+    const hosts = await FederatedHost.findAll()
+    const result = hosts.map(h => h.displayName)
+    redisCache.set('instancePeerData', JSON.stringify(result), 'EX', 3600 * 48)
+    res.send(result)
+    res.end()
+  })
 }
 
 export { wellKnownRoutes }

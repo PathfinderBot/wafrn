@@ -5,6 +5,7 @@ import { fromBase16 } from '@atcute/multibase'
 import { Secp256k1PrivateKey } from '@atcute/crypto'
 import { logger } from '../logger.js'
 import { completeEnvironment } from '../backendOptions.js'
+import getUserAgent from '../getUserAgent.js'
 
 async function updateUserDidDoc(user: User) {
   try {
@@ -51,7 +52,7 @@ async function updateUserDidDoc(user: User) {
 async function getPlcAuditLogs(did: string) {
   const response = await fetch(`https://plc.directory/${did}/log/audit`, {
     headers: {
-      "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+      "User-Agent": getUserAgent('ATProtoWorker')
     }
   })
   if (!response.ok) {

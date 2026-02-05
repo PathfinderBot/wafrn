@@ -52,6 +52,7 @@ import { DidDocument } from "@atcute/identity";
 import { extractUriComponents } from "./obtainUriComponents.js";
 import { getPetitionSigned } from "../../utils/activitypub/getPetitionSigned.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
+import getUserAgent from "../../utils/getUserAgent.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -817,7 +818,7 @@ async function processReplies(uri: string, cursor?: string) {
     }
     const constellationPetition = await (await fetch(url, {
       headers: {
-        "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+        "User-Agent": getUserAgent('ATProtoWorker')
       }
     })).json()
     const uris = constellationPetition.linking_records.map((elem: any) => `at://${elem.did}/${elem.collection}/${elem.rkey}`)
@@ -862,7 +863,7 @@ async function getPostThreadPDSDirect(inputUri: string) {
     const pdsUrl = await getServerFromDid(did)
     const petition = await (await fetch(`${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`, {
       headers: {
-        "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+        "User-Agent": getUserAgent('ATProtoWorker')
       }
     })).json()
     return petition

@@ -116,6 +116,8 @@ export const baseEnvironment: Environment = {
   minimumAgeToRegister: ${{REGISTRATION_MINIMUM_AGE:-18}},
   registrationLevel: '${{REGISTRATION_LEVEL:-PUBLIC}}',
   disableShowingBlockedServers: ${{HIDE_BLOCKED_SERVERS:-false}},
+  bubbleHostsShowType: '${{BUBBLE_SERVERS_SHOW_TYPE:-PUBLIC}}',
+  blockedHostsShowType: '${{BLOCKED_SERVERS_SHOW_TYPE:-LOGGEDIN}}',
   donationUrl: '${{DONATION_URL:-}}',
   bskyRotationKeyK256: '${{PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}}',
   frontendEnvironment: {

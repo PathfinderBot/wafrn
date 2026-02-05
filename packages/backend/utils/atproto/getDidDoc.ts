@@ -2,6 +2,7 @@ import { DidDocument } from '@atcute/identity'
 import { getServerFromDid } from './getServerFromDid.js'
 import { redisCache } from '../redis.js'
 import { completeEnvironment } from '../backendOptions.js'
+import getUserAgent from '../getUserAgent.js'
 
 
 export async function getDidDoc(inputDid: string): Promise<DidDocument | undefined> {
@@ -27,7 +28,7 @@ export async function getDidDoc(inputDid: string): Promise<DidDocument | undefin
     const didDocRes = await fetch(`https://${didWebHost}/.well-known/did.json`,
       {
         headers: {
-          "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+          "User-Agent": getUserAgent('ATProtoWorker')
         }
       }
     )

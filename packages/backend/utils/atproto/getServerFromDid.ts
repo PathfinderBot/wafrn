@@ -2,6 +2,7 @@ import { Resolver } from "did-resolver";
 import { getResolver } from "plc-did-resolver";
 import { redisCache } from "../redis.js";
 import { completeEnvironment } from "../backendOptions.js";
+import getUserAgent from "../getUserAgent.js";
 
 async function getServerFromDid(did: string): Promise<string> {
     const cacheRes = await redisCache.get('didServer:' + did)
@@ -14,7 +15,7 @@ async function getServerFromDid(did: string): Promise<string> {
             `https://${did.split("did:web:")[1]}/.well-known/did.json`,
             {
                 headers: {
-                    "User-Agent": `Wafrn ${completeEnvironment.instanceUrl}`
+                    "User-Agent": getUserAgent('ATProtoWorker')
                 }
             }
         );
