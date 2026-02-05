@@ -1,17 +1,17 @@
 <app-forum-component></app-forum-component>
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-  @if (!loaded && !loading) {
+  @if (!blockedLoaded && !blockedLoading) {
   <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
     Show list of blocked servers
   </button>
   }
 
-  @if (loading) {
+  @if (blockedLoading) {
   <app-loader>blocked servers</app-loader>
   }
 
-  @if (loaded) {
+  @if (blockedLoaded) {
   <div>
     <h2>Blocked servers</h2>
     @if (!disableShowingBlockedServers) {

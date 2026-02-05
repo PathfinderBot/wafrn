@@ -17,10 +17,12 @@ export class AboutComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   logo = EnvironmentService.environment.logo
+  bubbleHostsShowType = EnvironmentService.environment.bubbleHostsShowType
+  blockedHostsShowType = EnvironmentService.environment.blockedHostsShowType
   disableShowingBlockedServers = EnvironmentService.environment.disableShowingBlockedServers
   blockedServers: string[] = []
-  loaded = false
-  loading = false
+  blockedLoaded = false
+  blockedLoading = false
 
   constructor() {
     this.simpleTitle.set('About this instance')
@@ -37,14 +39,14 @@ export class AboutComponent implements OnInit {
 
   async loadBlockedServers() {
     if (this.disableShowingBlockedServers) {
-      this.loaded = true
+      this.blockedLoaded = true
       this.cdr.markForCheck()
       return;
     }
-    this.loading = true
+    this.blockedLoading = true
     this.blockedServers = await this.utilsService.getBlockedServers()
-    this.loaded = true
-    this.loading = false
+    this.blockedLoaded = true
+    this.blockedLoading = false
     this.cdr.markForCheck()
   }
 }
