@@ -36,8 +36,7 @@ import { bulkCreateNotifications } from "../pushNotifications.js";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { Privacy } from "../../models/post.js";
 import {
-  getAtProtoThread,
-  getPostThreadSafe,
+  getPostThreadPDSDirect,
   processSinglePost,
 } from "../../atproto/utils/getAtProtoThread.js";
 import * as cheerio from "cheerio";
@@ -46,6 +45,8 @@ import {
   ThreadViewPost,
 } from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
+import escapeHTML from "escape-html";
+import { wait } from "../wait.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -67,6 +68,7 @@ async function getPostThreadRecursive(
   localPostToForceUpdate?: string,
   options?: any
 ) {
+  const checkBluesky = completeEnvironment.enableBsky && !(options?.forceNotBsky)
   if (remotePostId === null) return;
 
   const deletedUser = getDeletedUser();
@@ -96,7 +98,7 @@ async function getPostThreadRecursive(
       },
     });
   }
-  if (completeEnvironment.enableBsky && remotePostId.startsWith("at://")) {
+  if (checkBluesky && remotePostId.startsWith("at://")) {
     // Bluesky post. Likely coming from an import
     const postInDatabase = await Post.findOne({
       where: {
@@ -106,7 +108,7 @@ async function getPostThreadRecursive(
     if (postInDatabase) {
       return postInDatabase;
     } else if (!remotePostObject) {
-      const postId = await getAtProtoThread(remotePostId);
+      const postId = await processSinglePost(remotePostId);
       return await Post.findByPk(postId);
     }
   }
@@ -195,17 +197,16 @@ async function getPostThreadRecursive(
             return { href: elem };
           });
         }
-        let federatedAsks: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === "AskQuestion" )
-        
+        let federatedAsks: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === "AskQuestion")
+
         const fediEmojis: any[] = postPetition.tag?.filter(
           (elem: fediverseTag) => elem.type === "Emoji"
         );
 
         const privacy = getApObjectPrivacy(postPetition, remoteUser);
 
-        let postTextContent = `${
-          postPetition.content ? postPetition.content : ""
-        }`; // Fix for bridgy giving this as undefined
+        let postTextContent = `${postPetition.content ? postPetition.content : ""
+          }`; // Fix for bridgy giving this as undefined
         if (postPetition.type == "Video") {
           // peertube federation. We just add a link to the video, federating this is HELL
           postTextContent =
@@ -236,8 +237,8 @@ async function getPostThreadRecursive(
                 userId:
                   remoteUserServerBaned || remoteUser.banned
                     ? (
-                        await deletedUser
-                      )?.id
+                      await deletedUser
+                    )?.id
                     : remoteUser.id,
                 description: remoteFile.name,
                 ipUpload: "IMAGE_FROM_OTHER_FEDIVERSE_INSTANCE",
@@ -283,52 +284,96 @@ async function getPostThreadRecursive(
           >;
           const firstFffd = url.find((x) => typeof x !== "string");
           // check if it starts at at:// then its a bridged post, we do not touch it if it's not
-          if (firstFffd && firstFffd.href.startsWith("at://")) {
+          if (checkBluesky && firstFffd && firstFffd.href.startsWith("at://")) {
             // get it's bsky counterparts first, we need the cid
-            const thread = await getPostThreadSafe({
-              uri: firstFffd.href,
-            });
-            if (thread && thread.success) {
-              try {
-                const threadView = thread.data.thread as ThreadViewPost;
-                bskyCid = threadView.post.cid;
-                bskyUri = threadView.post.uri;
-                // check if it cames from wafrn
-                if (
-                  !(
-                    threadView.post.record as {
-                      fediverseId: string | undefined;
-                    }
-                  ).fediverseId
-                ) {
-                  // this is a bridgy fed post, assume main post is on bsky, use bsky user
-                  const postId = await processSinglePost(threadView.post);
-                  if (postId) {
-                    const post = await Post.findByPk(postId);
-                    if (post) {
-                      post.remotePostId = postPetition.id;
-                      await post.save();
-                      return post;
-                    }
+            const postBskyVersionId = await processSinglePost(firstFffd.href);
+            const postBskyVersion = postBskyVersionId ? await Post.findByPk(postBskyVersionId) : undefined
+            if (postBskyVersion) {
+              bskyCid = postBskyVersion.bskyCid || undefined;
+              bskyUri = postBskyVersion.bskyUri || undefined;
+              const directPetition = await getPostThreadPDSDirect(bskyUri as string)
+              if (directPetition.value.fediverseId) {
+                // This is a wafrn post
+                // first we going to check if the post is already on db because this can break everything
+                return postBskyVersion;
+              } else {
+                postBskyVersion.remotePostId = postPetition.id;
+                const existingFedi = await Post.findOne({
+                  where: {
+                    remotePostId: postPetition.id
                   }
-                } else {
-                  // now this is a wafrn post, where we do a thing little bit different
-                  // first we going to check if the post is already on db because this can break everything
-                  let existingPost = await Post.findOne({
-                    where: {
-                      bskyCid: threadView.post.cid,
-                      remotePostId: null,
-                    },
-                  });
-                  if (existingPost) {
-                    existingBskyPost = existingPost;
-                    // do not attempt to merge it right now, this will crash backend
-                    bskyCid = undefined;
-                    bskyUri = undefined;
+                })
+                if (existingFedi && postBskyVersion.id != existingFedi.id && existingFedi.remotePostId) {
+                  if (existingFedi.remotePostId.startsWith('https://bsky.brid.gy/')) {
+                    // the real post is the bsky one
+                    existingFedi.remotePostId = null;
+                    existingFedi.isDeleted = true;
+                    await Post.update({
+                      parentId: postBskyVersion.id
+                    }, {
+                      where: {
+                        parentId: existingFedi.id
+                      }
+                    })
+                    await existingFedi.save()
+                    return postBskyVersion
+                  } else {
+                    // the real post is fedi one
+                    existingFedi.bskyCid = postBskyVersion.bskyCid
+                    existingFedi.bskyUri = postBskyVersion.bskyUri
+                    postBskyVersion.bskyCid = null
+                    postBskyVersion.bskyUri = null
+                    postBskyVersion.isDeleted = true
+                    await postBskyVersion.save()
+                    await Post.update({
+                      parentId: existingFedi.id
+                    }, {
+                      where: {
+                        parentId: postBskyVersion.id
+                      }
+                    })
+                    await existingFedi.save()
+                    return existingFedi;
                   }
+
+
                 }
-              } catch {}
+                return postBskyVersion;
+              }
+            } else {
+
+              if (!options.ignoreBridgyRepeat) {
+                const processSinglePostQueue = new Queue("processSinglePost", {
+                  connection: completeEnvironment.bullmqConnection,
+                  defaultJobOptions: {
+                    removeOnComplete: true,
+                    attempts: 6,
+                    backoff: {
+                      type: "exponential",
+                      delay: 2500,
+                    },
+                    removeOnFail: false,
+                  },
+                });
+                processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })
+                const processFediPostQueue = new Queue("processFediPostQueue", {
+                  connection: completeEnvironment.bullmqConnection,
+                  defaultJobOptions: {
+                    removeOnComplete: true,
+                    attempts: 6,
+                    backoff: {
+                      type: "exponential",
+                      delay: 2500,
+                    },
+                    removeOnFail: false,
+                  },
+                });
+                processFediPostQueue.add('processSinglePost', { post: remotePostId }, { delay: 1000 })
+
+              }
+
             }
+
           }
         }
 
@@ -337,8 +382,8 @@ async function getPostThreadRecursive(
           content_warning: postPetition.summary
             ? postPetition.summary
             : remoteUser.NSFW
-            ? "User is marked as NSFW by this instance staff. Possible NSFW without tagging"
-            : "",
+              ? "User is marked as NSFW by this instance staff. Possible NSFW without tagging"
+              : "",
           createdAt: createdAt,
           updatedAt: createdAt,
           userId:
@@ -354,9 +399,9 @@ async function getPostThreadRecursive(
           bskyCid: postPetition.blueskyCid,
           ...(bskyCid && bskyUri
             ? {
-                bskyCid,
-                bskyUri,
-              }
+              bskyCid,
+              bskyUri,
+            }
             : {}),
         };
 
@@ -478,26 +523,26 @@ async function getPostThreadRecursive(
         newPost.setQuoted(quotes);
 
         try {
-          if(federatedAsks && federatedAsks.length) {
-          await Ask.destroy({
-            where: {
-              postId: newPost.id
-            }
-          })
-          const askTag = federatedAsks[0]; // only first ask sorryyy
-          if(askTag.actor && askTag.representation && askTag.name) {
-            const asker = askTag.actor != 'anonymous' ? await getRemoteActor(askTag.actor, user ) : undefined;
-            const askText = askTag.name;
-            const htmlToRemove = askTag.representation
-            await Ask.create({
-              postId: newPost.id,
-              userAsked: newPost.userId,
-              userAsker: asker?.id,
-              question: askText
+          if (federatedAsks && federatedAsks.length) {
+            await Ask.destroy({
+              where: {
+                postId: newPost.id
+              }
             })
-            newPost.content = newPost.content.replace(htmlToRemove, '')
+            const askTag = federatedAsks[0]; // only first ask sorryyy
+            if (askTag.actor && askTag.representation && askTag.name) {
+              const asker = askTag.actor != 'anonymous' ? await getRemoteActor(askTag.actor, user) : undefined;
+              const askText = askTag.name;
+              const htmlToRemove = askTag.representation
+              await Ask.create({
+                postId: newPost.id,
+                userAsked: newPost.userId,
+                userAsker: asker?.id,
+                question: escapeHTML(askText)
+              })
+              newPost.content = newPost.content.replace(htmlToRemove, '')
+            }
           }
-        }
         } catch (error) {
           logger.info({
             message: `Error setting wafrn ask`,
@@ -529,7 +574,7 @@ async function getPostThreadRecursive(
         }
         try {
           await addAsksToPost(newPost, fediTags);
-        } catch (error) {}
+        } catch (error) { }
         if (mentionedUsersIds.length != 0) {
           await processMentions(newPost, mentionedUsersIds);
         }
@@ -548,7 +593,7 @@ async function getPostThreadRecursive(
             )[1];
           }
           await Ask.create({
-            question: askContent,
+            question: escapeHTML(askContent),
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,
@@ -600,7 +645,7 @@ async function getPostThreadRecursive(
                 },
               }
             );
-          } catch {}
+          } catch { }
           await QuestionPoll.update(
             {
               postId: newPost.id,

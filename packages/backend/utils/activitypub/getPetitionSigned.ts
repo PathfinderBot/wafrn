@@ -5,6 +5,7 @@ import { User } from "../../models/index.js";
 import { removeUser } from "./removeUser.js";
 import { Op } from "sequelize";
 import { Agent, fetch } from "undici";
+import getUserAgent from "../getUserAgent.js";
 async function getPetitionSigned(
   userInput: User,
   target: string
@@ -40,7 +41,7 @@ async function getPetitionSigned(
     }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date accept",signature="${signature}"`;
     const headers = {
       "Content-Type": "application/activity+json",
-      "User-Agent": completeEnvironment.instanceUrl,
+      "User-Agent": getUserAgent('ActivityPubWorker'),
       Accept: acceptedFormats,
       Algorithm: "rsa-sha256",
       Host: url.host,

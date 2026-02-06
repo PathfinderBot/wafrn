@@ -6,7 +6,6 @@ import { CreateActivity } from "../activitypub/processors/create.js";
 import { Post, User, UserBookmarkedPosts, UserLikesPostRelations } from "../../models/index.js";
 import { AnnounceActivity } from "../activitypub/processors/announce.js";
 import { getPostThreadRecursive } from "../activitypub/getPostThreadRecursive.js";
-import { getAtProtoThread } from "../../atproto/utils/getAtProtoThread.js";
 
 async function importBackup(fileName: string, userUrl: string) {
   const zip = new Zip.async({ file: fileName });

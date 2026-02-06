@@ -46,12 +46,12 @@ import {
   bulkCreateNotifications,
   createNotification,
 } from "../utils/pushNotifications.js";
-import { getAtProtoThread } from "../atproto/utils/getAtProtoThread.js";
 import dompurify from "isomorphic-dompurify";
 import { Privacy, PrivacyType } from "../models/post.js";
 import { completeEnvironment } from "../utils/backendOptions.js";
 import { addHandlePrefix } from "../models/user.js";
 import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
+import { processSinglePost } from "../atproto/utils/getAtProtoThread.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -1033,7 +1033,7 @@ export default function postsRoutes(app: Application) {
           }
         }
         if (remotePost?.bskyUri) {
-          await getAtProtoThread(remotePost.bskyUri, true);
+          await processSinglePost(remotePost.bskyUri, true);
         }
       } catch (error) {
         logger.debug({

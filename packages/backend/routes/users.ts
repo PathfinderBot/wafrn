@@ -17,7 +17,7 @@ import {
   UserOptions
 } from '../models/index.js'
 import { adminToken, authenticateToken } from '../utils/authenticateToken.js'
-
+import escape from 'escape-html';
 import generateRandomString from '../utils/generateRandomString.js'
 import getIp from '../utils/getIP.js'
 import sendEmail from '../utils/sendEmail.js'
@@ -328,15 +328,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                  email,
-                  subject: `Welcome to ${instanceHost}, please verify your email!`,
-                  body: `\
+                email,
+                subject: `Welcome to ${instanceHost}, please verify your email!`,
+                body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `
-                })
+              })
             await Promise.all([userWithEmail, emailSent])
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
@@ -647,9 +647,9 @@ function userRoutes(app: Application) {
     const user = (await User.findByPk(req.jwtData?.userId as string)) as User
     const password = req.body.oldPassword
     const newPassword = req.body.newPassword
-    if(await bcrypt.compare(password, user.password)) {
+    if (await bcrypt.compare(password, user.password)) {
       await updatePassword(user, newPassword)
-      res.send({success: true})
+      res.send({ success: true })
     }
 
     res.status(403)
@@ -1075,19 +1075,19 @@ function userRoutes(app: Application) {
       let followed = blog.isRemoteUser
         ? blog.followingCount
         : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true
-            }
-          })
+          where: {
+            followerId: blog.id,
+            accepted: true
+          }
+        })
       let followers = blog.isRemoteUser
         ? blog.followerCount
         : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true
-            }
-          })
+          where: {
+            followedId: blog.id,
+            accepted: true
+          }
+        })
       const publicOptions = UserOptions.findAll({
         where: {
           userId: blog.id,
@@ -1126,10 +1126,10 @@ function userRoutes(app: Application) {
 
       const postCount = blog
         ? await Post.count({
-            where: {
-              userId: blog.id
-            }
-          })
+          where: {
+            userId: blog.id
+          }
+        })
         : 0
 
       followed = await followed
@@ -1480,7 +1480,7 @@ function userRoutes(app: Application) {
     const pasword = req.body.password
     if (user && bskyUrl && pasword) {
       const localIds = await getAllLocalUserIds()
-      const bskyUser = await getAtprotoUser(bskyUrl, await getAdminUser())
+      const bskyUser = await getAtprotoUser(bskyUrl)
       if (bskyUser && bskyUser.url === user.url) {
         return res.send({
           success: true
@@ -1528,6 +1528,7 @@ function userRoutes(app: Application) {
           await syncBskyFollowersAndFollowing(user.id)
           await forceUpdateCacheDidsAtThread()
           await redisCache.del('bskySession:' + user.id)
+          await updateUserDidDoc(user)
           return res.send({ success: true })
         }
       } else {
@@ -1727,7 +1728,7 @@ function userRoutes(app: Application) {
 
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
       const ask = await Ask.create({
-        question: question,
+        question: escape(question),
         apObject: null,
         creationIp: getIp(req),
         answered: false,
@@ -1963,7 +1964,7 @@ It is slow because we have to send every fedi server that has ever seen a post o
             message = `Alias not detected`
           }
         }
-      } catch (error) {}
+      } catch (error) { }
     }
 
     res.status(success ? 200 : 500)
@@ -2171,6 +2172,7 @@ async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boo
   user.bskyAppPassword = appPassword
   user.enableBsky = true
   await user.save()
+  await updateUserDidDoc(user)
   if (forceLog) {
     logger.info(`Forced app password on user ${user.url}: ${appPassword}`)
   }

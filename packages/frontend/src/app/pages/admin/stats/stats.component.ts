@@ -1,5 +1,5 @@
 import { JsonPipe } from "@angular/common";
-import { Component, inject } from "@angular/core";
+import { ChangeDetectorRef, Component, inject } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { TranslateModule } from "@ngx-translate/core";
 import { statsReply } from "src/app/interfaces/statsReply";
@@ -14,6 +14,7 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
 })
 export class StatsComponent {
   backendReply: statsReply | undefined;
+  private cdr = inject(ChangeDetectorRef)
   constructor() {
     const adminService = inject(AdminService);
     const simpleTitle = inject(SimpleTitleService);
@@ -22,6 +23,7 @@ export class StatsComponent {
 
     adminService.getStats().then((response) => {
       this.backendReply = response;
+      this.cdr.detectChanges();
     });
   }
 }

@@ -1,6 +1,5 @@
 import { Job, Queue } from 'bullmq'
 import { Follows, Post, User, UserLikesPostRelations } from '../../models/index.js'
-import { getAtProtoThread } from '../../atproto/utils/getAtProtoThread.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { logger } from '../logger.js'
 import { Op } from 'sequelize'

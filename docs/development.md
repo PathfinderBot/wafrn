@@ -67,6 +67,7 @@ npm run db:migrate
 ```sh
 cd packages/frontend
 npm i
+npm run prebuild
 npm exec -- ng build --configuration=devlocal
 ```
 
@@ -79,6 +80,7 @@ NODE_TLS_REJECT_UNAUTHORIZED=0 npm start
 
 ```sh
 cd packages/frontend
+npm run prebuild
 npm exec -- ng serve --host 0.0.0.0 --configuration=devlocal
 ```
 

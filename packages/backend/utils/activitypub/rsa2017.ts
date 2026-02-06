@@ -9,6 +9,7 @@ import {
   wafrnContext,
 } from "./contexts.js";
 import { JsonLd, RemoteDocument } from "jsonld/jsonld-spec.js";
+import getUserAgent from "../getUserAgent.js";
 
 //import { httpAgent, httpsAgent } from "@/misc/fetch.js";
 
@@ -137,7 +138,7 @@ export class LdSignature {
 
   private async fetchDocument(url: string): Promise<JsonLd> {
     const headers = {
-      "User-Agent": completeEnvironment.instanceUrl,
+      "User-Agent": getUserAgent('ActivityPubWorker'),
       Accept: "application/ld+json, application/json",
     };
     const axiosResponse = await axios.get(url, { headers: headers });

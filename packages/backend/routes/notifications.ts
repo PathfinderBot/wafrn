@@ -30,7 +30,7 @@ import { UserAttributes } from '../models/user.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { getAtProtoThread } from '../atproto/utils/getAtProtoThread.js'
+import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 
 function notificationRoutes(app: Application) {
   app.get(
@@ -262,7 +262,7 @@ function notificationRoutes(app: Application) {
             const foundUris = foundPosts.map(elem => elem.bskyUri)
             await Promise.all(notificationsPetition.data.notifications
               .filter(elem => !foundUris.includes(elem.uri) )
-              .map(elem => getAtProtoThread(elem.uri)))
+              .map(elem => processSinglePost(elem.uri)))
           }
           } catch (error) {
             logger.error({

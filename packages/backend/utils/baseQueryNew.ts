@@ -252,7 +252,9 @@ async function getUnjointedPosts(
         as: "ancestors",
         required: false,
         where: {
-          isDeleted: false,
+          isDeleted: {
+            [Op.ne]: true
+          },
         },
       },
     ],
@@ -260,7 +262,9 @@ async function getUnjointedPosts(
       id: {
         [Op.in]: postIdsInput,
       },
-      isDeleted: false,
+      isDeleted: {
+        [Op.ne]: true
+      },
     },
   });
   posts.forEach((post: any) => {

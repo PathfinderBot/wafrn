@@ -5,6 +5,8 @@ import { logger } from "../logger.js";
 import { getPetitionSigned } from "./getPetitionSigned.js";
 import { getRemoteActor } from "./getRemoteActor.js";
 import { Agent, fetch } from "undici";
+import { completeEnvironment } from "../backendOptions.js";
+import getUserAgent from "../getUserAgent.js";
 
 async function searchRemoteUser(
   searchTerm: string,
@@ -38,6 +40,11 @@ async function searchRemoteUser(
         try {
           const petitionResponse = await fetch(
             `https://${domain}/.well-known/webfinger/?resource=acct:${username}@${domain}`,
+            {
+              headers: {
+                "User-Agent": getUserAgent('ActivityPubWorker')
+              }
+            }
           );
           remoteResponse = await petitionResponse.json();
         } catch (error) {

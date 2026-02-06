@@ -51,14 +51,13 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
         return
       }
       const remoteActor = await getRemoteActor(fediData.remoteUserUrl, cachePost.data.user, false)
-      if (!remoteActor) {
-        logger.debug({
-          message: `remote actor not found`,
-          fedidata: fediData
-        })
-        return res.sendStatus(500)
+      if (!remoteActor || remoteActor?.banned) {
+        return res.sendStatus(403)
       } else {
         const federatedHost = await remoteActor.getFederatedHost()
+        if (!federatedHost || federatedHost.blocked) {
+          return res.sendStatus(403)
+        }
         await processPostViewQueue.add('processPost', {
           postId: post.id,
           federatedHostId: federatedHost && federatedHost.publicInbox ? federatedHost.id : '',
@@ -66,8 +65,7 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
         })
       }
       if (post.privacy === Privacy.DirectMessage) {
-        res.sendStatus(403)
-        return
+        return res.sendStatus(403)
       }
       if (post.privacy === Privacy.FollowersOnly) {
         const followerIds = await getFollowerRemoteIds(user.id)

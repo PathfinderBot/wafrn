@@ -16,6 +16,7 @@ import { processSinglePostJob } from "../atproto/workers/processSinglePostWorker
 import { follow } from "./follow.js";
 import { mergeUser } from "./queueProcessors/mergeUser.js";
 import { mergePost } from "./queueProcessors/mergePost.js";
+import { fetchFediThread } from "./queueProcessors/fetchFediThread.js";
 
 logger.info("started worker");
 const workerInbox = new Worker("inbox", (job: Job) => inboxWorker(job), {
@@ -180,12 +181,26 @@ const workerProcessSinglePost = completeEnvironment.enableBsky
       metrics: {
         maxDataPoints: MetricsTime.ONE_WEEK * 2,
       },
-      concurrency: 25,
+      concurrency: completeEnvironment.workers.high,
       // up to one minute
       lockDuration: 60000,
     }
   )
   : null;
+
+const workerFetchFediTrhead = new Worker(
+  "processSinglePost",
+  async (job: Job) => await fetchFediThread(job),
+  {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2,
+    },
+    concurrency: completeEnvironment.workers.high,
+    // up to one minute
+    lockDuration: 60000,
+  }
+)
 
 const workerSendPushNotification = new Worker(
   "sendPushNotification",
@@ -237,7 +252,8 @@ const workers = [
   workerGenerateUserKeyPair,
   workerFollow,
   workerMergeUsers,
-  workerMergePost
+  workerMergePost,
+  workerFetchFediTrhead
 ];
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker);
@@ -303,5 +319,6 @@ export {
   workerGenerateUserKeyPair,
   workerSendPostBsky,
   workerMergeUsers,
-  workerMergePost
+  workerMergePost,
+  workerFetchFediTrhead
 };

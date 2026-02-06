@@ -12,11 +12,11 @@ import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getUnjointedPosts } from '../utils/baseQueryNew.js'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
-import { getAtProtoThread } from '../atproto/utils/getAtProtoThread.js'
 import { logger } from '../utils/logger.js'
 import { Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix, splitHandle } from '../models/user.js'
+import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 export default function searchRoutes(app: Application) {
   app.get('/api/userSearch/:term', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const posterId = req.jwtData?.userId ? req.jwtData.userId : '00000000-0000-0000-0000-000000000000'
@@ -67,7 +67,7 @@ export default function searchRoutes(app: Application) {
 
       urlString = url.href;
     } catch (error) { }
-    if (urlString && !page) {
+    if ((urlString || searchTerm.startsWith('at://')) && !page ) {
       // we force fetch said remote post. Nothing eslse!
       const userPoster = await User.findByPk(posterId)
       if (userPoster) {
@@ -75,24 +75,28 @@ export default function searchRoutes(app: Application) {
           completeEnvironment.enableBsky &&
           userPoster.enableBsky &&
           userPoster.bskyDid &&
-          urlString.toLowerCase().includes('/profile/') &&
-          urlString.toLowerCase().includes('/post/')
+          ((urlString.toLowerCase().includes('/profile/') &&
+          urlString.toLowerCase().includes('/post/')) ||
+          searchTerm.startsWith('at://')  
+        )
         ) {
           // try resolving as bsky post
           try {
-            urlString = decodeURIComponent(urlString); // done this due to red dwarf
-            const profileAndPost = urlString.includes('app.bsky.feed.post') ?
-              urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
-              urlString.split('/profile/')[1].split('/post/')
-            let bskyProfile = profileAndPost[0]
-            let bskyUri = profileAndPost[1]
-            if (!bskyProfile.startsWith('did:')) {
-              let profileToGet = await getAtprotoUser(`${bskyProfile}`, userPoster)
-              if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
+            let uri = searchTerm
+            if(!searchTerm.startsWith('at://')){
+              urlString = decodeURIComponent(urlString); // done this due to red dwarf
+              const profileAndPost = urlString.includes('app.bsky.feed.post') ?
+                urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
+                urlString.split('/profile/')[1].split('/post/')
+              let bskyProfile = profileAndPost[0]
+              let bskyUri = profileAndPost[1]
+              if (!bskyProfile.startsWith('did:')) {
+                let profileToGet = await getAtprotoUser(`${bskyProfile}`)
+                if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
             }
-            const uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
-
-            let bskyPostId = await getAtProtoThread(uri, true)
+            uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
+          } 
+            let bskyPostId = await processSinglePost(uri, true)
             if (bskyPostId) {
               postsIds = [bskyPostId]
             }
@@ -277,7 +281,7 @@ export default function searchRoutes(app: Application) {
 
     if (completeEnvironment.enableBsky && usr.enableBsky && searchData.type === 'bluesky' && usr.bskyDid) {
       try {
-        const bskySearchResult = await getAtprotoUser(searchData.handle, usr)
+        const bskySearchResult = await getAtprotoUser(searchData.handle)
         if (bskySearchResult && bskySearchResult.url != completeEnvironment.deletedUser) {
           result = bskySearchResult
         }

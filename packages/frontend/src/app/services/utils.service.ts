@@ -32,6 +32,14 @@ export class UtilsService {
     return result.sort()
   }
 
+  async getBubbleServers(): Promise<string[]> {
+    const servers = await firstValueFrom(
+      this.http.get<{ displayName: string }[]>(`${EnvironmentService.environment.baseUrl}/status/bubble`)
+    )
+    let result = servers.map((elem) => elem.displayName.toLowerCase().trim()).filter((elem) => elem != '')
+    return result.sort()
+  }
+
   async getRawJsonUser(id: string): Promise<object> {
     const raw = await firstValueFrom(
       this.http.get(`${EnvironmentService.environment.frontUrl}/fediverse/blog/${id}`, {

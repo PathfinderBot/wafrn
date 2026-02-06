@@ -8,7 +8,7 @@ import { getAllLocalUserIds } from "../../utils/cacheGetters/getAllLocalUserIds.
 import { logger } from "../../utils/logger.js"
 import { bulkCreateNotifications, createNotification } from "../../utils/pushNotifications.js"
 import { wait } from "../../utils/wait.js"
-import { getQuotedPostUri, getAtProtoThread, processSinglePost } from "../utils/getAtProtoThread.js"
+import { getQuotedPostUri, processSinglePost } from "../utils/getAtProtoThread.js"
 import { getAtprotoUser } from "../utils/getAtprotoUser.js"
 import { MediaAttributes } from "../../models/media.js"
 import { Privacy, InteractionControlType, InteractionControl } from "../../models/post.js"
@@ -20,7 +20,7 @@ async function processSinglePostJob(job: Job): Promise<string | undefined> {
   if (!job.data.post) {
     return undefined;
   }
-  let post = await processSinglePost(job.data.post, job.data.parentId, job.data.forceUpdate)
+  let post = await processSinglePost(job.data.post, job.data.forceUpdate)
   return post
 }
 

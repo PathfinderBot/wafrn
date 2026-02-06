@@ -24,6 +24,7 @@ import { getLinkPreview } from "link-preview-js";
 import crypto from "crypto";
 import { redisCache } from "../../utils/redis.js";
 import { logger } from "../../utils/logger.js";
+import getUserAgent from "../../utils/getUserAgent.js";
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -184,6 +185,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     where: {
       postId: post.id,
     },
+    order: [['mediaOrder', 'ASC']]
   });
 
   let postShortened = false;
@@ -251,7 +253,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         try {
           linkPreview = (await getLinkPreview(token.url, {
             followRedirects: "follow",
-            headers: { "User-Agent": completeEnvironment.instanceUrl },
+            headers: { "User-Agent": getUserAgent('LinkPreview') },
           })) as
             | { url: string; title: string; description: string }
             | undefined;
@@ -375,13 +377,15 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     });
     return { media, blob: data.blob };
   });
-
-  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4) {
-    const bskyMedias = await Promise.all(bskyMediaPromises);
+  const bskyMedias = await Promise.all(bskyMediaPromises);
+  const isNotValidMedia = bskyMedias.some((media) => 
+      media.media.mediaType?.includes('pdf')
+    )
+  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4 && !isNotValidMedia) {
+    
     const video = bskyMedias.find((media) =>
       media.media.mediaType?.startsWith("video/")
     );
-
     if (video) {
       res.embed = {
         $type: "app.bsky.embed.video",
@@ -405,7 +409,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       };
     }
     // Shortening when media is present is handled earlier
-  } else if (postShortened || bskyMediaPromises.length > 4) {
+  } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
     res.embed = {
       $type: "app.bsky.embed.external",
       external: {

@@ -19,6 +19,7 @@ import { return404 } from "../utils/return404.js";
 import { User } from "../models/user.js";
 import { Emoji } from "../models/emoji.js";
 import { deprecate } from "util";
+import getUserAgent from "../utils/getUserAgent.js";
 
 function sendWithCache(res: Response, localFileName: string) {
   // Does the .mime file exist?
@@ -107,10 +108,10 @@ function cacheRoutes(app: Application) {
     let res = ''
     let redisData = await redisCache.get('media:' + id)
     let media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
-    if(!redisData && media) {
+    if (!redisData && media) {
       redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
     }
-    if(media) {
+    if (media) {
       res = media.external ? media.url : completeEnvironment.mediaUrl + media.url
     }
 
@@ -139,26 +140,26 @@ function cacheRoutes(app: Application) {
     let res = ''
     const avatarCache = await redisCache.get('avatar:' + id)
     const user = avatarCache ? JSON.parse(avatarCache) : await User.scope("full").findOne({
-            attributes: ["email", "avatar"],
-            where: {
-              banned: false,
-              [Op.or]: [
-                {
-                  id: id,
-                },
-                {
-                  url: id,
-                },
-              ],
-            },
-          })
-    if(user) {
+      attributes: ["email", "avatar"],
+      where: {
+        banned: false,
+        [Op.or]: [
+          {
+            id: id,
+          },
+          {
+            url: id,
+          },
+        ],
+      },
+    })
+    if (user) {
       res = user.email
-          ? `${completeEnvironment.mediaUrl}${user.avatar}`
-          : user.avatar
+        ? `${completeEnvironment.mediaUrl}${user.avatar}`
+        : user.avatar
     }
-    if(user && !avatarCache) {
-      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60 )
+    if (user && !avatarCache) {
+      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
     }
     return res;
   }
@@ -181,15 +182,15 @@ function cacheRoutes(app: Application) {
     const cacheData = await redisCache.get('emoji:' + id)
     const emoji = cacheData ? JSON.parse(cacheData) :
       await Emoji.findOne({
-          where: {
-            uuid: id,
-          },
-        })
-    if(emoji) {
+        where: {
+          uuid: id,
+        },
+      })
+    if (emoji) {
       res = emoji.external ? emoji.url : completeEnvironment.mediaUrl + emoji.url
     }
-    if(emoji && !cacheData) {
-      await redisCache.set('emoji:'+ id, JSON.stringify(emoji.dataValues), 'EX', 600)
+    if (emoji && !cacheData) {
+      await redisCache.set('emoji:' + id, JSON.stringify(emoji.dataValues), 'EX', 600)
     }
     return res;
   }
@@ -255,9 +256,9 @@ function cacheRoutes(app: Application) {
         try {
           result = await getLinkPreview(url, {
             followRedirects: "follow",
-            headers: { "User-Agent": completeEnvironment.instanceUrl },
+            headers: { "User-Agent": getUserAgent('LinkPreview') },
           });
-        } catch (error) {}
+        } catch (error) { }
         // we cache the url 24 hours if success, 5 minutes if not
         await redisCache.set(
           "linkPreviewCache:" + urlHash,
@@ -306,7 +307,12 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, forceWriteFirst
             } else if (did.startsWith("did:web")) {
               // get did doc first
               const docRes = await fetch(
-                `https://${did.split("did:web:")[1]}/.well-known/did.json`
+                `https://${did.split("did:web:")[1]}/.well-known/did.json`,
+                {
+                  headers: {
+                    "User-Agent": getUserAgent('ATProtoWorker')
+                  }
+                }
               );
               const didDoc = await docRes.json();
               const atProtoServer = didDoc.service.find(
@@ -333,7 +339,7 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, forceWriteFirst
         }
         const response = await axios.get(mediaUrl, {
           responseType: "stream",
-          headers: { "User-Agent": "wafrnCacher" },
+          headers: { "User-Agent": getUserAgent('WafrnMediaCacher') },
         });
         let altText = "";
         /*
@@ -359,7 +365,7 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, forceWriteFirst
         const { stream, mime } = await getMimeType(response.data);
         if (res) {
           res.contentType(mime);
-          if(!forceWriteFirst) {
+          if (!forceWriteFirst) {
             stream.pipe(res)
           }
         }

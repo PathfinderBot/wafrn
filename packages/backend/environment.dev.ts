@@ -117,7 +117,9 @@ export const baseEnvironment: Environment = {
   webpushEmail: 'mailto:info@wafrn.net',
   // registration level for the instance
   registrationLevel: 'PRIVATE',
-  disableShowingBlockedServers: true,
+  disableShowingBlockedServers: false,
+  bubbleHostsShowType: 'PUBLIC',
+  blockedHostsShowType: 'PUBLIC',
   autoFollowAdmin: true,
   minimumAgeToRegister: 18,
   donationUrl: 'http://localhost/about',

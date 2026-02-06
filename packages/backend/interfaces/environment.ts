@@ -80,6 +80,8 @@ export interface Environment {
   webpushEmail: string
   autoFollowAdmin: boolean
   registrationLevel: 'PRIVATE' | 'INVITE' | 'PUBLIC'
+  bubbleHostsShowType: 'HIDDEN' | 'LOGGEDIN' | 'PUBLIC'
+  blockedHostsShowType: 'HIDDEN' | 'LOGGEDIN' | 'PUBLIC'
   minimumAgeToRegister: number
   disableShowingBlockedServers: boolean
   donationUrl?: string

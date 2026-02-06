@@ -4,7 +4,7 @@ import { forcePopulateUsers, getAtprotoUser } from '../../atproto/utils/getAtpro
 import { Follows, User } from '../../models/index.js'
 import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import { getAdminAtprotoSession } from './getAdminAtprotoSession.js'
-import { getAtProtoThread } from '../../atproto/utils/getAtProtoThread.js'
+import { processSinglePost } from '../../atproto/utils/getAtProtoThread.js'
 
 async function syncBskyFollowersAndFollowing(userId: string, syncPosts?: boolean) {
   const user = await User.findByPk(userId)
@@ -85,7 +85,7 @@ async function syncBskyFollowersAndFollowing(userId: string, syncPosts?: boolean
       }
       console.log(`Sync posts of user ${user.url}: ${uris.length} posts`)
       for await (const uri of uris) {
-        await getAtProtoThread(uri, true, false)
+        await processSinglePost(uri, false)
       }
     }
 

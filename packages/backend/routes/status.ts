@@ -4,6 +4,7 @@ import AuthorizedRequest from "../interfaces/authorizedRequest.js";
 import { Queue } from "bullmq";
 import { FederatedHost } from "../models/index.js";
 import { completeEnvironment } from "../utils/backendOptions.js";
+import optionalAuthentication from "../utils/optionalAuthentication.js";
 
 export default function statusRoutes(app: Application) {
   app.get(
@@ -177,9 +178,34 @@ export default function statusRoutes(app: Application) {
   );
 
   app.get(
-    "/api/status/blocks",
+    "/api/status/bubble",
+    optionalAuthentication,
     async (req: AuthorizedRequest, res: Response) => {
-      if (completeEnvironment.disableShowingBlockedServers)
+      if (
+        completeEnvironment.bubbleHostsShowType === 'HIDDEN' ||
+        (completeEnvironment.bubbleHostsShowType === 'LOGGEDIN' && !req.jwtData)
+      )
+        return res.sendStatus(404);
+      res.send(
+        await FederatedHost.findAll({
+          attributes: ["displayName"],
+          where: {
+            bubbleTimeline: true
+          },
+        })
+      );
+    }
+  )
+
+  app.get(
+    "/api/status/blocks",
+    optionalAuthentication,
+    async (req: AuthorizedRequest, res: Response) => {
+      if (
+        completeEnvironment.disableShowingBlockedServers ||
+        completeEnvironment.blockedHostsShowType === 'HIDDEN' ||
+        (completeEnvironment.blockedHostsShowType === 'LOGGEDIN' && !req.jwtData)
+      )
         return res.sendStatus(404);
       res.send(
         await FederatedHost.findAll({

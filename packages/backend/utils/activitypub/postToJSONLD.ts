@@ -38,7 +38,7 @@ async function postToJSONLD(
   if (resFromCacheString) {
     return JSON.parse(resFromCacheString) as activityPubObject;
   }
-  const cacheData = await getPostAndUserFromPostId(postId);
+  const cacheData = await getPostAndUserFromPostId(postId, true);
   const post = cacheData.data;
   if (!post) {
     return undefined;
@@ -200,8 +200,8 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
       }/dashboard/search/${encodeURIComponent(tag.tagName)}`;
     tagsAndQuotes = `${tagsAndQuotes} <a class="hashtag" data-tag="post" href="${link}" rel="tag ugc">#${externalTagName}</a>`;
     misskeyTagsAndQuotes = `${misskeyTagsAndQuotes} ${tag.tagName.trim().includes(" ")
-        ? "# " + tag.tagName.trim()
-        : "#" + tag.tagName.trim()
+      ? "# " + tag.tagName.trim()
+      : "#" + tag.tagName.trim()
       }`;
     fediTags.push({
       type: "Hashtag",
@@ -487,7 +487,7 @@ async function getPostUrlForQuote(post: any): Promise<string> {
     const parts = post.bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
     res = `https://bsky.app/profile/${userDid}/post/${parts[1]}`;
-  } 
+  }
   if (isPostFromFedi) {
     res = post.remotePostId;
   }
