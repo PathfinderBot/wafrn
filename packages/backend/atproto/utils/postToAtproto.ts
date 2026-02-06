@@ -25,6 +25,7 @@ import crypto from "crypto";
 import { redisCache } from "../../utils/redis.js";
 import { logger } from "../../utils/logger.js";
 import getUserAgent from "../../utils/getUserAgent.js";
+import sharp from 'sharp'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -345,8 +346,32 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
   const bskyMediaPromises = medias.map(async (media) => {
     let file = await fs.readFile("uploads/" + media.url);
-    const isVideo = media.mediaType?.startsWith("video/");
-
+    let isVideo = media.mediaType?.startsWith("video/");
+    let type : string | undefined
+    // FIRST check
+    if(!isVideo) {
+      const metadata = await sharp("uploads/" + media.url).metadata()
+      if(metadata.pages && metadata.pages > 1) {
+        isVideo = true;
+        await optimizeMedia("uploads/" + media.url, {
+          forceImageExtension: 'gif',
+          keep: true,
+          outPath: 'uploads/' + media.id + '_tmp'
+        })
+        await optimizeMedia("uploads/" + media.id + "_tmp.gif",  {
+          forceImageExtension: 'mp4',
+          keep: false,
+          outPath: 'uploads/' + media.id + '_tmp'
+        })
+        isVideo = true;
+        file = await fs.readFile('uploads/' + media.id + '_tmp_processed.mp4')
+        type = 'video/mp4'
+        // I like to play dangerously
+        media.mediaType = type
+        media.url = '/' +media.id + '_tmp_processed.mp4'
+      }
+      
+    }
     if (!isVideo) {
       // yeah, 1 millon bytes is officially the limit:
       // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
@@ -373,7 +398,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
 
     const { data } = await agent.uploadBlob(Buffer.from(file), {
-      encoding: media.mediaType || undefined,
+      encoding: type || media.mediaType || undefined,
     });
     return { media, blob: data.blob };
   });
