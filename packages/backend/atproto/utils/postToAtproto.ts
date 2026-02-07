@@ -347,6 +347,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const bskyMediaPromises = medias.map(async (media) => {
     let file = await fs.readFile("uploads/" + media.url);
     let isVideo = media.mediaType?.startsWith("video/");
+    let fileToDelete: string | undefined;
     let type : string | undefined
     // FIRST check
     if(!isVideo) {
@@ -369,6 +370,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         // I like to play dangerously
         media.mediaType = type
         media.url = '/' +media.id + '_tmp_processed.mp4'
+        fileToDelete = 'uploads/' + media.id + '_tmp_processed.mp4'
       }
       
     }
@@ -384,6 +386,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
           keep: true,
         });
         file = await fs.readFile("uploads/" + media.id + "_bsky.webp");
+        fileToDelete = "uploads/" + media.id + "_bsky.webp"
       }
 
       if (file.length > 1000000) {
@@ -394,12 +397,20 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
           keep: true,
         });
         file = await fs.readFile("uploads/" + media.id + "_bsky.webp");
+        fileToDelete = "uploads/" + media.id + "_bsky.webp"
       }
     }
 
     const { data } = await agent.uploadBlob(Buffer.from(file), {
       encoding: type || media.mediaType || undefined,
     });
+    if(fileToDelete){
+      try {
+        await fs.unlink(fileToDelete)
+      } catch(error) {
+        logger.debug(`Error deleting non existing file ${fileToDelete}`)
+      }
+    }
     return { media, blob: data.blob };
   });
   const bskyMedias = await Promise.all(bskyMediaPromises);
