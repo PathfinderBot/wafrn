@@ -34,7 +34,7 @@ import dompurify from "isomorphic-dompurify";
 import { Queue } from "bullmq";
 import { bulkCreateNotifications } from "../pushNotifications.js";
 import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
-import { Privacy } from "../../models/post.js";
+import { InteractionControl, InteractionControlType, Privacy } from "../../models/post.js";
 import {
   getPostThreadPDSDirect,
   processSinglePost,
@@ -68,6 +68,17 @@ async function getPostThreadRecursive(
   localPostToForceUpdate?: string,
   options?: any
 ) {
+  const replyControl: {
+    replyControl: InteractionControlType;
+    likeControl: InteractionControlType;
+    reblogControl: InteractionControlType;
+    quoteControl: InteractionControlType;
+  } = {
+    replyControl: InteractionControl.Anyone,
+    likeControl: InteractionControl.Anyone,
+    reblogControl: InteractionControl.Anyone,
+    quoteControl: InteractionControl.Anyone
+  }
   const checkBluesky = completeEnvironment.enableBsky && !(options?.forceNotBsky)
   if (remotePostId === null) return;
 
@@ -204,7 +215,71 @@ async function getPostThreadRecursive(
         );
 
         const privacy = getApObjectPrivacy(postPetition, remoteUser);
+        // part of getting the canreply stuff
+        if(postPetition.interactionPolicy) {
+          const publicList = 'https://www.w3.org/ns/activitystreams#Public'
+          // canAnnounce
+          if(postPetition.interactionPolicy.canAnnounce) {
+            const listCanAnnounce = (postPetition.interactionPolicy.canAnnounce || []).always.concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
+            replyControl.reblogControl = InteractionControl.MentionedUsersOnly
+            const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
+            const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
+            if(followersCanReply) {
+              replyControl.reblogControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+            } else {
+              replyControl.reblogControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.reblogControl
+            }
+            if(listCanAnnounce.includes(publicList)) {
+              replyControl.reblogControl = InteractionControl.Anyone
+            }
+          }
 
+          if(postPetition.interactionPolicy.canLike) {
+            const listCanLike = (postPetition.interactionPolicy.canLike || []).always.concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
+            replyControl.likeControl = InteractionControl.MentionedUsersOnly
+            const followersCanReply = listCanLike.includes(remoteUser.followersCollectionUrl)
+            const followingCanReply = listCanLike.includes(remoteUser.followingCollectionUrl)
+            if(followersCanReply) {
+              replyControl.likeControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+            } else {
+              replyControl.likeControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.likeControl
+            }
+            if(listCanLike.includes(publicList)) {
+              replyControl.likeControl = InteractionControl.Anyone
+            }
+          }
+
+          if(postPetition.interactionPolicy.canReply) {
+            const listCanReply = (postPetition.interactionPolicy.canReply.always || []).concat(postPetition.interactionPolicy.canReply.automaticApproval || [] )
+            replyControl.replyControl = InteractionControl.MentionedUsersOnly
+            const followersCanReply = listCanReply.includes(remoteUser.followersCollectionUrl)
+            const followingCanReply = listCanReply.includes(remoteUser.followingCollectionUrl)
+            if(followersCanReply) {
+              replyControl.replyControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+            } else {
+              replyControl.replyControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.replyControl
+            }
+            if(listCanReply.includes(publicList)) {
+              replyControl.replyControl = InteractionControl.Anyone
+            }
+          }
+
+          if(postPetition.interactionPolicy.canQuote) {
+            const listCanQuote = (postPetition.interactionPolicy.canQuote.always || []).concat(postPetition.interactionPolicy.canQuote.automaticApproval || [])
+            replyControl.quoteControl = InteractionControl.MentionedUsersOnly
+            const followerscanQuote = listCanQuote.includes(remoteUser.followersCollectionUrl)
+            const followingcanQuote = listCanQuote.includes(remoteUser.followingCollectionUrl)
+            if(followerscanQuote) {
+              replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+            } else {
+              replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowingAndMentioned : replyControl.quoteControl
+            }
+            if(listCanQuote.includes(publicList)) {
+              replyControl.quoteControl = InteractionControl.Anyone
+            }
+          }
+          
+        }
         let postTextContent = `${postPetition.content ? postPetition.content : ""
           }`; // Fix for bridgy giving this as undefined
         if (postPetition.type == "Video") {
@@ -403,6 +478,7 @@ async function getPostThreadRecursive(
               bskyUri,
             }
             : {}),
+            ... replyControl
         };
 
         if (postPetition.name) {
