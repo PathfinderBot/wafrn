@@ -251,9 +251,11 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
 
   refresh() {
     const currentUrl = this.router.url
-    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+    this.router.navigateByUrl('/nonExistingUrl', { skipLocationChange: true })
+    setTimeout(() => {
       this.router.navigate([currentUrl])
-    })
+      this.cdr.detectChanges()
+    }, 25)
     this.cdr.detectChanges();
   }
 
