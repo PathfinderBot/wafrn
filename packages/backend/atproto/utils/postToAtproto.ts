@@ -406,7 +406,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     });
     if(fileToDelete){
       try {
-        await fs.unlink(fileToDelete)
+        setTimeout(async () => {
+          await fs.unlink(fileToDelete)
+        }, (60000));
       } catch(error) {
         logger.debug(`Error deleting non existing file ${fileToDelete}`)
       }
