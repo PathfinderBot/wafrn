@@ -96,7 +96,7 @@ services:
         condition: service_started
     restart: no
     command: "npm exec tsx migrate.ts init-container"
-    retries: 2
+
 
   frontend:
     restart: unless-stopped

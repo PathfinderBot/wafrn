@@ -103,7 +103,7 @@ services:
       mode: replicated
       replicas: 1
     command: "npm exec tsx migrate.ts init-container"
-    retries: 2
+
 
   frontend:
     restart: unless-stopped
