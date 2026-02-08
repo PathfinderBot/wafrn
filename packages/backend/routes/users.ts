@@ -1980,6 +1980,19 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     await forceUpdateCacheDidsAtThread()
     await getCacheAtDids(true)
     await updateUserDidDoc(user)
+    let pronouns: string | undefined;
+    const fediAttachmentsDb = await UserOptions.findOne({
+      where: {
+        userId: user.id,
+        optionName: 'fediverse.public.attachment'
+      }
+    })
+
+    if(fediAttachmentsDb) {
+      const fediAttachments: {name: string, value: string}[] = JSON.parse(fediAttachmentsDb.optionValue)
+      pronouns = fediAttachments.find(elem => elem.name.toLowerCase() === 'pronouns')?.value
+    }
+
     return await agent.upsertProfile(async (existingProfile) => {
       const profile = existingProfile ?? ({} as AppBskyActorProfile.Record)
       const fullProfileString = `\n\nView full profile at ${completeEnvironment.frontendUrl}/blog/${user.url}`
@@ -2008,6 +2021,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         const avatarData = avatarUpload.data.blob
         profile.avatar = avatarData
         await fs.unlink(pngAvatar)
+      }
+      if(pronouns) {
+        profile.pronouns = pronouns
       }
       // it works now yay
       if (user.headerImage) {
