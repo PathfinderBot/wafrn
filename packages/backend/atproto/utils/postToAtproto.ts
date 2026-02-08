@@ -343,7 +343,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
   };
-
+  let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {
     let file = await fs.readFile("uploads/" + media.url);
     let isVideo = media.mediaType?.startsWith("video/");
@@ -367,6 +367,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         isVideo = true;
         file = await fs.readFile('uploads/' + media.id + '_tmp_processed.mp4')
         type = 'video/mp4'
+        presentation = 'image/gif'
         // I like to play dangerously
         media.mediaType = type
         media.url = '/' +media.id + '_tmp_processed.mp4'
@@ -431,6 +432,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         alt: video.media.description ? video.media.description : "",
         labels,
         aspectRatio: await getVideoAspectRatio("uploads/" + video.media.url),
+        presentation: presentation
       };
     } else {
       res.embed = {
