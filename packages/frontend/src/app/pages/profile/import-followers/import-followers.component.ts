@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http'
-import { Component, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, inject } from '@angular/core'
 import { lastValueFrom } from 'rxjs'
 import { FollowListElem } from 'src/app/interfaces/follow-list-elem'
 import { EnvironmentService } from 'src/app/services/environment.service'
@@ -16,6 +16,7 @@ export class ImportFollowersComponent {
   private http = inject(HttpClient);
   private postService = inject(PostsService);
   private messages = inject(MessageService);
+  private cdr = inject(ChangeDetectorRef)
 
   step = 0
   progress = 0.0
@@ -61,6 +62,7 @@ export class ImportFollowersComponent {
       if (petition) {
         this.response = petition
         this.step++
+        this.cdr.detectChanges()
       }
     }
   }
@@ -75,7 +77,9 @@ export class ImportFollowersComponent {
     } else {
       this.responseResults.success = false
     }
+    this.cdr.detectChanges()
   }
+
 
   async followEveryone() {
     this.step = this.step + 1
@@ -85,6 +89,7 @@ export class ImportFollowersComponent {
         this.failedFollows.push(user.url)
       }
       this.progress = this.progress + 1
+      this.cdr.detectChanges()
     }
     this.step = this.step + 1
     this.messages.add({
