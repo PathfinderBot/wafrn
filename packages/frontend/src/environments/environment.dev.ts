@@ -15,7 +15,8 @@ export const environment = {
   shortenPosts: 5,
   reviewRegistrations: true,
   disablePWA: false,
-  maintenance: false
+  maintenance: false,
+  forceLocal: true
 }
 
 /*

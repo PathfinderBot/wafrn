@@ -14,16 +14,18 @@ export class EnvironmentService {
 
   constructor() {
     const environmentCopy: any = { ...environment }
+
     if (environmentCopy.forceEnvironment) {
       this.replaceEnvironment(environmentCopy.forceEnvironment)
     }
-    // we check if the localstorage has the environment for quicker load
-    let localStorageEnv = localStorage.getItem('environment')
-    if (localStorageEnv && !environmentCopy.production) {
-      this.replaceEnvironment(JSON.parse(localStorageEnv))
-    }
+
     // we only do this if in prod!!
-    firstValueFrom(this.http.get(EnvironmentService.environment.baseUrl + '/environment'))
+    if(!environmentCopy.forceLocal ) {
+      let localStorageEnv = localStorage.getItem('environment')
+      if (localStorageEnv && !environmentCopy.production) {
+      this.replaceEnvironment(JSON.parse(localStorageEnv))
+      }
+      firstValueFrom(this.http.get(EnvironmentService.environment.baseUrl + '/environment'))
       .then((res: any) => {
         if (res) {
           this.replaceEnvironment(res)
@@ -33,6 +35,7 @@ export class EnvironmentService {
       .catch((error) => {
         console.warn()
       })
+    }
   }
 
   replaceEnvironment(newEnv: Record<string, string | number | boolean>) {
