@@ -106,6 +106,13 @@ export class PostHeaderComponent implements OnChanges {
     this.edited = this.fragment().updatedAt.getTime() - this.fragment().createdAt.getTime() > 60000
   }
 
+  getPronouns(post: ProcessedPost) {
+    if (!post.user.pronouns) return undefined;
+    const p = document.createElement('p')
+    p.innerHTML = post.user.pronouns
+    return p.textContent
+  }
+
   async followUser(post: ProcessedPost) {
     const confirm = await this.simpleDialog.createConfirmDialog({
       title: 'dialog.post-header.followTitle',
