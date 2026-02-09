@@ -373,6 +373,7 @@ async function getUnjointedPosts(
         [Op.in]: userIds,
       },
     },
+    raw: true
   });
   const fediAttachmentsDb = await UserOptions.findAll({
     where: {
