@@ -157,7 +157,8 @@ export default function forumRoutes(app: Application) {
           id: {
             [Op.in]: userIds
           }
-        }
+        },
+        raw: true
       })
       let usersFollowedByPoster: string[] | Promise<string[]> = getFollowedsIds(userId)
       let usersFollowingPoster: string[] | Promise<string[]> = getFollowedsIds(userId, false, {
