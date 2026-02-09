@@ -20,6 +20,7 @@ import {
   UserBookmarkedPosts,
   UserEmojiRelation,
   UserLikesPostRelations,
+  UserOptions,
 } from "../models/index.js";
 import getPosstGroupDetails from "./getPostGroupDetails.js";
 import getFollowedsIds from "./cacheGetters/getFollowedsIds.js";
@@ -373,7 +374,22 @@ async function getUnjointedPosts(
       },
     },
   });
+  const fediAttachmentsDb = await UserOptions.findAll({
+    where: {
+      userId: {
+        [Op.in]: userIds
+      },
+      optionName: 'fediverse.public.attachment'
+    }
+  })
   const usersMap: Map<string, User> = new Map();
+  const usersPronounsMap: Map<string, string | undefined> = new Map();
+  for (const att of fediAttachmentsDb) {
+    const fediAttachments: {name: string, value: string}[] = JSON.parse(att.optionValue)
+    const pronouns = fediAttachments.find(elem => elem.name.toLowerCase() === 'pronouns')?.value
+    if (!pronouns) continue;
+    usersPronounsMap.set(att.userId, pronouns)
+  }
   for (const usr of await users) {
     usersMap.set(usr.id, usr);
   }
@@ -541,7 +557,15 @@ async function getUnjointedPosts(
     posts: finalPostsToSend,
     emojiRelations: await emojis,
     mentions: mentions.postMentionRelation.filter((elem) => !!elem),
-    users: (await users).filter((elem) => !!elem),
+    users: (await users).filter((elem) => !!elem).map(x => {
+      const pronouns = usersPronounsMap.get(x.id)
+      return {
+        ...x,
+        ...(pronouns ? {
+          pronouns
+        } : {})
+      }
+    }),
     polls: pollsFiltered.filter((elem) => !!elem),
     medias: mediasToSend.filter((elem) => !!elem),
     tags: tagsFiltered.filter((elem) => !!elem),
