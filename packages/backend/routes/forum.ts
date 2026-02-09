@@ -9,6 +9,7 @@ import {
   QuestionPollQuestion,
   ServerBlock,
   User,
+  UserOptions,
   sequelize
 } from '../models/index.js'
 import { Model, Op, QueryTypes } from 'sequelize'
@@ -65,9 +66,9 @@ export default function forumRoutes(app: Application) {
                     },
                     {
                       federatedHostId: {
-                        [Op.notIn]: (
-                          await ServerBlock.findAll({ where: { userBlockerId: userId } })
-                        ).map((elem) => elem.blockedServerId)
+                        [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
+                          (elem) => elem.blockedServerId
+                        )
                       }
                     }
                   ]
@@ -87,7 +88,7 @@ export default function forumRoutes(app: Application) {
           },
           [Op.or]: [
             {
-              userId: userId,
+              userId: userId
             },
             {
               privacy: Privacy.FollowersOnly,
@@ -105,7 +106,7 @@ export default function forumRoutes(app: Application) {
           ]
         }
       })
-      postIds = fullPostsToGet.map(elem => elem.id)
+      postIds = fullPostsToGet.map((elem) => elem.id)
       const quotes = await getQuotes(postIds)
       const quotedPostsIds = quotes.map((quote) => quote.quotedPostId)
       postIds = postIds.concat(quotedPostsIds)
@@ -156,7 +157,8 @@ export default function forumRoutes(app: Application) {
           id: {
             [Op.in]: userIds
           }
-        }
+        },
+        raw: true
       })
       let usersFollowedByPoster: string[] | Promise<string[]> = getFollowedsIds(userId)
       let usersFollowingPoster: string[] | Promise<string[]> = getFollowedsIds(userId, false, {
@@ -167,17 +169,42 @@ export default function forumRoutes(app: Application) {
       usersFollowingPoster = await usersFollowingPoster
       const mentionsAwaited = await mentions
       const posts = await Promise.all(
-          (await fullPostsToGet)
-            .filter((elem: any) => elem.id !== postId)
-            .map((elem) =>
-              addPostCanInteract(userId, elem.dataValues, usersFollowingPoster, usersFollowedByPoster, mentionsAwaited)
-            )
-        )
-        res.send({
+        (await fullPostsToGet)
+          .filter((elem: any) => elem.id !== postId)
+          .map((elem) =>
+            addPostCanInteract(userId, elem.dataValues, usersFollowingPoster, usersFollowedByPoster, mentionsAwaited)
+          )
+      )
+      const fediAttachmentsDb = await UserOptions.findAll({
+        where: {
+          userId: {
+            [Op.in]: userIds
+          },
+          optionName: 'fediverse.public.attachment'
+        }
+      })
+      const usersPronounsMap: Map<string, string | undefined> = new Map()
+      for (const att of fediAttachmentsDb) {
+        const fediAttachments: { name: string; value: string }[] = JSON.parse(att.optionValue)
+        const pronouns = fediAttachments.find((elem) => elem.name.toLowerCase() === 'pronouns')?.value
+        if (!pronouns) continue
+        usersPronounsMap.set(att.userId, pronouns)
+      }
+      res.send({
         posts: posts,
         emojiRelations: await emojis,
         mentions: mentions.postMentionRelation,
-        users: await users,
+        users: (await users).map((x) => {
+          const pronouns = usersPronounsMap.get(x.id)
+          return {
+            ...x,
+            ...(pronouns
+              ? {
+                  pronouns
+                }
+              : {})
+          }
+        }),
         polls: await polls,
         medias: await medias,
         tags: await tags,
@@ -186,7 +213,6 @@ export default function forumRoutes(app: Application) {
         quotedPosts: await quotedPosts,
         bookmarks: await getBookmarks(postIds, userId)
       })
-      
     } else {
       res.sendStatus(404)
     }

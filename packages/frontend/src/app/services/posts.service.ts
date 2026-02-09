@@ -578,6 +578,7 @@ export class PostsService {
       mentionPost: mentionedUsers as SimplifiedUser[],
       quotes: quotes,
       parentCollection: collection,
+      featured: false
     };
     if (unlinked.asks) {
       const ask = unlinked.asks.find((ask) => ask.postId === newPost.id);

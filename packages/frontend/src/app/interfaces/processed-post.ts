@@ -38,6 +38,7 @@ export interface ProcessedPost {
   hierarchyLevel: number;
   bookmarkers: string[];
   canReply: boolean;
+  featured: boolean;
   canQuote: boolean;
   canLike: boolean;
   canReblog: boolean;

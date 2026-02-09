@@ -57,6 +57,10 @@ services:
       REVIEW_REGISTRATIONS: ${REVIEW_REGISTRATIONS:-}
       IGNORE_BLOCK_HOSTS: ${IGNORE_BLOCK_HOSTS:-}
 
+      CONSTELLATION_URL: ${CONSTELLATION_URL:-}
+      SLINGSHOT_URL: ${SLINGSHOT_URL:-}
+      JETSTREAM_URL: ${JETSTREAM_URL:-}
+
       FRONTEND_LOGO: ${FRONTEND_LOGO:-}
       FRONTEND_API_URL: ${FRONTEND_API_URL:-}
       FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-}
@@ -170,11 +174,11 @@ services:
       PDS_DID_PLC_URL: "https://plc.directory"
       #PDS_BSKY_APP_VIEW_URL: "https://api.blacksky.community"
       #PDS_BSKY_APP_VIEW_DID: "did:web:api.blacksky.community"
-      PDS_BSKY_APP_VIEW_URL: "https://api.bsky.app"
-      PDS_BSKY_APP_VIEW_DID: "did:web:api.bsky.app"
-      PDS_REPORT_SERVICE_URL: "https://mod.bsky.app"
-      PDS_REPORT_SERVICE_DID: "did:plc:ar7c4by46qjdydhdevvrndac"
-      PDS_CRAWLERS: "https://bsky.network, https://atproto.africa"
+      PDS_BSKY_APP_VIEW_URL: ${PDS_APPVIEW_URL:-https://api.bsky.app}
+      PDS_BSKY_APP_VIEW_DID: ${PDS_APPVIEW_DID:-did:web:api.bsky.app}
+      PDS_REPORT_SERVICE_URL: ${PDS_MOD_URL:-https://mod.bsky.app}
+      PDS_REPORT_SERVICE_DID: ${PDS_MOD_DID:-did:plc:ar7c4by46qjdydhdevvrndac}
+      PDS_CRAWLERS: ${PDS_CRAWLERS:-https://bsky.network, https://atproto.africa}
       PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
       PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
       LOG_ENABLED: true
