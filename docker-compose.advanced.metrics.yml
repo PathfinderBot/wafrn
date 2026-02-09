@@ -192,7 +192,8 @@ services:
       PDS_BSKY_APP_VIEW_DID: ${PDS_APPVIEW_DID:-did:web:api.bsky.app}
       PDS_REPORT_SERVICE_URL: ${PDS_MOD_URL:-https://mod.bsky.app}
       PDS_REPORT_SERVICE_DID: ${PDS_MOD_DID:-did:plc:ar7c4by46qjdydhdevvrndac}
-      PDS_CRAWLERS: ${PDS_CRAWLERS:-https://bsky.network, https://atproto.africa}R}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
+      PDS_CRAWLERS: ${PDS_CRAWLERS:-https://bsky.network, https://atproto.africa}
+      PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
       PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
       LOG_ENABLED: true
     volumes:
