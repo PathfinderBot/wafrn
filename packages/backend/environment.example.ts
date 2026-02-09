@@ -108,8 +108,8 @@ export const baseEnvironment: Environment = {
   bskyPdsJwtSecret: '${{PDS_JWT_SECRET}}',
   bskyPdsAdminPassword: '${{PDS_ADMIN_PASSWORD}}',
   bskySlingshotUrl: '${{SLINGSHOT_URL:-https://slingshot.microcosm.blue}}',
-  bskyJetstreamUrl: '${{JETSTREAM_URL:-https://constellation.microcosm.blue}}',
-  bskyConstellationUrl: '${{CONSTELLATION_URL:-wss://jetstream.fire.hose.cam/subscribe}}',
+  bskyJetstreamUrl: '${{JETSTREAM_URL:-wss://jetstream.fire.hose.cam/subscribe}}',
+  bskyConstellationUrl: '${{CONSTELLATION_URL:-https://constellation.microcosm.blue}}',
   // to generate these keys use the following command: `npx web-push generate-vapid-keys`. Remember to do the environment one too!!
   webpushPrivateKey: '${{WEBPUSH_PRIVATE}}',
   webpushPublicKey: '${{WEBPUSH_PUBLIC}}',
