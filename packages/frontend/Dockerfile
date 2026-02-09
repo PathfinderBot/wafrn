@@ -35,6 +35,8 @@ RUN mv dist/wafrn/browser /app/frontend
 COPY packages/frontend/Caddyfile.example /app/Caddyfile
 RUN cp /app/packages/frontend/src/assets/pds-homepage.txt /app/pds-homepage.txt
 
+COPY packages/cadd[y]/Caddyfil[e] /app/Caddyfile
+
 FROM caddy:2
 
 RUN apk add perl
