@@ -23,7 +23,7 @@ let cachedDids = await getCacheAtDids(true);
 // })
 
 const jetstream = new Jetstream({
-  endpoint: "wss://jetstream.fire.hose.cam/subscribe",
+  endpoint: completeEnvironment.bskyJetstreamUrl,
   wantedCollections: [
     "net.wafrn.feed.bite",
     "app.bsky.feed.like",

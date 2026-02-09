@@ -148,7 +148,8 @@ async function processSinglePost(
     // original is fedi. lets wait half second
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
-        "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
+        completeEnvironment.bskySlingshotUrl + 
+        "/xrpc/com.bad-example.identity.resolveMiniDoc" +
         `?identifier=${extractUriComponents(uri).did}`
       );
       if (res.ok) {
@@ -811,7 +812,7 @@ async function processReplies(uri: string, cursor?: string) {
       uriToSearch = rootPost.bskyUri as string
       return processReplies(uriToSearch, cursor)
     }
-    let url = `https://constellation.microcosm.blue/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
+    let url = `${completeEnvironment.bskyConstellationUrl}/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {
       url = url + `&cursor=${cursor}`
     }

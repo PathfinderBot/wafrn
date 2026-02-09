@@ -75,6 +75,9 @@ export interface Environment {
   bskyPdsJwtSecret?: string
   bskyPdsAdminPassword?: string
   bskyMasterInviteCode?: string
+  bskyConstellationUrl: string
+  bskySlingshotUrl: string
+  bskyJetstreamUrl: string
   webpushPrivateKey: string
   webpushPublicKey: string
   webpushEmail: string
