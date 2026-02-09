@@ -391,6 +391,7 @@ async function getPostThreadRecursive(
                       }
                     })
                     await existingFedi.save()
+                    postBskyVersion.remotePostId = existingFedi.remotePostId
                     return postBskyVersion
                   } else {
                     // the real post is fedi one
