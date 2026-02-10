@@ -130,11 +130,11 @@
     "unlistedWarning": "Unlisted woots will get ignored by searches (TAGS INCLUDED), and will not show on explore local, but they will be shown to your followers. And if someone sends a link they will be visible, unlike followers only. Basically, for when you want to woot a lot but dont want to fill explore local.",
     "directMessageWithQuoteWarning": "Quoted user will be notified of this as a mention too",
     "sensitivePlaceholder": "What is sensitive about this woot?",
-    "wootQuoteBoxLabel": "Paste the URL of a woot to quote it. Can be the external url or the wafrn url",
-    "wootQuoteBoxPlaceholder": "Just paste the woot url",
-    "wootQuoteConfirmButton": "Add woot as quote",
-    "wootTextLabel": "Woot text",
-    "wootTextPlaceholder": "Start writing...",
+    "postQuoteBoxLabel": "Paste the URL of a woot to quote it. Can be the external url or the wafrn url",
+    "postQuoteBoxPlaceholder": "Just paste the woot url",
+    "postQuoteConfirmButton": "Add woot as quote",
+    "postTextLabel": "Woot text",
+    "postTextPlaceholder": "Start writing...",
     "uploadMediaIndicator": "Drop to upload media",
     "bskyLengthWarning": "Text above 300 characters will be cut off and instead a link to wafrn will be shown",
     "bskyLengthNotice": "This only affects Bluesky, currently only an approximation!",
@@ -395,7 +395,7 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
-    "wootEditorPrivacyOptions": {
+    "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
       "instanceOnly": "Instance Only",
@@ -416,10 +416,10 @@
     },
     "replaceAIWithCocaine": "Replace AI with a custom word",
     "replaceAIWord": "Word to replace AI with",
-    "wootReplyBarOrder": "Woot reply bar icon order",
-    "wootReplyBarOrderDescription": "Some items are shown depending on whether you are the wooter",
-    "wootActionsButtonBarOrder": "Woot actions menu button icon order",
-    "wootActionsButtonBarOrderDescription": "Items show in the woot actions menu. Some items are shown depending on whether you are the wooter.",
+    "postReplyBarOrder": "Woot reply bar icon order",
+    "postReplyBarOrderDescription": "Some items are shown depending on whether you are the wooter",
+    "postActionsButtonBarOrder": "Woot actions menu button icon order",
+    "postActionsButtonBarOrderDescription": "Items show in the woot actions menu. Some items are shown depending on whether you are the wooter.",
     "confettiOptions": "Confetti",
     "confettiMultiplier": "Confetti multiplier",
     "confettiMultiplierDescription": "Multiplies confetti amount. High amounts can freeze your browser!",
@@ -482,7 +482,7 @@
       "confirmUnbanContent": "We do not yet store ban information but it will be here eventually:",
       "confirmReopenTitle": "Confirm reopening report"
     },
-    "woot-header": {
+    "post-header": {
       "followTitle": "Follow user",
       "silenceInteractionsTitle": "Silence woot",
       "silenceInteractionsDescription": "Silence notifications from likes, rewoots, and reacts of this woot.",
@@ -506,7 +506,7 @@
       "followLoggedOutFollow": "Continue to your server",
       "followLoggedOutFollowBsky": "Follow {{name}} on Bluesky"
     },
-    "woot-fragment": {
+    "post-fragment": {
       "confirmOpenCwTitle": "Confirm opening content warning",
       "confirmOpenCwContent": "Woot has the content warnings and muted words:",
       "annoyances": {
@@ -598,7 +598,7 @@
     "additionalOptions": "Additional Options",
     "smoothScroll": "Smooth scroll"
   },
-  "woot-actions": {
+  "post-actions": {
     "shareUrl": "Copy link",
     "shareExternalUrl": "Copy remote link",
     "viewOnAtproto": "View on Atproto",
@@ -627,12 +627,12 @@
     "bitePost": "Bite woot",
     "biteUser": "Bite user"
   },
-  "woot-header": {
+  "post-header": {
     "follow": "Follow",
     "awaitingApproval": "Awaiting approval",
     "viewPost": "View woot"
   },
-  "woot-fragment": {
+  "post-fragment": {
     "mutedWords": "Woot contains muted words:",
     "mediaContentWarning": "Woot has content warning:",
     "mediaNsfw": "Media is NSFW",
