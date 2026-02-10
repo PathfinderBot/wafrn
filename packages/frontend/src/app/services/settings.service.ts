@@ -53,6 +53,10 @@ const settingKeyVariants = [
   'lightDarkMode', // this option are weirdly named in localStorage because legacy reasons
   'autoAcceptFollowsFromFollowing',
   'autoRejectFollowsFromUsersYouDoNotFollow',
+  'autoAddSpecifiedTags',
+  'autoAddSpecifiedTagsAsks',
+  'autoAddSpecifiedTagsAsksNoGeneral',
+  'autoAddContentWarning',
   'additionalStyleModes',
   'useOtherUserCustomThemes',
   'askToUseOtherUserCustomThemes',
@@ -634,6 +638,49 @@ export class SettingsService {
       convertFromStorage: this.convertStringFrom,
       convertToStorage: this.convertStringTo
     },
+    autoAddSpecifiedTags: {
+      key: 'autoAddSpecifiedTags',
+      translationKey: 'settings.autoAddSpecifiedTags',
+      translationDescriptionKey: 'settings.autoAddSpecifiedTagsDescription',
+      serverKey: 'wafrn.autoAddSpecifiedTags',
+      localStorageKey: 'autoAddSpecifiedTags',
+      type: 'input',
+      default: '',
+      convertFromStorage: this.convertStringFrom,
+      convertToStorage: this.convertStringTo
+    },
+    autoAddSpecifiedTagsAsks: {
+      key: 'autoAddSpecifiedTagsAsks',
+      translationKey: 'settings.autoAddSpecifiedTagsAsks',
+      serverKey: 'wafrn.autoAddSpecifiedTagsAsks',
+      localStorageKey: 'autoAddSpecifiedTagsAsks',
+      type: 'input',
+      default: '',
+      convertFromStorage: this.convertStringFrom,
+      convertToStorage: this.convertStringTo,
+      enableIfSetting: (s) => !!s.autoAddSpecifiedTags
+    },
+    autoAddSpecifiedTagsAsksNoGeneral: {
+      key: 'autoAddSpecifiedTagsAsksNoGeneral',
+      translationKey: 'settings.autoAddSpecifiedTagsAsksNoGeneral',
+      translationDescriptionKey: 'settings.autoAddSpecifiedTagsAsksNoGeneralDescription',
+      serverKey: 'wafrn.autoAddSpecifiedTagsAsksNoGeneral',
+      localStorageKey: 'autoAddSpecifiedTagsAsksNoGeneral',
+      type: 'checkbox',
+      default: false,
+      enableIfSetting: (s) => !!s.autoAddSpecifiedTagsAsks && !!s.autoAddSpecifiedTags
+    },
+    autoAddContentWarning: {
+      key: 'autoAddContentWarning',
+      translationKey: 'settings.autoAddContentWarning',
+      translationDescriptionKey: 'settings.autoAddContentWarningDescription',
+      serverKey: 'wafrn.autoAddContentWarning',
+      localStorageKey: 'autoAddContentWarning',
+      type: 'input',
+      default: '',
+      convertFromStorage: this.convertStringFrom,
+      convertToStorage: this.convertStringTo
+    },
     confettiMultiplier: {
       key: 'confettiMultiplier',
       translationKey: 'settings.confettiMultiplier',
@@ -849,7 +896,13 @@ export class SettingsService {
         },
         { type: 'key', value: 'disableNSFWFilter' },
         { type: 'key', value: 'hideNoDescriptionMedia' },
-        { type: 'key', value: 'disableForceAltText' }
+        { type: 'key', value: 'disableForceAltText' },
+        { type: 'separator' },
+        { type: 'header', value: 'settings.header.editorBehavior' },
+        { type: 'key', value: 'autoAddSpecifiedTags' },
+        { type: 'key', value: 'autoAddSpecifiedTagsAsks' },
+        { type: 'key', value: 'autoAddSpecifiedTagsAsksNoGeneral' },
+        { type: 'key', value: 'autoAddContentWarning' }
       ]
     },
     {

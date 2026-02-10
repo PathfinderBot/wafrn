@@ -16,14 +16,14 @@ import { ThemeService } from 'src/app/services/theme.service'
   styleUrl: './css-editor.component.scss'
 })
 export class CssEditorComponent {
-  private themeService = inject(ThemeService);
-  private messages = inject(MessageService);
-  private router = inject(Router);
+  private themeService = inject(ThemeService)
+  private messages = inject(MessageService)
+  private router = inject(Router)
 
   ready = false
   myCSS = ''
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.settings.themeEditor')
 
@@ -43,13 +43,13 @@ export class CssEditorComponent {
     this.ready = false
     this.themeService
       .updateTheme(this.myCSS || ' ') // Backend doesn't like empty strings
-      .then(() => {
+      .then(async () => {
         this.ready = true
         this.messages.add({
           severity: 'success',
           summary: 'Success!'
         })
-        this.router.navigate(['/dashboard'])
+        await this.themeService.syncCustomCSS(true)
       })
       .catch((error: any) => {
         console.error(error)

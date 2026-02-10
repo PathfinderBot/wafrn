@@ -136,13 +136,14 @@
         {{ 'editor.unlistedWarning' | translate }}
       </app-info-card>
     }
-    @if (showContentWarning || contentWarning) {
+    @if (showContentWarning || contentWarning || settings.autoAddContentWarning) {
       <section class="px-3 my-2">
         <mat-form-field class="w-full transition-size mat-form-field-no-padding" appearance="outline">
           <mat-label>Content warning (optional)</mat-label>
           <input
             [(ngModel)]="contentWarning"
             placeholder="{{ 'editor.sensitivePlaceholder' | translate }}"
+            [value]="settings.autoAddContentWarning"
             matNativeControl
             />
         </mat-form-field>
