@@ -818,4 +818,5 @@ export {
   getBookmarks,
   getEmojis,
   addPostCanInteract,
+  canInteract
 };

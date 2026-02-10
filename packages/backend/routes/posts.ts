@@ -32,7 +32,7 @@ import optionalAuthentication from "../utils/optionalAuthentication.js";
 import { getPetitionSigned } from "../utils/activitypub/getPetitionSigned.js";
 import { getPostThreadRecursive } from "../utils/activitypub/getPostThreadRecursive.js";
 import checkIpBlocked from "../utils/checkIpBlocked.js";
-import { getUnjointedPosts } from "../utils/baseQueryNew.js";
+import { canInteract, getUnjointedPosts } from "../utils/baseQueryNew.js";
 import * as cheerio from "cheerio";
 import getFollowedsIds from "../utils/cacheGetters/getFollowedsIds.js";
 import { federatePostHasBeenEdited } from "../utils/activitypub/editPost.js";
@@ -706,14 +706,7 @@ export default function postsRoutes(app: Application) {
           if (req.body.parent) {
             await redisCache.del("postAndUser:" + req.body.parent);
           }
-          post = await Post.create({
-            content,
-            content_warning,
-            userId: posterId,
-            privacy: bodyPrivacy,
-            parentId: req.body.parent,
-            markdownContent: req.body.content,
-            isReblog: !!(
+          const isReblog = !!(
               parent &&
               content == "" &&
               !postToBeQuoted &&
@@ -721,7 +714,34 @@ export default function postsRoutes(app: Application) {
               mediaToAdd.length === 0 &&
               mentionsToAdd.length === 0 &&
               (req.body.tags ? req.body.tags.trim : "") == ""
-            ),
+            )
+          if(parent) {
+            const control = isReblog ? parent.reblogControl : parent.replyControl
+            if(!await canInteract(control, posterId, parent.id)) {
+            res.status(403)
+            return res.send({
+                success: false,
+                message: `This post has interaction controls and you do not have permisions to ${isReblog ? 'reblog' :  'reply to'} it`
+              })
+            }
+          }
+          if(postToBeQuoted) {
+            if(!await canInteract(postToBeQuoted.quoteControl, posterId, postToBeQuoted.id)) {
+              res.status(403)
+              return res.send({
+                success: false,
+                message: `This post has interaction controls and you do not have permisions to quote it`
+              })
+            }
+          }
+          post = await Post.create({
+            content,
+            content_warning,
+            userId: posterId,
+            privacy: bodyPrivacy,
+            parentId: req.body.parent,
+            markdownContent: req.body.content,
+            isReblog: isReblog,
           });
         }
 
