@@ -89,6 +89,7 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import Fuse from "fuse.js";
 import { ParticleService } from "src/app/services/particle.service";
+import { SettingsService } from "src/app/services/settings.service";
 
 type EmojiSuggestion = {
   img: string;
@@ -132,6 +133,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   private editorService = inject(EditorService);
   private loginService = inject(LoginService);
   postService = inject(PostsService);
+  settingsService = inject(SettingsService);
   private jwtService = inject(JwtService);
   private router = inject(Router);
   private location = inject(Location);
@@ -156,6 +158,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   pollQuestions: QuestionPollQuestion[] = [];
   disableImageUploadButton = false;
   uploadedMedias: WafrnMedia[] = [];
+
+  settings = this.settingsService.values();
 
   postContent = viewChild<ElementRef<HTMLTextAreaElement>>("postContent");
   @ViewChild("suggestionsMenu") suggestionsMenu!: MatMenuTrigger;
@@ -287,6 +291,23 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       ) {
         this.mentionedUsers.push(this.data.post.user);
       }
+    }
+
+    if (this.settings.autoAddSpecifiedTags) {
+      this.tags = this.settings.autoAddSpecifiedTags as string
+    }
+
+    if (this.settings.autoAddSpecifiedTagsAsks && this.data?.ask) {
+      if (this.tags && this.settings.autoAddSpecifiedTagsAsksNoGeneral) {
+        this.tags = [this.tags, this.settings.autoAddSpecifiedTagsAsks as string].join(', ')
+      } else {
+        this.tags = this.settings.autoAddSpecifiedTagsAsks as string
+      }
+    } 
+
+    if (this.settings.autoAddContentWarning) {
+      this.showContentWarning = true
+      this.contentWarning = this.settings.autoAddContentWarning as string
     }
 
     if (this.editing && this.data?.post) {
