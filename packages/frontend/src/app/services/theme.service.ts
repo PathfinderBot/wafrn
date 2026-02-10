@@ -327,7 +327,7 @@ export class ThemeService {
   async syncCustomCSS(force = false) {
     const isOwnCSS = this.customCSS() === ''
     if ((isOwnCSS && this.loginService.loggedIn.value) || force) {
-      this.customCSSLinkElement().href = this.getThemeUrl(this.loginService.getLoggedUserUUID(), true)
+      this.customCSSLinkElement().href = this.getThemeUrl(this.loginService.getLoggedUserUUID(), force)
       return
     }
 
