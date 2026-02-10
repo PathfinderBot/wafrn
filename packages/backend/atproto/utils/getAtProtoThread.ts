@@ -785,7 +785,6 @@ async function getPostInteractionLevels(
 
 async function processReplies(uri: string, cursor?: string) {
   // TODO we need to get constelations
-  await processSinglePost(uri, false)
   const localPost = await Post.findOne({
     where: {
       bskyUri: uri

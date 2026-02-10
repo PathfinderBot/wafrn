@@ -96,6 +96,199 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
 
+    // lets check for evil websites. fuck them.
+    const referer = document.referrer;
+    if(referer) {
+      console.log(referer)
+      try {
+        let evilUrls = [
+          '4chan.org',
+          'p.4chan.org',
+          '8chan.org',
+          '8kun.top',
+          'kiwifarms.st',
+          'truthsocial.com',
+          'poast.org',
+          '13bells.com',
+          '1611.social',
+          '4aem.com',
+          '5dollah.click',
+          'adachi.party',
+          'adtension.com',
+          'annihilation.social',
+          'anon-kenkai.com',
+          'asbestos.cafe',
+          'bae.st',
+          'banepo.st',
+          'bassam.social',
+          'battlepenguin.video',
+          'beefyboys.win',
+          'boymoder.biz',
+          'brainsoap.net',
+          'breastmilk.club',
+          'brighteon.social',
+          'cachapa.cc',
+          'cachapa.xyz',
+          'caekis.love',
+          'cawfee.club',
+          'childlove.su',
+          'clew.lol',
+          'clubcyberia.co',
+          'contrapointsfan.club',
+          'cottoncandy.cafe',
+          'crlf.ninja',
+          'crucible.world',
+          'cum.camp',
+          'cum.salon',
+          'cunnyborea.space',
+          'decayable.ink',
+          'dembased.xyz',
+          'detroitriotcity.com',
+          'djsumdog.com',
+          'drinkanddrive.africa',
+          'eientei.org',
+          'eveningzoo.club',
+          'fluf.club',
+          'foxgirl.lol',
+          'freak.university',
+          'freeatlantis.com',
+          'freespeechextremist.com',
+          'froth.zone',
+          'fsebugoutzone.org',
+          'gameliberty.club',
+          'gearlandia.haus',
+          'genderheretics.xyz',
+          'geofront.rocks',
+          'gleasonator.com',
+          'glee.li',
+          'glindr.org',
+          'goyim.social',
+          'h5q.net',
+          'haeder.net',
+          'handholding.io',
+          'harpy.faith',
+          'hitchhiker.social',
+          'iddqd.social',
+          'kitsunemimi.club',
+          'kiwifarms.cc',
+          'kurosawa.moe',
+          'kyaruc.moe',
+          'leafposter.club',
+          'liberdon.com',
+          'ligma.pro',
+          'loli.church',
+          'lolicon.rocks',
+          'lolison.network',
+          'lolison.top',
+          'lovingexpressions.net',
+          'makemysarcophagus.com',
+          'mastinator.com',
+          'merovingian.club',
+          'midwaytrades.com',
+          'mirr0r.city',
+          'morale.ch',
+          'mouse.services',
+          'mugicha.club',
+          'narrativerry.xyz',
+          'nationalist.social',
+          'needs.vodka',
+          'neenster.org',
+          'nicecrew.digital',
+          'nightshift.social',
+          'nnia.space',
+          'noagendasocial.com',
+          'noagendatube.com',
+          'noauthority.social',
+          'nobodyhasthe.biz',
+          'norwoodzero.net',
+          'nyanide.com',
+          'onionfarms.org',
+          'parcero.casa',
+          'pawlicker.com',
+          'pawoo.net',
+          'pedo.school',
+          'peertube.se',
+          'peervideo.club',
+          'piazza.today',
+          'pibvt.net',
+          'pieville.net',
+          'pisskey.io',
+          'plagu.ee',
+          'poa.st',
+          'poast.org',
+          'poast.tv',
+          'poster.place',
+          'prospeech.space',
+          'quodverum.com',
+          'r18.social',
+          'rakket.app',
+          'rapemeat.express',
+          'rapemeat.solutions',
+          'rayci.st',
+          'rebelbase.site',
+          'ryona.agency',
+          'sad.cab',
+          'schwartzwelt.xyz',
+          'seal.cafe',
+          'shaw.app',
+          'shigusegubu.club',
+          'shitpost.cloud',
+          'shortstacksran.ch',
+          'silliness.observer',
+          'skinheads.eu',
+          'skinheads.io',
+          'skinheads.social',
+          'skinheads.uk',
+          'skippers-bin.com',
+          'skyshanty.xyz',
+          'slash.cl',
+          'sleepy.cafe',
+          'smuglo.li',
+          'sneed.social',
+          'sonichu.com',
+          'spinster.xyz',
+          'springbo.cc',
+          'strelizia.net',
+          'subs4social.xyz',
+          'taihou.website',
+          'tastingtraffic.net',
+          'teci.world',
+          'theblab.org',
+          'thechimp.zone',
+          'thenobody.club',
+          'thepostearthdestination.com',
+          'tkammer.de',
+          'trumpislovetrumpis.life',
+          'truthsocial.co.in',
+          'tsundere.love',
+          'usualsuspects.lol',
+          'vampiremaid.cafe',
+          'varishangout.net',
+          'volk.love',
+          'volk.network',
+          'wolfgirl.bar',
+          'xn--p1abe3d.xn--80asehdb',
+          'yggdrasil.social',
+          'youjo.love',
+          'zhub.link',
+          // spanish 4chan
+          'forocoches.com',
+          // finish kiwifarms
+          'ylilauta.org',
+          'hommaforum.org'
+        ]
+        const refererUrl = new URL(referer)
+        if(evilUrls.includes(refererUrl.host)) {
+          while(true) {
+            let i = 0;
+            i ++;
+          }
+        }
+      } catch (error) {
+        // we dont care too much
+      }
+    }
+
     // unregister serviceworkers
     /*navigator.serviceWorker.getRegistrations().then(function (registrations) {
       for (const registration of registrations) {
@@ -130,7 +323,8 @@ export class AppComponent implements OnInit {
         }
         // we are no longer asking nicely
         if (updateAvaiable) {
-          localStorage.setItem('wafrnUpdated', 'true')
+          localStorage.setItem('wafrnUpdated',
+            'true')
           if (window.location.toString().toLowerCase().endsWith('/editor')) {
             if (confirm('There is an update available, would you like to update?')) {
               window.location.reload()
@@ -177,7 +371,6 @@ export class AppComponent implements OnInit {
 
 
     this.postService.loadFollowers().then(() => {
-        console.log('followers loaded on init')
       })
 
   }

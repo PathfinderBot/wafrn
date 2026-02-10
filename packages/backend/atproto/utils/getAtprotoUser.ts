@@ -227,17 +227,24 @@ async function getAtprotoUser(
 
     // future options thing
     if(userFound && fediAttachments.length > 0) {
-      UserOptions.destroy({
+       const transaction = await sequelize.transaction()
+      await UserOptions.destroy({
         where: {
           userId: userFound?.id
-        }
+        },
+        transaction: transaction
       })
-      UserOptions.create({
+      await UserOptions.create({
         public: true,
         optionName: 'fediverse.public.attachment',
         optionValue: JSON.stringify(fediAttachments),
         userId: userFound.id
-      })
+      },
+      {
+        transaction: transaction
+      }
+    )
+      await transaction.commit()
     }
     
     return userFound;
