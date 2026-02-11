@@ -25,7 +25,7 @@ import validateEmail from '../utils/validateEmail.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { sequelize } from '../models/index.js'
-
+import * as cheerio from "cheerio";
 import optimizeMedia from '../utils/optimizeMedia.js'
 import uploadHandler from '../utils/uploads.js'
 import { generateKeyPairSync, randomUUID } from 'crypto'
@@ -1981,6 +1981,7 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     await getCacheAtDids(true)
     await updateUserDidDoc(user)
     let pronouns: string | undefined;
+    let website: string | undefined;
     const fediAttachmentsDb = await UserOptions.findOne({
       where: {
         userId: user.id,
@@ -1991,6 +1992,18 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     if(fediAttachmentsDb) {
       const fediAttachments: {name: string, value: string}[] = JSON.parse(fediAttachmentsDb.optionValue)
       pronouns = fediAttachments.find(elem => elem.name.toLowerCase() === 'pronouns')?.value
+      const websiteCheck = fediAttachments.find(elem => elem.name.toLowerCase() === 'website')?.value
+
+      if (websiteCheck) {
+        const doc = cheerio.load(websiteCheck)
+        const anchor = doc('a')
+        if (anchor) {
+          website = anchor.attr('href')
+        }
+        if (!anchor || !website) {
+          website = websiteCheck
+        }
+      }
     }
 
     return await agent.upsertProfile(async (existingProfile) => {
@@ -2024,6 +2037,9 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       }
       if(pronouns) {
         profile.pronouns = pronouns
+      }
+      if(website) {
+        profile.website = website
       }
       // it works now yay
       if (user.headerImage) {

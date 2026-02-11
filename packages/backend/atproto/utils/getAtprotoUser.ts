@@ -148,8 +148,9 @@ async function getAtprotoUser(
     if(data.value.pronouns) {
       fediAttachments.push({"type":"PropertyValue","name":"Pronouns","value": data.value.pronouns})
     }
-
-
+    if(data.value.website) {
+      fediAttachments.push({"type":"PropertyValue","name":"Website","value": `<a href="${data.value.pronouns}">${data.value.pronouns}</a>`})
+    }
 
     const handle = (doc && doc.alsoKnownAs) ? doc.alsoKnownAs.filter(elem => elem.startsWith('at://'))[0].split('at://')[1] : 'handle.invalid'
     const newDataTmp = {
