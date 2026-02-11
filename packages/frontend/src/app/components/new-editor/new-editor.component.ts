@@ -46,6 +46,7 @@ import {
   faPencil,
   faQuestion,
   faAngleDown,
+  faMessage,
 } from "@fortawesome/free-solid-svg-icons";
 import { EditorData } from "src/app/interfaces/editor-data";
 import { PostHeaderComponent } from "../post/post-header/post-header.component";
@@ -90,6 +91,8 @@ import { BlogDetails } from "src/app/interfaces/blogDetails";
 import Fuse from "fuse.js";
 import { ParticleService } from "src/app/services/particle.service";
 import { SettingsService } from "src/app/services/settings.service";
+import { InteractionControl } from "src/app/interfaces/InteractionControl";
+import { MatSelectModule } from "@angular/material/select";
 
 type EmojiSuggestion = {
   img: string;
@@ -122,7 +125,7 @@ type EmojiSuggestion = {
     MatBadgeModule,
     MatChipsModule,
     MatProgressBarModule,
-    MatTooltipModule
+    MatSelectModule
 ],
   templateUrl: "./new-editor.component.html",
   styleUrl: "./new-editor.component.scss",
@@ -212,6 +215,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   editingIcon = faPencil;
   replyAskIcon = faQuestion;
   dropdownIcon = faAngleDown;
+  interactionControlIcon = faMessage
 
   emojiSubscription: Subscription;
   editorUpdatedSubscription: Subscription | undefined;
@@ -222,6 +226,36 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   mentionedUsers: SimplifiedUser[] = [];
   showMentionedUsersList = true;
 
+
+  canBeQuoted = InteractionControl.Anyone;
+  canEditCanReply = true
+
+  canReply = InteractionControl.Anyone;
+  canLike = InteractionControl.Anyone;
+
+  canBeQuotedOptions = [
+    {
+      value: InteractionControl.Anyone, viewValue: 'Can be quoted',
+    },
+    {
+      value: InteractionControl.NoOne, viewValue: 'Not quotable'
+    }
+  ]
+  canReplyOptions = [
+    {
+      value: InteractionControl.Anyone, viewValue: 'Anyone'
+    },
+    {
+      value: InteractionControl.FollowingAndMentioned, viewValue: 'People I follow and mentioned users'
+    },
+    {
+      value: InteractionControl.FollowersAndMentioned, viewValue: 'My followers and mentioned users'
+    },
+    {
+      value: InteractionControl.MentionedUsersOnly, viewValue: 'Only mentioned users'
+    }
+  ]
+  
   emojiCacherUrl =
     EnvironmentService.environment.cacheDomain + "/api/v2/cache/emoji/";
 
@@ -347,6 +381,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     const autoFocusElem = <HTMLElement | null>(
       document.querySelector("[autofocus]")
     );
+
+    // If parent is bsky, we set canreply same as parent
+    if(this.data?.post && this.data.post.bskyUri) {
+      this.canReply = InteractionControl.SameAsOp
+      this.canEditCanReply = false
+    }
 
     // Focus on the next frame (EVIL FIX)
     requestAnimationFrame(() => {
@@ -683,6 +723,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       ask: this.data?.ask,
       withToken: this.loginService.accountList().at(this.posterAccount())
         ?.token,
+      canReply: this.canReply,
+      canBeQuoted: this.canBeQuoted,
+      canLike: this.canLike
     });
     // its a great time to check notifications isnt it?
     this.dashboardService.scrollEventEmitter.emit("post");

@@ -47,7 +47,7 @@ import {
   createNotification,
 } from "../utils/pushNotifications.js";
 import dompurify from "isomorphic-dompurify";
-import { Privacy, PrivacyType } from "../models/post.js";
+import { InteractionControl, Privacy, PrivacyType } from "../models/post.js";
 import { completeEnvironment } from "../utils/backendOptions.js";
 import { addHandlePrefix } from "../models/user.js";
 import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
@@ -742,6 +742,9 @@ export default function postsRoutes(app: Application) {
             parentId: req.body.parent,
             markdownContent: req.body.content,
             isReblog: isReblog,
+            replyControl: req.body.canReply || InteractionControl.Anyone,
+            quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
+            likeControl: req.body.canLike || InteractionControl.Anyone
           });
         }
 

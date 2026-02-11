@@ -17,6 +17,7 @@ import { SimplifiedUser } from '../interfaces/simplified-user'
 import { Router } from '@angular/router'
 import { AUTH_OVERRIDE } from '../interceptors/wafrn-auth.interceptor'
 import { SimpleDialogService } from './simple-dialog.service'
+import { InteractionControlType } from '../interfaces/InteractionControl'
 
 @Injectable({
   providedIn: 'root'
@@ -61,7 +62,10 @@ export class EditorService implements OnDestroy {
     idPostToEdit?: string
     idPosToQuote?: string
     ask?: Ask
-    withToken?: string
+    withToken?: string,
+    canReply?: InteractionControlType,
+    canLike?: InteractionControlType,
+    canBeQuoted?: InteractionControlType
   }): Promise<{ success: false } | { success: true; id: string }> {
     try {
       const httpOptions = options.withToken ? { context: new HttpContext().set(AUTH_OVERRIDE, options.withToken) } : {}
@@ -78,7 +82,10 @@ export class EditorService implements OnDestroy {
             idPostToEdit: options.idPostToEdit,
             postToQuote: options.idPosToQuote,
             ask: options.ask?.id,
-            mentionedUserIds: options.mentionedUsers
+            mentionedUserIds: options.mentionedUsers,
+            canReply: options.canReply,
+            canLike: options.canLike,
+            canBeQuoted: options.canBeQuoted
           },
           httpOptions
         )
