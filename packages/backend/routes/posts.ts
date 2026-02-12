@@ -536,6 +536,13 @@ export default function postsRoutes(app: Application) {
         content = content.trim()
         if (req.body.idPostToEdit) {
           post = await Post.findByPk(req.body.idPostToEdit)
+
+          // reset timestamps when publishing a draft
+          if (post.privacy === Privacy.Draft && bodyPrivacy !== Privacy.Draft) {
+            post.createdAt = new Date()
+            post.updatedAt = new Date()
+          }
+
           post.content = content
           post.markdownContent = req.body.content
           post.content_warning = content_warning
