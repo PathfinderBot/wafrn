@@ -227,8 +227,7 @@ export default function dashboardRoutes(app: Application) {
             ]
           }
 
-          if (disableReplies)
-            whereObject.parentId = null
+          if (disableReplies) whereObject.parentId = null
 
           break
         }
@@ -313,7 +312,7 @@ export default function dashboardRoutes(app: Application) {
         subQuery: false,
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
-          ...whereObject,
+          ...whereObject
         }
       })
 
