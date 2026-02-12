@@ -47,7 +47,8 @@ export const Privacy = {
   LocalOnly: 2,
   Unlisted: 3,
   DirectMessage: 10,
-  LinkOnly: 20
+  LinkOnly: 20,
+  Draft: 30
 } as const
 
 export const InteractionControl = {
