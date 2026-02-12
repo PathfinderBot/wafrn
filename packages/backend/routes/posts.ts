@@ -616,22 +616,28 @@ export default function postsRoutes(app: Application) {
               userId: postToBeQuoted.userId
             }
           })
-          await createNotification(
-            {
-              notificationType: 'QUOTE',
-              notifiedUserId: postToBeQuoted.userId,
-              userId: post.userId,
-              postId: post.id,
-              createdAt: new Date(postToBeQuoted.createdAt)
-            },
-            {
-              postContent: post.content,
-              userUrl: posterUser?.url
-            }
-          )
+
+          // dont create quote notification for drafts
+          if (post.privacy !== Privacy.Draft) {
+            await createNotification(
+              {
+                notificationType: 'QUOTE',
+                notifiedUserId: postToBeQuoted.userId,
+                userId: post.userId,
+                postId: post.id,
+                createdAt: new Date(postToBeQuoted.createdAt)
+              },
+              {
+                postContent: post.content,
+                userUrl: posterUser?.url
+              }
+            )
+          }
         }
+
         const askId = req.body.ask
-        if (askId) {
+        // dont mark asks as answered for drafts
+        if (askId && post.privacy !== Privacy.Draft) {
           const ask = await Ask.findOne({
             where: {
               id: parseInt(askId),
@@ -659,19 +665,22 @@ export default function postsRoutes(app: Application) {
           })
         }
 
-        await bulkCreateNotifications(
-          mentionsToAdd.map((mention) => ({
-            notificationType: 'MENTION',
-            notifiedUserId: mention,
-            userId: post.userId,
-            postId: post.id,
-            createdAt: new Date(post.createdAt)
-          })),
-          {
-            postContent: post.content,
-            userUrl: posterUser?.url
-          }
-        )
+        // don't create mention notifications for drafts
+        if (post.privacy !== Privacy.Draft) {
+          await bulkCreateNotifications(
+            mentionsToAdd.map((mention) => ({
+              notificationType: 'MENTION',
+              notifiedUserId: mention,
+              userId: post.userId,
+              postId: post.id,
+              createdAt: new Date(post.createdAt)
+            })),
+            {
+              postContent: post.content,
+              userUrl: posterUser?.url
+            }
+          )
+        }
 
         post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(
@@ -703,7 +712,9 @@ export default function postsRoutes(app: Application) {
         }
         res.send(post)
         await post.save()
-        if (+post.privacy !== Privacy.LocalOnly) {
+
+        // do not federate for local-only or drafts
+        if (+post.privacy !== Privacy.LocalOnly && post.privacy !== Privacy.Draft) {
           if (req.body.idPostToEdit) {
             await federatePostHasBeenEdited(post)
           } else {
