@@ -176,8 +176,17 @@ export class PostsService {
       );
       await this.loadFollowers();
       res = response?.success === true;
-    } catch (exception) {
+    } catch (exception: any) {
       console.error(exception);
+      if (exception.error?.message) {
+        this.simpleDialogService.createConfirmDialog({
+          title: 'Error',
+          content: exception.error.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+      }
     }
 
     return res;
