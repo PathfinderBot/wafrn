@@ -220,7 +220,7 @@ async function getPostThreadRecursive(
           const publicList = 'https://www.w3.org/ns/activitystreams#Public'
           // canAnnounce
           if(postPetition.interactionPolicy.canAnnounce) {
-            const listCanAnnounce = (postPetition.interactionPolicy.canAnnounce || []).always.concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
+            const listCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
             replyControl.reblogControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
@@ -235,7 +235,7 @@ async function getPostThreadRecursive(
           }
 
           if(postPetition.interactionPolicy.canLike) {
-            const listCanLike = (postPetition.interactionPolicy.canLike || []).always.concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
+            const listCanLike = (postPetition.interactionPolicy.canLike.always || []).concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
             replyControl.likeControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanLike.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanLike.includes(remoteUser.followingCollectionUrl)
