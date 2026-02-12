@@ -252,6 +252,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       value: InteractionControl.FollowersAndMentioned, viewValue: 'My followers and mentioned users'
     },
     {
+      value: InteractionControl.FollowersFollowingAndMentioned, viewValue: 'Following, followed or mentioned'
+    },
+    {
       value: InteractionControl.MentionedUsersOnly, viewValue: 'Only mentioned users'
     }
   ]
@@ -383,7 +386,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     );
 
     // If parent is bsky, we set canreply same as parent
-    if(this.data?.post && this.data.post.bskyUri) {
+    if(this.data?.post && this.data.post.bskyUri && !(this.data?.post?.userId === this.jwtService.getTokenData()?.userId) ) {
       this.canReply = InteractionControl.SameAsOp
       this.canEditCanReply = false
     }

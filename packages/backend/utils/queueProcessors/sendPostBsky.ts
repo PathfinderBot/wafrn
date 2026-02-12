@@ -1,11 +1,12 @@
 import { Job, Queue } from 'bullmq'
 import { Media, Post, PostTag, Quotes, User, Notification } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
-import { Privacy } from '../../models/post.js'
+import { InteractionControl, Privacy } from '../../models/post.js'
 import { getAtProtoSession } from '../../atproto/utils/getAtProtoSession.js'
 import { postToAtproto } from '../../atproto/utils/postToAtproto.js'
 import { wait } from '../wait.js'
 import { logger } from '../logger.js'
+import { AtUri } from '@atproto/api'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
@@ -52,6 +53,36 @@ async function sendPostBsky(job: Job) {
           if (!isReblog) {
             let agent = await getAtProtoSession(localUser)
             const bskyPost = await agent.post(await postToAtproto(post, agent))
+            if(post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone && agent.session) {
+              const gates: string[] = []
+              if([InteractionControl.FollowersFollowingAndMentioned, InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned].includes(post.replyControl)) {
+                gates.push('app.bsky.feed.threadgate#mentionRule')
+              }
+              if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
+                gates.push('app.bsky.feed.threadgate#followerRule')
+              }
+
+              if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
+                gates.push('app.bsky.feed.threadgate#followingRule')
+              }
+
+              const {rkey} = new AtUri(bskyPost.uri)
+              await agent.com.atproto.repo.createRecord({
+                repo: agent.session.did,
+                collection: 'app.bsky.feed.threadgate',
+                rkey,
+                record: {
+                  $type: 'app.bsky.feed.threadgate',
+                  post: bskyPost.uri,
+                  allow: gates.map(elem => { return {
+                    '$type': elem
+                  }}),
+                  createdAt: new Date().toISOString()
+                }
+              })
+
+
+            }
             await wait(750)
             const duplicatedPost = await Post.findOne({
               where: {

@@ -670,7 +670,7 @@ async function canInteract(
           );
         break;
       }
-      case InteractionControl.FollowersFollowersAndMentioned: {
+      case InteractionControl.FollowersFollowingAndMentioned: {
         res =
           userFollowers.includes(post.userId) ||
           userFollowingInput?.includes(post.userId) ||

@@ -151,6 +151,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       // Local users
       if (!user.isBlueskyUser) {
         if (user.bskyDid && user.enableBsky ) {
+          // TODO instead of calling bsky appview we should check the pds document ourselves?
           const response = await agent.getProfile({ actor: user.bskyDid });
           if (response.data)
             postText = postText.replaceAll(

@@ -220,12 +220,12 @@ async function getPostThreadRecursive(
           const publicList = 'https://www.w3.org/ns/activitystreams#Public'
           // canAnnounce
           if(postPetition.interactionPolicy.canAnnounce) {
-            const listCanAnnounce = (postPetition.interactionPolicy.canAnnounce || []).always.concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
+            const listCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
             replyControl.reblogControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
             if(followersCanReply) {
-              replyControl.reblogControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.reblogControl = followingCanReply ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.reblogControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.reblogControl
             }
@@ -235,12 +235,12 @@ async function getPostThreadRecursive(
           }
 
           if(postPetition.interactionPolicy.canLike) {
-            const listCanLike = (postPetition.interactionPolicy.canLike || []).always.concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
+            const listCanLike = (postPetition.interactionPolicy.canLike.always || []).concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
             replyControl.likeControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanLike.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanLike.includes(remoteUser.followingCollectionUrl)
             if(followersCanReply) {
-              replyControl.likeControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.likeControl = followingCanReply ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.likeControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.likeControl
             }
@@ -255,7 +255,7 @@ async function getPostThreadRecursive(
             const followersCanReply = listCanReply.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanReply.includes(remoteUser.followingCollectionUrl)
             if(followersCanReply) {
-              replyControl.replyControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.replyControl = followingCanReply ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.replyControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.replyControl
             }
@@ -270,7 +270,7 @@ async function getPostThreadRecursive(
             const followerscanQuote = listCanQuote.includes(remoteUser.followersCollectionUrl)
             const followingcanQuote = listCanQuote.includes(remoteUser.followingCollectionUrl)
             if(followerscanQuote) {
-              replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowingAndMentioned : replyControl.quoteControl
             }

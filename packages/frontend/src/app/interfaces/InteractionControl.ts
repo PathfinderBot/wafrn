@@ -5,7 +5,7 @@ export const InteractionControl = {
   FollowersAndFollowing: 3,
   FollowersAndMentioned: 4,
   FollowingAndMentioned: 5,
-  FollowersFollowersAndMentioned: 6,
+  FollowersFollowingAndMentioned: 6,
   MentionedUsersOnly: 7,
   NoOne: 8,
   SameAsOp: 100, // this one is bsky exclusive and its gona be FUN (a headache). This only applies to REPLIES. Nothing else.

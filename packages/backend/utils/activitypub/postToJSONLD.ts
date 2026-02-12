@@ -14,7 +14,7 @@ import { emojiToAPTag } from "./emojiToAPTag.js";
 import { getPostReplies } from "./getPostReplies.js";
 import { getPostAndUserFromPostId } from "../cacheGetters/getPostAndUserFromPostId.js";
 import { logger } from "../logger.js";
-import { Privacy } from "../../models/post.js";
+import { InteractionControl, InteractionControlType, Privacy } from "../../models/post.js";
 import { redisCache } from "../redis.js";
 import { htmlToMfm } from "./htmlToMfm.js";
 import showdown from "showdown";
@@ -52,6 +52,8 @@ async function postToJSONLD(
 
   const stringMyFollowers = `${completeEnvironment.frontendUrl
     }/fediverse/blog/${localUser.url.toLowerCase()}/followers`;
+  const stringMyFollowing = `${completeEnvironment.frontendUrl
+    }/fediverse/blog/${localUser.url.toLowerCase()}/following`;
   const dbMentions = post.mentionPost;
   let mentionedUsers: string[] = [];
 
@@ -288,6 +290,60 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   if (misskeyQuoteURL?.startsWith("https://bsky.app/")) {
     misskeyQuoteURL = null;
   }
+  let canReply: string[] = [];
+  let canAnnounce: string[] = [];
+  let canLike: string[] = [];
+  
+  let canReplyValue: InteractionControlType = post.replyControl;
+  let canAnnounceValue: InteractionControlType = post.reblogControl;
+  let canLikeValue: InteractionControlType = post.likeControl;
+  const publicString = "https://www.w3.org/ns/activitystreams#Public"
+  // canreply:
+  if(canReplyValue === InteractionControl.Anyone) {
+    canReply.push(publicString)
+  } else {
+    // mentionedUsers
+    if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
+      canReply = canReply.concat(mentionedUsers)
+    }
+    if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
+      canReply = canReply.concat(stringMyFollowers)
+    }
+    if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canReplyValue)) {
+      canReply = canReply.concat(stringMyFollowing)
+    }
+  }
+
+  if(canAnnounceValue === InteractionControl.Anyone) {
+    canAnnounce.push(publicString)
+  } else {
+    // mentionedUsers
+    if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
+      canReply = canAnnounce.concat(mentionedUsers)
+    }
+    if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
+      canReply = canAnnounce.concat(stringMyFollowers)
+    }
+    if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canAnnounceValue)) {
+      canReply = canAnnounce.concat(stringMyFollowing)
+    }
+  }
+
+  if(canLikeValue === InteractionControl.Anyone) {
+    canLike.push(publicString)
+  } else {
+    // mentionedUsers
+    if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
+      canReply = canLike.concat(mentionedUsers)
+    }
+    if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
+      canReply = canLike.concat(stringMyFollowers)
+    }
+    if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canLikeValue)) {
+      canReply = canLike.concat(stringMyFollowing)
+    }
+  }
+
   let postAsJSONLD: activityPubObject = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
@@ -372,11 +428,17 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
       },
       interactionPolicy: {
         canQuote: {
-          automaticApproval: ["https://www.w3.org/ns/activitystreams#Public"],
+          automaticApproval:   post.quoteControl === InteractionControl.Anyone ? [ "https://www.w3.org/ns/activitystreams#Public"] : [],
         },
-        // canLike: { automaticApproval: ['https://www.w3.org/ns/activitystreams#Public'] },
-        // canReply: { automaticApproval: ['https://www.w3.org/ns/activitystreams#Public'] },
-        // canAnnounce: { automaticApproval: ['https://www.w3.org/ns/activitystreams#Public'] }
+        canLike: {
+          automaticApproval: canLike
+        },
+        canReply: {
+          automaticApproval: canReply
+        },
+        canAnnounce: {
+          automaticApproval: canAnnounce
+        }
       },
     },
   };

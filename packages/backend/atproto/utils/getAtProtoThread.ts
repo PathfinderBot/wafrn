@@ -747,7 +747,7 @@ async function getPostInteractionLevels(
       if (mentiontypes.includes("mentionRule")) {
         if (mentiontypes.includes("followingRule")) {
           canReply = mentiontypes.includes("followerRule")
-            ? InteractionControl.FollowersFollowersAndMentioned
+            ? InteractionControl.FollowersFollowingAndMentioned
             : InteractionControl.FollowingAndMentioned;
         } else {
           canReply = mentiontypes.includes("followerRule")
