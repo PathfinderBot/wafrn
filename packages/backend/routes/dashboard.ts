@@ -287,6 +287,13 @@ export default function dashboardRoutes(app: Application) {
             )
           }
         }
+        case 30: {
+          // drafts
+          whereObject = {
+            userId: posterId,
+            privacy: Privacy.Draft
+          }
+        }
       }
       // we get the list of posts
       let postIds: Post[] | Promise<Post[]> = Post.findAll({
