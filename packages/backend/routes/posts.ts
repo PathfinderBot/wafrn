@@ -1,5 +1,5 @@
-import { Application, Request, Response } from "express";
-import { Op, Sequelize } from "sequelize";
+import { Application, Request, Response } from 'express'
+import { Op, Sequelize } from 'sequelize'
 import {
   Blocks,
   Post,
@@ -13,45 +13,39 @@ import {
   Media,
   Ask,
   Notification,
-  UserEmojiRelation,
-} from "../models/index.js";
-import { authenticateToken } from "../utils/authenticateToken.js";
+  UserEmojiRelation
+} from '../models/index.js'
+import { authenticateToken } from '../utils/authenticateToken.js'
 
-import { sequelize } from "../models/index.js";
+import { sequelize } from '../models/index.js'
 
-import getStartScrollParam from "../utils/getStartScrollParam.js";
-import getPosstGroupDetails from "../utils/getPostGroupDetails.js";
-import { logger } from "../utils/logger.js";
-import {
-  createPostLimiter,
-  navigationRateLimiter,
-} from "../utils/rateLimiters.js";
-import { Queue } from "bullmq";
-import AuthorizedRequest from "../interfaces/authorizedRequest.js";
-import optionalAuthentication from "../utils/optionalAuthentication.js";
-import { getPetitionSigned } from "../utils/activitypub/getPetitionSigned.js";
-import { getPostThreadRecursive } from "../utils/activitypub/getPostThreadRecursive.js";
-import checkIpBlocked from "../utils/checkIpBlocked.js";
-import { canInteract, getUnjointedPosts } from "../utils/baseQueryNew.js";
-import * as cheerio from "cheerio";
-import getFollowedsIds from "../utils/cacheGetters/getFollowedsIds.js";
-import { federatePostHasBeenEdited } from "../utils/activitypub/editPost.js";
-import { getAvaiableEmojis } from "../utils/getAvaiableEmojis.js";
-import { redisCache } from "../utils/redis.js";
-import { getUserOptions } from "../utils/cacheGetters/getUserOptions.js";
+import getStartScrollParam from '../utils/getStartScrollParam.js'
+import getPosstGroupDetails from '../utils/getPostGroupDetails.js'
+import { logger } from '../utils/logger.js'
+import { createPostLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
+import { Queue } from 'bullmq'
+import AuthorizedRequest from '../interfaces/authorizedRequest.js'
+import optionalAuthentication from '../utils/optionalAuthentication.js'
+import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
+import { getPostThreadRecursive } from '../utils/activitypub/getPostThreadRecursive.js'
+import checkIpBlocked from '../utils/checkIpBlocked.js'
+import { canInteract, getUnjointedPosts } from '../utils/baseQueryNew.js'
+import * as cheerio from 'cheerio'
+import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
+import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
+import { getAvaiableEmojis } from '../utils/getAvaiableEmojis.js'
+import { redisCache } from '../utils/redis.js'
+import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 
-import showdown from "showdown";
-import { forceUpdateLastActive } from "../utils/forceUpdateLastActive.js";
-import {
-  bulkCreateNotifications,
-  createNotification,
-} from "../utils/pushNotifications.js";
-import dompurify from "isomorphic-dompurify";
-import { InteractionControl, Privacy, PrivacyType } from "../models/post.js";
-import { completeEnvironment } from "../utils/backendOptions.js";
-import { addHandlePrefix } from "../models/user.js";
-import { getAdminUser } from "../utils/getAdminAndDeletedUser.js";
-import { processSinglePost } from "../atproto/utils/getAtProtoThread.js";
+import showdown from 'showdown'
+import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
+import { bulkCreateNotifications, createNotification } from '../utils/pushNotifications.js'
+import dompurify from 'isomorphic-dompurify'
+import { InteractionControl, Privacy, PrivacyType } from '../models/post.js'
+import { completeEnvironment } from '../utils/backendOptions.js'
+import { addHandlePrefix } from '../models/user.js'
+import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
+import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -60,345 +54,243 @@ const markdownConverter = new showdown.Converter({
   simpleLineBreaks: true,
   openLinksInNewWindow: true,
   emoji: true,
-  encodeEmails: false,
-});
+  encodeEmails: false
+})
 
-const prepareSendPostQueue = new Queue("prepareSendPost", {
+const prepareSendPostQueue = new Queue('prepareSendPost', {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
     attempts: 3,
     backoff: {
-      type: "exponential",
-      delay: 1000,
+      type: 'exponential',
+      delay: 1000
     },
-    removeOnFail: true,
-  },
-});
+    removeOnFail: true
+  }
+})
 
-const sendPostBskyQueue = new Queue("sendPostBsky", {
+const sendPostBskyQueue = new Queue('sendPostBsky', {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
     attempts: 3,
     backoff: {
-      type: "fixed",
+      type: 'fixed'
     },
-    removeOnFail: true,
-  },
-});
+    removeOnFail: true
+  }
+})
 export default function postsRoutes(app: Application) {
   app.get(
-    "/api/article/:user?/:slug",
+    '/api/article/:user?/:slug',
     optionalAuthentication,
     navigationRateLimiter,
     async (req: AuthorizedRequest, res: Response) => {
-      const userUrl = req.params?.user;
-      const postSlug = req.params?.slug;
+      const userUrl = req.params?.user
+      const postSlug = req.params?.slug
       const user = userUrl
         ? await User.findOne({
-          where: sequelize.where(
-            sequelize.fn("lower", sequelize.col("url")),
-            userUrl.toLowerCase()
-          ),
-        })
-        : await getAdminUser();
+            where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
+          })
+        : await getAdminUser()
       if (!user) {
-        res.sendStatus(404);
+        res.sendStatus(404)
       } else {
         const postFound = await Post.findOne({
           where: sequelize.and(
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("slug")),
-              postSlug.toLowerCase()
-            ),
-            sequelize.where(sequelize.col("userId"), user.id)
-          ),
-        });
+            sequelize.where(sequelize.fn('lower', sequelize.col('slug')), postSlug.toLowerCase()),
+            sequelize.where(sequelize.col('userId'), user.id)
+          )
+        })
         if (postFound) {
-          res.redirect("/api/v2/post/" + postFound.id);
+          res.redirect('/api/v2/post/' + postFound.id)
         } else {
-          res.sendStatus(404);
+          res.sendStatus(404)
         }
       }
     }
-  );
+  )
   app.get(
-    "/api/v2/post/:id",
+    '/api/v2/post/:id',
     optionalAuthentication,
     navigationRateLimiter,
     async (req: AuthorizedRequest, res: Response) => {
       try {
-        const userId = req.jwtData?.userId;
-        const postId = req.params?.id;
+        const userId = req.jwtData?.userId
+        const postId = req.params?.id
         if (!postId) {
-          return res
-            .status(400)
-            .send({ success: false, message: "No post id received" });
+          return res.status(400).send({ success: false, message: 'No post id received' })
         }
 
         const unjointedPost = await getUnjointedPosts(
           [postId],
-          userId ? userId : "00000000-0000-0000-0000-000000000000",
+          userId ? userId : '00000000-0000-0000-0000-000000000000',
           true
-        );
-        const post = unjointedPost.posts[0];
+        )
+        const post = unjointedPost.posts[0]
         if (!post) {
-          return res
-            .status(404)
-            .send({ success: false, message: "Post not found" });
+          return res.status(404).send({ success: false, message: 'Post not found' })
         }
 
-        const mentions = unjointedPost.mentions.map(
-          (elem: any) => elem.userMentioned
-        );
+        const mentions = unjointedPost.mentions.map((elem: any) => elem.userMentioned)
         const userCanSeePost =
-          post.userId === userId ||
-          mentions.includes(userId) ||
-          post.privacy !== Privacy.DirectMessage;
+          post.userId === userId || mentions.includes(userId) || post.privacy !== Privacy.DirectMessage
 
         if (!userCanSeePost) {
           return res.status(403).send({
             success: false,
-            message: "You are not authorized to read this post",
-          });
+            message: 'You are not authorized to read this post'
+          })
         }
 
-        return res.send(unjointedPost);
+        return res.send(unjointedPost)
       } catch (err) {
-        logger.error(err);
-        return res
-          .status(500)
-          .send({ success: false, message: "Internal server error" });
-      }
-    }
-  );
-
-  /**
-   * @deprecated We recomend instead using the forum endpoint. This method will not recive maintenance
-
-  app.get(
-    '/api/v2/descendents/:id',
-    optionalAuthentication,
-
-    async (req: AuthorizedRequest, res: Response) => {
-      const userId = req.jwtData?.userId ? req.jwtData.userId : '00000000-0000-0000-0000-000000000000'
-      if (req.params?.id) {
-        const posts = await Post.findOne({
-          where: {
-            id: req.params.id
-          },
-          attributes: [],
-          include: [
-            {
-              model: Post,
-              attributes: [
-                'id',
-                'userId',
-                [sequelize.fn('LENGTH', sequelize.col('descendents.content')), 'len'],
-                'createdAt',
-                'updatedAt'
-              ],
-              as: 'descendents',
-              where: {
-                privacy: {
-                  [Op.ne]: Privacy.DirectMessage
-                },
-                [Op.or]: [
-                  {
-                    userId: userId
-                  },
-                  {
-                    privacy: Privacy.FollowersOnly,
-                    userId: {
-                      [Op.in]: await getFollowedsIds(userId, false)
-                    }
-                  },
-                  {
-                    privacy: {
-                      [Op.in]: [Privacy.Public, Privacy.LocalOnly, Privacy.Unlisted]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        })
-        const users = posts?.descendents?.length
-          ? await User.findAll({
-              attributes: ['url', 'avatar', 'name', 'id'],
-              where: {
-                id: {
-                  [Op.in]: posts?.descendents.map((elem: any) => elem.userId)
-                }
-              }
-            })
-          : []
-        res.send({
-          posts: posts?.descendents?.length ? posts.descendents : [],
-          users: users
-        })
-      } else {
-        res.sendStatus(404)
+        logger.error(err)
+        return res.status(500).send({ success: false, message: 'Internal server error' })
       }
     }
   )
-  */
-  app.get(
-    "/api/v2/blog",
-    optionalAuthentication,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      const id = req.query.id as string;
-      const featured = req.query.featured == 'true'
 
-      if (id) {
-        const blog = await User.findOne({
-          where: {
-            [Op.or]: [
-              sequelize.where(
-                sequelize.fn("lower", sequelize.col("url")),
-                id.toLowerCase()
-              ),
-              { bskyDid: id },
-            ],
-          },
-        });
+  app.get('/api/v2/blog', optionalAuthentication, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    const id = req.query.id as string
+    const featured = req.query.featured == 'true'
 
-        if (!blog) {
-          res.sendStatus(404);
-          return;
+    if (id) {
+      const blog = await User.findOne({
+        where: {
+          [Op.or]: [sequelize.where(sequelize.fn('lower', sequelize.col('url')), id.toLowerCase()), { bskyDid: id }]
         }
+      })
 
-        if (blog.isRemoteUser && !req.jwtData?.userId) {
-          // require auth to see external user blog
-          return res.sendStatus(403);
-        }
-        const blogId = blog?.id;
-        if (blogId) {
-          const privacyArray: PrivacyType[] = [
-            Privacy.Public,
-            Privacy.LocalOnly,
-            Privacy.Unlisted,
-          ];
-          if (
-            req.jwtData?.userId === blogId ||
-            (req.jwtData?.userId &&
-              (await Follows.count({
-                where: {
-                  followedId: blogId,
-                  followerId: req.jwtData?.userId,
-                  accepted: true,
-                },
-              })))
-          ) {
-            privacyArray.push(Privacy.FollowersOnly);
-          }
-          const queryObject = null
-          const postIds = await Post.findAll({
-            order: [["createdAt", "DESC"]],
-            limit: featured ? undefined : completeEnvironment.postsPerPage,
-            attributes: ["id"],
-            where: {
-              createdAt: { [Op.lt]: getStartScrollParam(req) },
-              featured: featured ? {
-                [Op.ne]: null
-              } : {
-                [Op.or]: [{
-                  [Op.ne]: null
-                }, { [Op.eq]: null }
-                ]
-              },
-              userId: blogId,
-              privacy: {
-                [Op.in]: privacyArray,
-              },
-            },
-          });
-          const postsByBlog = await getUnjointedPosts(
-            postIds.map((post: any) => post.id),
-            req.jwtData?.userId
-              ? req.jwtData.userId
-              : "00000000-0000-0000-0000-000000000000",
-            true
-          );
-          success = true;
-          res.send(postsByBlog);
-        }
+      if (!blog) {
+        res.sendStatus(404)
+        return
       }
 
-      if (!success) {
-        res.send({ success: false });
+      if (blog.isRemoteUser && !req.jwtData?.userId) {
+        // require auth to see external user blog
+        return res.sendStatus(403)
+      }
+      const blogId = blog?.id
+      if (blogId) {
+        const privacyArray: PrivacyType[] = [Privacy.Public, Privacy.LocalOnly, Privacy.Unlisted]
+        if (
+          req.jwtData?.userId === blogId ||
+          (req.jwtData?.userId &&
+            (await Follows.count({
+              where: {
+                followedId: blogId,
+                followerId: req.jwtData?.userId,
+                accepted: true
+              }
+            })))
+        ) {
+          privacyArray.push(Privacy.FollowersOnly)
+        }
+        const queryObject = null
+        const postIds = await Post.findAll({
+          order: [['createdAt', 'DESC']],
+          limit: featured ? undefined : completeEnvironment.postsPerPage,
+          attributes: ['id'],
+          where: {
+            createdAt: { [Op.lt]: getStartScrollParam(req) },
+            featured: featured
+              ? {
+                  [Op.ne]: null
+                }
+              : {
+                  [Op.or]: [
+                    {
+                      [Op.ne]: null
+                    },
+                    { [Op.eq]: null }
+                  ]
+                },
+            userId: blogId,
+            privacy: {
+              [Op.in]: privacyArray
+            }
+          }
+        })
+        const postsByBlog = await getUnjointedPosts(
+          postIds.map((post: any) => post.id),
+          req.jwtData?.userId ? req.jwtData.userId : '00000000-0000-0000-0000-000000000000',
+          true
+        )
+        success = true
+        res.send(postsByBlog)
       }
     }
-  );
+
+    if (!success) {
+      res.send({ success: false })
+    }
+  })
   app.post(
-    "/api/v3/createPost",
+    '/api/v3/createPost',
     authenticateToken,
     forceUpdateLastActive,
     createPostLimiter,
     async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      let mentionsToAdd: string[] = [];
-      const posterId = req.jwtData?.userId
-        ? req.jwtData.userId
-        : completeEnvironment.deletedUser;
-      const posterUser = await User.findByPk(posterId);
-      const postToBeQuoted = await Post.findByPk(req.body.postToQuote);
+      let success = false
+      let mentionsToAdd: string[] = []
+      const posterId = req.jwtData?.userId ? req.jwtData.userId : completeEnvironment.deletedUser
+      const posterUser = await User.findByPk(posterId)
+      const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
       try {
         const parent = await Post.findByPk(req.body.parent, {
           include: [
             {
               model: Post,
-              as: "ancestors",
-            },
-          ],
-        });
+              as: 'ancestors'
+            }
+          ]
+        })
         if (!parent && req.body.parent) {
-          success = false;
-          res.status(500);
-          res.send({ success: false, message: "non existent parent" });
-          return false;
+          success = false
+          res.status(500)
+          res.send({ success: false, message: 'non existent parent' })
+          return false
         }
 
         // we check if this is in reply to bsky if user does not have bsky enabled
         if (!posterUser?.enableBsky && parent && !posterUser?.bskyDid) {
           if (parent.bskyUri && !parent.remotePostId) {
-            const parentPoster = await User.findByPk(parent.userId);
+            const parentPoster = await User.findByPk(parent.userId)
             if (parentPoster?.isRemoteUser) {
               return res.status(403).send({
                 success: false,
-                message: "You need to enable bluesky",
-              });
+                message: 'You need to enable bluesky'
+              })
             } else {
               // we do same check for all parents
               const ancestorIdsQuery = await sequelize.query(
                 `SELECT "ancestorId" FROM "postsancestors" where "postsId" = '${parent.id}'`
-              );
-              const ancestorIds: string[] = ancestorIdsQuery[0].map(
-                (elem: any) => elem.ancestorId
-              );
+              )
+              const ancestorIds: string[] = ancestorIdsQuery[0].map((elem: any) => elem.ancestorId)
               if (ancestorIds.length > 0) {
                 const ancestors = await Post.findAll({
                   include: [
                     {
                       model: User,
-                      as: "user",
-                      attributes: ["url"],
-                    },
+                      as: 'user',
+                      attributes: ['url']
+                    }
                   ],
                   where: {
                     id: {
-                      [Op.in]: ancestorIds,
-                    },
-                  },
-                });
-                const parentsUser = ancestors.map((elem) => elem.user);
+                      [Op.in]: ancestorIds
+                    }
+                  }
+                })
+                const parentsUser = ancestors.map((elem) => elem.user)
                 if (parentsUser.some((elem) => elem.isBlueskyUser)) {
                   return res.status(403).send({
                     success: false,
-                    message: "You need to enable bluesky",
-                  });
+                    message: 'You need to enable bluesky'
+                  })
                 }
               }
             }
@@ -406,229 +298,189 @@ export default function postsRoutes(app: Application) {
         }
 
         // we get the privacy of the parent and quoted post. Set body privacy to the max one
-        const parentPrivacy: PrivacyType = parent
-          ? parent.privacy
-          : Privacy.Public;
-        let bodyPrivacy: PrivacyType = req.body.privacy
-          ? req.body.privacy
-          : Privacy.Public;
-        const quotedPostPrivacy: PrivacyType = postToBeQuoted
-          ? postToBeQuoted.privacy
-          : Privacy.Public;
+        const parentPrivacy: PrivacyType = parent ? parent.privacy : Privacy.Public
+        let bodyPrivacy: PrivacyType = req.body.privacy ? req.body.privacy : Privacy.Public
+        const quotedPostPrivacy: PrivacyType = postToBeQuoted ? postToBeQuoted.privacy : Privacy.Public
 
         if (!Object.values(Privacy).includes(bodyPrivacy)) {
-          res.status(422);
-          res.send({ success: false, message: "invalid privacy setting" });
-          return false;
+          res.status(422)
+          res.send({ success: false, message: 'invalid privacy setting' })
+          return false
         }
 
-        bodyPrivacy = getPostPrivacy(
-          bodyPrivacy,
-          parentPrivacy,
-          quotedPostPrivacy
-        );
+        bodyPrivacy = getPostPrivacy(bodyPrivacy, parentPrivacy, quotedPostPrivacy)
         // we check that the user is not reblogging a post by someone who blocked them or the other way arround
         if (parent) {
           // we check to add user mention if bsky id
           const ancestors = await parent.getAncestors({
-            attributes: ["userId"],
+            attributes: ['userId'],
             where: {
               bskyUri: {
-                [Op.ne]: null,
+                [Op.ne]: null
               },
               hierarchyLevel: {
-                [Op.gt]: parent.hierarchyLevel - 3,
-              },
-            },
-          });
-          if (req.body.content != "") {
-            mentionsToAdd = mentionsToAdd.concat(
-              ancestors.map((elem) => elem.userId)
-            );
+                [Op.gt]: parent.hierarchyLevel - 3
+              }
+            }
+          })
+          if (req.body.content != '') {
+            mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem) => elem.userId))
             if (parent.bskyUri && parent.userId != posterId) {
-              mentionsToAdd.push(parent.userId);
+              mentionsToAdd.push(parent.userId)
             }
           }
 
-          const postParentsUsers: string[] = parent.ancestors.map(
-            (elem: any) => elem.userId
-          );
-          postParentsUsers.push(parent.userId);
+          const postParentsUsers: string[] = parent.ancestors.map((elem: any) => elem.userId)
+          postParentsUsers.push(parent.userId)
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
-          const options = await getUserOptions(posterId);
+          const options = await getUserOptions(posterId)
           const userFederatesWithThreads = options.filter(
-            (elem) =>
-              elem.optionName === "wafrn.federateWithThreads" &&
-              elem.optionValue === "true"
-          );
+            (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
+          )
           if (userFederatesWithThreads.length === 0) {
             const ancestorPostsUsers = await User.findAll({
               where: {
                 id: {
-                  [Op.in]: postParentsUsers,
-                },
-              },
-            });
-            const ancestorUrls: string[] = ancestorPostsUsers.map((elem: any) =>
-              elem.url.toLowerCase()
-            );
-            if (ancestorUrls.some((elem) => elem.endsWith(".threads.net"))) {
-              success = false;
-              res.status(403);
+                  [Op.in]: postParentsUsers
+                }
+              }
+            })
+            const ancestorUrls: string[] = ancestorPostsUsers.map((elem: any) => elem.url.toLowerCase())
+            if (ancestorUrls.some((elem) => elem.endsWith('.threads.net'))) {
+              success = false
+              res.status(403)
               res.send({
                 success: false,
-                message:
-                  "You do not federate with threads and this thread contains a post from threads",
-              });
-              return false;
+                message: 'You do not federate with threads and this thread contains a post from threads'
+              })
+              return false
             }
           }
 
           const bannedUsers = await User.count({
             where: {
               id: {
-                [Op.in]: postParentsUsers,
+                [Op.in]: postParentsUsers
               },
-              banned: true,
-            },
-          });
+              banned: true
+            }
+          })
           // only count on reblogs
           const blocksExistingOnParents = parent
             ? await Blocks.count({
-              where: {
-                [Op.or]: [
-                  {
-                    blockerId: posterId,
-                    blockedId: parent.userId,
-                  },
-                  {
-                    blockedId: posterId,
-                    blockerId: parent.userId,
-                  },
-                ],
-              },
-            })
-            : 0;
+                where: {
+                  [Op.or]: [
+                    {
+                      blockerId: posterId,
+                      blockedId: parent.userId
+                    },
+                    {
+                      blockedId: posterId,
+                      blockerId: parent.userId
+                    }
+                  ]
+                }
+              })
+            : 0
           if (blocksExistingOnParents + bannedUsers > 0) {
-            success = false;
-            res.status(403);
+            success = false
+            res.status(403)
             res.send({
               success: false,
-              message: "You have no permission to reblog this post",
-            });
-            return false;
+              message: 'You have no permission to reblog this post'
+            })
+            return false
           }
         }
 
-        let content = req.body.content ? " " + req.body.content.trim() : "";
+        let content = req.body.content ? ' ' + req.body.content.trim() : ''
         const content_warning = req.body.content_warning
           ? req.body.content_warning.trim()
           : posterUser?.NSFW
-            ? "This user has been marked as NSFW and the post has been labeled automatically as NSFW"
-            : "";
-        let mediaToAdd: any[] = [];
-        const avaiableEmojis = await getAvaiableEmojis();
+            ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
+            : ''
+        let mediaToAdd: any[] = []
+        const avaiableEmojis = await getAvaiableEmojis()
         // we parse the content and we search emojis:
-        const emojisToAdd = avaiableEmojis?.filter((emoji: any) =>
-          req.body.content.includes(emoji.name)
-        );
+        const emojisToAdd = avaiableEmojis?.filter((emoji: any) => req.body.content.includes(emoji.name))
 
         if (req.body.medias && req.body.medias.length) {
-          mediaToAdd = req.body.medias;
+          mediaToAdd = req.body.medias
           // "not important" we update the media order
-          const updateMediasPromises: Array<Promise<any>> = [];
+          const updateMediasPromises: Array<Promise<any>> = []
           Media.findAll({
             where: {
               id: {
-                [Op.in]: mediaToAdd.map((media: any) => media.id),
-              },
-            },
+                [Op.in]: mediaToAdd.map((media: any) => media.id)
+              }
+            }
           }).then((mediasToUpdate) => {
             mediaToAdd.forEach(async (media, index) => {
-              const mediaToUpdate = mediasToUpdate.find(
-                (el: any) => el.id === media.id
-              );
+              const mediaToUpdate = mediasToUpdate.find((el: any) => el.id === media.id)
               if (mediaToUpdate) {
-                mediaToUpdate.mediaOrder = index;
-                mediaToUpdate.description = media.description;
-                mediaToUpdate.NSFW = media.NSFW;
+                mediaToUpdate.mediaOrder = index
+                mediaToUpdate.description = media.description
+                mediaToUpdate.NSFW = media.NSFW
                 // POSSIBLE PERFORMANCE IMPROVEMENT: do all saves at the same time. convert this foreach into a for each
-                await mediaToUpdate.save();
+                await mediaToUpdate.save()
               }
-            });
-          });
+            })
+          })
         }
 
-        const mentionRegex = /\s@[\w-\.]+@?[\w-\.]*/gm;
-        let mentionsInPost: string[] | null = content.match(mentionRegex);
+        const mentionRegex = /\s@[\w-\.]+@?[\w-\.]*/gm
+        let mentionsInPost: string[] | null = content.match(mentionRegex)
         if (!mentionsInPost) {
-          mentionsInPost = [""];
+          mentionsInPost = ['']
         }
-        content = content.replaceAll(mentionRegex, (userUrl: string) =>
-          userUrl.toLowerCase()
-        );
+        content = content.replaceAll(mentionRegex, (userUrl: string) => userUrl.toLowerCase())
 
-        let dbFoundMentions: User[] = [];
-        const newMentionedUsers =
-          req.body.mentionedUserIds || req.body.mentionedUsersIds || [];
+        let dbFoundMentions: User[] = []
+        const newMentionedUsers = req.body.mentionedUserIds || req.body.mentionedUsersIds || []
         if (postToBeQuoted) {
-          newMentionedUsers.push(postToBeQuoted.userId);
+          newMentionedUsers.push(postToBeQuoted.userId)
         }
         if (mentionsInPost?.length || newMentionedUsers.length) {
           const urlsToSearch = mentionsInPost.map((elem) => {
             // local users are stored without the @, so remove it from the query param
-            let urlToSearch = elem.trim();
-            if (
-              urlToSearch.split("@").length == 2 &&
-              urlToSearch.split(".").length == 1
-            ) {
-              urlToSearch = urlToSearch.split("@")[1];
+            let urlToSearch = elem.trim()
+            if (urlToSearch.split('@').length == 2 && urlToSearch.split('.').length == 1) {
+              urlToSearch = urlToSearch.split('@')[1]
             }
             // we sanitize the possible urls so we can use a literal
-            return sequelize.escape(urlToSearch.toLowerCase().trim());
-          });
+            return sequelize.escape(urlToSearch.toLowerCase().trim())
+          })
           dbFoundMentions = await User.findAll({
             where: {
               [Op.or]: [
-                sequelize.literal(
-                  `lower("url") IN (${urlsToSearch.join(",")})`
-                ),
+                sequelize.literal(`lower("url") IN (${urlsToSearch.join(',')})`),
                 {
                   id: {
-                    [Op.in]: newMentionedUsers,
-                  },
-                },
-              ],
-            },
-          });
+                    [Op.in]: newMentionedUsers
+                  }
+                }
+              ]
+            }
+          })
         }
 
         if (dbFoundMentions.length > 0) {
-          mentionsToAdd = mentionsToAdd.concat(
-            dbFoundMentions.map((usr) => usr.id)
-          );
+          mentionsToAdd = mentionsToAdd.concat(dbFoundMentions.map((usr) => usr.id))
 
           // we check if user federates with threads and if not we check they are not mentioning anyone from threads
-          const options = await getUserOptions(posterId);
+          const options = await getUserOptions(posterId)
           const userFederatesWithThreads = options.filter(
-            (elem) =>
-              elem.optionName === "wafrn.federateWithThreads" &&
-              elem.optionValue === "true"
-          );
+            (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
+          )
           if (userFederatesWithThreads.length === 0) {
-            if (
-              dbFoundMentions.some((usr) =>
-                usr.url.toLowerCase().endsWith(".threads.net")
-              )
-            ) {
-              success = false;
-              res.status(403);
+            if (dbFoundMentions.some((usr) => usr.url.toLowerCase().endsWith('.threads.net'))) {
+              success = false
+              res.status(403)
               res.send({
                 success: false,
-                message:
-                  "You do not federate with threads and this thread contains a post from threads",
-              });
-              return false;
+                message: 'You do not federate with threads and this thread contains a post from threads'
+              })
+              return false
             }
           }
           const blocksExisting = await Blocks.count({
@@ -636,17 +488,17 @@ export default function postsRoutes(app: Application) {
               [Op.or]: [
                 {
                   blockerId: posterId,
-                  blockedId: { [Op.in]: mentionsToAdd },
+                  blockedId: { [Op.in]: mentionsToAdd }
                 },
                 {
                   blockedId: posterId,
-                  blockerId: { [Op.in]: mentionsToAdd },
-                },
-              ],
-            },
-          });
+                  blockerId: { [Op.in]: mentionsToAdd }
+                }
+              ]
+            }
+          })
           // TODO fix this
-          const blocksServers = 0; /*await ServerBlock.count({
+          const blocksServers = 0 /*await ServerBlock.count({
           where: {
             userBlockerId: posterId,
             literal: Sequelize.literal(
@@ -657,76 +509,70 @@ export default function postsRoutes(app: Application) {
           }
         })*/
           if (blocksExisting + blocksServers > 0) {
-            res.status(403);
+            res.status(403)
             res.send({
               error: true,
-              message:
-                "You can not mention an user that you have blocked or has blocked you",
-            });
-            return null;
+              message: 'You can not mention an user that you have blocked or has blocked you'
+            })
+            return null
           }
 
-          const sortedMentions = dbFoundMentions.sort(
-            (a, b) => a.url.length - b.url.length
-          );
+          const sortedMentions = dbFoundMentions.sort((a, b) => a.url.length - b.url.length)
           for (let userMentioned of sortedMentions) {
-            const url = userMentioned.longHandle;
-            const remoteId = userMentioned.fullFediverseUrl;
-            let remoteUrl = userMentioned.remoteMentionUrl
-              ? userMentioned.remoteMentionUrl
-              : remoteId;
-            if (
-              userMentioned.url.startsWith("@") &&
-              !remoteUrl &&
-              userMentioned.bskyDid
-            ) {
-              remoteUrl = "https://bsky.app/profile/" + userMentioned.bskyDid;
+            const url = userMentioned.longHandle
+            const remoteId = userMentioned.fullFediverseUrl
+            let remoteUrl = userMentioned.remoteMentionUrl ? userMentioned.remoteMentionUrl : remoteId
+            if (userMentioned.url.startsWith('@') && !remoteUrl && userMentioned.bskyDid) {
+              remoteUrl = 'https://bsky.app/profile/' + userMentioned.bskyDid
             }
-            const stringToReplace = addHandlePrefix(
-              userMentioned.url.toLowerCase()
-            );
-            const targetString = `<span class="h-card" translate="no"><a href="${remoteUrl}" class="u-url mention">@<span>${url}</span></a></span>`;
-            content = content
-              .replace(`${stringToReplace}`, `${targetString}`)
-              .trim();
+            const stringToReplace = addHandlePrefix(userMentioned.url.toLowerCase())
+            const targetString = `<span class="h-card" translate="no"><a href="${remoteUrl}" class="u-url mention">@<span>${url}</span></a></span>`
+            content = content.replace(`${stringToReplace}`, `${targetString}`).trim()
           }
         }
 
-        content = markdownConverter.makeHtml(content.trim());
-        let post: any;
-        content = content.trim();
+        content = markdownConverter.makeHtml(content.trim())
+        let post: any
+        content = content.trim()
         if (req.body.idPostToEdit) {
-          post = await Post.findByPk(req.body.idPostToEdit);
-          post.content = content;
-          post.markdownContent = req.body.content;
-          post.content_warning = content_warning;
-          post.privacy = bodyPrivacy;
-          await post.save();
+          post = await Post.findByPk(req.body.idPostToEdit)
+
+          // reset timestamps when publishing a draft
+          if (post.privacy === Privacy.Draft && bodyPrivacy !== Privacy.Draft) {
+            post.createdAt = new Date()
+            post.updatedAt = new Date()
+          }
+
+          post.content = content
+          post.markdownContent = req.body.content
+          post.content_warning = content_warning
+          post.privacy = bodyPrivacy
+          await post.save()
         } else {
           if (req.body.parent) {
-            await redisCache.del("postAndUser:" + req.body.parent);
+            await redisCache.del('postAndUser:' + req.body.parent)
           }
           const isReblog = !!(
-              parent &&
-              content == "" &&
-              !postToBeQuoted &&
-              !req.body.ask &&
-              mediaToAdd.length === 0 &&
-              mentionsToAdd.length === 0 &&
-              (req.body.tags ? req.body.tags.trim : "") == ""
-            )
-          if(parent) {
+            parent &&
+            content == '' &&
+            !postToBeQuoted &&
+            !req.body.ask &&
+            mediaToAdd.length === 0 &&
+            mentionsToAdd.length === 0 &&
+            (req.body.tags ? req.body.tags.trim : '') == ''
+          )
+          if (parent) {
             const control = isReblog ? parent.reblogControl : parent.replyControl
-            if(!await canInteract(control, posterId, parent.id)) {
-            res.status(403)
-            return res.send({
+            if (!(await canInteract(control, posterId, parent.id))) {
+              res.status(403)
+              return res.send({
                 success: false,
-                message: `This post has interaction controls and you do not have permisions to ${isReblog ? 'reblog' :  'reply to'} it`
+                message: `This post has interaction controls and you do not have permisions to ${isReblog ? 'reblog' : 'reply to'} it`
               })
             }
           }
-          if(postToBeQuoted) {
-            if(!await canInteract(postToBeQuoted.quoteControl, posterId, postToBeQuoted.id)) {
+          if (postToBeQuoted) {
+            if (!(await canInteract(postToBeQuoted.quoteControl, posterId, postToBeQuoted.id))) {
               res.status(403)
               return res.send({
                 success: false,
@@ -744,348 +590,315 @@ export default function postsRoutes(app: Application) {
             isReblog: isReblog,
             replyControl: req.body.canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
-            likeControl: req.body.canLike || InteractionControl.Anyone
-          });
+            likeControl: req.body.canLike || InteractionControl.Anyone,
+          })
         }
 
         if (post.isReblog) {
           await createNotification(
             {
-              notificationType: "REWOOT",
+              notificationType: 'REWOOT',
               notifiedUserId: parent?.userId as string,
               userId: post.userId,
-              postId: parent?.id,
+              postId: parent?.id
             },
             {
               postContent: parent?.content,
-              userUrl: posterUser?.url,
+              userUrl: posterUser?.url
             }
-          );
+          )
         }
         if (postToBeQuoted) {
           if (req.body.idPostToEdit) {
             await Notification.destroy({
               where: {
-                notificationType: "QUOTE",
+                notificationType: 'QUOTE',
                 notifiedUserId: postToBeQuoted.userId,
                 userId: post.userId,
-                postId: post.id,
-              },
-            });
+                postId: post.id
+              }
+            })
           }
-          await post.addQuoted(postToBeQuoted);
+          await post.addQuoted(postToBeQuoted)
           await PostMentionsUserRelation.findOrCreate({
             where: {
               postId: post.id,
-              userId: postToBeQuoted.userId,
-            },
-          });
-          await createNotification(
-            {
-              notificationType: "QUOTE",
-              notifiedUserId: postToBeQuoted.userId,
-              userId: post.userId,
-              postId: post.id,
-              createdAt: new Date(postToBeQuoted.createdAt),
-            },
-            {
-              postContent: post.content,
-              userUrl: posterUser?.url,
+              userId: postToBeQuoted.userId
             }
-          );
+          })
+
+          // dont create quote notification for drafts
+          if (post.privacy !== Privacy.Draft) {
+            await createNotification(
+              {
+                notificationType: 'QUOTE',
+                notifiedUserId: postToBeQuoted.userId,
+                userId: post.userId,
+                postId: post.id,
+                createdAt: new Date(postToBeQuoted.createdAt)
+              },
+              {
+                postContent: post.content,
+                userUrl: posterUser?.url
+              }
+            )
+          }
         }
-        const askId = req.body.ask;
-        if (askId) {
+
+        const askId = req.body.ask
+        // dont mark asks as answered for drafts
+        if (askId && post.privacy !== Privacy.Draft) {
           const ask = await Ask.findOne({
             where: {
               id: parseInt(askId),
-              userAsked: posterId,
-            },
-          });
-          if (ask) {
-            ask.answered = true;
-            ask.postId = post.id;
-            if (ask.userAsker && !mentionsToAdd.includes(ask.userAsker)) {
-              mentionsToAdd.push(ask.userAsker);
+              userAsked: posterId
             }
-            await ask.save();
+          })
+          if (ask) {
+            ask.answered = true
+            ask.postId = post.id
+            if (ask.userAsker && !mentionsToAdd.includes(ask.userAsker)) {
+              mentionsToAdd.push(ask.userAsker)
+            }
+            await ask.save()
           }
         }
-        mentionsToAdd = [...new Set(mentionsToAdd)].filter(
-          (elem) => elem != posterId
-        );
-        post.setMedias(mediaToAdd.map((media: any) => media.id));
-        post.setMentionPost(mentionsToAdd);
+        mentionsToAdd = [...new Set(mentionsToAdd)].filter((elem) => elem != posterId)
+        post.setMedias(mediaToAdd.map((media: any) => media.id))
+        post.setMentionPost(mentionsToAdd)
         if (req.body.idPostToEdit) {
           await Notification.destroy({
             where: {
-              notificationType: "MENTION",
-              postId: post.id,
-            },
-          });
+              notificationType: 'MENTION',
+              postId: post.id
+            }
+          })
         }
 
-        await bulkCreateNotifications(
-          mentionsToAdd.map((mention) => ({
-            notificationType: "MENTION",
-            notifiedUserId: mention,
-            userId: post.userId,
-            postId: post.id,
-            createdAt: new Date(post.createdAt),
-          })),
-          {
-            postContent: post.content,
-            userUrl: posterUser?.url,
-          }
-        );
+        // don't create mention notifications for drafts
+        if (post.privacy !== Privacy.Draft) {
+          await bulkCreateNotifications(
+            mentionsToAdd.map((mention) => ({
+              notificationType: 'MENTION',
+              notifiedUserId: mention,
+              userId: post.userId,
+              postId: post.id,
+              createdAt: new Date(post.createdAt)
+            })),
+            {
+              postContent: post.content,
+              userUrl: posterUser?.url
+            }
+          )
+        }
 
-        post.setEmojis(emojisToAdd);
+        post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(
-          dompurify
-            .sanitize(post.content, { ALLOWED_TAGS: [] })
-            .matchAll(/#[a-zA-Z0-9_]+/gi)
+          dompurify.sanitize(post.content, { ALLOWED_TAGS: [] }).matchAll(/#[a-zA-Z0-9_]+/gi)
         )
-          .join(",")
-          .replaceAll("#", "");
-        const bodyTags = req.body.tags
-          ? req.body.tags + "," + inlineTags
-          : inlineTags;
-        success = !bodyTags;
+          .join(',')
+          .replaceAll('#', '')
+        const bodyTags = req.body.tags ? req.body.tags + ',' + inlineTags : inlineTags
+        success = !bodyTags
         if (bodyTags) {
-          const tagListString = bodyTags;
-          let tagList: string[] = tagListString
-            .split(",")
-            .filter((elem) => elem.length > 0);
-          tagList = tagList.map((s: string) => s.trim());
+          const tagListString = bodyTags
+          let tagList: string[] = tagListString.split(',').filter((elem) => elem.length > 0)
+          tagList = tagList.map((s: string) => s.trim())
           await PostTag.destroy({
             where: {
-              postId: post.id,
-            },
-          });
+              postId: post.id
+            }
+          })
           await PostTag.bulkCreate(
             tagList.map((tag) => {
               return {
                 tagName: tag,
-                postId: post.id,
-              };
+                postId: post.id
+              }
             })
-          );
+          )
 
-          success = true;
+          success = true
         }
-        res.send(post);
-        await post.save();
-        if (+post.privacy !== Privacy.LocalOnly) {
+        res.send(post)
+        await post.save()
+
+        // do not federate for local-only or drafts
+        if (+post.privacy !== Privacy.LocalOnly && post.privacy !== Privacy.Draft) {
           if (req.body.idPostToEdit) {
-            await federatePostHasBeenEdited(post);
+            await federatePostHasBeenEdited(post)
           } else {
-            const jobData = { postId: post.id, petitionBy: posterId };
-            let delay = 1500;
+            const jobData = { postId: post.id, petitionBy: posterId }
+            let delay = 1500
             if (
               post.privacy === Privacy.Public &&
               posterUser?.enableBsky &&
               completeEnvironment.enableBsky &&
               posterUser?.bskyDid
             ) {
-              await sendPostBskyQueue.add("sendPostBsky", jobData, {
-                delay: 500,
-              });
-              delay = 5000;
+              await sendPostBskyQueue.add('sendPostBsky', jobData, {
+                delay: 500
+              })
+              delay = 5000
             } else {
-              await prepareSendPostQueue.add("prepareSendPost", jobData, {
+              await prepareSendPostQueue.add('prepareSendPost', jobData, {
                 jobId: post.id,
-                delay: delay,
-              });
+                delay: delay
+              })
             }
           }
         }
       } catch (error) {
-        logger.error(error);
+        logger.error(error)
       }
       if (!success) {
-        res.statusCode = 400;
+        res.statusCode = 400
         logger.debug({
           message: `Failed to create post`,
-          body: req.body,
-        });
-        res.send({ success: false });
+          body: req.body
+        })
+        res.send({ success: false })
       }
     }
-  );
+  )
 
-  app.post(
-    "/api/refederatePost",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      const user = (await User.findByPk(req.jwtData?.userId as string)) as User;
-      const post = await Post.findOne({
+  app.post('/api/refederatePost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    const user = (await User.findByPk(req.jwtData?.userId as string)) as User
+    const post = await Post.findOne({
+      where: {
+        userId: user.id,
+        id: req.body.postId as string
+      }
+    })
+    if (post) {
+      const medias = await Media.findAll({
         where: {
-          userId: user.id,
-          id: req.body.postId as string,
-        },
-      });
-      if (post) {
-        const medias = await Media.findAll({
-          where: {
-            postId: post.id,
-          },
-        });
-        if (medias.length) {
-          // We force update the media metadata because of posibility of it not having height and width metadata
-          const updateMediaDataQueue = new Queue("processRemoteMediaData", {
-            connection: completeEnvironment.bullmqConnection,
-            defaultJobOptions: {
-              removeOnComplete: true,
-              attempts: 3,
-              backoff: {
-                type: "exponential",
-                delay: 1000,
-              },
-              removeOnFail: true,
+          postId: post.id
+        }
+      })
+      if (medias.length) {
+        // We force update the media metadata because of posibility of it not having height and width metadata
+        const updateMediaDataQueue = new Queue('processRemoteMediaData', {
+          connection: completeEnvironment.bullmqConnection,
+          defaultJobOptions: {
+            removeOnComplete: true,
+            attempts: 3,
+            backoff: {
+              type: 'exponential',
+              delay: 1000
             },
-          });
-          await updateMediaDataQueue.addBulk(
-            medias.map((media: any) => {
-              return {
-                name: `getMediaData${media.id}`,
-                data: { mediaId: media.id },
-              };
-            })
-          );
-        }
-        const jobData = { postId: post.id, petitionBy: post.userId };
-
-        if (
-          post.privacy === Privacy.Public &&
-          user.enableBsky &&
-          completeEnvironment.enableBsky &&
-          user.bskyDid
-        ) {
-          await sendPostBskyQueue.add("sendPostBsky", jobData, {
-            delay: 500,
-          });
-        } else {
-          await prepareSendPostQueue.add("prepareSendPost", jobData, {
-            jobId: post.id,
-            delay: 1500,
-          });
-        }
-        success = true;
+            removeOnFail: true
+          }
+        })
+        await updateMediaDataQueue.addBulk(
+          medias.map((media: any) => {
+            return {
+              name: `getMediaData${media.id}`,
+              data: { mediaId: media.id }
+            }
+          })
+        )
       }
+      const jobData = { postId: post.id, petitionBy: post.userId }
+
+      if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
+        await sendPostBskyQueue.add('sendPostBsky', jobData, {
+          delay: 500
+        })
+      } else {
+        await prepareSendPostQueue.add('prepareSendPost', jobData, {
+          jobId: post.id,
+          delay: 1500
+        })
+      }
+      success = true
+    }
+    res.send({
+      success
+    })
+  })
+
+  app.post('/api/reportPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    let report
+    try {
+      const posterId = req.jwtData?.userId
+      if ((req.body.userId || req.body?.postId) && req.body.severity && req.body.description) {
+        report = await PostReport.create({
+          resolved: false,
+          severity: req.body.severity,
+          description: req.body.description,
+          userId: posterId,
+          postId: req.body.postId,
+          reportedUserId: req.body.userId ? req.body.userId : undefined
+        })
+        success = true
+        res.send(report)
+      }
+    } catch (error) {
+      logger.error(error)
+    }
+    if (!success) {
       res.send({
-        success,
-      });
+        success: false
+      })
     }
-  );
+  })
 
-  app.post(
-    "/api/reportPost",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      let report;
-      try {
-        const posterId = req.jwtData?.userId;
-        if (
-          (req.body.userId || req.body?.postId) &&
-          req.body.severity &&
-          req.body.description
-        ) {
-          report = await PostReport.create({
-            resolved: false,
-            severity: req.body.severity,
-            description: req.body.description,
-            userId: posterId,
-            postId: req.body.postId,
-            reportedUserId: req.body.userId ? req.body.userId : undefined,
-          });
-          success = true;
-          res.send(report);
-        }
-      } catch (error) {
-        logger.error(error);
-      }
-      if (!success) {
-        res.send({
-          success: false,
-        });
-      }
-    }
-  );
+  app.get('/api/loadRemoteResponses', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    try {
+      const userId = req.jwtData?.userId as string
+      const postToGetRepliesFromId = req.query.id as string
+      let remotePostPromise = Post.findByPk(postToGetRepliesFromId)
+      let userPromise = User.findByPk(userId)
+      await Promise.all([userPromise, remotePostPromise])
 
-  app.get(
-    "/api/loadRemoteResponses",
-    authenticateToken,
-    async (req: AuthorizedRequest, res: Response) => {
-      try {
-        const userId = req.jwtData?.userId as string;
-        const postToGetRepliesFromId = req.query.id as string;
-        let remotePostPromise = Post.findByPk(postToGetRepliesFromId);
-        let userPromise = User.findByPk(userId);
-        await Promise.all([userPromise, remotePostPromise]);
+      let user = await userPromise
+      let remotePost = await remotePostPromise
 
-        let user = await userPromise;
-        let remotePost = await remotePostPromise;
-
-        if (remotePost?.remotePostId && user) {
-          // fedi post
-          const postPetition = await getPetitionSigned(
-            user,
-            remotePost.remotePostId
-          );
-          if (postPetition) {
-            if (postPetition.inReplyTo && remotePost.hierarchyLevel === 1) {
-              const lostParent = await getPostThreadRecursive(
-                user,
-                postPetition.inReplyTo
-              );
-              if (lostParent) await remotePost.setParent(lostParent);
-            }
-            // next replies to process
-            let next = postPetition.replies.first;
-            while (next) {
-              const petitions = next.items.map((elem: any) =>
-                getPostThreadRecursive(user, elem.id ? elem.id : elem)
-              );
-              await Promise.allSettled(petitions);
-              next = next.next
-                ? await getPetitionSigned(user, next.next)
-                : undefined;
-            }
+      if (remotePost?.remotePostId && user) {
+        // fedi post
+        const postPetition = await getPetitionSigned(user, remotePost.remotePostId)
+        if (postPetition) {
+          if (postPetition.inReplyTo && remotePost.hierarchyLevel === 1) {
+            const lostParent = await getPostThreadRecursive(user, postPetition.inReplyTo)
+            if (lostParent) await remotePost.setParent(lostParent)
+          }
+          // next replies to process
+          let next = postPetition.replies.first
+          while (next) {
+            const petitions = next.items.map((elem: any) => getPostThreadRecursive(user, elem.id ? elem.id : elem))
+            await Promise.allSettled(petitions)
+            next = next.next ? await getPetitionSigned(user, next.next) : undefined
           }
         }
-        if (remotePost?.bskyUri) {
-          await processSinglePost(remotePost.bskyUri, true);
-        }
-      } catch (error) {
-        logger.debug({
-          message: "error getting external responses",
-          post: req.query.id,
-          error: error,
-        });
       }
-      res.send({});
+      if (remotePost?.bskyUri) {
+        await processSinglePost(remotePost.bskyUri, true)
+      }
+    } catch (error) {
+      logger.debug({
+        message: 'error getting external responses',
+        post: req.query.id,
+        error: error
+      })
     }
-  );
+    res.send({})
+  })
 
   function getPostPrivacy(
     bodyPrivacy: PrivacyType,
     parentPrivacy: PrivacyType,
     quotedPostPrivacy: PrivacyType
   ): PrivacyType {
-    let result = Math.max(
-      parentPrivacy,
-      bodyPrivacy,
-      quotedPostPrivacy
-    ) as PrivacyType;
+    let result = Math.max(parentPrivacy, bodyPrivacy, quotedPostPrivacy) as PrivacyType
     if (
       (Privacy.LocalOnly == result || Privacy.Unlisted == result) &&
-      (Privacy.FollowersOnly == parentPrivacy ||
-        Privacy.FollowersOnly == quotedPostPrivacy)
+      (Privacy.FollowersOnly == parentPrivacy || Privacy.FollowersOnly == quotedPostPrivacy)
     ) {
-      result = Privacy.FollowersOnly;
+      result = Privacy.FollowersOnly
     }
-    return result;
+    return result
   }
 }

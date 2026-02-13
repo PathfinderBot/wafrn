@@ -227,8 +227,7 @@ export default function dashboardRoutes(app: Application) {
             ]
           }
 
-          if (disableReplies)
-            whereObject.parentId = null
+          if (disableReplies) whereObject.parentId = null
 
           break
         }
@@ -288,6 +287,13 @@ export default function dashboardRoutes(app: Application) {
             )
           }
         }
+        case 30: {
+          // drafts
+          whereObject = {
+            userId: posterId,
+            privacy: Privacy.Draft
+          }
+        }
       }
       // we get the list of posts
       let postIds: Post[] | Promise<Post[]> = Post.findAll({
@@ -313,7 +319,7 @@ export default function dashboardRoutes(app: Application) {
         subQuery: false,
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
-          ...whereObject,
+          ...whereObject
         }
       })
 
