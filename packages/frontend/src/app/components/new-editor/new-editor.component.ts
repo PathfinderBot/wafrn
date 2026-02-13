@@ -1,4 +1,4 @@
-import { Location } from "@angular/common";
+import { Location, NgIf } from "@angular/common";
 import {
   Component,
   computed,
@@ -125,7 +125,8 @@ type EmojiSuggestion = {
     MatBadgeModule,
     MatChipsModule,
     MatProgressBarModule,
-    MatSelectModule
+    MatSelectModule,
+    NgIf
 ],
   templateUrl: "./new-editor.component.html",
   styleUrl: "./new-editor.component.scss",
@@ -386,7 +387,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     );
 
     // If parent is bsky, we set canreply same as parent
-    if(this.data?.post ) {
+    if(this.data?.post) {
+      /* TODO uncoment this part
       this.canReply = this.data.post.replyControl
       const parentPost = this.data.post;
       if(parentPost.user.url.startsWith('@') && parentPost.user.url.split('@').length === 2 && parentPost.user.bskyDid) {
@@ -395,6 +397,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       if(this.canReply === InteractionControl.SameAsOp) {
         this.canEditCanReply = false
       }
+        */
     }
 
     // Focus on the next frame (EVIL FIX)
