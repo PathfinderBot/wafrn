@@ -92,7 +92,7 @@ export interface PostAttributes {
   reblogControl?: InteractionControlType;
   quoteControl?: InteractionControlType;
   displayUrl: String | null;
-  detached: boolean;
+  detached?: boolean;
 }
 
 @Table({
