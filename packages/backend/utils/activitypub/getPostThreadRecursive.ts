@@ -71,7 +71,7 @@ async function getPostThreadRecursive(
   options?: any
 ) {
   let detachedQuote = false;
-  let deatachedReply = false;
+  let detachedReply = false;
   let parent: Post | undefined | null;
   const replyControl: {
     replyControl: InteractionControlType;
@@ -643,7 +643,7 @@ async function getPostThreadRecursive(
             }
           }
         })
-        detachedQuote = postsQuoteds.some(async (elem) => await canInteract(elem.quoteControl, newPost.userId, elem.id) )
+        detachedQuote = postsQuoteds.some(async (elem) => !await canInteract(elem.quoteControl, newPost.userId, elem.id) )
         await bulkCreateNotifications(
           quotes.map((quote) => ({
             notificationType: "QUOTE",
@@ -670,18 +670,17 @@ async function getPostThreadRecursive(
         } catch (error) { }
         if (mentionedUsersIds.length != 0) {
           // check if detached
-           if(parent && (await getAllLocalUserIds()).includes(parent.userId) ) {
-            if(parent.detached) {
-              deatachedReply = true
-            } else {
-              deatachedReply = await canInteract(parent.replyControl, newPost.userId, parent.id)
-            }
+          if(parent?.detached) {
+              detachedReply = true
+          }
+           if(!detachedReply && parent && (await getAllLocalUserIds()).includes(parent.userId) ) {
+            detachedReply = !await canInteract(parent.replyControl, newPost.userId, parent.id)
            }
-           if(deatachedReply) {
+           if(detachedReply) {
             newPost.detached = true;
             await newPost.save()
            }
-          await processMentions(newPost, mentionedUsersIds, deatachedReply);
+          await processMentions(newPost, mentionedUsersIds, detachedReply);
         }
         await loadPoll(remotePostObject, newPost, user);
         const postCleanContent = dompurify

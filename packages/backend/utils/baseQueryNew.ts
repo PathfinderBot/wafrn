@@ -735,7 +735,7 @@ async function canInteract(
     }
   }
 
-  return res;
+  return !!res;
 }
 
 async function addPostCanInteract(
