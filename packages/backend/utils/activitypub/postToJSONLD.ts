@@ -319,13 +319,13 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   } else {
     // mentionedUsers
     if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
-      canReply = canAnnounce.concat(mentionedUsers)
+      canAnnounce = canAnnounce.concat(mentionedUsers)
     }
     if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
-      canReply = canAnnounce.concat(stringMyFollowers)
+      canAnnounce = canAnnounce.concat(stringMyFollowers)
     }
     if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canAnnounceValue)) {
-      canReply = canAnnounce.concat(stringMyFollowing)
+      canAnnounce = canAnnounce.concat(stringMyFollowing)
     }
   }
 
@@ -334,13 +334,13 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   } else {
     // mentionedUsers
     if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
-      canReply = canLike.concat(mentionedUsers)
+      canLike = canLike.concat(mentionedUsers)
     }
     if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
-      canReply = canLike.concat(stringMyFollowers)
+      canLike = canLike.concat(stringMyFollowers)
     }
     if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canLikeValue)) {
-      canReply = canLike.concat(stringMyFollowing)
+      canLike = canLike.concat(stringMyFollowing)
     }
   }
 
