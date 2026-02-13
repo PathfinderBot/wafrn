@@ -157,7 +157,7 @@ async function prepareSendRemotePostWorker(job: Job) {
       default: {
         serversToSendThePost = await FederatedHost.findAll({
           where: {
-            publicInbox: { [Op.ne]: null },
+            publicInbox: { [Op.notIn]: [''], [Op.ne]: null },
             blocked: { [Op.ne]: true },
             [Op.or]: [
               {
