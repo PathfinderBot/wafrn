@@ -82,6 +82,7 @@ async function processSinglePost(
   uri: string,
   forceUpdate = false
 ): Promise<string | undefined> {
+  let detached = false;
   if (!completeEnvironment.enableBsky) {
     return undefined;
   }
@@ -540,6 +541,7 @@ async function processSinglePost(
             notifiedUserId: mnt,
             userId: postToProcess.userId,
             createdAt: new Date(postToProcess.createdAt),
+            detached: detached
           })),
           {
             ignoreDuplicates: true,
@@ -584,6 +586,7 @@ async function processSinglePost(
                 notifiedUserId: quotedPost.userId,
                 userId: postToProcess.userId,
                 postId: postToProcess.id,
+                detached: false
               },
               {
                 postContent: postToProcess.content,

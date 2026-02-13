@@ -31,7 +31,8 @@ export type NotificationBody = {
   emojiReactionId?: string
   createdAt?: Date
   updatedAt?: Date
-  notifiedUserUrl?: string
+  notifiedUserUrl?: string,
+  detached: boolean
 }
 
 export type NotificationContext = {
@@ -61,7 +62,7 @@ export async function bulkCreateNotifications(notifications: NotificationBody[],
     const notificationDate = notifications[0].createdAt ? notifications[0].createdAt : new Date()
     const timeDiff = Math.abs(new Date().getTime() - notificationDate.getTime())
     const sendNotifications =
-      timeDiff < 3600 * 1000 ? sendPushNotificationQueue.add('sendPushNotification', { notifications, context }) : null
+      timeDiff < 3600 * 1000 ? sendPushNotificationQueue.add('sendPushNotification', { notifications: notifications.filter(elem => !elem.detached), context }) : null
     await Promise.all([
       Notification.bulkCreate(localUserNotifications, { ignoreDuplicates: context?.ignoreDuplicates }),
       sendNotifications
@@ -96,8 +97,9 @@ export async function createNotification(notification: NotificationBody, context
     }
     const notificationDate = notification.createdAt ? notification.createdAt : new Date()
     const timeDiff = Math.abs(new Date().getTime() - notificationDate.getTime())
+
     const sendNotification =
-      timeDiff < 3600 * 1000
+      timeDiff < 3600 * 1000 && !notification.detached
         ? sendPushNotificationQueue.add('sendPushNotification', {
             notifications: [notification],
             context

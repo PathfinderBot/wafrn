@@ -239,6 +239,13 @@ export class Post
   })
   declare quoteControl: InteractionControlType;
 
+  @Column({
+    allowNull: true,
+    defaultValue: false,
+    type: DataType.BOOLEAN
+  })
+  declare detached: boolean;
+
   @BelongsTo(() => Post, "parentId")
   declare parent: Post;
   declare getParent: BelongsToGetAssociationMixin<Post>;

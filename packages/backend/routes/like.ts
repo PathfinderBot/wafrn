@@ -96,7 +96,8 @@ export default function likeRoutes(app: Application) {
             notificationType: 'LIKE',
             notifiedUserId: post.userId,
             userId: userId,
-            postId: postId
+            postId: postId,
+            detached: false
           },
           {
             postContent: post?.content,

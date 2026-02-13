@@ -54,7 +54,8 @@ export default function biteRoutes(app: Application) {
             notificationType: 'POSTBITE',
             notifiedUserId: post.userId,
             userId: userId,
-            postId: postId
+            postId: postId,
+            detached: false
           },
           {
             postContent: post?.content,
@@ -117,7 +118,8 @@ export default function biteRoutes(app: Application) {
           {
             notificationType: 'USERBITE',
             notifiedUserId: bittenId,
-            userId: biterId
+            userId: biterId,
+            detached: false
           },
           {
             userUrl: biter.url

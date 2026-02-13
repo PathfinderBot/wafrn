@@ -54,7 +54,8 @@ async function processFirehose(job: Job) {
                       notificationType: 'POSTBITE',
                       notifiedUserId: post.userId,
                       userId: remoteUser.id,
-                      postId: postId
+                      postId: postId,
+                      detached: false
                     },
                     {
                       postContent: post?.content,
@@ -76,7 +77,8 @@ async function processFirehose(job: Job) {
                   {
                     notificationType: 'USERBITE',
                     notifiedUserId: user.id,
-                    userId: remoteUser.id
+                    userId: remoteUser.id,
+                    detached: false
                   },
                   {
                     userUrl: remoteUser.url
@@ -115,7 +117,8 @@ async function processFirehose(job: Job) {
                         notificationType: 'LIKE',
                         postId: postId,
                         userId: remoteUser.id,
-                        notifiedUserId: post.userId
+                        notifiedUserId: post.userId,
+                        detached: false
                       },
                       {
                         postContent: post.content,
@@ -151,7 +154,8 @@ async function processFirehose(job: Job) {
                       notificationType: 'LIKE',
                       postId: postInDb.id,
                       userId: remoteUser.id,
-                      notifiedUserId: postInDb.userId
+                      notifiedUserId: postInDb.userId,
+                      detached: false
                     },
                     {
                       postContent: postInDb.content,
@@ -218,7 +222,8 @@ async function processFirehose(job: Job) {
                     notificationType: 'REWOOT',
                     postId: parent?.id,
                     notifiedUserId: parent?.userId as string,
-                    userId: remoteUser.id
+                    userId: remoteUser.id,
+                    detached: false
                   },
                   {
                     postContent: parent?.content,
@@ -256,7 +261,8 @@ async function processFirehose(job: Job) {
                 {
                   notificationType: 'FOLLOW',
                   userId: remoteUser.id,
-                  notifiedUserId: userFollowed.id
+                  notifiedUserId: userFollowed.id,
+                  detached: false
                 },
                 {
                   userUrl: remoteUser.url

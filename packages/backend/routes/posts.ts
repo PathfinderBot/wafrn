@@ -755,6 +755,7 @@ export default function postsRoutes(app: Application) {
               notifiedUserId: parent?.userId as string,
               userId: post.userId,
               postId: parent?.id,
+              detached: false
             },
             {
               postContent: parent?.content,
@@ -787,6 +788,7 @@ export default function postsRoutes(app: Application) {
               userId: post.userId,
               postId: post.id,
               createdAt: new Date(postToBeQuoted.createdAt),
+              detached: false
             },
             {
               postContent: post.content,
@@ -832,6 +834,7 @@ export default function postsRoutes(app: Application) {
             userId: post.userId,
             postId: post.id,
             createdAt: new Date(post.createdAt),
+            detached: false
           })),
           {
             postContent: post.content,
