@@ -83,6 +83,9 @@ export default function forumRoutes(app: Application) {
           }
         ],
         where: {
+          detached: {
+            [Op.ne]: true
+          },
           id: {
             [Op.in]: [...new Set(postIds.concat([postId]))]
           },
