@@ -92,6 +92,7 @@ export interface PostAttributes {
   reblogControl?: InteractionControlType
   quoteControl?: InteractionControlType
   displayUrl: String | null
+  detached?: boolean
 }
 
 @Table({
@@ -236,10 +237,17 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   })
   declare quoteControl: InteractionControlType
 
-  @BelongsTo(() => Post, 'parentId')
-  declare parent: Post
-  declare getParent: BelongsToGetAssociationMixin<Post>
-  declare setParent: BelongsToSetAssociationMixin<Post, string>
+  @Column({
+    allowNull: true,
+    defaultValue: false,
+    type: DataType.BOOLEAN
+  })
+  declare detached: boolean;
+
+  @BelongsTo(() => Post, "parentId")
+  declare parent: Post;
+  declare getParent: BelongsToGetAssociationMixin<Post>;
+  declare setParent: BelongsToSetAssociationMixin<Post, string>;
 
   @HasMany(() => Post, 'parentId')
   declare children: Post[]

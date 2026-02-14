@@ -98,7 +98,8 @@
       "myBlockedUsers": "Blocked users",
       "myBlockedServers": "Blocked servers",
       "importFollows": "Import followers",
-      "superSecretMenu": "Super Secret Menu"
+      "superSecretMenu": "Super Secret Menu",
+      "detachedNotifications": "Unaothorised Notifications"
     },
     "admin": {
       "title": "Admin",
@@ -121,6 +122,7 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "replyControlWarning": "For now, only gotosocial, bluesky and other wafrns support this feature. Unwanted replies will be hidden from the thread on this instance, muted and only displayed in the section unauthorized replies. They may still be visible in other servers",
     "editingLabel": "Editing woot",
     "askReplyLabel": "Replying to ask",
     "inReplyTo": "In reply to:",

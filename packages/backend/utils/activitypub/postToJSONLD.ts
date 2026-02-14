@@ -430,7 +430,6 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
         canQuote: {
           automaticApproval:   post.quoteControl === InteractionControl.Anyone ? [ "https://www.w3.org/ns/activitystreams#Public"] : [],
         },
-        /*
         canLike: {
           automaticApproval: canLike
         },
@@ -440,7 +439,6 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
         canAnnounce: {
           automaticApproval: canAnnounce
         }
-        */
       },
     },
   };

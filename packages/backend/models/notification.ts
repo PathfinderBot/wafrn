@@ -14,6 +14,7 @@ export interface NotificationAttributes {
   userId?: string;
   postId?: string | null;
   emojiReactionId?: string;
+  detached: boolean;
 }
 
 @Table({
@@ -28,6 +29,14 @@ export class Notification extends Model<NotificationAttributes, NotificationAttr
   })
   declare notificationType: string;
 
+  @Column({
+    allowNull: true,
+    defaultValue: false,
+    type: DataType.BOOLEAN
+  })
+  declare detached: boolean;
+
+  
   @ForeignKey(() => User)
   @Column({
     allowNull: true,

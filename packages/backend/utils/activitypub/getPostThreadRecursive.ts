@@ -47,6 +47,8 @@ import {
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 import escapeHTML from "escape-html";
 import { wait } from "../wait.js";
+import { canInteract } from "../baseQueryNew.js";
+import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -68,6 +70,9 @@ async function getPostThreadRecursive(
   localPostToForceUpdate?: string,
   options?: any
 ) {
+  let detachedQuote = false;
+  let detachedReply = false;
+  let parent: Post | undefined | null;
   const replyControl: {
     replyControl: InteractionControlType;
     likeControl: InteractionControlType;
@@ -525,13 +530,14 @@ async function getPostThreadRecursive(
           postPetition.inReplyTo &&
           postPetition.id !== postPetition.inReplyTo
         ) {
-          const parent = await getPostThreadRecursive(
+          parent = await getPostThreadRecursive(
             user,
             postPetition.inReplyTo.id
               ? postPetition.inReplyTo.id
               : postPetition.inReplyTo
           );
           postToCreate.parentId = parent?.id;
+          
         }
 
         const existingPost = localPostToForceUpdate
@@ -629,7 +635,15 @@ async function getPostThreadRecursive(
         }
 
         await newPost.save();
-
+        const postsBeingQuotedIds = quotes.map(elem => elem.quotedPostId)
+        const postsQuoteds = await Post.findAll({
+          where: {
+            id: {
+              [Op.in]: postsBeingQuotedIds
+            }
+          }
+        })
+        detachedQuote = postsQuoteds.some(async (elem) => !await canInteract(elem.quoteControl, newPost.userId, elem.id) )
         await bulkCreateNotifications(
           quotes.map((quote) => ({
             notificationType: "QUOTE",
@@ -637,6 +651,7 @@ async function getPostThreadRecursive(
             userId: newPost.userId,
             postId: newPost.id,
             createdAt: new Date(newPost.createdAt),
+            detached: detachedQuote
           })),
           {
             postContent: newPost.content,
@@ -654,7 +669,18 @@ async function getPostThreadRecursive(
           await addAsksToPost(newPost, fediTags);
         } catch (error) { }
         if (mentionedUsersIds.length != 0) {
-          await processMentions(newPost, mentionedUsersIds);
+          // check if detached
+          if(parent?.detached) {
+              detachedReply = true
+          }
+           if(!detachedReply && parent && (await getAllLocalUserIds()).includes(parent.userId) ) {
+            detachedReply = !await canInteract(parent.replyControl, newPost.userId, parent.id)
+           }
+           if(detachedReply) {
+            newPost.detached = true;
+            await newPost.save()
+           }
+          await processMentions(newPost, mentionedUsersIds, detachedReply);
         }
         await loadPoll(remotePostObject, newPost, user);
         const postCleanContent = dompurify
@@ -897,7 +923,7 @@ async function addTagsToPost(post: any, originalTags: fediverseTag[]) {
   );
 }
 
-async function processMentions(post: any, userIds: string[]) {
+async function processMentions(post: any, userIds: string[], detached: boolean) {
   await post.setMentionPost([]);
   await Notification.destroy({
     where: {
@@ -935,6 +961,7 @@ async function processMentions(post: any, userIds: string[]) {
       userId: post.userId,
       postId: post.id,
       createdAt: new Date(post.createdAt),
+      detached: detached
     })),
     {
       postContent: post.content,

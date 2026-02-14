@@ -600,7 +600,8 @@ export default function postsRoutes(app: Application) {
               notificationType: 'REWOOT',
               notifiedUserId: parent?.userId as string,
               userId: post.userId,
-              postId: parent?.id
+              postId: parent?.id,
+              detached: false
             },
             {
               postContent: parent?.content,
@@ -635,7 +636,8 @@ export default function postsRoutes(app: Application) {
                 notifiedUserId: postToBeQuoted.userId,
                 userId: post.userId,
                 postId: post.id,
-                createdAt: new Date(postToBeQuoted.createdAt)
+                createdAt: new Date(postToBeQuoted.createdAt),
+                detached: false
               },
               {
                 postContent: post.content,
@@ -674,23 +676,23 @@ export default function postsRoutes(app: Application) {
             }
           })
         }
-
-        // don't create mention notifications for drafts
         if (post.privacy !== Privacy.Draft) {
           await bulkCreateNotifications(
-            mentionsToAdd.map((mention) => ({
-              notificationType: 'MENTION',
-              notifiedUserId: mention,
-              userId: post.userId,
-              postId: post.id,
-              createdAt: new Date(post.createdAt)
-            })),
-            {
-              postContent: post.content,
-              userUrl: posterUser?.url
-            }
-          )
+          mentionsToAdd.map((mention) => ({
+            notificationType: "MENTION",
+            notifiedUserId: mention,
+            userId: post.userId,
+            postId: post.id,
+            createdAt: new Date(post.createdAt),
+            detached: false
+          })),
+          {
+            postContent: post.content,
+            userUrl: posterUser?.url,
+          }
+        );
         }
+        
 
         post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(

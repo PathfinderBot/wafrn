@@ -430,7 +430,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       res.embed = {
         $type: "app.bsky.embed.video",
         video: video.blob,
-        alt: video.media.description ? video.media.description : "",
+        alt: (video.media.description || "").slice(0, 999),
         labels,
         aspectRatio: await getVideoAspectRatio("uploads/" + video.media.url),
         presentation: presentation
@@ -441,7 +441,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         images: bskyMedias.map((m) => ({
           labels,
           image: m.blob,
-          alt: m.media.description ? m.media.description : "",
+          alt: (m.media.description || "").slice(0, 999),
           aspectRatio: {
             width: m.media.width,
             height: m.media.height,

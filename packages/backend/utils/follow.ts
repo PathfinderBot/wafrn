@@ -67,7 +67,8 @@ async function follow(
           {
             notificationType: 'FOLLOW',
             userId: followerId,
-            notifiedUserId: userFollowed?.id
+            notifiedUserId: userFollowed?.id,
+            detached: false
           },
           {
             userUrl: (await User.findByPk(followerId))?.url
