@@ -394,7 +394,7 @@
         </mat-menu>
         <mat-menu #interactionControl="matMenu">
           <div class="p-2">
-          <h3>Valid for bluesky, other new wafrns and GTS</h3>
+          <h3>{{'editor.replyControlWarning' | translate}}</h3>
           <mat-form-field class="w-full">
             <mat-label>Quotable</mat-label>
             <mat-select [(value)]="canBeQuoted" (click)="$event.stopPropagation()">
