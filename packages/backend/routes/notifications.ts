@@ -38,6 +38,7 @@ function notificationRoutes(app: Application) {
     authenticateToken,
     forceUpdateLastActive,
     async (req: AuthorizedRequest, res: Response) => {
+      let getDetached = req.query.detached == 'true';
       const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
       User.findByPk(userId).then(async (usr: any) => {
         if (usr && req.query?.page === '0') {
@@ -105,7 +106,11 @@ function notificationRoutes(app: Application) {
             }
           }
         ],
-        where: whereObject,
+        where: {
+          ...whereObject,
+          // this looks like should be the oposite but ok
+          detached: !getDetached ? {[Op.eq]: false} : {[Op.ne]: false}
+        },
         order: [['createdAt', 'DESC']],
         limit: 20
       })
@@ -349,6 +354,9 @@ function notificationRoutes(app: Application) {
         }
       ],
       where: {
+        detached: {
+          [Op.ne]: true
+        },
         notifiedUserId: userId,
         [Op.or]: [await getNotificationOptions(userId)],
         postId: {

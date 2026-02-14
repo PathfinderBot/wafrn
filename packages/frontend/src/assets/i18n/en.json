@@ -98,7 +98,8 @@
       "myBlockedUsers": "Blocked users",
       "myBlockedServers": "Blocked servers",
       "importFollows": "Import followers",
-      "superSecretMenu": "Super Secret Menu"
+      "superSecretMenu": "Super Secret Menu",
+      "detachedNotifications": "Detached Notifications"
     },
     "admin": {
       "title": "Admin",
