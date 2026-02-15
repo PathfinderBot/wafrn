@@ -299,7 +299,7 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   let canLikeValue: InteractionControlType = post.likeControl;
   const publicString = "https://www.w3.org/ns/activitystreams#Public"
   // canreply:
-  if(canReplyValue === InteractionControl.Anyone) {
+  if([InteractionControl.Anyone, InteractionControl.SameAsOp].includes(canReplyValue)) {
     canReply.push(publicString)
   } else {
     // mentionedUsers
