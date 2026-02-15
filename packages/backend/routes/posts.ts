@@ -303,12 +303,11 @@ export default function postsRoutes(app: Application) {
         const quotedPostPrivacy: PrivacyType = postToBeQuoted ? postToBeQuoted.privacy : Privacy.Public
 
         if (!Object.values(Privacy).includes(bodyPrivacy)) {
-          res.status(422)
-          res.send({ success: false, message: 'invalid privacy setting' })
+          res.status(400).send({ success: false, message: 'invalid privacy setting' })
           return false
         }
 
-        bodyPrivacy = getPostPrivacy(bodyPrivacy, parentPrivacy, quotedPostPrivacy)
+        bodyPrivacy = getMaxPrivacy([bodyPrivacy, parentPrivacy, quotedPostPrivacy])
         // we check that the user is not reblogging a post by someone who blocked them or the other way arround
         if (parent) {
           // we check to add user mention if bsky id
@@ -406,8 +405,6 @@ export default function postsRoutes(app: Application) {
 
         if (req.body.medias && req.body.medias.length) {
           mediaToAdd = req.body.medias
-          // "not important" we update the media order
-          const updateMediasPromises: Array<Promise<any>> = []
           Media.findAll({
             where: {
               id: {
@@ -590,7 +587,7 @@ export default function postsRoutes(app: Application) {
             isReblog: isReblog,
             replyControl: req.body.canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
-            likeControl: req.body.canLike || InteractionControl.Anyone,
+            likeControl: req.body.canLike || InteractionControl.Anyone
           })
         }
 
@@ -678,21 +675,20 @@ export default function postsRoutes(app: Application) {
         }
         if (post.privacy !== Privacy.Draft) {
           await bulkCreateNotifications(
-          mentionsToAdd.map((mention) => ({
-            notificationType: "MENTION",
-            notifiedUserId: mention,
-            userId: post.userId,
-            postId: post.id,
-            createdAt: new Date(post.createdAt),
-            detached: false
-          })),
-          {
-            postContent: post.content,
-            userUrl: posterUser?.url,
-          }
-        );
+            mentionsToAdd.map((mention) => ({
+              notificationType: 'MENTION',
+              notifiedUserId: mention,
+              userId: post.userId,
+              postId: post.id,
+              createdAt: new Date(post.createdAt),
+              detached: false
+            })),
+            {
+              postContent: post.content,
+              userUrl: posterUser?.url
+            }
+          )
         }
-        
 
         post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(
@@ -888,19 +884,21 @@ export default function postsRoutes(app: Application) {
     }
     res.send({})
   })
+}
 
-  function getPostPrivacy(
-    bodyPrivacy: PrivacyType,
-    parentPrivacy: PrivacyType,
-    quotedPostPrivacy: PrivacyType
-  ): PrivacyType {
-    let result = Math.max(parentPrivacy, bodyPrivacy, quotedPostPrivacy) as PrivacyType
-    if (
-      (Privacy.LocalOnly == result || Privacy.Unlisted == result) &&
-      (Privacy.FollowersOnly == parentPrivacy || Privacy.FollowersOnly == quotedPostPrivacy)
-    ) {
-      result = Privacy.FollowersOnly
-    }
-    return result
-  }
+export const PRIVACY_ORDER = [
+  Privacy.Public,
+  Privacy.Unlisted,
+  Privacy.FollowersOnly,
+  Privacy.LocalOnly,
+  Privacy.DirectMessage,
+  Privacy.LinkOnly,
+  Privacy.Draft
+]
+
+function getMaxPrivacy(privacies: PrivacyType[]) {
+  const privacyOrders = privacies.map((p) => PRIVACY_ORDER.indexOf(p))
+  const mostPrivateIndex = Math.max(...privacyOrders)
+  const privacy = PRIVACY_ORDER[mostPrivateIndex]
+  return privacy
 }
