@@ -286,6 +286,7 @@ export default function dashboardRoutes(app: Application) {
               `"posts"."id" IN (SELECT "postId" FROM "userBookmarkedPosts" WHERE "userId"='${posterId}')`
             )
           }
+          break;
         }
         case 30: {
           // drafts
@@ -293,6 +294,7 @@ export default function dashboardRoutes(app: Application) {
             userId: posterId,
             privacy: Privacy.Draft
           }
+          break;
         }
       }
       // we get the list of posts
