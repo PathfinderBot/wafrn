@@ -238,6 +238,11 @@ export default function postsRoutes(app: Application) {
       let mentionsToAdd: string[] = []
       const posterId = req.jwtData?.userId ? req.jwtData.userId : completeEnvironment.deletedUser
       const posterUser = await User.findByPk(posterId)
+      if (!posterUser) {
+        res.status(400).send({ message: 'Invalid poster user', success: false })
+        return
+      }
+
       const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
       try {
         const parent = await Post.findByPk(req.body.parent, {
@@ -529,11 +534,16 @@ export default function postsRoutes(app: Application) {
         }
 
         content = markdownConverter.makeHtml(content.trim())
-        let post: any
+        let post: Post & Record<string, any> // this makes autocomplete work for Post fields but not freak out for methods it cannot find. better than `any`
+        let previousPrivacy: PrivacyType = Privacy.Public
         content = content.trim()
         if (req.body.idPostToEdit) {
-          post = await Post.findByPk(req.body.idPostToEdit)
-
+          const foundPost = await Post.findByPk(req.body.idPostToEdit)
+          if (!foundPost) {
+            res.status(404).send({ message: 'Invalid post for edition', success: false })
+          }
+          post = foundPost!
+          previousPrivacy = foundPost!.privacy
           // reset timestamps when publishing a draft
           if (post.privacy === Privacy.Draft && bodyPrivacy !== Privacy.Draft) {
             post.createdAt = new Date()
@@ -724,26 +734,13 @@ export default function postsRoutes(app: Application) {
         // do not federate for local-only or drafts
         if (+post.privacy !== Privacy.LocalOnly && post.privacy !== Privacy.Draft) {
           if (req.body.idPostToEdit) {
-            await federatePostHasBeenEdited(post)
-          } else {
-            const jobData = { postId: post.id, petitionBy: posterId }
-            let delay = 1500
-            if (
-              post.privacy === Privacy.Public &&
-              posterUser?.enableBsky &&
-              completeEnvironment.enableBsky &&
-              posterUser?.bskyDid
-            ) {
-              await sendPostBskyQueue.add('sendPostBsky', jobData, {
-                delay: 500
-              })
-              delay = 5000
+            if (previousPrivacy === Privacy.LocalOnly || previousPrivacy === Privacy.Draft) {
+              await triggerPostFederation(post, posterUser!)
             } else {
-              await prepareSendPostQueue.add('prepareSendPost', jobData, {
-                jobId: post.id,
-                delay: delay
-              })
+              await federatePostHasBeenEdited(post)
             }
+          } else {
+            await triggerPostFederation(post, posterUser!)
           }
         }
       } catch (error) {
@@ -901,4 +898,19 @@ function getMaxPrivacy(privacies: PrivacyType[]) {
   const mostPrivateIndex = Math.max(...privacyOrders)
   const privacy = PRIVACY_ORDER[mostPrivateIndex]
   return privacy
+}
+
+async function triggerPostFederation(post: Post, user: User) {
+  const jobData = { postId: post.id, petitionBy: post.userId }
+
+  if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
+    await sendPostBskyQueue.add('sendPostBsky', jobData, {
+      delay: 500
+    })
+  } else {
+    await prepareSendPostQueue.add('prepareSendPost', jobData, {
+      jobId: post.id,
+      delay: 1500
+    })
+  }
 }
