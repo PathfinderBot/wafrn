@@ -128,6 +128,49 @@ async function getPostThreadRecursive(
       return await Post.findByPk(postId);
     }
   }
+  // fix bridgy duplicates. they are originaly bsky posts after all
+  // TODO This function has other path for this. it would be nice to clean it up
+  if(checkBluesky && remotePostId.startsWith('https://bsky.brid.gy/') || remotePostId.startsWith('https://fed.brid.gy/r/') ) {
+    // the post is a bsky one lol.
+    let uri = remotePostId.split('https://bsky.brid.gy/convert/ap/')[1]
+    if(remotePostId.startsWith('https://fed.brid.gy/r/')) {
+      const profileAndPost = remotePostId.split('/profile/')[1].split('/post/')
+      let bskyProfile = profileAndPost[0]
+      let bskyUri = profileAndPost[1]
+      uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
+    }
+    if(uri) {
+      const bskyVersionId = await processSinglePost(uri, false)
+      if(bskyVersionId) {
+        const bskyVersion = await Post.findByPk(bskyVersionId) as Post
+        if(!bskyVersion.remotePostId && ! (await getAllLocalUserIds()).includes(bskyVersion.userId)) {
+          // we have the bsky post in the db, it is not from a local user
+          const localPostWithExistingremoteId = await Post.findOne({
+            where: {
+              remotePostId: remotePostId
+            }
+          })
+          if(localPostWithExistingremoteId && localPostWithExistingremoteId.id != bskyVersion.id) {
+            // OK TIME TO UPDATE WHO IS PARENT OF DESCENDENTS
+            await Post.update({
+              parentId: bskyVersion.id
+            }, {
+              where: {
+                parentId: localPostWithExistingremoteId.id
+              }
+            })
+            localPostWithExistingremoteId.remotePostId = null;
+            localPostWithExistingremoteId.isDeleted = true;
+            await localPostWithExistingremoteId.save()
+          }
+          bskyVersion.remotePostId = remotePostId;
+          await bskyVersion.save()
+        }
+        return bskyVersion;
+      }
+
+    }
+  }
   const postInDatabase = await Post.findOne({
     where: {
       remotePostId: remotePostId,
