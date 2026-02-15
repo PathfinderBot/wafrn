@@ -581,11 +581,12 @@ export default function postsRoutes(app: Application) {
               })
             }
           }
-          let canReply = req.body.canReply;
+          let canReply = req.body.canReply ? req.body.canreply : InteractionControl.Anyone;
           if(canReply === InteractionControl.SameAsOp && parent) {
             // ok there is a bug in frontend. fixing here for a few days
             // TODO remove later
-            if((parent.remotePostId && !parent.remotePostId.startsWith('https://fed.brid.gy/'))|| (await getAllLocalUserIds()).includes(parent.userId) ){
+            //if parent.isRemoteBlueskyPost
+            if((parent.remotePostId && !parent.remotePostId.startsWith('https://bsky.brid.gy/'))|| (await getAllLocalUserIds()).includes(parent.userId) ){
               // we ignore canreply in this case because bug
               canReply = InteractionControl.Anyone
             }
