@@ -395,7 +395,8 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   }
 
   async isRemoteBlueskyPostAsync() {
-    return this.bskyUri && (await this.getUser()).isRemoteUser
+    let user = await this.getUser()
+    return this.bskyUri && user.isRemoteUser && (!this.remotePostId || !this.remotePostId?.startsWith('https://bsky.brid.gy/'))
   }
 
   get postShouldGoFedi() {
