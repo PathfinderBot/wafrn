@@ -122,6 +122,15 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "interactionControl": {
+      "anyone": "Anyone",
+      "FollowingAndMentioned": "People I follow and mentioned users",
+      "FollowersAndMentioned": "My followers and mentioned users",
+      "FollowersFollowingAndMentioned": "Following, followed or mentioned",
+      "MentionedUsersOnly": "Only mentioned users",
+      "anyoneCanQuote": "Anyone can quote",
+      "noOneCanQuote": "Not quotable"
+    },
     "replyControlWarning": "For now, only gotosocial, bluesky and other wafrns support this feature. Unwanted replies will be hidden from the thread on this instance, muted and only displayed in the section unauthorized replies. They may still be visible in other servers",
     "editingLabel": "Editing woot",
     "askReplyLabel": "Replying to ask",
@@ -397,6 +406,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
+    "defaultPostEditorCanReply":"Default who can reply",
+    "defaultPostEditorCanQuote":"Default woot can be quoted",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",

@@ -13,6 +13,7 @@ import { TranslateService } from '@ngx-translate/core'
 import { DashboardService } from './dashboard.service'
 import { BlogDetails } from '../interfaces/blogDetails'
 import { SimpleDialogService } from './simple-dialog.service'
+import { InteractionControl, InteractionControlType } from '../interfaces/InteractionControl'
 
 export type AccountData = {
   token: string
@@ -499,6 +500,16 @@ export class LoginService {
   getUserDefaultPostPrivacyLevel(): number {
     const res = localStorage.getItem('defaultPostEditorPrivacy')
     return res ? parseInt(res) : 0
+  }
+
+  getUserDefaultReplyControl(): InteractionControlType {
+    const res = localStorage.getItem('defaultPostEditorCanReply')
+    return res ? parseInt(res) : InteractionControl.Anyone
+  }
+
+  getUserDefaultQuoteControl(): InteractionControlType {
+    const res = localStorage.getItem('defaultPostEditorCanQuote')
+    return res ? parseInt(res) : InteractionControl.Anyone
   }
 
   getUserDefaultRewootPrivacyLevel(): number {

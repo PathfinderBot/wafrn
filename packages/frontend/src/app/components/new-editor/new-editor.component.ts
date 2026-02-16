@@ -79,7 +79,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { EnvironmentService } from "src/app/services/environment.service";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { InfoCardComponent } from "../info-card/info-card.component";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { SimplifiedUser } from "src/app/interfaces/simplified-user";
 import { MatBadgeModule } from "@angular/material/badge";
 import { EmojiPickerComponent } from "../emoji-picker/emoji-picker.component";
@@ -141,6 +141,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private location = inject(Location);
   private particle = inject(ParticleService);
+  private translateService = inject(TranslateService);
+  
 
   privacyOptions = [
     { level: 0, name: "Public", icon: faGlobe },
@@ -235,27 +237,27 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   canBeQuotedOptions = [
     {
-      value: InteractionControl.Anyone, viewValue: 'Can be quoted',
+      value: InteractionControl.Anyone, viewValue: this.translateService.instant('editor.interactionControl.anyoneCanQuote'),
     },
     {
-      value: InteractionControl.NoOne, viewValue: 'Not quotable'
+      value: InteractionControl.NoOne, viewValue: this.translateService.instant('editor.interactionControl.noOneCanQuote')
     }
   ]
   canReplyOptions = [
     {
-      value: InteractionControl.Anyone, viewValue: 'Anyone'
+      value: InteractionControl.Anyone, viewValue: this.translateService.instant('editor.interactionControl.anyone')
     },
     {
-      value: InteractionControl.FollowingAndMentioned, viewValue: 'People I follow and mentioned users'
+      value: InteractionControl.FollowingAndMentioned, viewValue: this.translateService.instant('editor.interactionControl.FollowingAndMentioned')
     },
     {
-      value: InteractionControl.FollowersAndMentioned, viewValue: 'My followers and mentioned users'
+      value: InteractionControl.FollowersAndMentioned, viewValue: this.translateService.instant('editor.interactionControl.FollowersAndMentioned')
     },
     {
-      value: InteractionControl.FollowersFollowingAndMentioned, viewValue: 'Following, followed or mentioned'
+      value: InteractionControl.FollowersFollowingAndMentioned, viewValue: this.translateService.instant('editor.interactionControl.FollowersFollowingAndMentioned')
     },
     {
-      value: InteractionControl.MentionedUsersOnly, viewValue: 'Only mentioned users'
+      value: InteractionControl.MentionedUsersOnly, viewValue: this.translateService.instant('editor.interactionControl.MentionedUsersOnly')
     }
   ]
   
@@ -301,6 +303,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.data = EditorService.editorData;
     this.editing = this.data?.edit == true;
     this.privacy = this.loginService.getUserDefaultPostPrivacyLevel();
+    this.canReply = this.loginService.getUserDefaultReplyControl();
+    this.canBeQuoted = this.loginService.getUserDefaultQuoteControl()
     if (this.data?.post) {
       this.contentWarning = this.data.post.content_warning
         ? this.data.post.content_warning

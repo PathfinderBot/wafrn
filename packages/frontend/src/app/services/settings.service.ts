@@ -37,6 +37,7 @@ import { SETTINGS_TOKEN } from '../pages/settings/settings.component'
 import { replyBarItems } from '../components/post-action-buttons/post-action-buttons.component'
 import { SettingConfettiComponent } from '../components/setting-confetti/setting-confetti.component'
 import { Annoyance } from '../components/dialog/confirm-dialog.component'
+import { InteractionControl } from '../interfaces/InteractionControl'
 
 // All setting keys for use throughout the app
 const settingKeyVariants = [
@@ -77,6 +78,8 @@ const settingKeyVariants = [
   'defaultDashboard',
   'automaticallyExpandPosts', // misspelled key
   'defaultPostEditorPrivacy',
+  'defaultPostEditorCanReply',
+  'defaultPostEditorCanQuote',
   'defaultPostRewootPrivacy',
   'enableAsks',
   'enableAnonymousAsks',
@@ -489,6 +492,33 @@ export class SettingsService {
         '1': 'settings.postEditorPrivacyOptions.followersOnly',
         '2': 'settings.postEditorPrivacyOptions.instanceOnly',
         '3': 'settings.postEditorPrivacyOptions.unlisted'
+      }
+    },
+    defaultPostEditorCanReply: {
+      key: 'defaultPostEditorCanReply',
+      translationKey: 'settings.defaultPostEditorCanReply',
+      serverKey: 'wafrn.defaultPostEditorCanReply',
+      localStorageKey: 'defaultPostEditorCanReply',
+      type: 'select',
+      default: '0',
+      variants: {
+        '0': 'editor.interactionControl.anyone',
+        '5': 'editor.interactionControl.FollowingAndMentioned',
+        '4': 'editor.interactionControl.FollowersAndMentioned',
+        '6': 'editor.interactionControl.FollowersFollowingAndMentioned',
+        '7': 'editor.interactionControl.MentionedUsersOnly'
+      }
+    },
+    defaultPostEditorCanQuote: {
+      key: 'defaultPostEditorCanQuote',
+      translationKey: 'settings.defaultPostEditorCanQuote',
+      serverKey: 'wafrn.defaultPostEditorCanQuote',
+      localStorageKey: 'defaultPostEditorCanQuote',
+      type: 'select',
+      default: '0',
+      variants: {
+        '0': 'editor.interactionControl.anyoneCanQuote',
+        '8': 'editor.interactionControl.noOneCanQuote'
       }
     },
     defaultPostRewootPrivacy: {
@@ -923,6 +953,9 @@ export class SettingsService {
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },
         { type: 'key', value: 'defaultPostRewootPrivacy' },
+        {type: 'key', value: 'defaultPostEditorCanReply'},
+        {type: 'key', value: 'defaultPostEditorCanQuote'},
+
         { type: 'separator' },
         { type: 'header', value: 'settings.header.followers' },
         {
