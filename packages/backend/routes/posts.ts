@@ -314,6 +314,7 @@ export default function postsRoutes(app: Application) {
         }
 
         bodyPrivacy = getMaxPrivacy([bodyPrivacy, parentPrivacy, quotedPostPrivacy])
+
         // we check that the user is not reblogging a post by someone who blocked them or the other way arround
         if (parent) {
           // we check to add user mention if bsky id
@@ -328,6 +329,7 @@ export default function postsRoutes(app: Application) {
               }
             }
           })
+
           if (req.body.content != '') {
             mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem) => elem.userId))
             if (parent.bskyUri && parent.userId != posterId) {
@@ -337,6 +339,7 @@ export default function postsRoutes(app: Application) {
 
           const postParentsUsers: string[] = parent.ancestors.map((elem: any) => elem.userId)
           postParentsUsers.push(parent.userId)
+
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
           const options = await getUserOptions(posterId)
           const userFederatesWithThreads = options.filter(
@@ -387,12 +390,20 @@ export default function postsRoutes(app: Application) {
                 }
               })
             : 0
-          if (blocksExistingOnParents + bannedUsers > 0) {
+
+          if (bannedUsers > 0) {
             success = false
-            res.status(403)
-            res.send({
+            res.status(403).send({
               success: false,
-              message: 'You have no permission to reblog this post'
+              message: 'You have no permission to reply or reblog this post because of banned users'
+            })
+            return false
+          }
+          if (blocksExistingOnParents > 0) {
+            success = false
+            res.status(403).send({
+              success: false,
+              message: 'You have no permission to reply or reblog this post because of blocks'
             })
             return false
           }
@@ -588,12 +599,15 @@ export default function postsRoutes(app: Application) {
               })
             }
           }
-          let canReply = req.body.canReply ? req.body.canreply : InteractionControl.Anyone;
-          if(canReply === InteractionControl.SameAsOp && parent) {
+          let canReply = req.body.canReply ? req.body.canreply : InteractionControl.Anyone
+          if (canReply === InteractionControl.SameAsOp && parent) {
             // ok there is a bug in frontend. fixing here for a few days
             // TODO remove later
             //if parent.isRemoteBlueskyPost
-            if((parent.remotePostId && !parent.remotePostId.startsWith('https://bsky.brid.gy/'))|| (await getAllLocalUserIds()).includes(parent.userId) ){
+            if (
+              (parent.remotePostId && !parent.remotePostId.startsWith('https://bsky.brid.gy/')) ||
+              (await getAllLocalUserIds()).includes(parent.userId)
+            ) {
               // we ignore canreply in this case because bug
               canReply = InteractionControl.Anyone
             }
