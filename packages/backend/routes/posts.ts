@@ -239,6 +239,11 @@ export default function postsRoutes(app: Application) {
       let mentionsToAdd: string[] = []
       const posterId = req.jwtData?.userId ? req.jwtData.userId : completeEnvironment.deletedUser
       const posterUser = await User.findByPk(posterId)
+      if (!posterUser) {
+        res.status(400).send({ message: 'Invalid poster user', success: false })
+        return
+      }
+
       const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
       try {
         const parent = await Post.findByPk(req.body.parent, {
@@ -304,12 +309,12 @@ export default function postsRoutes(app: Application) {
         const quotedPostPrivacy: PrivacyType = postToBeQuoted ? postToBeQuoted.privacy : Privacy.Public
 
         if (!Object.values(Privacy).includes(bodyPrivacy)) {
-          res.status(422)
-          res.send({ success: false, message: 'invalid privacy setting' })
+          res.status(400).send({ success: false, message: 'invalid privacy setting' })
           return false
         }
 
-        bodyPrivacy = getPostPrivacy(bodyPrivacy, parentPrivacy, quotedPostPrivacy)
+        bodyPrivacy = getMaxPrivacy([bodyPrivacy, parentPrivacy, quotedPostPrivacy])
+
         // we check that the user is not reblogging a post by someone who blocked them or the other way arround
         if (parent) {
           // we check to add user mention if bsky id
@@ -324,6 +329,7 @@ export default function postsRoutes(app: Application) {
               }
             }
           })
+
           if (req.body.content != '') {
             mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem) => elem.userId))
             if (parent.bskyUri && parent.userId != posterId) {
@@ -333,6 +339,7 @@ export default function postsRoutes(app: Application) {
 
           const postParentsUsers: string[] = parent.ancestors.map((elem: any) => elem.userId)
           postParentsUsers.push(parent.userId)
+
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
           const options = await getUserOptions(posterId)
           const userFederatesWithThreads = options.filter(
@@ -383,12 +390,20 @@ export default function postsRoutes(app: Application) {
                 }
               })
             : 0
-          if (blocksExistingOnParents + bannedUsers > 0) {
+
+          if (bannedUsers > 0) {
             success = false
-            res.status(403)
-            res.send({
+            res.status(403).send({
               success: false,
-              message: 'You have no permission to reblog this post'
+              message: 'You have no permission to reply or reblog this post because of banned users'
+            })
+            return false
+          }
+          if (blocksExistingOnParents > 0) {
+            success = false
+            res.status(403).send({
+              success: false,
+              message: 'You have no permission to reply or reblog this post because of blocks'
             })
             return false
           }
@@ -407,8 +422,6 @@ export default function postsRoutes(app: Application) {
 
         if (req.body.medias && req.body.medias.length) {
           mediaToAdd = req.body.medias
-          // "not important" we update the media order
-          const updateMediasPromises: Array<Promise<any>> = []
           Media.findAll({
             where: {
               id: {
@@ -533,11 +546,16 @@ export default function postsRoutes(app: Application) {
         }
 
         content = markdownConverter.makeHtml(content.trim())
-        let post: any
+        let post: Post & Record<string, any> // this makes autocomplete work for Post fields but not freak out for methods it cannot find. better than `any`
+        let previousPrivacy: PrivacyType = Privacy.Public
         content = content.trim()
         if (req.body.idPostToEdit) {
-          post = await Post.findByPk(req.body.idPostToEdit)
-
+          const foundPost = await Post.findByPk(req.body.idPostToEdit)
+          if (!foundPost) {
+            res.status(404).send({ message: 'Invalid post for edition', success: false })
+          }
+          post = foundPost!
+          previousPrivacy = foundPost!.privacy
           // reset timestamps when publishing a draft
           if (post.privacy === Privacy.Draft && bodyPrivacy !== Privacy.Draft) {
             post.createdAt = new Date()
@@ -581,12 +599,15 @@ export default function postsRoutes(app: Application) {
               })
             }
           }
-          let canReply = req.body.canReply ? req.body.canreply : InteractionControl.Anyone;
-          if(canReply === InteractionControl.SameAsOp && parent) {
+          let canReply = req.body.canReply ? req.body.canreply : InteractionControl.Anyone
+          if (canReply === InteractionControl.SameAsOp && parent) {
             // ok there is a bug in frontend. fixing here for a few days
             // TODO remove later
             //if parent.isRemoteBlueskyPost
-            if((parent.remotePostId && !parent.remotePostId.startsWith('https://bsky.brid.gy/'))|| (await getAllLocalUserIds()).includes(parent.userId) ){
+            if (
+              (parent.remotePostId && !parent.remotePostId.startsWith('https://bsky.brid.gy/')) ||
+              (await getAllLocalUserIds()).includes(parent.userId)
+            ) {
               // we ignore canreply in this case because bug
               canReply = InteractionControl.Anyone
             }
@@ -601,7 +622,7 @@ export default function postsRoutes(app: Application) {
             isReblog: isReblog,
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
-            likeControl: req.body.canLike || InteractionControl.Anyone,
+            likeControl: req.body.canLike || InteractionControl.Anyone
           })
         }
 
@@ -689,21 +710,20 @@ export default function postsRoutes(app: Application) {
         }
         if (post.privacy !== Privacy.Draft) {
           await bulkCreateNotifications(
-          mentionsToAdd.map((mention) => ({
-            notificationType: "MENTION",
-            notifiedUserId: mention,
-            userId: post.userId,
-            postId: post.id,
-            createdAt: new Date(post.createdAt),
-            detached: false
-          })),
-          {
-            postContent: post.content,
-            userUrl: posterUser?.url,
-          }
-        );
+            mentionsToAdd.map((mention) => ({
+              notificationType: 'MENTION',
+              notifiedUserId: mention,
+              userId: post.userId,
+              postId: post.id,
+              createdAt: new Date(post.createdAt),
+              detached: false
+            })),
+            {
+              postContent: post.content,
+              userUrl: posterUser?.url
+            }
+          )
         }
-        
 
         post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(
@@ -739,26 +759,13 @@ export default function postsRoutes(app: Application) {
         // do not federate for local-only or drafts
         if (+post.privacy !== Privacy.LocalOnly && post.privacy !== Privacy.Draft) {
           if (req.body.idPostToEdit) {
-            await federatePostHasBeenEdited(post)
-          } else {
-            const jobData = { postId: post.id, petitionBy: posterId }
-            let delay = 1500
-            if (
-              post.privacy === Privacy.Public &&
-              posterUser?.enableBsky &&
-              completeEnvironment.enableBsky &&
-              posterUser?.bskyDid
-            ) {
-              await sendPostBskyQueue.add('sendPostBsky', jobData, {
-                delay: 500
-              })
-              delay = 5000
+            if (previousPrivacy === Privacy.LocalOnly || previousPrivacy === Privacy.Draft) {
+              await triggerPostFederation(post, posterUser!)
             } else {
-              await prepareSendPostQueue.add('prepareSendPost', jobData, {
-                jobId: post.id,
-                delay: delay
-              })
+              await federatePostHasBeenEdited(post)
             }
+          } else {
+            await triggerPostFederation(post, posterUser!)
           }
         }
       } catch (error) {
@@ -899,19 +906,36 @@ export default function postsRoutes(app: Application) {
     }
     res.send({})
   })
+}
 
-  function getPostPrivacy(
-    bodyPrivacy: PrivacyType,
-    parentPrivacy: PrivacyType,
-    quotedPostPrivacy: PrivacyType
-  ): PrivacyType {
-    let result = Math.max(parentPrivacy, bodyPrivacy, quotedPostPrivacy) as PrivacyType
-    if (
-      (Privacy.LocalOnly == result || Privacy.Unlisted == result) &&
-      (Privacy.FollowersOnly == parentPrivacy || Privacy.FollowersOnly == quotedPostPrivacy)
-    ) {
-      result = Privacy.FollowersOnly
-    }
-    return result
+export const PRIVACY_ORDER = [
+  Privacy.Public,
+  Privacy.Unlisted,
+  Privacy.FollowersOnly,
+  Privacy.LocalOnly,
+  Privacy.DirectMessage,
+  Privacy.LinkOnly,
+  Privacy.Draft
+]
+
+function getMaxPrivacy(privacies: PrivacyType[]) {
+  const privacyOrders = privacies.map((p) => PRIVACY_ORDER.indexOf(p))
+  const mostPrivateIndex = Math.max(...privacyOrders)
+  const privacy = PRIVACY_ORDER[mostPrivateIndex]
+  return privacy
+}
+
+async function triggerPostFederation(post: Post, user: User) {
+  const jobData = { postId: post.id, petitionBy: post.userId }
+
+  if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
+    await sendPostBskyQueue.add('sendPostBsky', jobData, {
+      delay: 500
+    })
+  } else {
+    await prepareSendPostQueue.add('prepareSendPost', jobData, {
+      jobId: post.id,
+      delay: 1500
+    })
   }
 }
