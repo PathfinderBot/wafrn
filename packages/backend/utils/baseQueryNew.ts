@@ -569,21 +569,21 @@ async function canInteract(
       }
       case InteractionControl.MentionedUsersOnly: {
         // post creator follows you
-        res = mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+        res = mentions.postMentionRelation.some((elem) => elem.post == postId && elem.userMentioned == userId)
         break
       }
       case InteractionControl.FollowersAndMentioned: {
         // post creator follows you
         res =
           usersFollowing.includes(post.userId) ||
-          mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+          mentions.postMentionRelation.some((elem) => elem.post == postId && elem.userMentioned == userId)
         break
       }
       case InteractionControl.FollowingAndMentioned: {
         // post creator follows you
         res =
           userFollowers.includes(post.userId) ||
-          mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+          mentions.postMentionRelation.some((elem) => elem.post == postId && elem.userMentioned == userId)
         break
       }
       case InteractionControl.FollowersAndFollowing: {
@@ -595,7 +595,7 @@ async function canInteract(
         res =
           userFollowers.includes(post.userId) ||
           usersFollowing.includes(post.userId) ||
-          mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+          mentions.postMentionRelation.some((elem) => elem.post == postId && elem.userMentioned == userId)
         break
       }
       case InteractionControl.SameAsOp: {
