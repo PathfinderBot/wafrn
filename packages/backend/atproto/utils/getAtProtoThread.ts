@@ -733,7 +733,8 @@ async function getPostInteractionLevels(
   if (postGate?.value?.embeddingRules.length) {
     canQuote = InteractionControl.NoOne;
   }
-  if (parentId) {
+  const parent = parentId ? await Post.findByPk(parentId) as Post : undefined
+  if (parent && (!parent.remotePostId || parent.remotePostId?.startsWith('https://bsky.brid.gy/'))) {
     canReply = InteractionControl.SameAsOp;
     canQuote = InteractionControl.SameAsOp;
   } else if (

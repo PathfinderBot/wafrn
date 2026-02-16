@@ -53,6 +53,22 @@ async function sendPostBsky(job: Job) {
           if (!isReblog) {
             let agent = await getAtProtoSession(localUser)
             const bskyPost = await agent.post(await postToAtproto(post, agent))
+            const {rkey} = new AtUri(bskyPost.uri)
+            if(bskyPost && agent.session && post.quoteControl != InteractionControl.Anyone) {
+              await agent.com.atproto.repo.createRecord({
+                repo: agent.session.did,
+                collection: 'app.bsky.feed.postgate',
+                rkey,
+                record: {
+                  $type: 'app.bsky.feed.postgate',
+                  post: bskyPost.uri,
+                  embeddingRules: [
+                    {'$type': 'app.bsky.feed.postgate#disableRule'}
+                  ],
+                  createdAt: new Date().toISOString()
+                }
+              })
+            }
             if(post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone && agent.session) {
               const gates: string[] = []
               if([InteractionControl.FollowersFollowingAndMentioned, InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned].includes(post.replyControl)) {
@@ -65,8 +81,8 @@ async function sendPostBsky(job: Job) {
               if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#followingRule')
               }
-
-              const {rkey} = new AtUri(bskyPost.uri)
+              if(post.quoteControl !== InteractionControl.Anyone){
+              }
               await agent.com.atproto.repo.createRecord({
                 repo: agent.session.did,
                 collection: 'app.bsky.feed.threadgate',

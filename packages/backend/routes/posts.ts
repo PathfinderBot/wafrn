@@ -46,6 +46,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
+import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -587,6 +588,16 @@ export default function postsRoutes(app: Application) {
               })
             }
           }
+          let canReply = req.body.canReply ? req.body.canreply : InteractionControl.Anyone;
+          if(canReply === InteractionControl.SameAsOp && parent) {
+            // ok there is a bug in frontend. fixing here for a few days
+            // TODO remove later
+            //if parent.isRemoteBlueskyPost
+            if((parent.remotePostId && !parent.remotePostId.startsWith('https://bsky.brid.gy/'))|| (await getAllLocalUserIds()).includes(parent.userId) ){
+              // we ignore canreply in this case because bug
+              canReply = InteractionControl.Anyone
+            }
+          }
           post = await Post.create({
             content,
             content_warning,
@@ -595,7 +606,7 @@ export default function postsRoutes(app: Application) {
             parentId: req.body.parent,
             markdownContent: req.body.content,
             isReblog: isReblog,
-            replyControl: req.body.canReply || InteractionControl.Anyone,
+            replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
             likeControl: req.body.canLike || InteractionControl.Anyone
           })

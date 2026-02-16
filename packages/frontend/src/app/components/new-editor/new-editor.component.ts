@@ -389,7 +389,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     if(this.data?.post ) {
       this.canReply = this.data.post.replyControl
       const parentPost = this.data.post;
-      if(parentPost.user.url.startsWith('@') && parentPost.user.url.split('@').length === 2 && parentPost.user.bskyDid) {
+      if(parentPost.user.url.startsWith('@') && !parentPost.remotePostId && !parentPost.user.remoteId && parentPost.user.bskyDid) {
         this.canReply = InteractionControl.SameAsOp
       }
       if(this.canReply === InteractionControl.SameAsOp) {
