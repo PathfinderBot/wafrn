@@ -118,6 +118,7 @@ export default function dashboardRoutes(app: Application) {
           }
 
           whereObject = {
+            detached: {[Op.ne]: true},
             [Op.and]: and,
             isReblog: {
               [Op.in]: hideReblogs ? [false, null] : [true, false, null]
@@ -141,7 +142,8 @@ export default function dashboardRoutes(app: Application) {
           }
           const orConditions: any = [
             {
-              userId: { [Op.in]: await getFollowedsIds(posterId) }
+              userId: { [Op.in]: await getFollowedsIds(posterId)},
+              detached: {[Op.ne]: true}
             }
           ]
 
