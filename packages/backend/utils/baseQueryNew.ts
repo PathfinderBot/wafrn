@@ -638,88 +638,72 @@ async function canInteract(
     if (post.userId == userId) {
       return true;
     }
+    // we order the switch cases by complexity (number of conditions)
     switch (level) {
-      case InteractionControl.Anyone: {
-        res = false;
-        break;
+      case InteractionControl.NoOne: {
+        // we already check if user is from poster himself. This is a special one for bsky
+        res = false
+        break
       }
       case InteractionControl.Followers: {
-        res = usersFollowing.includes(post.userId);
-        break;
+        res = usersFollowing.includes(post.userId)
+        break
       }
       case InteractionControl.Following: {
         // post creator follows you
-        res = userFollowers.includes(post.userId);
-        break;
+        res = userFollowers.includes(post.userId)
+        break
+      }
+      case InteractionControl.MentionedUsersOnly: {
+        // post creator follows you
+        res = mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+        break
       }
       case InteractionControl.FollowersAndMentioned: {
         // post creator follows you
         res =
           usersFollowing.includes(post.userId) ||
-          mentions.postMentionRelation.find(
-            (elem) => elem.postId == postId && elem.userId == userId
-          );
-        break;
+          mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+        break
       }
       case InteractionControl.FollowingAndMentioned: {
         // post creator follows you
         res =
           userFollowers.includes(post.userId) ||
-          mentions.postMentionRelation.find(
-            (elem) => elem.postId == postId && elem.userId == userId
-          );
-        break;
+          mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+        break
+      }
+      case InteractionControl.FollowersAndFollowing: {
+        // include mentioned users
+        res = userFollowers.includes(post.userId) || usersFollowing.includes(post.userId)
+        break
       }
       case InteractionControl.FollowersFollowingAndMentioned: {
         res =
           userFollowers.includes(post.userId) ||
-          userFollowingInput?.includes(post.userId) ||
-          mentions.postMentionRelation.find(
-            (elem) => elem.postId == postId && elem.userId == userId
-          );
-        break;
-      }
-      case InteractionControl.MentionedUsersOnly: {
-        // post creator follows you
-        res = mentions.postMentionRelation.find(
-          (elem) => elem.postId == postId && elem.userId == userId
-        );
-        break;
-      }
-      case InteractionControl.FollowersAndFollowing: {
-        // include mentioned users
-        res = mentions.postMentionRelation.find(
-          (elem) => elem.postId == postId && elem.userId == userId
-        ) || userFollowers.includes(post.userId) || usersFollowing.includes(post.userId)
-        break;
-      }
-      case InteractionControl.NoOne: {
-        // we already check if user is from poster himself. This is a special one for bsky
-        res = false;
-        break;
+          usersFollowing.includes(post.userId) ||
+          mentions.postMentionRelation.some((elem) => elem.postId == postId && elem.userId == userId)
+        break
       }
       case InteractionControl.SameAsOp: {
         // special one for bsky too
         // ok we need to check for the initial post and to the calculations with it.
         // we look for op post
         const parentsIds = (
-          await sequelize.query(
-            `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${post.id}'`,
-            {
-              type: QueryTypes.SELECT,
-            }
-          )
-        ).map((elem: any) => elem.ancestorId as string);
+          await sequelize.query(`SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${post.id}'`, {
+            type: QueryTypes.SELECT
+          })
+        ).map((elem: any) => elem.ancestorId as string)
         const originalPost = await Post.findOne({
           where: {
             hierarchyLevel: 1,
             id: {
-              [Op.in]: parentsIds,
-            },
-          },
-        });
+              [Op.in]: parentsIds
+            }
+          }
+        })
         if (!originalPost || originalPost?.id === post.id) {
-          return res;
+          res = false
         } else {
           // this will only be used for REPLIES
           res = await canInteract(
@@ -729,7 +713,7 @@ async function canInteract(
             userFollowersInput,
             userFollowingInput,
             mentionsInput
-          );
+          )
         }
       }
     }
