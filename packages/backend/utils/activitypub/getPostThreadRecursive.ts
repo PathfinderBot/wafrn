@@ -266,6 +266,7 @@ async function getPostThreadRecursive(
         // part of getting the canreply stuff
         if(postPetition.interactionPolicy) {
           const publicList = 'https://www.w3.org/ns/activitystreams#Public'
+          const sameAsOpList = 'sameAsInitialPost'
           // canAnnounce
           if(postPetition.interactionPolicy.canAnnounce) {
             const listCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
@@ -279,6 +280,9 @@ async function getPostThreadRecursive(
             }
             if(listCanAnnounce.includes(publicList)) {
               replyControl.reblogControl = InteractionControl.Anyone
+            }
+            if(listCanAnnounce.include(sameAsOpList)) {
+              replyControl.reblogControl = InteractionControl.SameAsOp
             }
           }
 
@@ -295,6 +299,9 @@ async function getPostThreadRecursive(
             if(listCanLike.includes(publicList)) {
               replyControl.likeControl = InteractionControl.Anyone
             }
+            if(listCanLike.include(sameAsOpList)) {
+              replyControl.likeControl = InteractionControl.SameAsOp
+            }
           }
 
           if(postPetition.interactionPolicy.canReply) {
@@ -310,6 +317,9 @@ async function getPostThreadRecursive(
             if(listCanReply.includes(publicList)) {
               replyControl.replyControl = InteractionControl.Anyone
             }
+            if(listCanReply.include(sameAsOpList)) {
+              replyControl.replyControl = InteractionControl.SameAsOp
+            }
           }
 
           if(postPetition.interactionPolicy.canQuote) {
@@ -324,6 +334,9 @@ async function getPostThreadRecursive(
             }
             if(listCanQuote.includes(publicList)) {
               replyControl.quoteControl = InteractionControl.Anyone
+            }
+            if(listCanQuote.include(sameAsOpList)) {
+              replyControl.quoteControl = InteractionControl.SameAsOp
             }
           }
           

@@ -299,9 +299,12 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   let canLikeValue: InteractionControlType = post.likeControl;
   const publicString = "https://www.w3.org/ns/activitystreams#Public"
   // canreply:
-  if([InteractionControl.Anyone, InteractionControl.SameAsOp].includes(canReplyValue)) {
+  if([InteractionControl.Anyone].includes(canReplyValue)) {
     canReply.push(publicString)
-  } else {
+  }
+  if([InteractionControl.SameAsOp].includes(canReplyValue)) {
+    canReply.push("sameAsInitialPost")
+  } 
     // mentionedUsers
     if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
       canReply = canReply.concat(mentionedUsers)
@@ -312,7 +315,6 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
     if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canReplyValue)) {
       canReply = canReply.concat(stringMyFollowing)
     }
-  }
 
   if(canAnnounceValue === InteractionControl.Anyone) {
     canAnnounce.push(publicString)
