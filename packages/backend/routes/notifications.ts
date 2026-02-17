@@ -305,10 +305,15 @@ function notificationRoutes(app: Application) {
               error: error
             })
           }
+        }).catch(error => {
+          logger.info({
+          message: `User ${user.url} issue obtaining bsky notificaitons`,
+          error: error
+        })
         })
       } catch (error) {
         logger.info({
-          message: `User ${user.url} issue obtaining bsky notificaitons`,
+          message: `User ${user.url} issue obtaining bsky notificaitons. Throw error`,
           error: error
         })
       }
