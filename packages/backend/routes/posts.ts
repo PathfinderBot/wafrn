@@ -600,6 +600,10 @@ export default function postsRoutes(app: Application) {
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
+          if(!req.body.canReply && parent && parent.replyControl != InteractionControl.Anyone) {
+            // if canreply is not specified, we force the same as the parent so app users dont open context of post
+            canReply = parent.replyControl
+          }
           post = await Post.create({
             content,
             content_warning,
