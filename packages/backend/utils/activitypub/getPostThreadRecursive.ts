@@ -335,7 +335,7 @@ async function getPostThreadRecursive(
             if(listCanQuote.includes(publicList)) {
               replyControl.quoteControl = InteractionControl.Anyone
             }
-            if(listCanQuote.include(sameAsOpList)) {
+            if(listCanQuote.includes(sameAsOpList)) {
               replyControl.quoteControl = InteractionControl.SameAsOp
             }
           }
