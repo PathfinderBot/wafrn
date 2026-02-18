@@ -144,6 +144,8 @@ export class RegisterComponent {
     "Charm",
     "Wait those were quark types",
     "a pale imitation",
+    "Jimmy",
+    "Home of the Whooper:  West virginia",
     "Wait, you wrote widsom not wisdom before",
     "Utrechter",
     "Hopelessly addicted",
