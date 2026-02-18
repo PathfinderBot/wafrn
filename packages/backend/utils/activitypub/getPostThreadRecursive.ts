@@ -281,7 +281,7 @@ async function getPostThreadRecursive(
             if(listCanAnnounce.includes(publicList)) {
               replyControl.reblogControl = InteractionControl.Anyone
             }
-            if(listCanAnnounce.include(sameAsOpList)) {
+            if(listCanAnnounce.includes(sameAsOpList)) {
               replyControl.reblogControl = InteractionControl.SameAsOp
             }
           }
@@ -299,7 +299,7 @@ async function getPostThreadRecursive(
             if(listCanLike.includes(publicList)) {
               replyControl.likeControl = InteractionControl.Anyone
             }
-            if(listCanLike.include(sameAsOpList)) {
+            if(listCanLike.includes(sameAsOpList)) {
               replyControl.likeControl = InteractionControl.SameAsOp
             }
           }
@@ -317,7 +317,7 @@ async function getPostThreadRecursive(
             if(listCanReply.includes(publicList)) {
               replyControl.replyControl = InteractionControl.Anyone
             }
-            if(listCanReply.include(sameAsOpList)) {
+            if(listCanReply.includes(sameAsOpList)) {
               replyControl.replyControl = InteractionControl.SameAsOp
             }
           }
