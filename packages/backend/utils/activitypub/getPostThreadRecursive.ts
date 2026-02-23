@@ -341,6 +341,23 @@ async function getPostThreadRecursive(
           }
           
         }
+        if(parent && parent.replyControl == InteractionControl.SameAsOp){
+          replyControl.replyControl = InteractionControl.SameAsOp
+        }
+        else if(parent) {
+          // we check if op has property forceDescendentsToUseSameInteractionControls
+          const opId = (parent.hierarchyLevel === 1 ? parent :
+            (await parent.getAncestors({
+            where: {
+              hierarchyLevel: 1
+            }
+          }))[0] as Post
+        ).remotePostId
+          const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
+          if(opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
+            replyControl.replyControl = InteractionControl.SameAsOp
+          }
+        }
         let postTextContent = `${postPetition.content ? postPetition.content : ""
           }`; // Fix for bridgy giving this as undefined
         if (postPetition.type == "Video") {
