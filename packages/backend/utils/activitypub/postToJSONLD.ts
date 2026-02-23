@@ -428,6 +428,7 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
           items: [],
         },
       },
+      forceDescendentsToUseSameInteractionControls: (post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone ) ? true : undefined,
       interactionPolicy: {
         canQuote: {
           automaticApproval:   post.quoteControl === InteractionControl.Anyone ? [ "https://www.w3.org/ns/activitystreams#Public"] : [],

@@ -118,6 +118,7 @@ export class RegisterComponent {
     "The impostor from among us",
     "Fox",
     "Anomalous being",
+    "I had gender with your mom last night. And the other one too",
     "thing that would terrify HP Lovecraft",
     "Honk",
     "Warhammer 40k fan",
