@@ -118,6 +118,7 @@ export default function dashboardRoutes(app: Application) {
           }
 
           whereObject = {
+            detached: {[Op.ne]: true},
             [Op.and]: and,
             isReblog: {
               [Op.in]: hideReblogs ? [false, null] : [true, false, null]
@@ -141,7 +142,8 @@ export default function dashboardRoutes(app: Application) {
           }
           const orConditions: any = [
             {
-              userId: { [Op.in]: await getFollowedsIds(posterId) }
+              userId: { [Op.in]: await getFollowedsIds(posterId)},
+              detached: {[Op.ne]: true}
             }
           ]
 
@@ -227,8 +229,7 @@ export default function dashboardRoutes(app: Application) {
             ]
           }
 
-          if (disableReplies)
-            whereObject.parentId = null
+          if (disableReplies) whereObject.parentId = null
 
           break
         }
@@ -287,6 +288,15 @@ export default function dashboardRoutes(app: Application) {
               `"posts"."id" IN (SELECT "postId" FROM "userBookmarkedPosts" WHERE "userId"='${posterId}')`
             )
           }
+          break;
+        }
+        case 30: {
+          // drafts
+          whereObject = {
+            userId: posterId,
+            privacy: Privacy.Draft
+          }
+          break;
         }
       }
       // we get the list of posts
@@ -313,7 +323,7 @@ export default function dashboardRoutes(app: Application) {
         subQuery: false,
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
-          ...whereObject,
+          ...whereObject
         }
       })
 

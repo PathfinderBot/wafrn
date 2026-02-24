@@ -31,6 +31,8 @@ export type NotificationBody = {
   emojiReactionId?: string
   createdAt?: Date
   updatedAt?: Date
+  notifiedUserUrl?: string,
+  detached: boolean
 }
 
 export type NotificationContext = {
@@ -60,7 +62,7 @@ export async function bulkCreateNotifications(notifications: NotificationBody[],
     const notificationDate = notifications[0].createdAt ? notifications[0].createdAt : new Date()
     const timeDiff = Math.abs(new Date().getTime() - notificationDate.getTime())
     const sendNotifications =
-      timeDiff < 3600 * 1000 ? sendPushNotificationQueue.add('sendPushNotification', { notifications, context }) : null
+      timeDiff < 3600 * 1000 ? sendPushNotificationQueue.add('sendPushNotification', { notifications: notifications.filter(elem => !elem.detached), context }) : null
     await Promise.all([
       Notification.bulkCreate(localUserNotifications, { ignoreDuplicates: context?.ignoreDuplicates }),
       sendNotifications
@@ -71,8 +73,12 @@ export async function bulkCreateNotifications(notifications: NotificationBody[],
 export async function createNotification(notification: NotificationBody, context?: NotificationContext) {
   const localUserIds = await getAllLocalUserIds()
   if (localUserIds.includes(notification.notifiedUserId)) {
-    if (notification.postId && notification.notificationType != 'EMOJIREACT'
-      && notification.notificationType != 'USERBITE' && notification.notificationType != 'POSTBITE') {
+    if (
+      notification.postId &&
+      notification.notificationType != 'EMOJIREACT' &&
+      notification.notificationType != 'USERBITE' &&
+      notification.notificationType != 'POSTBITE'
+    ) {
       // lets avoid double existing notifications. Ok may break things with emojireacts and bites
       const existingNotifications = await Notification.count({
         where: {
@@ -91,12 +97,13 @@ export async function createNotification(notification: NotificationBody, context
     }
     const notificationDate = notification.createdAt ? notification.createdAt : new Date()
     const timeDiff = Math.abs(new Date().getTime() - notificationDate.getTime())
+
     const sendNotification =
-      timeDiff < 3600 * 1000
+      timeDiff < 3600 * 1000 && !notification.detached
         ? sendPushNotificationQueue.add('sendPushNotification', {
-          notifications: [notification],
-          context
-        })
+            notifications: [notification],
+            context
+          })
         : null
     await Promise.all([Notification.create(notification), sendNotification])
   }
@@ -126,20 +133,39 @@ const verbMap = {
   POSTBITE: 'bit'
 }
 
+function formatYou(url?: string) {
+  if (!url) {
+    return 'you'
+  }
+  if (!url.startsWith('@')) {
+    url = `@${url}`
+  }
+  return url
+}
+function formatYourPost(url?: string) {
+  const fragment = formatYou(url)
+  if (fragment === 'you') {
+    return 'your post'
+  }
+  return `a ${url} post`
+}
+
 export function getNotificationTitle(notification: NotificationBody, context?: NotificationContext) {
+  const you = formatYou(notification.notifiedUserUrl)
+  const yourPost = formatYourPost(notification.notifiedUserUrl)
   if (notification.notificationType === 'FOLLOW') {
-    return 'New user followed you'
+    return `New user followed ${you}`
   }
 
   if (notification.notificationType === 'USERBITE') {
-    return `${context?.userUrl || 'someone'} bit you`
+    return `${context?.userUrl || 'someone'} bit ${you}`
   }
 
   if (notification.notificationType === 'EMOJIREACT' && context?.emoji) {
-    return `${context?.userUrl || 'someone'} reacted with ${context.emoji} to your post`
+    return `${context?.userUrl || 'someone'} reacted with ${context.emoji} to ${yourPost}`
   }
 
-  return `${context?.userUrl || 'someone'} ${verbMap[notification.notificationType]} your post`
+  return `${context?.userUrl || 'someone'} ${verbMap[notification.notificationType]} ${yourPost}`
 }
 
 export function getNotificationBody(notification: NotificationBody, context?: NotificationContext) {

@@ -82,6 +82,7 @@ async function processSinglePost(
   uri: string,
   forceUpdate = false
 ): Promise<string | undefined> {
+  let detached = false;
   if (!completeEnvironment.enableBsky) {
     return undefined;
   }
@@ -148,7 +149,8 @@ async function processSinglePost(
     // original is fedi. lets wait half second
     if ("bridgyOriginalUrl" in postPetitionPds.value) {
       const res = await fetch(
-        "https://slingshot.microcosm.blue/xrpc/com.bad-example.identity.resolveMiniDoc" +
+        completeEnvironment.bskySlingshotUrl + 
+        "/xrpc/com.bad-example.identity.resolveMiniDoc" +
         `?identifier=${extractUriComponents(uri).did}`
       );
       if (res.ok) {
@@ -539,6 +541,7 @@ async function processSinglePost(
             notifiedUserId: mnt,
             userId: postToProcess.userId,
             createdAt: new Date(postToProcess.createdAt),
+            detached: detached
           })),
           {
             ignoreDuplicates: true,
@@ -583,6 +586,7 @@ async function processSinglePost(
                 notifiedUserId: quotedPost.userId,
                 userId: postToProcess.userId,
                 postId: postToProcess.id,
+                detached: false
               },
               {
                 postContent: postToProcess.content,
@@ -729,7 +733,8 @@ async function getPostInteractionLevels(
   if (postGate?.value?.embeddingRules.length) {
     canQuote = InteractionControl.NoOne;
   }
-  if (parentId) {
+  const parent = parentId ? await Post.findByPk(parentId) as Post : undefined
+  if (parent && (!parent.remotePostId || parent.remotePostId?.startsWith('https://bsky.brid.gy/'))) {
     canReply = InteractionControl.SameAsOp;
     canQuote = InteractionControl.SameAsOp;
   } else if (
@@ -746,7 +751,7 @@ async function getPostInteractionLevels(
       if (mentiontypes.includes("mentionRule")) {
         if (mentiontypes.includes("followingRule")) {
           canReply = mentiontypes.includes("followerRule")
-            ? InteractionControl.FollowersFollowersAndMentioned
+            ? InteractionControl.FollowersFollowingAndMentioned
             : InteractionControl.FollowingAndMentioned;
         } else {
           canReply = mentiontypes.includes("followerRule")
@@ -784,7 +789,6 @@ async function getPostInteractionLevels(
 
 async function processReplies(uri: string, cursor?: string) {
   // TODO we need to get constelations
-  await processSinglePost(uri, false)
   const localPost = await Post.findOne({
     where: {
       bskyUri: uri
@@ -811,7 +815,7 @@ async function processReplies(uri: string, cursor?: string) {
       uriToSearch = rootPost.bskyUri as string
       return processReplies(uriToSearch, cursor)
     }
-    let url = `https://constellation.microcosm.blue/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
+    let url = `${completeEnvironment.bskyConstellationUrl}/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {
       url = url + `&cursor=${cursor}`
     }

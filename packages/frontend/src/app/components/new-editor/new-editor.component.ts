@@ -46,6 +46,7 @@ import {
   faPencil,
   faQuestion,
   faAngleDown,
+  faMessage,
 } from "@fortawesome/free-solid-svg-icons";
 import { EditorData } from "src/app/interfaces/editor-data";
 import { PostHeaderComponent } from "../post/post-header/post-header.component";
@@ -78,7 +79,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
 import { EnvironmentService } from "src/app/services/environment.service";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { InfoCardComponent } from "../info-card/info-card.component";
-import { TranslateModule } from "@ngx-translate/core";
+import { TranslateModule, TranslateService } from "@ngx-translate/core";
 import { SimplifiedUser } from "src/app/interfaces/simplified-user";
 import { MatBadgeModule } from "@angular/material/badge";
 import { EmojiPickerComponent } from "../emoji-picker/emoji-picker.component";
@@ -89,6 +90,9 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import Fuse from "fuse.js";
 import { ParticleService } from "src/app/services/particle.service";
+import { SettingsService } from "src/app/services/settings.service";
+import { InteractionControl } from "src/app/interfaces/InteractionControl";
+import { MatSelectModule } from "@angular/material/select";
 
 type EmojiSuggestion = {
   img: string;
@@ -121,7 +125,7 @@ type EmojiSuggestion = {
     MatBadgeModule,
     MatChipsModule,
     MatProgressBarModule,
-    MatTooltipModule
+    MatSelectModule
 ],
   templateUrl: "./new-editor.component.html",
   styleUrl: "./new-editor.component.scss",
@@ -132,10 +136,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   private editorService = inject(EditorService);
   private loginService = inject(LoginService);
   postService = inject(PostsService);
+  settingsService = inject(SettingsService);
   private jwtService = inject(JwtService);
   private router = inject(Router);
   private location = inject(Location);
   private particle = inject(ParticleService);
+  private translateService = inject(TranslateService);
+  
 
   privacyOptions = [
     { level: 0, name: "Public", icon: faGlobe },
@@ -156,6 +163,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   pollQuestions: QuestionPollQuestion[] = [];
   disableImageUploadButton = false;
   uploadedMedias: WafrnMedia[] = [];
+
+  settings = this.settingsService.values();
 
   postContent = viewChild<ElementRef<HTMLTextAreaElement>>("postContent");
   @ViewChild("suggestionsMenu") suggestionsMenu!: MatMenuTrigger;
@@ -208,6 +217,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   editingIcon = faPencil;
   replyAskIcon = faQuestion;
   dropdownIcon = faAngleDown;
+  interactionControlIcon = faMessage
 
   emojiSubscription: Subscription;
   editorUpdatedSubscription: Subscription | undefined;
@@ -218,6 +228,39 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   mentionedUsers: SimplifiedUser[] = [];
   showMentionedUsersList = true;
 
+
+  canBeQuoted = InteractionControl.Anyone;
+  canEditCanReply = true
+
+  canReply = InteractionControl.Anyone;
+  canLike = InteractionControl.Anyone;
+
+  canBeQuotedOptions = [
+    {
+      value: InteractionControl.Anyone, viewValue: this.translateService.instant('editor.interactionControl.anyoneCanQuote'),
+    },
+    {
+      value: InteractionControl.NoOne, viewValue: this.translateService.instant('editor.interactionControl.noOneCanQuote')
+    }
+  ]
+  canReplyOptions = [
+    {
+      value: InteractionControl.Anyone, viewValue: this.translateService.instant('editor.interactionControl.anyone')
+    },
+    {
+      value: InteractionControl.FollowingAndMentioned, viewValue: this.translateService.instant('editor.interactionControl.FollowingAndMentioned')
+    },
+    {
+      value: InteractionControl.FollowersAndMentioned, viewValue: this.translateService.instant('editor.interactionControl.FollowersAndMentioned')
+    },
+    {
+      value: InteractionControl.FollowersFollowingAndMentioned, viewValue: this.translateService.instant('editor.interactionControl.FollowersFollowingAndMentioned')
+    },
+    {
+      value: InteractionControl.MentionedUsersOnly, viewValue: this.translateService.instant('editor.interactionControl.MentionedUsersOnly')
+    }
+  ]
+  
   emojiCacherUrl =
     EnvironmentService.environment.cacheDomain + "/api/v2/cache/emoji/";
 
@@ -260,6 +303,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.data = EditorService.editorData;
     this.editing = this.data?.edit == true;
     this.privacy = this.loginService.getUserDefaultPostPrivacyLevel();
+    this.canReply = this.loginService.getUserDefaultReplyControl();
+    this.canBeQuoted = this.loginService.getUserDefaultQuoteControl()
     if (this.data?.post) {
       this.contentWarning = this.data.post.content_warning
         ? this.data.post.content_warning
@@ -287,6 +332,23 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       ) {
         this.mentionedUsers.push(this.data.post.user);
       }
+    }
+
+    if (this.settings.autoAddSpecifiedTags) {
+      this.tags = this.settings.autoAddSpecifiedTags as string
+    }
+
+    if (this.settings.autoAddSpecifiedTagsAsks && this.data?.ask) {
+      if (this.tags && this.settings.autoAddSpecifiedTagsAsksNoGeneral) {
+        this.tags = [this.tags, this.settings.autoAddSpecifiedTagsAsks as string].join(', ')
+      } else {
+        this.tags = this.settings.autoAddSpecifiedTagsAsks as string
+      }
+    } 
+
+    if (this.settings.autoAddContentWarning) {
+      this.showContentWarning = true
+      this.contentWarning = this.settings.autoAddContentWarning as string
     }
 
     if (this.editing && this.data?.post) {
@@ -326,6 +388,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     const autoFocusElem = <HTMLElement | null>(
       document.querySelector("[autofocus]")
     );
+
+    // If parent is bsky, we set canreply same as parent
+    if(this.data?.post && this.data.post.replyControl != InteractionControl.Anyone ) {
+      this.canReply = InteractionControl.SameAsOp;
+      this.canEditCanReply = false;
+    }
 
     // Focus on the next frame (EVIL FIX)
     requestAnimationFrame(() => {
@@ -662,6 +730,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       ask: this.data?.ask,
       withToken: this.loginService.accountList().at(this.posterAccount())
         ?.token,
+      canReply: this.canReply,
+      canBeQuoted: this.canBeQuoted,
+      canLike: this.canLike
     });
     // its a great time to check notifications isnt it?
     this.dashboardService.scrollEventEmitter.emit("post");

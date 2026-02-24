@@ -36,6 +36,9 @@ async function getPostReplies(postId: string) {
       where: {
         isReblog: false,
         parentId: postId,
+        detached: {
+          [Op.ne]: true
+        },
         privacy: {
           [Op.notIn]: [Privacy.LocalOnly, Privacy.DirectMessage]
         }

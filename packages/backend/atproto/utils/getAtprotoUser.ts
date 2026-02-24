@@ -1,5 +1,5 @@
 import { getAtProtoSession } from "./getAtProtoSession.js";
-import { sequelize, User } from "../../models/index.js";
+import { sequelize, User, UserOptions } from "../../models/index.js";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs.js";
 import { Model, Op } from "sequelize";
 import { wait } from "../../utils/wait.js";
@@ -144,6 +144,12 @@ async function getAtprotoUser(
         headerString = `?cid=${bannerCID}&did=${did}`
       }
     }
+    const fediAttachments = []
+    if(data.value.pronouns) {
+      fediAttachments.push({"type":"PropertyValue","name":"Pronouns","value": data.value.pronouns})
+    }
+
+
 
     const handle = (doc && doc.alsoKnownAs) ? doc.alsoKnownAs.filter(elem => elem.startsWith('at://'))[0].split('at://')[1] : 'handle.invalid'
     const newDataTmp = {
@@ -218,6 +224,29 @@ async function getAtprotoUser(
         userFound = await internalGetDBUser(newDataTmp.bskyDid, newDataTmp.url);
       }
     }
+
+    // future options thing
+    if(userFound && fediAttachments.length > 0) {
+       const transaction = await sequelize.transaction()
+      await UserOptions.destroy({
+        where: {
+          userId: userFound?.id
+        },
+        transaction: transaction
+      })
+      await UserOptions.create({
+        public: true,
+        optionName: 'fediverse.public.attachment',
+        optionValue: JSON.stringify(fediAttachments),
+        userId: userFound.id
+      },
+      {
+        transaction: transaction
+      }
+    )
+      await transaction.commit()
+    }
+    
     return userFound;
   }
 }

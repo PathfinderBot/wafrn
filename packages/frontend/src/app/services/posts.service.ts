@@ -176,8 +176,17 @@ export class PostsService {
       );
       await this.loadFollowers();
       res = response?.success === true;
-    } catch (exception) {
+    } catch (exception: any) {
       console.error(exception);
+      if (exception.error?.message) {
+        this.simpleDialogService.createConfirmDialog({
+          title: 'Error',
+          content: exception.error.message,
+          options: {
+            confirm: 'ok'
+          }
+          })
+      }
     }
 
     return res;
@@ -578,6 +587,7 @@ export class PostsService {
       mentionPost: mentionedUsers as SimplifiedUser[],
       quotes: quotes,
       parentCollection: collection,
+      featured: false
     };
     if (unlinked.asks) {
       const ask = unlinked.asks.find((ask) => ask.postId === newPost.id);

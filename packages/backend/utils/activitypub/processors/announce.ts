@@ -65,7 +65,9 @@ async function AnnounceActivity(body: activityPubObject, remoteUser: User, user:
           notificationType: 'REWOOT',
           postId: retooted_content.id,
           notifiedUserId: retooted_content.userId,
-          userId: remoteUser.id
+          userId: remoteUser.id,
+          // TODO add replycontrol to this one?
+          detached: false
         },
         {
           postContent: retooted_content.content,

@@ -98,7 +98,8 @@
       "myBlockedUsers": "Blocked users",
       "myBlockedServers": "Blocked servers",
       "importFollows": "Import followers",
-      "superSecretMenu": "Super Secret Menu"
+      "superSecretMenu": "Super Secret Menu",
+      "detachedNotifications": "Unaothorised Notifications"
     },
     "admin": {
       "title": "Admin",
@@ -121,6 +122,16 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "interactionControl": {
+      "anyone": "Anyone",
+      "FollowingAndMentioned": "People I follow and mentioned users",
+      "FollowersAndMentioned": "My followers and mentioned users",
+      "FollowersFollowingAndMentioned": "Following, followed or mentioned",
+      "MentionedUsersOnly": "Only mentioned users",
+      "anyoneCanQuote": "Anyone can quote",
+      "noOneCanQuote": "Not quotable"
+    },
+    "replyControlWarning": "For now, only gotosocial, bluesky and other wafrns support this feature. Unwanted replies will be hidden from the thread on this instance, muted and only displayed in the section unauthorized replies. They may still be visible in other servers",
     "editingLabel": "Editing woot",
     "askReplyLabel": "Replying to ask",
     "inReplyTo": "In reply to:",
@@ -317,7 +328,8 @@
       "mutedBlockedUsers": "Muted and Blocked Users",
       "fun": "Fun",
       "wellbeing": "Wellbeing",
-      "media": "Media"
+      "media": "Media",
+      "editorBehavior": "Editor Behavior"
     },
     "fediPropertyKey": "Property Name",
     "fediPropertyValue": "Property Value",
@@ -340,6 +352,13 @@
       "articles": "Articles (Feature WIP)",
       "all": "All"
     },
+    "autoAddSpecifiedTags": "Add specified tags",
+    "autoAddSpecifiedTagsAsks": "Add specified tags on ask replies",
+    "autoAddSpecifiedTagsAsksNoGeneral": "Don't add the general tags on ask replies",
+    "autoAddSpecifiedTagsAsksNoGeneralDescription": "Enable this if you want the tags different between normal woots and ask replies",
+    "autoAddSpecifiedTagsDescription": "Add tags below to automatically add them on the editor on your every single woot. You can always remove it on the editor. Multiple tags can be added by adding a comma and a space.",
+    "autoAddContentWarning": "Add specified content warning", 
+    "autoAddContentWarningDescription": "If you woot mostly stuff that requires a content warning, you can add it here to automatically add it when you woot. You can always remove it by removing the content warning text on the editor.",
     "alsoKnownAs": "Previous alias",
     "requestAccountDeletion": "Request Account Deletion",
     "alsoKnownAsDescription": "Migrate from a different account (without the @)",
@@ -387,6 +406,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
+    "defaultPostEditorCanReply":"Default who can reply",
+    "defaultPostEditorCanQuote":"Default woot can be quoted",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
@@ -438,7 +459,7 @@
     "disableFollowerCountsDescription": "Do not show how many followers any user has",
     "disableFollowingCounts": "Disable following counts",
     "disableFollowingCountsDescription": "Do not show how many users any user is following",
-    "disablePostCounts": "Disable post counts",
+    "disablePostCounts": "Disable woot counts",
     "disablePostCountsDescription": "Do not show how many woots any given user has wooted",
     "showMediaDescriptions": "Show media descriptions",
     "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type.",
@@ -459,7 +480,7 @@
       "userUsedVPNTitle": "Mark user as using a VPN",
       "userUsedVPNDescription": "User will be sent an email that VPNs are not allowed and their registration will be deleted.",
       "promptBanTitle": "Ban",
-      "promptForceCwPostTitle": "Force CW on post",
+      "promptForceCwPostTitle": "Force CW on woot",
       "promptBanReasonLabel": "Reason",
       "promptBanReasonDescription": "User will receive this reason in their ban email.",
       "promptForceCwPostDescription": "Post will get this new content warning.",
@@ -653,7 +674,7 @@
       "forceNSFW": "Mark user as NSFW",
       "banUser": "Ban user",
       "reopenReport": "Reopen report",
-      "forceCw": "Force CW on post"
+      "forceCw": "Force CW on woot"
     }
   },
   "page-not-found": {

@@ -38,6 +38,7 @@ function notificationRoutes(app: Application) {
     authenticateToken,
     forceUpdateLastActive,
     async (req: AuthorizedRequest, res: Response) => {
+      let getDetached = req.query.detached == 'true';
       const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
       User.findByPk(userId).then(async (usr: any) => {
         if (usr && req.query?.page === '0') {
@@ -89,9 +90,9 @@ function notificationRoutes(app: Application) {
                     },
                     {
                       federatedHostId: {
-                        [Op.notIn]: (
-                          await ServerBlock.findAll({ where: { userBlockerId: userId } })
-                        ).map((elem) => elem.blockedServerId)
+                        [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
+                          (elem) => elem.blockedServerId
+                        )
                       }
                     }
                   ]
@@ -105,7 +106,11 @@ function notificationRoutes(app: Application) {
             }
           }
         ],
-        where: whereObject,
+        where: {
+          ...whereObject,
+          // this looks like should be the oposite but ok
+          detached: !getDetached ? {[Op.eq]: false} : {[Op.ne]: false}
+        },
         order: [['createdAt', 'DESC']],
         limit: 20
       })
@@ -128,8 +133,24 @@ function notificationRoutes(app: Application) {
           id: {
             [Op.in]: userIds
           }
+        },
+        raw: true
+      })
+      const fediAttachmentsDb = await UserOptions.findAll({
+        where: {
+          userId: {
+            [Op.in]: userIds
+          },
+          optionName: 'fediverse.public.attachment'
         }
       })
+      const usersPronounsMap: Map<string, string | undefined> = new Map()
+      for (const att of fediAttachmentsDb) {
+        const fediAttachments: { name: string; value: string }[] = JSON.parse(att.optionValue)
+        const pronouns = fediAttachments.find((elem) => elem.name.toLowerCase() === 'pronouns')?.value
+        if (!pronouns) continue
+        usersPronounsMap.set(att.userId, pronouns)
+      }
       let posts = Post.findAll({
         where: {
           id: {
@@ -212,13 +233,25 @@ function notificationRoutes(app: Application) {
       await Promise.all([users, posts, asks, tags, medias])
       const awaitedPostsIds = (await posts).map((post) => post.id)
       const notificationsFiltered = notifications.filter(
-        (elem) => elem.notificationType === 'FOLLOW' || elem.notificationType === 'USERBITE'
-          || (elem.postId && awaitedPostsIds.includes(elem.postId))
+        (elem) =>
+          elem.notificationType === 'FOLLOW' ||
+          elem.notificationType === 'USERBITE' ||
+          (elem.postId && awaitedPostsIds.includes(elem.postId))
       )
 
       res.send({
         notifications: notificationsFiltered,
-        users: await users,
+        users: (await users).map((x) => {
+          const pronouns = usersPronounsMap.get(x.id)
+          return {
+            ...x,
+            ...(pronouns
+              ? {
+                  pronouns
+                }
+              : {})
+          }
+        }),
         posts: await posts,
         medias: await medias,
         asks: await asks,
@@ -237,44 +270,50 @@ function notificationRoutes(app: Application) {
   app.get('/api/v2/notificationsCount', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
     const user = await User.findByPk(userId)
-    if(user?.enableBsky && completeEnvironment.enableBsky && user?.bskyDid) {
+    if (user?.enableBsky && completeEnvironment.enableBsky && user?.bskyDid) {
       try {
         /**
          * We do this thing asyncronously, no need to wait. we try obtaining replies, as its the most important bit!
          * No need to block this petition, or if this fails or anything
          */
         getAtProtoSession(user).then(async (session) => {
-          try{
+          try {
             let notificationsPetition = await session.listNotifications({
-            reasons: ['mention', 'reply', 'quote'],
-            limit: 20
-          })
-          if(notificationsPetition.success) {
-            const uris = notificationsPetition.data.notifications.map(elem => elem.uri)
-            const foundPosts = await Post.findAll({
-              attributes: ['bskyUri'],
-              where: {
-                bskyUri: {
-                  [Op.in]: uris
-                }
-              }
+              reasons: ['mention', 'reply', 'quote'],
+              limit: 20
             })
-            const foundUris = foundPosts.map(elem => elem.bskyUri)
-            await Promise.all(notificationsPetition.data.notifications
-              .filter(elem => !foundUris.includes(elem.uri) )
-              .map(elem => processSinglePost(elem.uri)))
-          }
+            if (notificationsPetition.success) {
+              const uris = notificationsPetition.data.notifications.map((elem) => elem.uri)
+              const foundPosts = await Post.findAll({
+                attributes: ['bskyUri'],
+                where: {
+                  bskyUri: {
+                    [Op.in]: uris
+                  }
+                }
+              })
+              const foundUris = foundPosts.map((elem) => elem.bskyUri)
+              await Promise.all(
+                notificationsPetition.data.notifications
+                  .filter((elem) => !foundUris.includes(elem.uri))
+                  .map((elem) => processSinglePost(elem.uri))
+              )
+            }
           } catch (error) {
             logger.error({
               message: `Error obtaining bsky notifications for user ${user.url}`,
               error: error
             })
           }
-          
+        }).catch(error => {
+          logger.info({
+          message: `User ${user.url} issue obtaining bsky notificaitons`,
+          error: error
+        })
         })
       } catch (error) {
         logger.info({
-          message: `User ${user.url} issue obtaining bsky notificaitons`,
+          message: `User ${user.url} issue obtaining bsky notificaitons. Throw error`,
           error: error
         })
       }
@@ -303,9 +342,9 @@ function notificationRoutes(app: Application) {
                   },
                   {
                     federatedHostId: {
-                      [Op.notIn]: (
-                        await ServerBlock.findAll({ where: { userBlockerId: userId } })
-                      ).map((elem) => elem.blockedServerId)
+                      [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
+                        (elem) => elem.blockedServerId
+                      )
                     }
                   }
                 ]
@@ -320,6 +359,9 @@ function notificationRoutes(app: Application) {
         }
       ],
       where: {
+        detached: {
+          [Op.ne]: true
+        },
         notifiedUserId: userId,
         [Op.or]: [await getNotificationOptions(userId)],
         postId: {
@@ -541,7 +583,7 @@ async function getNotificationOptions(userId: string) {
   if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
     notificationTypes.push('REWOOT')
   }
-  if(!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
+  if (!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
     notificationTypes.push('POSTBITE')
     notificationTypes.push('USERBITE')
   }

@@ -246,8 +246,6 @@ export class ThemeService {
     // Forced lightDarkMode
     if (themeData[theme]?.compatibility === 'light') await this.setLightDarkMode('light')
     if (themeData[theme]?.compatibility === 'dark') await this.setLightDarkMode('dark')
-
-    console.log('here')
     this.settingService.forceUpdateValue([{name: 'theme', value: theme}], !doNotSavePreference, !doNotSavePreference)
   }
 
@@ -324,10 +322,10 @@ export class ThemeService {
   // CUSTOM CSS STUFF
   //
 
-  async syncCustomCSS() {
+  async syncCustomCSS(force = false) {
     const isOwnCSS = this.customCSS() === ''
-    if (isOwnCSS && this.loginService.loggedIn.value) {
-      this.customCSSLinkElement().href = this.getThemeUrl(this.loginService.getLoggedUserUUID())
+    if ((isOwnCSS && this.loginService.loggedIn.value) || force) {
+      this.customCSSLinkElement().href = this.getThemeUrl(this.loginService.getLoggedUserUUID(), force)
       return
     }
 
@@ -362,8 +360,8 @@ export class ThemeService {
   }
 
   // Shorthand for the theme location in the media URL
-  private getThemeUrl(theme: string): string {
-    return `${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css`
+  private getThemeUrl(theme: string, force = false): string {
+    return `${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css` + (force ? '?nocache=' + Date.now() : '')
   }
 
   async themeExists(theme: string): Promise<boolean> {

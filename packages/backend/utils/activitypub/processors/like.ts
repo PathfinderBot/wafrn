@@ -33,7 +33,8 @@ async function LikeActivity(body: activityPubObject, remoteUser: User, user: Use
             userId: remoteUser.id,
             notifiedUserId: postToBeLiked.userId,
             postId: postToBeLiked.id,
-            emojiReactionId: reaction.id
+            emojiReactionId: reaction.id,
+            detached: false
           },
           {
             postContent: postToBeLiked.content,
@@ -71,7 +72,8 @@ async function LikeActivity(body: activityPubObject, remoteUser: User, user: Use
               notificationType: 'LIKE',
               userId: remoteUser.id,
               notifiedUserId: postToBeLiked.userId,
-              postId: postToBeLiked.id
+              postId: postToBeLiked.id,
+              detached: false
             },
             {
               postContent: postToBeLiked.content,

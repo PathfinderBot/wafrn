@@ -104,6 +104,9 @@ app.use("/api/environment", (req: Request, res: Response) => {
     reviewRegistrations: completeEnvironment.reviewRegistrations,
     maxUploadSize: completeEnvironment.uploadLimit,
     cacheDomain: new URL(completeEnvironment.externalCacheurl).origin,
+    featureFlags: {
+      drafts: true
+    }
   });
 });
 

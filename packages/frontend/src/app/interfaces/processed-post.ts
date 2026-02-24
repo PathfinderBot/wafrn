@@ -1,5 +1,6 @@
 import { Ask } from "./ask";
 import { Emoji } from "./emoji";
+import { InteractionControlType } from "./InteractionControl";
 import { QuestionPoll } from "./questionPoll";
 import { RawPost } from "./raw-post";
 import { SimplifiedUser } from "./simplified-user";
@@ -38,8 +39,13 @@ export interface ProcessedPost {
   hierarchyLevel: number;
   bookmarkers: string[];
   canReply: boolean;
+  featured: boolean;
   canQuote: boolean;
   canLike: boolean;
   canReblog: boolean;
   displayUrl?: string;
+  replyControl: InteractionControlType;
+  reblogControl: InteractionControlType;
+  quoteControl: InteractionControlType;
+  likeControl: InteractionControlType;
 }

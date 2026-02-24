@@ -55,18 +55,17 @@
             />
         </svg>
       </button>
-      <!--
-      <button
-        [matBadge]="mentionedUsers.length"
-        [matBadgeHidden]="mentionedUsers.length == 0"
-        class="input-height-btn"
+    <button
         mat-icon-button
-        (click)="showMentionedUsersList = !showMentionedUsersList"
-        matTooltip="{{ 'editor.hiddenMentionsTooltip' | translate }}"
+        [matMenuTriggerFor]="interactionControl"
+        attr.aria-label="{{ 'editor.ariaLabelWootPrivacy' | translate }}"
+        class="input-height-btn"
+        [matTooltip]="getPrivacyIconName()"
+        [disabled]="editing"
         >
-        <fa-icon size="lg" [icon]="atIcon"></fa-icon>
-      </button>
-    --></div>
+        <fa-icon size="lg" [icon]="interactionControlIcon"></fa-icon>
+      </button>  
+    </div>
     <div class="below-editor-toolbar-rightside">
       <button
         mat-flat-button
@@ -136,13 +135,14 @@
         {{ 'editor.unlistedWarning' | translate }}
       </app-info-card>
     }
-    @if (showContentWarning || contentWarning) {
+    @if (showContentWarning || contentWarning || settings.autoAddContentWarning) {
       <section class="px-3 my-2">
         <mat-form-field class="w-full transition-size mat-form-field-no-padding" appearance="outline">
           <mat-label>Content warning (optional)</mat-label>
           <input
             [(ngModel)]="contentWarning"
             placeholder="{{ 'editor.sensitivePlaceholder' | translate }}"
+            [value]="settings.autoAddContentWarning"
             matNativeControl
             />
         </mat-form-field>
@@ -391,6 +391,28 @@
               </button>
             }
           }
+        </mat-menu>
+        <mat-menu #interactionControl="matMenu">
+          <div class="p-2">
+          <h3>{{'editor.replyControlWarning' | translate}}</h3>
+          <mat-form-field class="w-full">
+            <mat-label>Quotable</mat-label>
+            <mat-select [(value)]="canBeQuoted" (click)="$event.stopPropagation()">
+              @for (option of canBeQuotedOptions; track $index) {
+                <mat-option [value]="option.value">{{option.viewValue}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="w-full">
+            <mat-label>Who can reply</mat-label>
+            <mat-select [(value)]="canReply" [disabled]="!canEditCanReply" (click)="$event.stopPropagation()" >
+              @for (option of canReplyOptions; track $index) {
+                <mat-option [value]="option.value">{{option.viewValue}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          </div>
         </mat-menu>
         <div
           #suggestionsMenu

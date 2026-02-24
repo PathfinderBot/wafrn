@@ -6,7 +6,7 @@ services:
       # these args configure private env vars for the backend and public env vars for the frontend
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       frontend:
@@ -58,6 +58,10 @@ services:
       REVIEW_REGISTRATIONS: ${REVIEW_REGISTRATIONS:-}
       IGNORE_BLOCK_HOSTS: ${IGNORE_BLOCK_HOSTS:-}
 
+      CONSTELLATION_URL: ${CONSTELLATION_URL:-}
+      SLINGSHOT_URL: ${SLINGSHOT_URL:-}
+      JETSTREAM_URL: ${JETSTREAM_URL:-}
+
       FRONTEND_LOGO: ${FRONTEND_LOGO:-}
       FRONTEND_API_URL: ${FRONTEND_API_URL:-}
       FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-}
@@ -93,7 +97,7 @@ services:
     <<: *default_backend
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       frontend:
@@ -103,6 +107,7 @@ services:
       mode: replicated
       replicas: 1
     command: "npm exec tsx migrate.ts init-container"
+
 
   frontend:
     restart: unless-stopped
@@ -142,7 +147,9 @@ services:
       - ./packages/caddy:/etc/caddy/config
 
   db:
-    image: postgres:17
+    build:
+      context: monitoring/database
+      dockerfile: Dockerfile
     #command: -c 'max_connections=500'
     restart: unless-stopped
     shm_size: '2gb'
@@ -158,7 +165,7 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:7.2.4
+    image: redis:8.4
     restart: unless-stopped
     volumes:
       - redis:/data
@@ -179,11 +186,12 @@ services:
       PDS_DID_PLC_URL: "https://plc.directory"
       #PDS_BSKY_APP_VIEW_URL: "https://api.blacksky.community"
       #PDS_BSKY_APP_VIEW_DID: "did:web:api.blacksky.community"
-      PDS_BSKY_APP_VIEW_URL: "https://api.bsky.app"
-      PDS_BSKY_APP_VIEW_DID: "did:web:api.bsky.app"
-      PDS_REPORT_SERVICE_URL: "https://mod.bsky.app"
-      PDS_REPORT_SERVICE_DID: "did:plc:ar7c4by46qjdydhdevvrndac"
-      PDS_CRAWLERS: "https://bsky.network, https://atproto.africa"
+      PDS_BSKY_APP_VIEW_URL: ${PDS_APPVIEW_URL:-https://api.bsky.app}
+      PDS_BSKY_APP_VIEW_DID: ${PDS_APPVIEW_DID:-did:web:api.bsky.app}
+      PDS_REPORT_SERVICE_URL: ${PDS_MOD_URL:-https://mod.bsky.app}
+      PDS_REPORT_SERVICE_DID: ${PDS_MOD_DID:-did:plc:ar7c4by46qjdydhdevvrndac}
+      PDS_CRAWLERS: ${PDS_CRAWLERS:-https://bsky.network, https://atproto.africa}
+      PDS_SERVICE_HANDLE_DOMAINS: ${PDS_HANDLE_DOMAINS:-.${PDS_DOMAIN_NAME}}
       PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
       PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
       LOG_ENABLED: true

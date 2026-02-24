@@ -17,7 +17,7 @@ export default async function optimizeMedia(
   }
 ): Promise<string> {
   const fileAndExtension = options?.outPath ? [options.outPath, ''] : inputPath.split('.')
-  const originalExtension = fileAndExtension[1].toLowerCase()
+  const originalExtension = options?.forceImageExtension || fileAndExtension[1].toLowerCase()
   fileAndExtension[1] = options?.forceImageExtension ? options.forceImageExtension : 'webp'
   let outputPath = fileAndExtension.join('.')
   const doNotDelete = options?.keep ? options.keep : false
@@ -51,7 +51,7 @@ export default async function optimizeMedia(
               verticalResolution = Math.min(verticalResolution, 1280)
               const resolutionString =
                 horizontalResolution > verticalResolution ? `${horizontalResolution}x?` : `?x${verticalResolution}`
-              const videoCodec = stream.codec_name == 'h264' ? 'copy' : 'libx264'
+              const videoCodec = stream?.codec_name == 'h264' ? 'copy' : 'libx264'
               const command = FfmpegCommand(inputPath)
               if (videoCodec != 'copy') {
                 command.size(resolutionString)
@@ -89,7 +89,7 @@ export default async function optimizeMedia(
         fileAndExtension[0] = fileAndExtension[0] + '_processed'
         outputPath = fileAndExtension.join('.')
       }
-      if (metadata.delay && !(options?.forceImageExtension && options.forceImageExtension == 'png')) {
+      if (metadata.delay && !(options?.forceImageExtension && ['gif', 'png'].includes(options.forceImageExtension))) {
         fileAndExtension[1] = 'webp'
         outputPath = fileAndExtension.join('.')
       }

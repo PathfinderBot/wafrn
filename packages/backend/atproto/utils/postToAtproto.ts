@@ -25,6 +25,7 @@ import crypto from "crypto";
 import { redisCache } from "../../utils/redis.js";
 import { logger } from "../../utils/logger.js";
 import getUserAgent from "../../utils/getUserAgent.js";
+import sharp from 'sharp'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
@@ -150,6 +151,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       // Local users
       if (!user.isBlueskyUser) {
         if (user.bskyDid && user.enableBsky ) {
+          // TODO instead of calling bsky appview we should check the pds document ourselves?
           const response = await agent.getProfile({ actor: user.bskyDid });
           if (response.data)
             postText = postText.replaceAll(
@@ -342,11 +344,38 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
   };
-
+  let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {
     let file = await fs.readFile("uploads/" + media.url);
-    const isVideo = media.mediaType?.startsWith("video/");
-
+    let isVideo = media.mediaType?.startsWith("video/");
+    let fileToDelete: string | undefined;
+    let type : string | undefined
+    // FIRST check
+    if(!isVideo) {
+      const metadata = await sharp("uploads/" + media.url).metadata()
+      if(metadata.pages && metadata.pages > 1) {
+        isVideo = true;
+        await optimizeMedia("uploads/" + media.url, {
+          forceImageExtension: 'gif',
+          keep: true,
+          outPath: 'uploads/' + media.id + '_tmp'
+        })
+        await optimizeMedia("uploads/" + media.id + "_tmp.gif",  {
+          forceImageExtension: 'mp4',
+          keep: false,
+          outPath: 'uploads/' + media.id + '_tmp'
+        })
+        isVideo = true;
+        file = await fs.readFile('uploads/' + media.id + '_tmp_processed.mp4')
+        type = 'video/mp4'
+        presentation = 'image/gif'
+        // I like to play dangerously
+        media.mediaType = type
+        media.url = '/' +media.id + '_tmp_processed.mp4'
+        fileToDelete = 'uploads/' + media.id + '_tmp_processed.mp4'
+      }
+      
+    }
     if (!isVideo) {
       // yeah, 1 millon bytes is officially the limit:
       // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
@@ -359,6 +388,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
           keep: true,
         });
         file = await fs.readFile("uploads/" + media.id + "_bsky.webp");
+        fileToDelete = "uploads/" + media.id + "_bsky.webp"
       }
 
       if (file.length > 1000000) {
@@ -369,12 +399,22 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
           keep: true,
         });
         file = await fs.readFile("uploads/" + media.id + "_bsky.webp");
+        fileToDelete = "uploads/" + media.id + "_bsky.webp"
       }
     }
 
     const { data } = await agent.uploadBlob(Buffer.from(file), {
-      encoding: media.mediaType || undefined,
+      encoding: type || media.mediaType || undefined,
     });
+    if(fileToDelete){
+      try {
+        setTimeout(async () => {
+          await fs.unlink(fileToDelete)
+        }, (60000));
+      } catch(error) {
+        logger.debug(`Error deleting non existing file ${fileToDelete}`)
+      }
+    }
     return { media, blob: data.blob };
   });
   const bskyMedias = await Promise.all(bskyMediaPromises);
@@ -390,9 +430,10 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       res.embed = {
         $type: "app.bsky.embed.video",
         video: video.blob,
-        alt: video.media.description ? video.media.description : "",
+        alt: (video.media.description || "").slice(0, 999),
         labels,
         aspectRatio: await getVideoAspectRatio("uploads/" + video.media.url),
+        presentation: presentation
       };
     } else {
       res.embed = {
@@ -400,7 +441,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         images: bskyMedias.map((m) => ({
           labels,
           image: m.blob,
-          alt: m.media.description ? m.media.description : "",
+          alt: (m.media.description || "").slice(0, 999),
           aspectRatio: {
             width: m.media.width,
             height: m.media.height,

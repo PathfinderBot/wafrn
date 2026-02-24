@@ -13,4 +13,5 @@ export interface SimplifiedUser {
   email?: string
   registerIp?: string
   bskyDid?: string
+  pronouns?: string
 }

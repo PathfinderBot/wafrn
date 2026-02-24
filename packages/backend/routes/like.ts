@@ -10,6 +10,8 @@ import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { Model } from 'sequelize'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { createNotification } from '../utils/pushNotifications.js'
+import { InteractionControl } from '../models/post.js'
+import { canInteract } from '../utils/baseQueryNew.js'
 
 export default function likeRoutes(app: Application) {
   app.post('/api/like', authenticateToken, forceUpdateLastActive, async (req: AuthorizedRequest, res: Response) => {
@@ -39,6 +41,15 @@ export default function likeRoutes(app: Application) {
       const post = await postPromise
       const like = await likePromise
       if (userId && user && post && !like) {
+        // TODO check if user can LIKE post.
+        if(!await canInteract(post.likeControl, userId, post.id)) {
+          res.status(403)
+          return res.send({
+            success: false,
+            message: 'This post has interaction controls and you do not have permission to like it'
+          })
+        }
+
         const options = await getUserOptions(user.id)
         const userFederatesWithThreads = options.filter(
           (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
@@ -85,7 +96,8 @@ export default function likeRoutes(app: Application) {
             notificationType: 'LIKE',
             notifiedUserId: post.userId,
             userId: userId,
-            postId: postId
+            postId: postId,
+            detached: false
           },
           {
             postContent: post?.content,

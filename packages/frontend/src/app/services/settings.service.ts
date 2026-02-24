@@ -37,6 +37,7 @@ import { SETTINGS_TOKEN } from '../pages/settings/settings.component'
 import { replyBarItems } from '../components/post-action-buttons/post-action-buttons.component'
 import { SettingConfettiComponent } from '../components/setting-confetti/setting-confetti.component'
 import { Annoyance } from '../components/dialog/confirm-dialog.component'
+import { InteractionControl } from '../interfaces/InteractionControl'
 
 // All setting keys for use throughout the app
 const settingKeyVariants = [
@@ -53,6 +54,10 @@ const settingKeyVariants = [
   'lightDarkMode', // this option are weirdly named in localStorage because legacy reasons
   'autoAcceptFollowsFromFollowing',
   'autoRejectFollowsFromUsersYouDoNotFollow',
+  'autoAddSpecifiedTags',
+  'autoAddSpecifiedTagsAsks',
+  'autoAddSpecifiedTagsAsksNoGeneral',
+  'autoAddContentWarning',
   'additionalStyleModes',
   'useOtherUserCustomThemes',
   'askToUseOtherUserCustomThemes',
@@ -73,6 +78,8 @@ const settingKeyVariants = [
   'defaultDashboard',
   'automaticallyExpandPosts', // misspelled key
   'defaultPostEditorPrivacy',
+  'defaultPostEditorCanReply',
+  'defaultPostEditorCanQuote',
   'defaultPostRewootPrivacy',
   'enableAsks',
   'enableAnonymousAsks',
@@ -487,6 +494,33 @@ export class SettingsService {
         '3': 'settings.postEditorPrivacyOptions.unlisted'
       }
     },
+    defaultPostEditorCanReply: {
+      key: 'defaultPostEditorCanReply',
+      translationKey: 'settings.defaultPostEditorCanReply',
+      serverKey: 'wafrn.defaultPostEditorCanReply',
+      localStorageKey: 'defaultPostEditorCanReply',
+      type: 'select',
+      default: '0',
+      variants: {
+        '0': 'editor.interactionControl.anyone',
+        '5': 'editor.interactionControl.FollowingAndMentioned',
+        '4': 'editor.interactionControl.FollowersAndMentioned',
+        '6': 'editor.interactionControl.FollowersFollowingAndMentioned',
+        '7': 'editor.interactionControl.MentionedUsersOnly'
+      }
+    },
+    defaultPostEditorCanQuote: {
+      key: 'defaultPostEditorCanQuote',
+      translationKey: 'settings.defaultPostEditorCanQuote',
+      serverKey: 'wafrn.defaultPostEditorCanQuote',
+      localStorageKey: 'defaultPostEditorCanQuote',
+      type: 'select',
+      default: '0',
+      variants: {
+        '0': 'editor.interactionControl.anyoneCanQuote',
+        '8': 'editor.interactionControl.noOneCanQuote'
+      }
+    },
     defaultPostRewootPrivacy: {
       key: 'defaultPostRewootPrivacy',
       translationKey: 'settings.defaultPostRewootPrivacy',
@@ -631,6 +665,49 @@ export class SettingsService {
       localStorageKey: 'atprotoLinkDestination',
       type: 'input',
       default: 'bsky.app',
+      convertFromStorage: this.convertStringFrom,
+      convertToStorage: this.convertStringTo
+    },
+    autoAddSpecifiedTags: {
+      key: 'autoAddSpecifiedTags',
+      translationKey: 'settings.autoAddSpecifiedTags',
+      translationDescriptionKey: 'settings.autoAddSpecifiedTagsDescription',
+      serverKey: 'wafrn.autoAddSpecifiedTags',
+      localStorageKey: 'autoAddSpecifiedTags',
+      type: 'input',
+      default: '',
+      convertFromStorage: this.convertStringFrom,
+      convertToStorage: this.convertStringTo
+    },
+    autoAddSpecifiedTagsAsks: {
+      key: 'autoAddSpecifiedTagsAsks',
+      translationKey: 'settings.autoAddSpecifiedTagsAsks',
+      serverKey: 'wafrn.autoAddSpecifiedTagsAsks',
+      localStorageKey: 'autoAddSpecifiedTagsAsks',
+      type: 'input',
+      default: '',
+      convertFromStorage: this.convertStringFrom,
+      convertToStorage: this.convertStringTo,
+      enableIfSetting: (s) => !!s.autoAddSpecifiedTags
+    },
+    autoAddSpecifiedTagsAsksNoGeneral: {
+      key: 'autoAddSpecifiedTagsAsksNoGeneral',
+      translationKey: 'settings.autoAddSpecifiedTagsAsksNoGeneral',
+      translationDescriptionKey: 'settings.autoAddSpecifiedTagsAsksNoGeneralDescription',
+      serverKey: 'wafrn.autoAddSpecifiedTagsAsksNoGeneral',
+      localStorageKey: 'autoAddSpecifiedTagsAsksNoGeneral',
+      type: 'checkbox',
+      default: false,
+      enableIfSetting: (s) => !!s.autoAddSpecifiedTagsAsks && !!s.autoAddSpecifiedTags
+    },
+    autoAddContentWarning: {
+      key: 'autoAddContentWarning',
+      translationKey: 'settings.autoAddContentWarning',
+      translationDescriptionKey: 'settings.autoAddContentWarningDescription',
+      serverKey: 'wafrn.autoAddContentWarning',
+      localStorageKey: 'autoAddContentWarning',
+      type: 'input',
+      default: '',
       convertFromStorage: this.convertStringFrom,
       convertToStorage: this.convertStringTo
     },
@@ -849,7 +926,13 @@ export class SettingsService {
         },
         { type: 'key', value: 'disableNSFWFilter' },
         { type: 'key', value: 'hideNoDescriptionMedia' },
-        { type: 'key', value: 'disableForceAltText' }
+        { type: 'key', value: 'disableForceAltText' },
+        { type: 'separator' },
+        { type: 'header', value: 'settings.header.editorBehavior' },
+        { type: 'key', value: 'autoAddSpecifiedTags' },
+        { type: 'key', value: 'autoAddSpecifiedTagsAsks' },
+        { type: 'key', value: 'autoAddSpecifiedTagsAsksNoGeneral' },
+        { type: 'key', value: 'autoAddContentWarning' }
       ]
     },
     {
@@ -870,6 +953,9 @@ export class SettingsService {
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },
         { type: 'key', value: 'defaultPostRewootPrivacy' },
+        {type: 'key', value: 'defaultPostEditorCanReply'},
+        {type: 'key', value: 'defaultPostEditorCanQuote'},
+
         { type: 'separator' },
         { type: 'header', value: 'settings.header.followers' },
         {
