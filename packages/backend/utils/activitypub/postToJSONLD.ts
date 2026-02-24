@@ -305,10 +305,8 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   if([InteractionControl.SameAsOp].includes(canReplyValue)) {
     canReply.push("sameAsInitialPost")
   } 
-    // mentionedUsers
-    if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
-      canReply = canReply.concat(mentionedUsers)
-    }
+    // mentionedUsers will always bee able to reply
+    canReply = canReply.concat(mentionedUsers)
     if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
       canReply = canReply.concat(stringMyFollowers)
     }
