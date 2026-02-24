@@ -6,7 +6,7 @@ services:
       # these args configure private env vars for the backend and public env vars for the frontend
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_started
       frontend:
@@ -97,7 +97,7 @@ services:
     <<: *default_backend
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_started
       frontend:
@@ -147,7 +147,9 @@ services:
       - ./packages/caddy:/etc/caddy/config
 
   db:
-    image: postgres:17
+    build:
+      context: monitoring/database
+      dockerfile: Dockerfile
     #command: -c 'max_connections=500'
     restart: unless-stopped
     shm_size: '2gb'
