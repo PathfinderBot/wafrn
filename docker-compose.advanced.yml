@@ -6,7 +6,7 @@ services:
       # these args configure private env vars for the backend and public env vars for the frontend
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       frontend:
@@ -97,7 +97,7 @@ services:
     <<: *default_backend
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       frontend:
