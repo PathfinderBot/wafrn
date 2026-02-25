@@ -1,6 +1,6 @@
 {
   "name": "wafrn-backend",
-  "version": "2026.03.01-DEV",
+  "version": "2026.02.03-HOTFIX",
   "description": "wafrn backend",
   "main": "index.js",
   "type": "module",
