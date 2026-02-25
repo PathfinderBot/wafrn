@@ -41,7 +41,7 @@ async function deletePostCommon(id: string) {
           postId: id
         }
       })
-      await Quotes.destroy({
+    await Quotes.destroy({
       where: {
         [Op.or]: [
           {
@@ -53,6 +53,7 @@ async function deletePostCommon(id: string) {
         ]
       }
     })
+    /*
     const localMedias = await Media.findAll({
       where: {
         postId: id,
@@ -102,7 +103,7 @@ async function deletePostCommon(id: string) {
         postId: id
       }
     })
-
+    */
     postToDelete.content_warning = ''
     postToDelete.content = '<p>This post has been deleted</p>'
     postToDelete.isDeleted = true
