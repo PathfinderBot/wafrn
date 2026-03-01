@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal, WritableSignal, inject } from "@angular/core";
+import { Component, OnDestroy, OnInit, signal, WritableSignal, inject, ChangeDetectorRef } from "@angular/core";
 import { Meta } from "@angular/platform-browser";
 import { ActivatedRoute } from "@angular/router";
 import {
@@ -51,6 +51,7 @@ export class ViewBlogComponent
   private simpleDialog = inject(SimpleDialogService);
   private simpleTitle = inject(SimpleTitleService);
   private http = inject(HttpClient);
+  private cdr = inject(ChangeDetectorRef)
 
   loading = signal<boolean>(true);
   noMorePosts = false;
@@ -296,6 +297,7 @@ export class ViewBlogComponent
     if (tmpPosts.length === 0) {
       this.noMorePosts = true;
     }
+    this.cdr.detectChanges();
   }
 
   private simpleToBlog(usr: SimplifiedUser): BlogDetails {
