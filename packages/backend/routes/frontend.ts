@@ -13,6 +13,7 @@ import { logger } from '../utils/logger.js'
 import { Feed } from 'feed'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
+import { getCheckContentNegotiation } from '../utils/activitypub/checkContentNegotiation.js'
 
 const cacheOptions = {
   etag: false,
@@ -221,6 +222,7 @@ function frontend(app: Application) {
   app.get(
     ['/fediverse/post/:id', '/fediverse/activity/post/:id'],
     getCheckFediverseSignatureFunction(false),
+    getCheckContentNegotiation(),
     async (req: SignedRequest, res: Response) => {
       if (req.fediData?.valid) {
         return await handlePostRequest(req, res)
