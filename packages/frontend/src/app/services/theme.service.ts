@@ -246,8 +246,6 @@ export class ThemeService {
     // Forced lightDarkMode
     if (themeData[theme]?.compatibility === 'light') await this.setLightDarkMode('light')
     if (themeData[theme]?.compatibility === 'dark') await this.setLightDarkMode('dark')
-
-    console.log('here')
     this.settingService.forceUpdateValue([{name: 'theme', value: theme}], !doNotSavePreference, !doNotSavePreference)
   }
 

@@ -390,15 +390,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     );
 
     // If parent is bsky, we set canreply same as parent
-    if(this.data?.post ) {
-      this.canReply = this.data.post.replyControl
-      const parentPost = this.data.post;
-      if(parentPost.user.url.startsWith('@') && !parentPost.remotePostId && !parentPost.user.remoteId && parentPost.user.bskyDid) {
-        this.canReply = InteractionControl.SameAsOp
-      }
-      if(this.canReply === InteractionControl.SameAsOp) {
-        this.canEditCanReply = false
-      }
+    if(this.data?.post && this.data.post.replyControl != InteractionControl.Anyone ) {
+      this.canReply = InteractionControl.SameAsOp;
+      this.canEditCanReply = false;
     }
 
     // Focus on the next frame (EVIL FIX)

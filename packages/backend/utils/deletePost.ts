@@ -1,25 +1,25 @@
 import { Op } from 'sequelize'
 import {
+  Bites,
+  EmojiReaction,
+  Media,
   Notification,
   Post,
   PostMentionsUserRelation,
   PostTag,
   Quotes,
   User,
+  UserBitesPostRelation,
   UserLikesPostRelations
 } from '../models/index.js'
 import { getDeletedUser } from './cacheGetters/getDeletedUser.js'
+import fs from 'fs/promises'
 
 async function deletePostCommon(id: string) {
   const postToDelete = await Post.findByPk(id)
-  const reblogsDestroyed = await Post.destroy({
-    where: {
-      parentId: id,
-      content: '',
-      isReblog: true
-    }
-  })
+  
   if (postToDelete) {
+    
     if (postToDelete.isReblog) {
       await Notification.destroy({
         where: {
@@ -28,14 +28,20 @@ async function deletePostCommon(id: string) {
         }
       })
     } else {
+      // post is not a reblog we do extra stuff
+      const reblogsDestroyed = await Post.destroy({
+        where: {
+          parentId: id,
+          content: '',
+          isReblog: true
+        }
+      })
       await Notification.destroy({
         where: {
           postId: id
         }
       })
-    }
-
-    const quotesToDelete = await Quotes.findAll({
+    await Quotes.destroy({
       where: {
         [Op.or]: [
           {
@@ -47,34 +53,64 @@ async function deletePostCommon(id: string) {
         ]
       }
     })
-    if (quotesToDelete) {
-      Promise.all(quotesToDelete.map((qte: any) => qte.destroy()))
+    /*
+    const localMedias = await Media.findAll({
+      where: {
+        postId: id,
+        external: false
+      }
+    })
+    if(localMedias){
+      localMedias.forEach(media => {
+        try {
+          const fileToDelete = "uploads" + media.url
+          fs.unlink(fileToDelete).then(() => {});
+        } catch (error) {
+
+        }
+      })
     }
-    postToDelete.removeMedias(await postToDelete.getMedias())
+    await Media.destroy({
+      where: {
+        postId: id
+      }
+    })
+
+    await EmojiReaction.destroy({
+      where: {
+        postId: id
+      }
+    })
+    await UserBitesPostRelation.destroy({
+      where: {
+        postId: id
+      }
+    })
+
     await PostTag.destroy({
       where: {
-        postId: postToDelete.id
+        postId: id
       }
     })
     await UserLikesPostRelations.destroy({
       where: {
-        postId: postToDelete.id
+        postId: id
       }
     })
 
     await PostMentionsUserRelation.destroy({
       where: {
-        postId: postToDelete.id
+        postId: id
       }
     })
-
-      postToDelete.content_warning = ''
-      postToDelete.content = '<p>This post has been deleted</p>'
-      postToDelete.isDeleted = true
-      const deletedUser = (await getDeletedUser()) as User
-      postToDelete.userId = deletedUser.id
-      await postToDelete.save()
-    
+    */
+    postToDelete.content_warning = ''
+    postToDelete.content = '<p>This post has been deleted</p>'
+    postToDelete.isDeleted = true
+    const deletedUser = (await getDeletedUser()) as User
+    postToDelete.userId = deletedUser.id
+    await postToDelete.save()
+    }
   }
 }
 

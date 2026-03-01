@@ -52,7 +52,8 @@ async function sendPostBsky(job: Job) {
           }
           if (!isReblog) {
             let agent = await getAtProtoSession(localUser)
-            const bskyPost = await agent.post(await postToAtproto(post, agent))
+            const atProtoObject = await postToAtproto(post, agent)
+            const bskyPost = await agent.post(atProtoObject)
             const {rkey} = new AtUri(bskyPost.uri)
             if(bskyPost && agent.session && post.quoteControl != InteractionControl.Anyone) {
               await agent.com.atproto.repo.createRecord({

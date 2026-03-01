@@ -290,23 +290,18 @@ async function prepareSendRemotePostWorker(job: Job) {
               server.users.map((elem: any) => elem.remoteInbox)
             );
           });
-          const addSendPostToQueuePromises: Promise<any>[] = [];
-          for (const inboxChunk of highPriorityInboxes.concat(inboxes)) {
-            addSendPostToQueuePromises.push(
-              sendPostQueue.add(
-                "sendChunk",
-                {
+          inboxes = [...highPriorityInboxes, ...inboxes]
+          await sendPostQueue.addBulk(inboxes.map(elem => {
+            return {
+              name: 'sendChunk',
+              data: {
                   objectToSend: objectToSendComplete,
                   petitionBy: localUser.dataValues,
-                  inboxList: inboxChunk,
-                },
-                {
-                  priority: 1,
+                  inboxList: elem,
                 }
-              )
-            );
-          }
-          await Promise.allSettled(addSendPostToQueuePromises);
+                
+            }
+          }))
         }
       }
     } catch (error) {

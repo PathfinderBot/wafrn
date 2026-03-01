@@ -12,8 +12,6 @@ function wasCalledAsScript() {
   return import.meta.url === realPathAsUrl;
 }
 
-await wait(15000);
-
 const sequelize = new Sequelize(completeEnvironment.databaseConnectionString);
 
 const umzug = new Umzug({
