@@ -294,6 +294,11 @@ export class RegisterComponent {
     "DELTARUNE spoilers",
     "Spheal",
     "ON SALE 50% OFF PICK THIS GENDER NOW AND GET ONE FREE",
+    "Prilosec®",
+    "<font face=\"Comic Sans MS\">Comic Sans</font>",
+    "why do they call it oven when you of in the cold food of out hot eat the food",
+    "bruno mars (gay)",
+    "cow",
     "No one ever would pick this one",
     "None of the above",
   ];
