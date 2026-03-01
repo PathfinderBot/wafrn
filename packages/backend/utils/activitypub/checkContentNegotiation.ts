@@ -1,12 +1,12 @@
 import { Response, NextFunction } from "express";
 import { SignedRequest } from "../../interfaces/fediverse/signedRequest.js";
 
-const defaultAllowedContentTypes = [
+const defaultAllowedContentTypes: string[] = [
   '*/*',
   'text/html',
 ];
 
-function getCheckContentNegotiation(allowedContentTypes: string[] = ...defaultAllowedContentTypes) {
+function getCheckContentNegotiation(allowedContentTypes: string[] = defaultAllowedContentTypes) {
 
   return async function checkContentNegotiation(
     req: SignedRequest,
