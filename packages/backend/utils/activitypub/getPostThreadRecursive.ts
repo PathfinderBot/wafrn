@@ -448,6 +448,27 @@ async function getPostThreadRecursive(
               if (directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything
+                const existingFedi = await Post.findOne({
+                  where: {
+                    remotePostId: postPetition.id
+                  }
+                })
+                if (existingFedi && existingFedi.id != postBskyVersion.id ) {
+                  existingFedi.remotePostId = null;
+                  await Post.update({
+                    parentId: postBskyVersion.id
+                  }, {
+                    where: {
+                      parentId: existingFedi.id
+                    }
+                  })
+                  await existingFedi.save()
+                }
+                if(!postBskyVersion.remotePostId) {
+                  postBskyVersion.remotePostId = postPetition.id
+                  await postBskyVersion.save()
+                }
+
                 return postBskyVersion;
               } else {
                 postBskyVersion.remotePostId = postPetition.id;
