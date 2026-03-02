@@ -468,7 +468,6 @@ async function getPostThreadRecursive(
                   postBskyVersion.remotePostId = postPetition.id
                   await postBskyVersion.save()
                 }
-
                 return postBskyVersion;
               } else {
                 postBskyVersion.remotePostId = postPetition.id;

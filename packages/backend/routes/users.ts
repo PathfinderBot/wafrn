@@ -817,7 +817,10 @@ function userRoutes(app: Application) {
           as: 'followed',
           required: true
         }
-      ]
+      ],
+      where: {
+        followerId: user.id
+      }
     })
 
     const followList = myFollows.map((elem: any) =>
