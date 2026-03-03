@@ -20,18 +20,25 @@ if (localUser) {
         where: {
             followerId: localUser.id
         },
-        include: [{ all: true }]
+    })
+
+    const followedUsers = await User.scope('full').findAll({
+        where: {
+            id: {
+                [Op.in]: localUserFollows.map(elem => elem.followedId)
+            }
+        }
     })
 
     const fileName = `follows-${localUser.url}-${Date.now()}-${uuidv4()}.csv`
 
     writeFileSync('uploads/' + fileName, `Account address,Show boosts,Notify on new posts,Languages\n`)
 
-    localUserFollows.forEach(e => {
-        let url = e.followed.url
+    followedUsers.forEach(e => {
+        let url = e.url
         if (!url.startsWith('@')) {
             const host = new URL(completeEnvironment.frontendUrl).hostname
-            url = host + '@' + url
+            url = url + '@' + host
         }
         url = url.replace(/^@/, '')
         appendFileSync('uploads/' + fileName, `${url},true,false,\n`)
