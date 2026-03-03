@@ -60,6 +60,10 @@ export class ImportFollowersComponent {
         console.error(error)
       })
       if (petition) {
+        this.messages.add({
+          severity: 'info',
+          summary: 'Following list recived'
+        })
         this.response = petition
         this.step++
         this.cdr.detectChanges()
