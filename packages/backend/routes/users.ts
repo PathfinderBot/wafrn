@@ -1956,14 +1956,16 @@ It is slow because we have to send every fedi server that has ever seen a post o
                 removeOnFail: true
               }
             })
-            followQueue.addBulk(
-              localFollows.map((follow: any) => {
-                return {
-                  name: `follow${follow.url}-${newRemoteUser.url}`,
-                  data: { followerId: follow.id, followedId: newRemoteUser.id }
-                }
-              })
-            )
+            if(newRemoteUser) {
+              followQueue.addBulk(
+                localFollows.map((follow: any) => {
+                  return {
+                    name: `follow${follow.url}-${newRemoteUser.url}`,
+                    data: { followerId: follow.id, followedId: newRemoteUser.id }
+                  }
+                })
+              )
+            }
             // third step: return data and set message to succ ess
             localUser.userMigratedTo = newUserRemoteId
             await localUser.save()
