@@ -4,11 +4,12 @@ import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { debounceTime, Subscription, tap } from 'rxjs'
 import { EditorService } from 'src/app/services/editor.service'
-import { MatAutocompleteModule } from '@angular/material/autocomplete'
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
 import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
 import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { TranslatePipe } from '@ngx-translate/core'
+import { EnvironmentService } from 'src/app/services/environment.service'
 
 @Component({
   selector: 'app-user-selector',
@@ -61,7 +62,7 @@ export class UserSelectorComponent implements OnDestroy {
     this.editorService.searchUser(this.form.controls['userSearcher'].value as string).then((result) => {
       // could (should) check the remoteid field, BUTT the type will get annoying so I rather do a quick and dirty thing.
       this.usersAutocompleteOptions = this.fediExclusive
-        ? result.users.filter((usr) => usr.url.split('@').length == 3)
+        ? result.users.filter((usr) => [1, 3].includes(usr.url.split('@').length))
         : result.users
       this.searching.set(false)
     })
@@ -75,5 +76,9 @@ export class UserSelectorComponent implements OnDestroy {
     for (const subscription of this.subscriptions) {
       subscription.unsubscribe()
     }
+  }
+
+  getOptionSelectedData(evt: MatAutocompleteSelectedEvent) {
+    return { remoteId: evt.option.value.remoteId || `${EnvironmentService.environment.frontUrl}/fediverse/blog/${evt.option.getLabel()}`, url: evt.option.getLabel() };
   }
 }

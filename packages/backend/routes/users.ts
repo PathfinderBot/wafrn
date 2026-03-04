@@ -1874,7 +1874,15 @@ It is slow because we have to send every fedi server that has ever seen a post o
     const newUserRemoteId: string = req.body.target
     const localUser = await User.scope('full').findByPk(req.jwtData?.userId)
     let message = `User not yet found`
-    const newRemoteUser = (await User.findOne({
+    const newRemoteUser = newUserRemoteId.startsWith(`${completeEnvironment.frontendUrl}/fediverse/blog`) ? (
+      await User.findOne({
+        where: { 
+          url: {
+            [Op.iLike] :newUserRemoteId.split(`${completeEnvironment.frontendUrl}/fediverse/blog`)[1]
+          }
+        }
+      })
+    ) :  (await User.findOne({
       where: {
         remoteId: newUserRemoteId
       }
