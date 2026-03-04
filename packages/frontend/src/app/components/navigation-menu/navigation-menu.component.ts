@@ -458,6 +458,15 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
         visible: () => this.loginService.loggedIn.value,
         items: [
           {
+            label: 'menu.settings.detachedNotifications',
+            icon: faBell,
+            visible: () => this.loginService.loggedIn.value,
+            routerLink: '/dashboard/notifications/detached',
+            command: () => {
+              this.hideMenu()
+            }
+          },
+          {
             label: 'menu.settings.themeEditor',
             icon: faPaintbrush,
             visible: () => this.loginService.loggedIn.value,

@@ -1,55 +1,98 @@
+  <h1>Migrate from bluesky</h1>
 @if (environment().enableBsky) {
-  <mat-card class="wafrn-container post-card">
-    <h1>Migrate from bluesky</h1>
-    <marquee><h2>READ THIS ONE, ITS IMPORTANT</h2></marquee>
-    <p>This is important, it's easier than it looks tho. But you need to be aware of what is going to happen</p>
-    <p
-      >First of all, if you enabled bluesky on your wafrn account, this action will DESTROY THE BSKY ACCOUNT currently
-      asociated to your wafrn profile</p
-      >
-      <p>Second, this still requires some action on your part!</p>
-      <p>Once you press the button, the associated wafrn bsky account will be DELETED</p>
-      <p>If you already pressed it and it was deleted, its ok no worries</p>
+  <mat-stepper orientation="vertical">
+    <mat-step state="prerequisites">
+      <ng-template matStepLabel><b>Prerequisites</b></ng-template>
+      <p>Migrating from Bluesky is relatively easy, but requires your attention!</p>
+      <p>Let's get some prerequisites out of the way:</p>
+      <ul>
+        <li>If you're currently using a wafrn-hosted bsky account, <b>it will be nuked.</b></li>
+        <li>This doesn't always go smoothly! If any issues occur, reach out to the wafrn team!</li>
+        <li>If you are using a <code>.bsky.social</code> handle, it will be moved to <code>.{{ environment().bskyPDSUrl }}</code></li>
+        <li>You cannot use your own PDS. You will be using the Wafrn-hosted one.</li>
+      </ul>
+      <p>When you're ready, continue here:</p>
+      <div>
+        <button matButton="filled" matStepperNext>Next</button>
+      </div>
+    </mat-step>
+    <mat-step state="unlinking">
+      <ng-template matStepLabel><b>Unlinking and deleting the old account</b></ng-template>
+      <p>First off, we must unlink (and delete) your previous linked bluesky account. This is the Wafrn-hosted one, if you have one.</p>
+      <p>This will also give you an "invite code", that we'll use in the next steps to move over your existing account. Please write it down!</p>
       @if (!code) {
         <button [disabled]="loading" (click)="loadInviteCode()" mat-flat-button class="w-full">
           Delete bsky associated account and get invite code
         </button>
       } @else {
         <p>Your invite code is</p>
-        <p
-          ><b>{{ code }}</b></p
-          >
-        }
-        <p>Ok now that you have the invite code, you need to MOOVE your bluesky account to our servers</p>
-        <p>To do it, visit <a target="_blank" href="https://pdsmoover.com">pdsmoover</a></p>
-        <p>provider: {{ environment().bskyPDSUrl }}</p>
-        <p>Fill the data bearing in mind that you need to replace the invite code and the provider</p>
-        <img src="/assets/img/pdsmoover.png" />
-        <p
-          >Once you are done with the MOOVE, you need to log in into bluesky, using the new PROVIDER, and create an
-          <b>APP PASSWORD</b> in settings</p
-          >
-          <p>Now that you have a secure app password that is random, you can fill your bluesky username and password here</p>
-          <form [hidden]="loading" class="px-3" [formGroup]="bskyForm" (ngSubmit)="linkBskyAccount()">
-            <mat-form-field class="w-full">
-              <mat-label>New name of account (@accountName.{{environment().bskyPDSUrl}})</mat-label>
-              <input formControlName="account" type="text" matInput />
-            </mat-form-field>
-            <mat-form-field class="w-full">
-              <mat-label>App Password (NOT YOUR PASSWORD, A BLUESKY APP PASSWORD)</mat-label>
-              <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
-              <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
-                <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
-              </button>
-              <mat-error> Password is required </mat-error>
-            </mat-form-field>
-            <button [disabled]="!bskyForm.valid" mat-flat-button color="primary" extended class="w-full border-round-md mt-4">
-              <span class="flex gap-2">Link account</span>
-            </button>
-          </form>
-          @if(loading) {
-            <app-loader>
-            </app-loader>
-          }
-        </mat-card>
+        <p><b>{{ code }}</b></p>
       }
+      <p>Got the code? Alright, on to the next step.</p>
+      <div>
+        <button matButton="filled" matStepperNext>Next</button>
+      </div>
+    </mat-step>
+    <mat-step state="pdsmoover">
+      <ng-template matStepLabel><b>PDSMoover - Actually moving the account</b></ng-template>
+      <p>Now we'll use an external migration tool, called <a href="https://pdsmoover.com">PDS Moover</a> to do the actual migration part.</p>
+      <p>For the provider, give them this URL: <code>{{ environment().bskyPDSUrl }}</code></p>
+      <p>Follow their instructions <i>closely.</i> If something goes wrong, reach out to the Wafrn team and your site admin!</p>
+      <p>And of course, give PDS Moover the invite code that you wrote down</p>
+      <p><small>You wrote it down, right? If not, go back.</small></p>
+      <div>
+        <button matButton="filled" matStepperNext>Next</button>
+      </div>
+    </mat-step>
+    <mat-step state="linking">
+      <ng-template matStepLabel><b>Linking the account to Wafrn</b></ng-template>
+      <p>If the "MOOVE" went alright, we'll now need to link up the migrated account to Wafrn.</p>
+      <p>To do this, we log in to the newly migrated account as if it was any other Bluesky account on <a href="https://bsky.app">bsky.app</a>, and create an "App Password"</p>
+      <p>You'll find the relevant options in Settings > Privacy and Security > App Passwords</p>
+      <p>Once you've grabbed a new app password, put it in together with the new username here:</p>
+      <form [hidden]="loading" class="px-3" [formGroup]="bskyForm" (ngSubmit)="linkBskyAccount()">
+        <mat-form-field class="w-full">
+          <mat-label>New name of account (@accountName.{{environment().bskyPDSUrl}})</mat-label>
+          <input formControlName="account" type="text" matInput />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+          <mat-label>App Password (NOT YOUR PASSWORD, A BLUESKY APP PASSWORD)</mat-label>
+          <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
+          <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+            <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
+          </button>
+          <mat-error> Password is required </mat-error>
+        </mat-form-field>
+        <button [disabled]="!bskyForm.valid" mat-flat-button color="primary" extended class="w-full border-round-md mt-4">
+          <span class="flex gap-2">Link account</span>
+        </button>
+      </form>
+    </mat-step>
+    <mat-step state="profit">
+      <ng-template matStepLabel><b>Profit?</b></ng-template>
+      <p>Hooray! All should be done! Please verify on your profile that the bluesky handle is visible. Your old Bluesky posts should also start appearing on your profile.</p>
+      <p>If there was any issues, <i><b>please reach out!</b></i>The Wafrn team and admins of your site are happy to help :)</p>
+    </mat-step>
+    <!-- All of these fucking icons straight up don't work -->
+
+    <!-- <ng-template matStepperIcon="prerequisites">
+      <mat-icon>done</mat-icon>
+    </ng-template>
+
+    <ng-template matStepperIcon="unlinking">
+      <mat-icon>done</mat-icon>
+    </ng-template>
+
+    <ng-template matStepperIcon="pdsmoover">
+      <mat-icon>done</mat-icon>
+    </ng-template>
+
+    <ng-template matStepperIcon="linking">
+      <mat-icon>done</mat-icon>
+    </ng-template>
+
+    <ng-template matStepperIcon="profit">
+      <mat-icon>done</mat-icon>
+    </ng-template> -->
+  </mat-stepper>
+}

@@ -113,7 +113,7 @@ export class NotificationsService {
     }
   }
 
-  async getNotificationsScrollV2(page: number): Promise<UserNotifications[]> {
+  async getNotificationsScrollV2(page: number, detached?: boolean): Promise<UserNotifications[]> {
     if (!this.jwt.tokenValid()) {
       return [];
     }
@@ -122,6 +122,7 @@ export class NotificationsService {
     }
     let petitionData: HttpParams = new HttpParams();
     petitionData = petitionData.set("date", this.uniqueDate.getTime());
+    petitionData = petitionData.set("detached", !!detached)
     petitionData = petitionData.set("page", page);
     const petition = await firstValueFrom(
       this.http.get<{

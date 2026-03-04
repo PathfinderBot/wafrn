@@ -32,7 +32,7 @@ export async function userToJSONLD(user: User) {
           }
         }
       } catch (error) {
-        logger.debug({
+        logger.trace({
           message: 'Error parsing alsoknownas',
           error: error,
           value: alsoKnownAsList?.optionValue,

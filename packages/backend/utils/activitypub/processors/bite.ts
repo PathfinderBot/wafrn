@@ -23,7 +23,8 @@ async function biteActivity(apObject: activityPubObject, remoteUser: User, user:
         {
           notificationType: 'USERBITE',
           userId: remoteUser.id,
-          notifiedUserId: userToBeBitten.id
+          notifiedUserId: userToBeBitten.id,
+          detached: false,
         },
         {
           userUrl: remoteUser.url
@@ -43,7 +44,8 @@ async function biteActivity(apObject: activityPubObject, remoteUser: User, user:
             notificationType: 'POSTBITE',
             userId: remoteUser.id,
             notifiedUserId: postToBeBitten.userId,
-            postId: postToBeBitten.id
+            postId: postToBeBitten.id,
+            detached: false
           },
           {
             postContent: postToBeBitten.content,

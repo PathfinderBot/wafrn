@@ -18,6 +18,9 @@ function checkCommitMentions(
     followedHashtags: Set<string>
   }
 ): boolean {
+  if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete'){
+    return true;
+  }
   const didsToCheck = cacheData.followedDids
   let quotedPostUri: string | undefined = undefined
   let res = false

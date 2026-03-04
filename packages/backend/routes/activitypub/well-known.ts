@@ -24,6 +24,9 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
   app.get('/.well-known/webfinger/', cacher.cache('seconds', 15), async (req: Request, res: Response) => {
+    res.set({
+      "content-type": "application/activity+json",
+    });
     if (req.query?.resource) {
       const urlQueryResource: string = req.query.resource as string
       if (
@@ -70,6 +73,9 @@ function wellKnownRoutes(app: Application) {
   })
 
   app.get('/.well-known/nodeinfo', cacher.cache('hours', 24), (req, res) => {
+    res.set({
+      "content-type": "application/activity+json",
+    });
     res.send({
       links: [
         {
@@ -82,6 +88,9 @@ function wellKnownRoutes(app: Application) {
   })
 
   app.get('/.well-known/nodeinfo/2.0', cacher.cache('hours', 1), async (req, res) => {
+    res.set({
+      "content-type": "application/activity+json",
+    });
     const cacheResult = await redisCache.get('nodeInfoData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))
@@ -202,6 +211,9 @@ function wellKnownRoutes(app: Application) {
     ])
   })
   app.get('/api/v1/instance', async (req, res) => {
+    res.set({
+      "content-type": "application/activity+json",
+    });
     const cacheResult = await redisCache.get('instanceData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))
@@ -243,6 +255,9 @@ function wellKnownRoutes(app: Application) {
   })
 
   app.get('/api/v1/instance/peers', async (req, res) => {
+    res.set({
+      "content-type": "application/activity+json",
+    });
     const cacheResult = await redisCache.get('instancePeerData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))

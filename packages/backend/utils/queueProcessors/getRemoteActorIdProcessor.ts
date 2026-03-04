@@ -153,7 +153,7 @@ async function getRemoteActorIdProcessor(job: Job) {
             : userPetition.url,
           manuallyAcceptsFollows: userPetition.manuallyApprovesFollowers ?? false
         };
-        federatedHost.publicInbox = userPetition.endpoints?.sharedInbox;
+        federatedHost.publicInbox = userPetition.endpoints?.sharedInbox || null;
         await federatedHost.save();
         let userRes;
         const existingUsers = await User.findAll({

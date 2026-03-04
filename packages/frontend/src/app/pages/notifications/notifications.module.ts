@@ -14,7 +14,13 @@ const routes: Route[] = [
     path: '',
     component: NotificationsComponent,
     canActivate: [loginRequiredGuard]
-  }
+  },
+  {
+    path: 'detached',
+    component: NotificationsComponent,
+    canActivate: [loginRequiredGuard]
+  },
+
 ]
 @NgModule({
   declarations: [NotificationsComponent],

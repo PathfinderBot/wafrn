@@ -45,7 +45,8 @@ async function EmojiReactActivity(body: activityPubObject, remoteUser: User, use
           postId: postToReact.id,
           notifiedUserId: postToReact.userId,
           emojiReactionId: reaction.id,
-          createdAt: new Date(reaction.createdAt)
+          createdAt: new Date(reaction.createdAt),
+          detached: false
         },
         {
           postContent: postToReact.content,

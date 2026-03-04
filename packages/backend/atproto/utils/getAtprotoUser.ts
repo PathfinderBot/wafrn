@@ -1,7 +1,7 @@
 import { getAtProtoSession } from "./getAtProtoSession.js";
 import { sequelize, User, UserOptions } from "../../models/index.js";
 import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs.js";
-import { Model, Op } from "sequelize";
+import { Model, Op, Transaction } from "sequelize";
 import { wait } from "../../utils/wait.js";
 import { logger } from "../../utils/logger.js";
 import { getDeletedUser } from "../../utils/cacheGetters/getDeletedUser.js";
@@ -228,24 +228,29 @@ async function getAtprotoUser(
 
     // future options thing
     if(userFound && fediAttachments.length > 0) {
-       const transaction = await sequelize.transaction()
-      await UserOptions.destroy({
-        where: {
-          userId: userFound?.id
+      const transaction = await sequelize.transaction()
+      try {
+        await UserOptions.destroy({
+          where: {
+            userId: userFound.id
+          },
+          transaction: transaction
+        })
+        await UserOptions.create({
+          public: true,
+          optionName: 'fediverse.public.attachment',
+          optionValue: JSON.stringify(fediAttachments),
+          userId: userFound.id
         },
-        transaction: transaction
-      })
-      await UserOptions.create({
-        public: true,
-        optionName: 'fediverse.public.attachment',
-        optionValue: JSON.stringify(fediAttachments),
-        userId: userFound.id
-      },
-      {
-        transaction: transaction
+        {
+          transaction: transaction
+        }
+        )
+        await transaction.commit()
+      } catch (error) {
+        logger.info({ message: `Problem updating atproto user otpions`, error: error })
+        await transaction.rollback()
       }
-    )
-      await transaction.commit()
     }
     
     return userFound;

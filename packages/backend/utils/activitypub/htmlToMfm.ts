@@ -64,7 +64,8 @@ function rehypeToMfm() {
   return (tree: any) => {
     function nodeToMfm(node: any): string {
       if (node.type === 'text') return node.value
-      if (node.type === 'element') {
+      try {
+        if (node.type === 'element') {
         const child = (node.children || []).map(nodeToMfm).join('')
         const style = node.properties?.style || ''
         const href = node.properties?.href || ''
@@ -98,7 +99,11 @@ function rehypeToMfm() {
           default:
             return schild
         }
+      } 
+      } catch (error) {
+        return node.value + ' ERROR DURING HTML2MFM'
       }
+      
       return node.value
     }
 

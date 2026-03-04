@@ -61,10 +61,6 @@ async function getPetitionSigned(
       });
     }
   } catch (error: any) {
-    logger.debug({
-      message: `Problem doing petition to ${target}`,
-      error,
-    });
     if (petitionResponse?.status === 410) {
       const webfingerUrl = target.split(
         ".well-known/webfinger/?resource=acct:"

@@ -1,5 +1,5 @@
 import { Expo } from 'expo-server-sdk'
-import { Follows, Notification, PushNotificationToken, UserOptions } from '../../models/index.js'
+import { Follows, Notification, PushNotificationToken, User, UserOptions } from '../../models/index.js'
 import { logger } from '../logger.js'
 import {
   getNotificationBody,
@@ -74,7 +74,6 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
               'wafrn.notifyFollows',
               'wafrn.notifyRewoots',
               'wafrn.notifyBites'
-
             ]
           }
         }
@@ -97,7 +96,6 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
       if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
         notificationTypes.push('EMOJIREACT')
         notificationTypes.push('LIKE')
-        
       }
       if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
         notificationTypes.push('FOLLOW')
@@ -105,7 +103,7 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
       if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
         notificationTypes.push('REWOOT')
       }
-      if(!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
+      if (!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
         notificationTypes.push('POSTBITE')
         notificationTypes.push('USERBITE')
       }
@@ -161,6 +159,23 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
           continue
         }
       }
+    }
+  }
+
+  const users = await User.findAll({
+    attributes: ['id', 'url'],
+    where: {
+      id: {
+        [Op.in]: notificationsToSend.map((n) => n.notifiedUserId)
+      }
+    }
+  })
+
+  const userUrlMap = Object.fromEntries(users.map((u) => [u.id, u.url]))
+  for (const notif of notificationsToSend) {
+    const url = userUrlMap[notif.notifiedUserId]
+    if (url) {
+      notif.notifiedUserUrl = url
     }
   }
 

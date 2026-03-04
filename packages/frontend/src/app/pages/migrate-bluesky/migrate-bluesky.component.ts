@@ -1,13 +1,13 @@
-
 import { Component, signal, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
+import { MatStepperModule } from '@angular/material/stepper'
+import { MatIconModule } from '@angular/material/icon'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { LoaderComponent } from 'src/app/components/loader/loader.component'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
 import { MessageService } from 'src/app/services/message.service'
@@ -21,16 +21,17 @@ import { MessageService } from 'src/app/services/message.service'
     MatButtonModule,
     MatInputModule,
     MatFormFieldModule,
+    MatStepperModule,
     FontAwesomeModule,
-    LoaderComponent
-],
+    MatIconModule
+  ],
   templateUrl: './migrate-bluesky.component.html',
   styleUrl: './migrate-bluesky.component.scss'
 })
 export class MigrateBlueskyComponent {
-  private environmentService = inject(EnvironmentService);
-  private loginService = inject(LoginService);
-  private messageService = inject(MessageService);
+  private environmentService = inject(EnvironmentService)
+  private loginService = inject(LoginService)
+  private messageService = inject(MessageService)
 
   environment = signal<any>(EnvironmentService.environment)
 

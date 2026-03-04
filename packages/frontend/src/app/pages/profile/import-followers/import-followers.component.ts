@@ -58,8 +58,17 @@ export class ImportFollowersComponent {
       ).catch((error: any) => {
         console.error('error uploading')
         console.error(error)
+        this.messages.add({
+          severity: 'error',
+          summary: 'Following list failed to load'
+        })
+        this.uploading = false;
       })
       if (petition) {
+        this.messages.add({
+          severity: 'info',
+          summary: 'Following list recived'
+        })
         this.response = petition
         this.step++
         this.cdr.detectChanges()

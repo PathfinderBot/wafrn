@@ -47,6 +47,8 @@ import {
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 import escapeHTML from "escape-html";
 import { wait } from "../wait.js";
+import { canInteract } from "../baseQueryNew.js";
+import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
 
 const updateMediaDataQueue = new Queue("processRemoteMediaData", {
   connection: completeEnvironment.bullmqConnection,
@@ -68,6 +70,9 @@ async function getPostThreadRecursive(
   localPostToForceUpdate?: string,
   options?: any
 ) {
+  let detachedQuote = false;
+  let detachedReply = false;
+  let parent: Post | undefined | null;
   const replyControl: {
     replyControl: InteractionControlType;
     likeControl: InteractionControlType;
@@ -121,6 +126,49 @@ async function getPostThreadRecursive(
     } else if (!remotePostObject) {
       const postId = await processSinglePost(remotePostId);
       return await Post.findByPk(postId);
+    }
+  }
+  // fix bridgy duplicates. they are originaly bsky posts after all
+  // TODO This function has other path for this. it would be nice to clean it up
+  if(checkBluesky && remotePostId.startsWith('https://bsky.brid.gy/') || remotePostId.startsWith('https://fed.brid.gy/r/') ) {
+    // the post is a bsky one lol.
+    let uri = remotePostId.split('https://bsky.brid.gy/convert/ap/')[1]
+    if(remotePostId.startsWith('https://fed.brid.gy/r/')) {
+      const profileAndPost = remotePostId.split('/profile/')[1].split('/post/')
+      let bskyProfile = profileAndPost[0]
+      let bskyUri = profileAndPost[1]
+      uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
+    }
+    if(uri) {
+      const bskyVersionId = await processSinglePost(uri, false)
+      if(bskyVersionId) {
+        const bskyVersion = await Post.findByPk(bskyVersionId) as Post
+        if(!bskyVersion.remotePostId && ! (await getAllLocalUserIds()).includes(bskyVersion.userId)) {
+          // we have the bsky post in the db, it is not from a local user
+          const localPostWithExistingremoteId = await Post.findOne({
+            where: {
+              remotePostId: remotePostId
+            }
+          })
+          if(localPostWithExistingremoteId && localPostWithExistingremoteId.id != bskyVersion.id) {
+            // OK TIME TO UPDATE WHO IS PARENT OF DESCENDENTS
+            await Post.update({
+              parentId: bskyVersion.id
+            }, {
+              where: {
+                parentId: localPostWithExistingremoteId.id
+              }
+            })
+            localPostWithExistingremoteId.remotePostId = null;
+            localPostWithExistingremoteId.isDeleted = true;
+            await localPostWithExistingremoteId.save()
+          }
+          bskyVersion.remotePostId = remotePostId;
+          await bskyVersion.save()
+        }
+        return bskyVersion;
+      }
+
     }
   }
   const postInDatabase = await Post.findOne({
@@ -218,34 +266,41 @@ async function getPostThreadRecursive(
         // part of getting the canreply stuff
         if(postPetition.interactionPolicy) {
           const publicList = 'https://www.w3.org/ns/activitystreams#Public'
+          const sameAsOpList = 'sameAsInitialPost'
           // canAnnounce
           if(postPetition.interactionPolicy.canAnnounce) {
-            const listCanAnnounce = (postPetition.interactionPolicy.canAnnounce || []).always.concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
+            const listCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(postPetition.interactionPolicy.canAnnounce.automaticApproval || [])
             replyControl.reblogControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
             if(followersCanReply) {
-              replyControl.reblogControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.reblogControl = followingCanReply ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.reblogControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.reblogControl
             }
             if(listCanAnnounce.includes(publicList)) {
               replyControl.reblogControl = InteractionControl.Anyone
             }
+            if(listCanAnnounce.includes(sameAsOpList)) {
+              replyControl.reblogControl = InteractionControl.SameAsOp
+            }
           }
 
           if(postPetition.interactionPolicy.canLike) {
-            const listCanLike = (postPetition.interactionPolicy.canLike || []).always.concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
+            const listCanLike = (postPetition.interactionPolicy.canLike.always || []).concat(postPetition.interactionPolicy.canLike.automaticApproval || [])
             replyControl.likeControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanLike.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanLike.includes(remoteUser.followingCollectionUrl)
             if(followersCanReply) {
-              replyControl.likeControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.likeControl = followingCanReply ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.likeControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.likeControl
             }
             if(listCanLike.includes(publicList)) {
               replyControl.likeControl = InteractionControl.Anyone
+            }
+            if(listCanLike.includes(sameAsOpList)) {
+              replyControl.likeControl = InteractionControl.SameAsOp
             }
           }
 
@@ -255,12 +310,15 @@ async function getPostThreadRecursive(
             const followersCanReply = listCanReply.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanReply.includes(remoteUser.followingCollectionUrl)
             if(followersCanReply) {
-              replyControl.replyControl = followingCanReply ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.replyControl = followingCanReply ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.replyControl = followingCanReply ? InteractionControl.FollowingAndMentioned : replyControl.replyControl
             }
             if(listCanReply.includes(publicList)) {
               replyControl.replyControl = InteractionControl.Anyone
+            }
+            if(listCanReply.includes(sameAsOpList)) {
+              replyControl.replyControl = InteractionControl.SameAsOp
             }
           }
 
@@ -270,15 +328,35 @@ async function getPostThreadRecursive(
             const followerscanQuote = listCanQuote.includes(remoteUser.followersCollectionUrl)
             const followingcanQuote = listCanQuote.includes(remoteUser.followingCollectionUrl)
             if(followerscanQuote) {
-              replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowersFollowersAndMentioned : InteractionControl.FollowersAndMentioned
+              replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowersFollowingAndMentioned : InteractionControl.FollowersAndMentioned
             } else {
               replyControl.quoteControl = followingcanQuote ? InteractionControl.FollowingAndMentioned : replyControl.quoteControl
             }
             if(listCanQuote.includes(publicList)) {
               replyControl.quoteControl = InteractionControl.Anyone
             }
+            if(listCanQuote.includes(sameAsOpList)) {
+              replyControl.quoteControl = InteractionControl.SameAsOp
+            }
           }
           
+        }
+        if(parent && parent.replyControl == InteractionControl.SameAsOp){
+          replyControl.replyControl = InteractionControl.SameAsOp
+        }
+        else if(parent) {
+          // we check if op has property forceDescendentsToUseSameInteractionControls
+          const opId = (parent.hierarchyLevel === 1 ? parent :
+            (await parent.getAncestors({
+            where: {
+              hierarchyLevel: 1
+            }
+          }))[0] as Post
+        ).remotePostId
+          const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
+          if(opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
+            replyControl.replyControl = InteractionControl.SameAsOp
+          }
         }
         let postTextContent = `${postPetition.content ? postPetition.content : ""
           }`; // Fix for bridgy giving this as undefined
@@ -370,6 +448,26 @@ async function getPostThreadRecursive(
               if (directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything
+                const existingFedi = await Post.findOne({
+                  where: {
+                    remotePostId: postPetition.id
+                  }
+                })
+                if (existingFedi && existingFedi.id != postBskyVersion.id ) {
+                  existingFedi.remotePostId = null;
+                  await Post.update({
+                    parentId: postBskyVersion.id
+                  }, {
+                    where: {
+                      parentId: existingFedi.id
+                    }
+                  })
+                  await existingFedi.save()
+                }
+                if(!postBskyVersion.remotePostId) {
+                  postBskyVersion.remotePostId = postPetition.id
+                  await postBskyVersion.save()
+                }
                 return postBskyVersion;
               } else {
                 postBskyVersion.remotePostId = postPetition.id;
@@ -525,13 +623,14 @@ async function getPostThreadRecursive(
           postPetition.inReplyTo &&
           postPetition.id !== postPetition.inReplyTo
         ) {
-          const parent = await getPostThreadRecursive(
+          parent = await getPostThreadRecursive(
             user,
             postPetition.inReplyTo.id
               ? postPetition.inReplyTo.id
               : postPetition.inReplyTo
           );
           postToCreate.parentId = parent?.id;
+          
         }
 
         const existingPost = localPostToForceUpdate
@@ -629,7 +728,15 @@ async function getPostThreadRecursive(
         }
 
         await newPost.save();
-
+        const postsBeingQuotedIds = quotes.map(elem => elem.quotedPostId)
+        const postsQuoteds = await Post.findAll({
+          where: {
+            id: {
+              [Op.in]: postsBeingQuotedIds
+            }
+          }
+        })
+        detachedQuote = postsQuoteds.some(async (elem) => !await canInteract(elem.quoteControl, newPost.userId, elem.id) )
         await bulkCreateNotifications(
           quotes.map((quote) => ({
             notificationType: "QUOTE",
@@ -637,6 +744,7 @@ async function getPostThreadRecursive(
             userId: newPost.userId,
             postId: newPost.id,
             createdAt: new Date(newPost.createdAt),
+            detached: detachedQuote
           })),
           {
             postContent: newPost.content,
@@ -654,7 +762,18 @@ async function getPostThreadRecursive(
           await addAsksToPost(newPost, fediTags);
         } catch (error) { }
         if (mentionedUsersIds.length != 0) {
-          await processMentions(newPost, mentionedUsersIds);
+          // check if detached
+          if(parent?.detached) {
+              detachedReply = true
+          }
+           if(!detachedReply && parent && (await getAllLocalUserIds()).includes(parent.userId) ) {
+            detachedReply = !await canInteract(parent.replyControl, newPost.userId, parent.id)
+           }
+           if(detachedReply) {
+            newPost.detached = true;
+            await newPost.save()
+           }
+          await processMentions(newPost, mentionedUsersIds, detachedReply);
         }
         await loadPoll(remotePostObject, newPost, user);
         const postCleanContent = dompurify
@@ -897,7 +1016,7 @@ async function addTagsToPost(post: any, originalTags: fediverseTag[]) {
   );
 }
 
-async function processMentions(post: any, userIds: string[]) {
+async function processMentions(post: any, userIds: string[], detached: boolean) {
   await post.setMentionPost([]);
   await Notification.destroy({
     where: {
@@ -935,6 +1054,7 @@ async function processMentions(post: any, userIds: string[]) {
       userId: post.userId,
       postId: post.id,
       createdAt: new Date(post.createdAt),
+      detached: detached
     })),
     {
       postContent: post.content,

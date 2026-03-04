@@ -7,11 +7,12 @@ import { getRemoteActor } from "./getRemoteActor.js";
 import { Agent, fetch } from "undici";
 import { completeEnvironment } from "../backendOptions.js";
 import getUserAgent from "../getUserAgent.js";
+import { getAtprotoUser } from "../../atproto/utils/getAtprotoUser.js";
 
 async function searchRemoteUser(
   searchTerm: string,
   user: any
-): Promise<User | null> {
+): Promise<User | null | undefined> {
   let remoteResponse: any;
   const searchData = splitHandle(searchTerm);
   const users: Array<any> = [];
@@ -66,6 +67,9 @@ async function searchRemoteUser(
     } catch (error) {
       logger.trace(`webfinger petition failed: ${searchTerm}`);
     }
+  }
+  if(searchData && searchData.type === 'bluesky') {
+    return getAtprotoUser(searchTerm)
   }
   return users.find((elem) => !!elem);
 }

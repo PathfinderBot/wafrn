@@ -76,7 +76,8 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
           {
             notificationType: 'FOLLOW',
             userId: remoteUser.id,
-            notifiedUserId: userToBeFollowed.id
+            notifiedUserId: userToBeFollowed.id,
+            detached: false
           },
           {
             userUrl: remoteUser.url

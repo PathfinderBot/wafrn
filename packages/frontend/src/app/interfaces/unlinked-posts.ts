@@ -1,5 +1,6 @@
 import { Ask } from './ask'
 import { Emoji } from './emoji'
+import { InteractionControlType } from './InteractionControl'
 import { SimplifiedUser } from './simplified-user'
 
 export interface unlinkedPosts {
@@ -47,6 +48,10 @@ export interface basicPost {
   canQuote: boolean
   canLike: boolean
   canReblog: boolean
+  replyControl: InteractionControlType;
+  reblogControl: InteractionControlType;
+  quoteControl: InteractionControlType;
+  likeControl: InteractionControlType;
 }
 
 export interface EmojiRelations {

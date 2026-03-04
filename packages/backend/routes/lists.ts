@@ -66,7 +66,7 @@ export default function listRoutes(app: Application) {
             notFoundUsersToFetch.map((usr) =>
               searchRemoteUser(usr, petitionBy)
             ),
-            20000
+            10000
           );
           foundUsers = await User.findAll({
             where: {

@@ -98,7 +98,8 @@
       "myBlockedUsers": "Blocked users",
       "myBlockedServers": "Blocked servers",
       "importFollows": "Import followers",
-      "superSecretMenu": "Super Secret Menu"
+      "superSecretMenu": "Super Secret Menu",
+      "detachedNotifications": "Unaothorised Notifications"
     },
     "admin": {
       "title": "Admin",
@@ -121,6 +122,16 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "interactionControl": {
+      "anyone": "Anyone",
+      "FollowingAndMentioned": "People I follow and mentioned users",
+      "FollowersAndMentioned": "My followers and mentioned users",
+      "FollowersFollowingAndMentioned": "Following, followed or mentioned",
+      "MentionedUsersOnly": "Only mentioned users",
+      "anyoneCanQuote": "Anyone can quote",
+      "noOneCanQuote": "Not quotable"
+    },
+    "replyControlWarning": "For now, only gotosocial, bluesky and other wafrns support this feature. Unwanted replies will be hidden from the thread on this instance, muted and only displayed in the section unauthorized replies. They may still be visible in other servers",
     "editingLabel": "Editing woot",
     "askReplyLabel": "Replying to ask",
     "inReplyTo": "In reply to:",
@@ -130,9 +141,9 @@
     "unlistedWarning": "Unlisted woots will get ignored by searches (TAGS INCLUDED), and will not show on explore local, but they will be shown to your followers. And if someone sends a link they will be visible, unlike followers only. Basically, for when you want to woot a lot but dont want to fill explore local.",
     "directMessageWithQuoteWarning": "Quoted user will be notified of this as a mention too",
     "sensitivePlaceholder": "What is sensitive about this woot?",
-    "postQuoteBoxLabel": "Paste the URL of a woot to quote it. Can be the external url or the wafrn url",
-    "postQuoteBoxPlaceholder": "Just paste the woot url",
-    "postQuoteConfirmButton": "Add woot as quote",
+    "wootQuoteBoxLabel": "Paste the URL of a woot to quote it. Can be the external url or the wafrn url",
+    "wootQuoteBoxPlaceholder": "Just paste the woot url",
+    "wootQuoteConfirmButton": "Add woot as quote",
     "wootTextLabel": "Woot text",
     "wootTextPlaceholder": "Start writing...",
     "uploadMediaIndicator": "Drop to upload media",
@@ -395,6 +406,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
+    "defaultPostEditorCanReply":"Default who can reply",
+    "defaultPostEditorCanQuote":"Default woot can be quoted",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",

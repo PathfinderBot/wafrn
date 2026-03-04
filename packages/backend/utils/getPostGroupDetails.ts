@@ -41,7 +41,7 @@ export default async function getPosstGroupDetails(postGroup: any[]) {
   })
   return postGroup.map((elem) => {
     let notes = 0
-    fullPostTree.forEach((elementWithNotes: any) => {
+    fullPostTree.forEach((elementWithNotes) => {
       const idtoCheck = getPostFirstParentId(elem)
       if (idtoCheck === elementWithNotes.id) {
         notes = elementWithNotes.descendents.length

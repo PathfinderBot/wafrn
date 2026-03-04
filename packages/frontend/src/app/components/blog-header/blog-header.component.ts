@@ -126,13 +126,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails();
     if (blog === undefined) return;
-    this.headerUrl = blog.url.startsWith("@")
-      ? EnvironmentService.environment.externalCacheurl +
-      encodeURIComponent(blog.headerImage)
-      : EnvironmentService.environment.externalCacheurl +
-      encodeURIComponent(
-        EnvironmentService.environment.baseMediaUrl + blog.headerImage
-      );
+    this.headerUrl = `${EnvironmentService.environment.cacheDomain}/api/v2/cache/header/${blog.id}`
     const askLevelOption = blog.publicOptions.find(
       (elem) => elem.optionName == "wafrn.public.asks"
     );

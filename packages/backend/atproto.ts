@@ -33,6 +33,9 @@ const jetstream = new Jetstream({
     "app.bsky.graph.block",
     "app.bsky.feed.threadgate",
   ],
+  // wantedDids: [
+  //   'did:plc:zmgp4bhcck7kdxs5og7qo5rm'
+  // ],
   cursor: cursor,
 });
 

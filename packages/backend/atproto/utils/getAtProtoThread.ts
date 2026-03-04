@@ -82,6 +82,7 @@ async function processSinglePost(
   uri: string,
   forceUpdate = false
 ): Promise<string | undefined> {
+  let detached = false;
   if (!completeEnvironment.enableBsky) {
     return undefined;
   }
@@ -540,6 +541,7 @@ async function processSinglePost(
             notifiedUserId: mnt,
             userId: postToProcess.userId,
             createdAt: new Date(postToProcess.createdAt),
+            detached: detached
           })),
           {
             ignoreDuplicates: true,
@@ -584,6 +586,7 @@ async function processSinglePost(
                 notifiedUserId: quotedPost.userId,
                 userId: postToProcess.userId,
                 postId: postToProcess.id,
+                detached: false
               },
               {
                 postContent: postToProcess.content,
@@ -730,7 +733,8 @@ async function getPostInteractionLevels(
   if (postGate?.value?.embeddingRules.length) {
     canQuote = InteractionControl.NoOne;
   }
-  if (parentId) {
+  const parent = parentId ? await Post.findByPk(parentId) as Post : undefined
+  if (parent && (!parent.remotePostId || parent.remotePostId?.startsWith('https://bsky.brid.gy/'))) {
     canReply = InteractionControl.SameAsOp;
     canQuote = InteractionControl.SameAsOp;
   } else if (
@@ -747,7 +751,7 @@ async function getPostInteractionLevels(
       if (mentiontypes.includes("mentionRule")) {
         if (mentiontypes.includes("followingRule")) {
           canReply = mentiontypes.includes("followerRule")
-            ? InteractionControl.FollowersFollowersAndMentioned
+            ? InteractionControl.FollowersFollowingAndMentioned
             : InteractionControl.FollowingAndMentioned;
         } else {
           canReply = mentiontypes.includes("followerRule")

@@ -151,6 +151,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       // Local users
       if (!user.isBlueskyUser) {
         if (user.bskyDid && user.enableBsky ) {
+          // TODO instead of calling bsky appview we should check the pds document ourselves?
           const response = await agent.getProfile({ actor: user.bskyDid });
           if (response.data)
             postText = postText.replaceAll(
@@ -210,7 +211,8 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     else text += token.raw;
 
     const length = encoder.encode(text).byteLength;
-    if (length > postMax && medias.length && medias.length <= 4) {
+    // well a bit dirty but yeah taking the case out is worse and ughh
+    if (length > postMax && medias.length && medias.length <= 4 || encoder.encode(postText).length > postMax) {
       const lengthLeft =
         postMax - builder.text.length - shortenerWithMediaLength;
       if (token.type === "link")
@@ -429,7 +431,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       res.embed = {
         $type: "app.bsky.embed.video",
         video: video.blob,
-        alt: video.media.description ? video.media.description : "",
+        alt: (video.media.description || "").slice(0, 999),
         labels,
         aspectRatio: await getVideoAspectRatio("uploads/" + video.media.url),
         presentation: presentation
@@ -440,7 +442,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         images: bskyMedias.map((m) => ({
           labels,
           image: m.blob,
-          alt: m.media.description ? m.media.description : "",
+          alt: (m.media.description || "").slice(0, 999),
           aspectRatio: {
             width: m.media.width,
             height: m.media.height,

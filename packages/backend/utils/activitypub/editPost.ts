@@ -25,6 +25,7 @@ async function federatePostHasBeenEdited(postToEdit: any) {
   if (!user) return
 
   await redisCache.del('postAndUser:' + postToEdit.id)
+  await redisCache.del('postToJsonLD:' + postToEdit.id)
   const postAsJSONLD = await postToJSONLD(postToEdit.id)
   if (!postAsJSONLD) {
     return

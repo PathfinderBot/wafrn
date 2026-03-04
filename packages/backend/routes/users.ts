@@ -817,7 +817,10 @@ function userRoutes(app: Application) {
           as: 'followed',
           required: true
         }
-      ]
+      ],
+      where: {
+        followerId: user.id
+      }
     })
 
     const followList = myFollows.map((elem: any) =>
@@ -2126,8 +2129,8 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
       )
       await transaction.commit()
     } catch (error) {
-      logger.info({ message: `Problem updating user otpions`, error: error })
       await transaction.rollback()
+      logger.info({ message: `Problem updating user otpions`, error: error })
     }
   }
 }
