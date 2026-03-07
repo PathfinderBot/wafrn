@@ -1,7 +1,7 @@
 on:
   push:
-    tags: '*'
-    # branches: 'main'
+    # tags: '*'
+    branches: 'main'
 
 env:
   REGISTRY: codeberg.org
@@ -42,7 +42,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ github.token }}
+          password: ${{ secrets.image_token }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build and push
