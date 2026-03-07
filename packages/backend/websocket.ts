@@ -64,11 +64,15 @@ const wsServer = expressWs(app);
 const server = wsServer.app;
 websocketRoutes(server);
 
-cron.schedule("0 2 * * *", async () => {
+cron.schedule("0 */2 * * *", async () => {
   // maintenance tasks
   sequelize.query("VACUUM ANALYZE").then(() => {
     logger.info(`postgres vacuum analyze executed`);
   });
+});
+
+cron.schedule("0 2 * * *", async () => {
+  // maintenance tasks nuking users
   nukeBannedUsers().then(() => {
     logger.info(`NukeBannedUsers Done`);
   });
@@ -101,7 +105,7 @@ let postIndexes = await queryInterface.showIndex("posts");
 if (
   !(postIndexes as Array<any>).some((index) => index.name === "post_bsky_uri")
 ) {
-  logger.info(
+  logger.warn(
     `ATTENTION: your server doesnt seem to have an unique index on bskyuri. this is a bug. we will investigate soon in a future release`
   );
   clearDuplicatedBskyUris().then(async (res) => {
