@@ -187,7 +187,7 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
         fediTags.push({
           type: "BskyQuote",
           name: `RE: RE: <a href="${postUrl}">${postUrl}</a><br>`,
-          href: postUrl,
+          href: quotedPost.bskyDid,
         });
         misskeyTagsAndQuotes = misskeyTagsAndQuotes + `<br>RE: ${postUrl}`
       }
