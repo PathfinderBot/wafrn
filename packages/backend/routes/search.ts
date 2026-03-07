@@ -277,7 +277,7 @@ export default function searchRoutes(app: Application) {
 
     const searchData = splitHandle(searchTerm)
 
-    let result: User | null = null
+    let result: User | null | undefined = null
 
     if (completeEnvironment.enableBsky && usr.enableBsky && searchData.type === 'bluesky' && usr.bskyDid) {
       try {
@@ -297,7 +297,7 @@ export default function searchRoutes(app: Application) {
     if (!result && searchData.type === 'fediverse') {
       result = await searchRemoteUser(searchTerm, usr)
     }
-    return result
+    return result || null
   }
 
   // this method will only search posts in the database localy, not remote petitions

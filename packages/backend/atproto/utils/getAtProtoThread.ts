@@ -772,6 +772,10 @@ async function getPostInteractionLevels(
     }
   }
 
+  // bug in bsky. force threads to be sameasop
+  if(parent) {
+    canReply = InteractionControl.SameAsOp
+  }
   if (
     canQuote === InteractionControl.Anyone &&
     canReply != InteractionControl.Anyone

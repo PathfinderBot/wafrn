@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -15,6 +15,7 @@ import { LoaderComponent } from '../loader/loader.component'
 })
 export class MigrateOutComponent {
   private loginService = inject(LoginService);
+  private cdr = inject(ChangeDetectorRef)
 
   message = ''
   selectedUser = ''
@@ -35,5 +36,6 @@ export class MigrateOutComponent {
       this.message = 'Something went wrong!'
     }
     this.loading = false
+    this.cdr.detectChanges()
   }
 }

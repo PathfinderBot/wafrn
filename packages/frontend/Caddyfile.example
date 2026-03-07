@@ -97,6 +97,12 @@ ${{PDS_DOMAIN_NAME}} *.${{PDS_DOMAIN_NAME}} {
         on_demand
     }
 
+    handle /favicon.ico {
+        root * /var/www/html/frontend/
+        try_files {path} /favicon.ico
+        file_server
+    }
+
     handle / {
         root * /pds-homepage
         try_files {path} /pds.txt
