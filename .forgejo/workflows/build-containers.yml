@@ -1,7 +1,7 @@
 on:
   push:
-    # tags: '*'
-    branches: 'main'
+    tags: "*"
+    # branches: 'main'
 
 env:
   REGISTRY: codeberg.org
