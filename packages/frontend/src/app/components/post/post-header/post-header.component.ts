@@ -35,6 +35,7 @@ import { PostActionsComponent } from '../../post-actions/post-actions.component'
 import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
 import { TranslatePipe } from '@ngx-translate/core'
 import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import sanitize from 'sanitize-html'
 
 @Component({
   selector: 'app-post-header',
@@ -94,6 +95,7 @@ export class PostHeaderComponent implements OnChanges {
   edited = false
 
   timeAgo = ''
+  pronouns = ''
 
   constructor() {
     // its an array
@@ -104,13 +106,9 @@ export class PostHeaderComponent implements OnChanges {
     const relative = DateTime.fromJSDate(this.fragment().createdAt).setLocale('en').toRelative()
     this.timeAgo = relative ? relative : 'Error with date'
     this.edited = this.fragment().updatedAt.getTime() - this.fragment().createdAt.getTime() > 60000
-  }
-
-  getPronouns(post: ProcessedPost) {
-    if (!post.user.pronouns) return undefined;
-    const p = document.createElement('p')
-    p.innerHTML = post.user.pronouns
-    return p.textContent
+    if(this.fragment().user.pronouns) {
+      this.pronouns = sanitize(this.fragment().user.pronouns as string, {allowedTags: []})
+    }
   }
 
   async followUser(post: ProcessedPost) {
