@@ -168,18 +168,6 @@
         @if (blog?.isBot) {
         <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>Bot </span>
         }
-        @if (blog && blog.followers / blog.followed > 5) {
-        <span class="badge ratio-badge" matTooltip="{{
-              'For every ' +
-                (blog.followers / blog.followed | number: '1.0-0') +
-                ' followers ' +
-                blog.url +
-                ' follows 1 user.'
-            }}">
-          <fa-icon class="mr-2" [icon]="usersIcon"></fa-icon>Follower Ratio:
-          {{ blog.followers / blog.followed | number: '1.0-0' }}:1
-        </span>
-        }
       </div>
     </div>
   </div>
