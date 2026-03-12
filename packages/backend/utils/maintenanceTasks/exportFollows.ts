@@ -26,7 +26,19 @@ if (localUser) {
         where: {
             id: {
                 [Op.in]: localUserFollows.map(elem => elem.followedId)
-            }
+            },
+            [Op.or]: [
+                {
+                    email: {
+                        [Op.ne]: null
+                    }
+                }, {
+                    remoteId: {
+                        [Op.ne]: null,
+                        [Op.notILike]: 'https://bsky.brid.gy%'
+                    }
+                }
+            ]
         }
     })
 
