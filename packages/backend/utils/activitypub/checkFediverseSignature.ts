@@ -19,6 +19,10 @@ function getCheckFediverseSignatureFunction(force = false) {
     res: Response,
     next: NextFunction
   ) {
+    if(req.headers["Accept"] && (req.headers["Accept"] as string).toLowerCase().includes('application/activity+yaml') ) {
+      res.status(406);
+      return res.send({error: 'We do not accept yaml-ld', message: 'YAML-LD will generate a lot of safety issues: https://pyyaml.org/wiki/PyYAMLDocumentation#:~:text=Warning,though '})
+    }
     let success = !force;
     let hostUrl = req.header("user-agent")
       ? `petition without sighead ${req.header("user-agent")}`
