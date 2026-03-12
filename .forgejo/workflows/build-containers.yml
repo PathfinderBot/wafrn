@@ -23,6 +23,8 @@ jobs:
     container:
       image: ghcr.io/catthehacker/ubuntu:act-24.04
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -48,6 +50,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
+          context: .
           file: packages/${{ matrix.package }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
