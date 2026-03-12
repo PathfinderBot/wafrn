@@ -1,11 +1,11 @@
-import { Follows, Notification, ServerBlock, User, UserOptions } from '../../../models/index.js'
+import { Follows, ServerBlock, User, UserOptions } from '../../../models/index.js'
 import { activityPubObject } from '../../../interfaces/fediverse/activityPubObject.js'
 import { createNotification } from '../../pushNotifications.js'
 import { acceptRemoteFollow } from '../acceptRemoteFollow.js'
 import { getRemoteActor } from '../getRemoteActor.js'
-import { signAndAccept } from '../signAndAccept.js'
+import {  } from '../signAndAccept.js'
 import { rejectremoteFollow } from '../rejectRemoteFollow.js'
-import { logger } from '../../logger.js'
+import {  } from '../../logger.js'
 
 async function FollowActivity(body: activityPubObject, remoteUser: User, user: User) {
   const apObject: activityPubObject = body
@@ -24,7 +24,6 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
         optionName: 'wafrn.autoRejectFollowsFromUsersYouDoNotFollow'
       }
     })
-    let autoFollowThisUser = false;
     let autoAcceptFollow = !user.manuallyAcceptsFollows
 
     const userIsFollowingNewFollower = await Follows.findOne({
@@ -38,21 +37,22 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
       autoAcceptFollow = true;
     }
 
-
     const blockExisting = await ServerBlock.findAll({
       where: {
         userBlockerId: userToBeFollowed.id,
         blockedServerId: remoteUser.federatedHostId || '00000000-0000-0000-0000-000000000000'
       }
     })
+
     if (
-      (!autoFollowThisUser &&
+      (!autoAcceptFollow &&
       dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' &&
       dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true') || blockExisting.length > 0
     ) {
       await rejectremoteFollow(userToBeFollowed.id, remoteUser.id)
       return
     }
+
     let [remoteFollow, created] = await Follows.findOrCreate({
       where: {
         followerId: remoteUser.id,
@@ -70,7 +70,7 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
     remoteFollow.remoteFollowId = apObject.id
     await remoteFollow.save()
     // we accept it if user accepts follows automaticaly
-    if (remoteFollow.accepted) {
+    if (remoteFollow.accepted || autoAcceptFollow) {
       if (created) {
         createNotification(
           {
