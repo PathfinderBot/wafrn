@@ -1,4 +1,4 @@
-import { Environment } from './interfaces/environment.js'
+import { Environment } from "./interfaces/environment.js";
 
 export const baseEnvironment: Environment = {
   prod: false,
@@ -9,13 +9,13 @@ export const baseEnvironment: Environment = {
     mainThread: true,
     low: 5,
     medium: 10,
-    high: 100
+    high: 100,
   },
   // this was a dev thing. leave to true unless you are doing stuff in local or your media url is yourinstance/uploads (not recomended)
   removeFolderNameFromFileUploads: true,
   // we use now postgresql.
-  databaseConnectionString: 'postgresql://postgres:root@localhost:5432/wafrn',
-  listenIp: '0.0.0.0',
+  databaseConnectionString: "postgresql://postgres:root@localhost:5432/wafrn",
+  listenIp: "0.0.0.0",
   port: 9000,
   // In the case of you wantint to put fedi petitions in another thread, use a different port here. You will have to update your apache config
   fediPort: 9000,
@@ -23,70 +23,70 @@ export const baseEnvironment: Environment = {
   cachePort: 9000,
   saltRounds: 14,
   // for jwt secret you should use something like https://www.grc.com/passwords.htm please this is SUPER DUPER SECRET.
-  jwtSecret: Buffer.from('secret', 'base64'),
+  jwtSecret: Buffer.from("secret", "base64"),
   // https://app.wafrn.net
-  frontendUrl: 'https://localhost',
+  frontendUrl: "https://localhost",
   // app.wafrn.net
-  instanceUrl: 'localhost',
+  instanceUrl: "localhost",
   // https://media.wafrn.net
-  mediaUrl: 'https://localhost/api/uploads',
+  mediaUrl: "https://localhost/api/uploads",
   // You should run also this project github.com/gabboman/fediversemediacacher. In my case, https://cache.wafrn.net/?media= The cache is there because at some point in the past I configured it to precache images. No need for it to be honest
-  externalCacheurl: 'https://localhost/api/cache?media=',
+  externalCacheurl: "https://localhost/api/cache?media=",
   // If main cache fails due to IP limits you can install additional proxies, and use them here. The cache will try these as well before failing.
   // You can deploy https://github.com/sztupy/did-decoder-lambda this project to Netlify or Vercel as a backup for example
   externalCacheBackups: [],
   // after the first run, create the admin user. and a deleted user. You will have to edit the user url in db so it starts with an @
-  adminUser: 'admin',
+  adminUser: "admin",
   // admin email wich you will recive things like "someone registred and you need to review this"
-  adminEmail: 'admin@example.com',
-  adminPassword: 'Password1!',
+  adminEmail: "admin@example.com",
+  adminPassword: "Password1!",
   // after creating the deleted_user we advice to also set the user to BANNED
-  deletedUser: '@DELETEDUSER',
+  deletedUser: "@DELETEDUSER",
   // in MB. Please make sure you have the same in the frontend
   uploadLimit: 250,
   // 20 is a good number. With the new query we could investigate a higher number but no need to do it
   postsPerPage: 20,
   // trace is extreme logging. debug is ok for now
-  logLevel: 'debug',
+  logLevel: "debug",
   // There is a script that loads the file from this url and blocks the servers
-  blocklistUrl: '',
+  blocklistUrl: "",
   // In some cases we serve the frontend with the backend with a small preprocessing. We need the location of the frontend
-  frontedLocation: '${{ROOT_DIR}}/packages/frontend/dist/wafrn/browser/',
+  frontedLocation: `${process.env.ROOT_DIR}/packages/frontend/dist/wafrn/browser/`,
   // oh yes, you need TWO redis connections, one for queues other for cache
   bullmqConnection: {
-    host: 'localhost',
+    host: "localhost",
     port: 6379,
-    db: 0
+    db: 0,
   },
   // second database used for cache
   redisioConnection: {
-    host: 'localhost',
+    host: "localhost",
     port: 6379,
-    db: 1
+    db: 1,
   },
   // this will create a backendlog.log file on the folder superior to this one.
   pinoTransportOptions: {
     targets: [
       {
-        target: 'pino/file',
-        level: 'debug',
+        target: "pino/file",
+        level: "debug",
         options: {
-          destination: 1
-        }
-      }
-    ]
+          destination: 1,
+        },
+      },
+    ],
   },
   // you can try with gmail but we actually use sendinblue for this. bear in mind that this might require some fiddling in your gmail account too
   // you might need to enable https://myaccount.google.com/lesssecureapps
   // https://miracleio.me/snippets/use-gmail-with-nodemailer/
   emailConfig: {
-    host: 'localhost',
+    host: "localhost",
     port: 587,
     auth: {
-      user: 'username',
-      pass: 'password',
-      from: 'wafrn@example.com'
-    }
+      user: "username",
+      pass: "password",
+      from: "wafrn@example.com",
+    },
   },
   // you dont have an smtp server and you want to do a single user instance? set this to true!
   disableRequireSendEmail: true,
@@ -98,38 +98,38 @@ export const baseEnvironment: Environment = {
   ignoreBlockHosts: [] as string[],
   // default SEO data that will be used when trying to load server data
   defaultSEOData: {
-    title: 'localhost',
-    description: 'localhost, a wafrn instance',
-    img: 'https://localhost/assets/logo.png'
+    title: "localhost",
+    description: "localhost, a wafrn instance",
+    img: "https://localhost/assets/logo.png",
   },
   enableBsky: false,
-  bskyPds: 'pds.localhost',
+  bskyPds: "pds.localhost",
   // to generate these keys use the following command: `npx web-push generate-vapid-keys`. Remember to do the environment one too!!
-  webpushPrivateKey: '${{WEBPUSH_PRIVATE}}',
-  webpushPublicKey: '${{WEBPUSH_PUBLIC}}',
+  webpushPrivateKey: process.env.WEBPUSH_PRIVATE ?? "",
+  webpushPublicKey: process.env.WEBPUSH_PUBLIC ?? "",
   // this is a email that will be sent to the distribution services in the users devices in case the owner of the distribution service wants to contact the server that is sending the notifications
-  webpushEmail: '${{WEBPUSH_EMAIL}}',
+  webpushEmail: process.env.WEBPUSH_EMAIL ?? "",
   // registration level for the instance
-  registrationLevel: 'PRIVATE',
+  registrationLevel: "PRIVATE",
   autoFollowAdmin: true,
   disableShowingBlockedServers: true,
   minimumAgeToRegister: 18,
-  donationUrl: 'http://localhost/about',
-  bskyRotationKeyK256: '',
+  donationUrl: "http://localhost/about",
+  bskyRotationKeyK256: "",
   frontendEnvironment: {
-    logo: '/assets/logo.png',
-    frontUrl: 'https://localhost',
-    baseUrl: '/api',
-    baseMediaUrl: '/api/uploads',
-    externalCacheurl: '/api/cache?media=',
+    logo: "/assets/logo.png",
+    frontUrl: "https://localhost",
+    baseUrl: "/api",
+    baseMediaUrl: "/api/uploads",
+    externalCacheurl: "/api/cache?media=",
     shortenPosts: 3,
     disablePWA: false,
     maintenance: false,
     enableRawOutput: true,
-    registrationLevel: 'PRIVATE',
-    privateInstanceRegistrationText: 'test 123',
+    registrationLevel: "PRIVATE",
+    privateInstanceRegistrationText: "test 123",
     minimumAgeToRegister: 18,
-    donationUrl: 'http://localhost/about',
-    disableShowingBlockedServers: true
-  }
-}
+    donationUrl: "http://localhost/about",
+    disableShowingBlockedServers: true,
+  },
+};
