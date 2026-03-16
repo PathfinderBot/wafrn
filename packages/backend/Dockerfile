@@ -24,7 +24,7 @@ COPY packages/backend .
 # create log folder early to prevent node err: cannot open logs/*.log
 RUN mkdir -p logs
 
-COPY packages/backend/environment.dev.ts environment.ts
+COPY packages/backend/environment.example.ts environment.ts
 
 RUN npm run type-check
 
@@ -41,7 +41,7 @@ ENV LOG_DESTINATION=1
 EXPOSE ${PORT}
 
 # set up configuration from environment, then run tini as entrypoint to be able to handle kernel signals
-ENTRYPOINT ["tini","--","./docker-entrypoint.sh"]
+ENTRYPOINT ["tini","--"]
 
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
 
