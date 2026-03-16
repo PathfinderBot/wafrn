@@ -37,15 +37,22 @@ RUN cp /app/packages/frontend/src/assets/pds-homepage.txt /app/pds-homepage.txt
 
 COPY packages/cadd[y]/Caddyfil[e] /app/Caddyfile
 
-FROM caddy:2
+FROM halverneus/static-file-server:latest
 
-RUN apk add perl
+COPY --from=builder /app/frontend /web
 
-COPY --from=builder /app/Caddyfile /etc/caddy/Caddyfile
-COPY --from=builder /app/pds-homepage.txt /pds-homepage/pds.txt
-COPY --from=builder /app/frontend/ /app/frontend
-COPY --from=builder /app/packages/frontend/docker-entrypoint.sh /docker-entrypoint.sh
+ENV PORT=8080
+ENV FOLDER=/web
 
-ENTRYPOINT [ "/docker-entrypoint.sh" ]
-
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+# FROM caddy:2
+#
+# RUN apk add perl
+#
+# COPY --from=builder /app/Caddyfile /etc/caddy/Caddyfile
+# COPY --from=builder /app/pds-homepage.txt /pds-homepage/pds.txt
+# COPY --from=builder /app/frontend/ /app/frontend
+# COPY --from=builder /app/packages/frontend/docker-entrypoint.sh /docker-entrypoint.sh
+#
+# ENTRYPOINT [ "/docker-entrypoint.sh" ]
+#
+# CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
