@@ -452,4 +452,4 @@ function activityPubRoutes(app: Application) {
   });
 }
 
-export { activityPubRoutes };
+export { activityPubRoutes , getLocalUserByUrlCache};
