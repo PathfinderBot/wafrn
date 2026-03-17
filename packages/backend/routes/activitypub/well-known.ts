@@ -25,9 +25,6 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
   app.get('/.well-known/webfinger/', async (req: Request, res: Response) => {
-    res.set({
-      "content-type": "application/activity+json",
-    });
     if (req.query?.resource) {
       const urlQueryResource: string = req.query.resource as string
       if (
@@ -60,6 +57,9 @@ function wellKnownRoutes(app: Application) {
             }
           ]
         }
+        res.set({
+          "content-type": "application/jrd+json; charset=utf-8",
+        });
         res.send(response)
       } else {
         return404(res)
