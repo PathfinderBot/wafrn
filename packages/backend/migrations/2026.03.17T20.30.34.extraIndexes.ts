@@ -7,16 +7,16 @@ import { DataType } from "sequelize-typescript";
 export const up: Migration = async (params) => {
   const queryInterface = params.context;
   await queryInterface.sequelize.query(
-    `CREATE INDEX users_federatedHostId ON "users" ("federatedHostId");
-CREATE INDEX follows_follower_id_accepted ON "follows" ("followerId", "accepted");
-CREATE INDEX serverBlocks_blockedServerId ON "serverBlocks" ("blockedServerId");
-CREATE INDEX silencedPosts_userId ON "silencedPosts" ("userId");
-CREATE INDEX silencedPosts_postId ON "silencedPosts" ("postId");
-CREATE INDEX postReports_postId ON "postReports" ("postId");
-CREATE INDEX inviteCodes_createdByUserId ON "inviteCodes" ("createdByUserId");
-CREATE INDEX questionPollAnswers_questionPollQuestionId ON "questionPollAnswers" ("questionPollQuestionId");
-CREATE INDEX questionPollAnswers_userId ON "questionPollAnswers" ("userId");
-CREATE INDEX notifications_user_detached_date ON "notifications" ("notifiedUserId", "detached", "createdAt" DESC);`
+    `CREATE INDEX CONCURRENTLY IF NOT EXISTS users_federatedHostId ON "users" ("federatedHostId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS follows_follower_id_accepted ON "follows" ("followerId", "accepted");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS serverBlocks_blockedServerId ON "serverBlocks" ("blockedServerId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS silencedPosts_userId ON "silencedPosts" ("userId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS silencedPosts_postId ON "silencedPosts" ("postId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS postReports_postId ON "postReports" ("postId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS inviteCodes_createdByUserId ON "inviteCodes" ("createdByUserId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS questionPollAnswers_questionPollQuestionId ON "questionPollAnswers" ("questionPollQuestionId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS questionPollAnswers_userId ON "questionPollAnswers" ("userId");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS notifications_user_detached_date ON "notifications" ("notifiedUserId", "detached", "createdAt" DESC);`
   );
   
 
