@@ -80,8 +80,8 @@ function activityPubRoutes(app: Application) {
           res
             .set({
               "content-type": "application/activity+json",
-            })
-            .send(userForFediverse);
+            });
+            return res.send(userForFediverse);
         } else {
           return404(res);
         }
