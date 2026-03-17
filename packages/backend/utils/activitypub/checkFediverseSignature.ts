@@ -13,6 +13,8 @@ import { getRemoteActor } from "./getRemoteActor.js";
 import { LdSignature } from "./rsa2017.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 
+const adminUser = getAdminUser();
+
 function getCheckFediverseSignatureFunction(force = false) {
   return async function checkFediverseSignature(
     req: SignedRequest,
@@ -28,7 +30,6 @@ function getCheckFediverseSignatureFunction(force = false) {
       ? `petition without sighead ${req.header("user-agent")}`
       : "somewhere not specified";
     let remoteUserUrl = "";
-    const adminUser = getAdminUser();
     try {
       const headersToValidate = ["(request-target)", "host", "date"];
       if (req.method === "POST") {
