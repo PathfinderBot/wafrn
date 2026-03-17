@@ -397,11 +397,10 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) 
         altText = media.description;
       }
       */
-        const streams = response.data.tee()
-        const { stream, mime } = await getMimeType(streams[0])
+        const { stream, mime } = await getMimeType(response.data)
         if (res) {
           res.contentType(mime)
-          stream.pipe(streams[1])
+          stream.pipe(res)
         }
         await writeStream(stream, localFileName, mime, altText)
       } catch (error) {
