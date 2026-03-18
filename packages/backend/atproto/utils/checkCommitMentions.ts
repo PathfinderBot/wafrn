@@ -18,48 +18,27 @@ function checkCommitMentions(
     followedHashtags: Set<string>
   }
 ): boolean {
+  let res = false
+  let record = commit.record
+
   if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete'){
     return true;
   }
   const didsToCheck = cacheData.followedDids
   let quotedPostUri: string | undefined = undefined
-  let res = false
-  // first we check if there are any mentions to local users. if so we return true
-  // TODO nuke this
-  if (commit.collection.startsWith('app.bsky.feed.like') || commit.collection.startsWith('app.bsky.graph.follow')) {
-    //return false
-  }
-  // we check lik
   if (
-    commit.operation === CommitType.Create &&
-    (commit.collection.startsWith('app.bsky.feed.like') || commit.collection.startsWith('app.bsky.graph.follow'))
-  ) {
-    let record: any = commit.record
-    // we do not ned 18k likes on a mark hamill post. We better do just a "people you follow liked..."
-    let likedPostUri = record?.subject?.uri ? record?.subject.uri : ''
-    if (likedPostUri) {
-      likedPostUri = likedPostUri.split('/')[2]
-    }
-    let followedUser = commit.collection.startsWith('app.bsky.graph.follow') ? record?.subject : ''
-
-    if (
-      didsToCheck.has(did) ||
-      cacheData.localUserDids.has(likedPostUri) ||
-      cacheData.localUserDids.has(followedUser)
-    ) {
-      return true
-    }
-    if (
       commit.operation === CommitType.Create &&
       commit.collection.startsWith('app.bsky.feed.post') &&
       (commit.record as any)?.facets
     ) {
-      let record: any = commit.record
       const mentions = record?.facets
         .flatMap((elem: any) => elem.features)
         .map((elem: any) => elem.did)
         .filter((elem: any) => elem)
-      quotedPostUri = getQuotedPostUri({ record } as PostView)
+      try {
+        quotedPostUri = getQuotedPostUri({ record } as PostView)
+
+      } catch(error: any) {}
       if (record.text) {
         const rt = new RichText({
           text: record.text,
@@ -77,9 +56,30 @@ function checkCommitMentions(
         return res
       }
     }
+  // first we check if there are any mentions to local users. if so we return true
+
+  // we check lik
+  if (
+    commit.operation === CommitType.Create &&
+    (commit.collection.startsWith('app.bsky.feed.like') || commit.collection.startsWith('app.bsky.graph.follow'))
+  ) {
+    // we do not ned 18k likes on a mark hamill post. We better do just a "people you follow liked..."
+    let likedPostUri = record?.subject?.uri ? record?.subject.uri : ''
+    if (likedPostUri) {
+      likedPostUri = likedPostUri.split('/')[2]
+    }
+    const followedUser = commit.collection.startsWith('app.bsky.graph.follow') ? record?.subject : ''
+
+    if (
+      didsToCheck.has(did) ||
+      cacheData.localUserDids.has(likedPostUri) ||
+      cacheData.localUserDids.has(followedUser)
+    ) {
+      return true
+    }
   }
   // second one first approach: is post being replied on db? if so we store it.
-  let record = (commit as CommitCreate<"app.bsky.feed.post">).record
+  record = (commit as CommitCreate<"app.bsky.feed.post">).record
   if (record && record.reply) {
     const root = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
     const parent = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
