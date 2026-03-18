@@ -19,7 +19,8 @@ function checkCommitMentions(
   }
 ): boolean {
   let res = false
-  let record = commit.record
+  let record = (commit as any).record
+
 
   if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete'){
     return true;
