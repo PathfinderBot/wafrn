@@ -13,6 +13,7 @@ import { completeEnvironment } from '../../utils/backendOptions.js'
 import { redisCache } from '../../utils/redis.js'
 import { version } from 'os'
 import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
+import { getLocalUserByUrlCache } from './activitypub.js'
 const cacher = new Cacher()
 
 function wellKnownRoutes(app: Application) {
@@ -23,10 +24,7 @@ function wellKnownRoutes(app: Application) {
     )
     res.end()
   })
-  app.get('/.well-known/webfinger/', cacher.cache('seconds', 15), async (req: Request, res: Response) => {
-    res.set({
-      "content-type": "application/activity+json",
-    });
+  app.get('/.well-known/webfinger/', async (req: Request, res: Response) => {
     if (req.query?.resource) {
       const urlQueryResource: string = req.query.resource as string
       if (
@@ -37,12 +35,9 @@ function wellKnownRoutes(app: Application) {
         const userUrl = urlQueryResource.endsWith(completeEnvironment.instanceUrl)
           ? urlQueryResource.slice(5).slice(0, -(completeEnvironment.instanceUrl.length + 1))
           : urlQueryResource.slice(`acct:${completeEnvironment.frontendUrl}/fediverse/blog/`.length)
-        const user = await User.scope('full').findOne({
-          where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
-        })
-        if (!user) {
-          return404(res)
-          return
+        const user = await getLocalUserByUrlCache(userUrl.toLocaleLowerCase())
+        if (!user || user.url.startsWith('@')) {
+          return return404(res)
         }
         const response = {
           subject: urlQueryResource,
@@ -62,6 +57,9 @@ function wellKnownRoutes(app: Application) {
             }
           ]
         }
+        res.set({
+          "content-type": "application/jrd+json; charset=utf-8",
+        });
         res.send(response)
       } else {
         return404(res)
@@ -72,14 +70,14 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
 
-  app.get('/.well-known/nodeinfo', cacher.cache('hours', 24), (req, res) => {
+  app.get('/.well-known/nodeinfo', (req, res) => {
     res.set({
       "content-type": "application/activity+json",
     });
     res.send({
       links: [
         {
-          rel: 'http://nodeinfo.diaspora.software/ns/schema/2.0',
+          rel: 'http://nodeinfo.diaspora.software/ns/schema/2.0/gay',
           href: `${completeEnvironment.frontendUrl}/.well-known/nodeinfo/2.0`
         }
       ]
@@ -87,7 +85,7 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
 
-  app.get('/.well-known/nodeinfo/2.0', cacher.cache('hours', 1), async (req, res) => {
+  app.get('/.well-known/nodeinfo/2.0', async (req, res) => {
     res.set({
       "content-type": "application/activity+json",
     });

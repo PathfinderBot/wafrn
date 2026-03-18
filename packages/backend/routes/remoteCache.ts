@@ -87,7 +87,15 @@ function cacheRoutes(app: Application) {
     let force = req.query.force === 'true'
     const mediaUrl = mediaId ? await getMediaUrlCache(mediaId) : undefined
     if (mediaUrl) {
-      await getMediaFromUrl(mediaUrl, res, force)
+      try {
+        await getMediaFromUrl(mediaUrl, res, force)
+      } catch (error) {
+        logger.trace({
+          message: `Error obtaining media ${mediaUrl}`,
+          error: error
+        })
+        res.sendStatus(500)
+      }
     } else {
       res.sendStatus(404)
     }
@@ -98,7 +106,7 @@ function cacheRoutes(app: Application) {
     let redisData = await redisCache.get('media:' + id)
     let media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
     if (!redisData && media) {
-      redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
+      await redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
     }
     if (media) {
       res = media.external ? media.url : completeEnvironment.mediaUrl + media.url
@@ -149,7 +157,7 @@ function cacheRoutes(app: Application) {
       res = user.email ? `${completeEnvironment.mediaUrl}${user.avatar}` : user.avatar
     }
     if (user && !avatarCache) {
-      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
+      await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
     }
     return res
   }
@@ -196,16 +204,24 @@ function cacheRoutes(app: Application) {
       res = user.email ? `${completeEnvironment.mediaUrl}${user.headerImage}` : user.headerImage
     }
     if (user && !headerCache) {
-      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
+      await redisCache.set('header:' + id, JSON.stringify(user.dataValues), 'EX', 60)
     }
     return res
   }
 
   app.get('/api/v2/cache/emoji/:id', async (req: Request, res: Response) => {
-    let emojiUUID = req.params.id
+    const emojiUUID = req.params.id
     const url = await getEmojiUrl(emojiUUID)
     if (url) {
-      await getMediaFromUrl(url, res)
+      try {
+        await getMediaFromUrl(url, res)
+      } catch (error) {
+        logger.trace({
+          message: `Error obtaining media ${url}`,
+          error: error
+        })
+        res.sendStatus(500)
+      }
     } else {
       res.sendStatus(404)
     }
@@ -236,7 +252,15 @@ function cacheRoutes(app: Application) {
       /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g
     const match = youtubeId.matchAll(ytRegex).toArray()
     if (match && match.length >= 7) {
-      await getMediaFromUrl(`https://img.youtube.com/vi/${match[6]}/hqdefault.jpg`, res)
+            try {
+        await getMediaFromUrl(`https://img.youtube.com/vi/${match[6]}/hqdefault.jpg`, res)
+      } catch (error) {
+        logger.trace({
+          message: `Error obtaining media youtube ${match[6]}`,
+          error: error
+        })
+        res.sendStatus(500)
+      }
     } else {
       res.sendStatus(404)
     }
@@ -350,7 +374,8 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) 
         }
         const response = await axios.get(mediaUrl, {
           responseType: 'stream',
-          headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') }
+          headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') },
+          timeout: 25000,
         })
         let altText = ''
         /*
@@ -372,7 +397,6 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) 
         altText = media.description;
       }
       */
-
         const { stream, mime } = await getMimeType(response.data)
         if (res) {
           res.contentType(mime)

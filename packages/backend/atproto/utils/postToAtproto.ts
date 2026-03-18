@@ -501,6 +501,8 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     res.labels = labels;
   }
 
+  // language
+  res.langs = ['en']
   return res;
 }
 

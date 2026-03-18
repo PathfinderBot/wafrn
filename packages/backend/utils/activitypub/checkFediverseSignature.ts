@@ -13,18 +13,23 @@ import { getRemoteActor } from "./getRemoteActor.js";
 import { LdSignature } from "./rsa2017.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 
+const adminUser = getAdminUser();
+
 function getCheckFediverseSignatureFunction(force = false) {
   return async function checkFediverseSignature(
     req: SignedRequest,
     res: Response,
     next: NextFunction
   ) {
+    if(req.headers["Accept"] && (req.headers["Accept"] as string).toLowerCase().includes('application/activity+yaml') ) {
+      res.status(406);
+      return res.send({error: 'We do not accept yaml-ld', message: 'YAML-LD will generate a lot of safety issues: https://pyyaml.org/wiki/PyYAMLDocumentation#:~:text=Warning,though '})
+    }
     let success = !force;
     let hostUrl = req.header("user-agent")
       ? `petition without sighead ${req.header("user-agent")}`
       : "somewhere not specified";
     let remoteUserUrl = "";
-    const adminUser = getAdminUser();
     try {
       const headersToValidate = ["(request-target)", "host", "date"];
       if (req.method === "POST") {

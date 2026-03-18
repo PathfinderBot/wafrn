@@ -149,7 +149,7 @@ async function getAtprotoUser(
       fediAttachments.push({"type":"PropertyValue","name":"Pronouns","value": data.value.pronouns})
     }
     if(data.value.website) {
-      fediAttachments.push({"type":"PropertyValue","name":"Website","value": `<a href="${data.value.pronouns}">${data.value.pronouns}</a>`})
+      fediAttachments.push({"type":"PropertyValue","name":"Website","value": `<a href="${data.value.website}">${data.value.website}</a>`})
     }
 
     const handle = (doc && doc.alsoKnownAs) ? doc.alsoKnownAs.filter(elem => elem.startsWith('at://'))[0].split('at://')[1] : 'handle.invalid'

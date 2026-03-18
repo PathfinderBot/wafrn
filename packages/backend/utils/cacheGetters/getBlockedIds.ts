@@ -8,7 +8,7 @@ export default async function getBlockedIds(
   includeMutes = true,
   onlyUserBlocks = false
 ): Promise<string[]> {
-  const cacheKey = 'blocks:' + includeMutes ? 'mutes:' : '' + onlyUserBlocks ? 'onlyUser:' : ''
+  const cacheKey = ('blocks:' ) + (includeMutes ? 'mutes:' : '' + onlyUserBlocks ? 'onlyUser:' : '')
   try {
     const cacheResult = await redisCache.get(cacheKey + userId)
     if (cacheResult) {

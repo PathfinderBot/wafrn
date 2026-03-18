@@ -33,7 +33,7 @@ export default function followsRoutes(app: Application) {
       if (userFederatesWithThreads.length === 0) {
         if (userToBeFollowed?.url.toLowerCase().endsWith('.threads.net')) {
           res.status(403)
-          res.send({
+          return res.send({
             error: true,
             message: 'You are trying to follow a threads user but you did not enable threads federation'
           })

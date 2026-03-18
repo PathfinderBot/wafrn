@@ -46,7 +46,7 @@ function notificationRoutes(app: Application) {
           await usr.save()
         }
       })
-      const blockedUsers = await getBlockedIds(userId, false)
+      const blockedUsers = await getBlockedIds(userId, true, false)
       let scrollDate = req.query?.date ? new Date(parseInt(req.query.date as string)) : new Date()
       if (isNaN(scrollDate.getTime())) {
         scrollDate = new Date()

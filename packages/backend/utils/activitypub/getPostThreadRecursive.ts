@@ -225,6 +225,7 @@ async function getPostThreadRecursive(
               })
           )
         ]
+        const invisibleMentionsToRemove = postPetition.tag?.find((elem: fediverseTag) => elem.type === 'WafrnMentionsTextToHide')
         let fediMentions: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === 'Mention')
         if (fediMentions == undefined) {
           fediMentions = postPetition.to.map((elem: string) => {
@@ -360,6 +361,9 @@ async function getPostThreadRecursive(
           }
         }
         let postTextContent = `${postPetition.content ? postPetition.content : ''}` // Fix for bridgy giving this as undefined
+        if(invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
+          postTextContent = postTextContent.substring(invisibleMentionsToRemove.name.length)
+        }
         if (postPetition.type == 'Video') {
           // peertube federation. We just add a link to the video, federating this is HELL
           postTextContent = postTextContent + ` <a href="${postPetition.id}" target="_blank">${postPetition.id}</a>`

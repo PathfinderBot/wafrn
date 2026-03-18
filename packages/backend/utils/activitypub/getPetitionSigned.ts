@@ -5,6 +5,7 @@ import { User } from "../../models/index.js";
 import { removeUser } from "./removeUser.js";
 import { Op } from "sequelize";
 import { Agent, fetch } from "undici";
+import axios from 'axios' 
 import getUserAgent from "../getUserAgent.js";
 async function getPetitionSigned(
   userInput: User,
@@ -15,21 +16,11 @@ async function getPetitionSigned(
   const user = (await User.scope("full").findByPk(userInput.id)) as User;
   try {
     const url = new URL(target);
-    const privKey = user.privateKey;
     const acceptedFormats = "application/activity+json,application/json";
-    const signingOptions = {
-      key: privKey,
-      keyId: `${
-        completeEnvironment.frontendUrl
-      }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key`,
-      algorithm: "rsa-sha256",
-      authorizationHeaderName: "signature",
-      headers: ["(request-target)", "host", "date", "accept"],
-    };
     const sendDate = new Date();
     const stringToSign = `(request-target): get ${url.pathname}\nhost: ${
       url.host
-    }\ndate: ${sendDate.toUTCString()}\naccept: ${acceptedFormats}`;
+    }\ndate: ${sendDate.toUTCString()}`;
 
     const digest = createHash("sha256").update(stringToSign).digest("base64");
     const signer = createSign("sha256");
@@ -38,7 +29,7 @@ async function getPetitionSigned(
     const signature = signer.sign(user.privateKey as string).toString("base64");
     const header = `keyId="${
       completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date accept",signature="${signature}"`;
+    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date",signature="${signature}"`;
     const headers = {
       "Content-Type": "application/activity+json",
       "User-Agent": getUserAgent('ActivityPubWorker'),
@@ -49,19 +40,15 @@ async function getPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    petitionResponse = await fetch(url.href, {
-      headers: headers,
-    });
-    if (petitionResponse.ok) {
-      res = await petitionResponse.json();
-    } else {
-      logger.trace({
-        message: "Error petition: " + petitionResponse?.status,
-        url: target,
-      });
+    petitionResponse = await axios.get(url.href, { headers: headers }) 
+    if (petitionResponse?.headers['content-type']?.includes('text/html')) {
+	    logger.trace('Petition returned HTML. throwing exception')
+	    throw new Error('Invalid content type')
+	  } else {
+      res = petitionResponse.data
     }
   } catch (error: any) {
-    if (petitionResponse?.status === 410) {
+    if (error.response?.status === 410) {
       const webfingerUrl = target.split(
         ".well-known/webfinger/?resource=acct:"
       )[1];

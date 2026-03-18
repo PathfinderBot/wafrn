@@ -79,6 +79,7 @@ import { getAdminAtprotoSession } from '../utils/atproto/getAdminAtprotoSession.
 import { getRemoteActor } from '../utils/activitypub/getRemoteActor.js'
 import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
+import { migrateUserFedi } from '../utils/activitypub/migrateUser.js';
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -649,11 +650,11 @@ function userRoutes(app: Application) {
     const newPassword = req.body.newPassword
     if (await bcrypt.compare(password, user.password)) {
       await updatePassword(user, newPassword)
-      res.send({ success: true })
+      return res.send({ success: true })
     }
 
     res.status(403)
-    res.send({
+    return res.send({
       success: false,
       message: 'Incorrect password'
     })
@@ -1873,117 +1874,19 @@ It is slow because we have to send every fedi server that has ever seen a post o
     let success = false
     const newUserRemoteId: string = req.body.target
     const localUser = await User.scope('full').findByPk(req.jwtData?.userId)
-    let message = `User not yet found`
-    const newRemoteUser = newUserRemoteId.startsWith(`${completeEnvironment.frontendUrl}/fediverse/blog`) ? (
-      await User.findOne({
-        where: { 
-          url: {
-            [Op.iLike] :newUserRemoteId.split(`${completeEnvironment.frontendUrl}/fediverse/blog`)[1]
-          }
-        }
-      })
-    ) :  (await User.findOne({
-      where: {
-        remoteId: newUserRemoteId
-      }
-    })) as User
-    if (newUserRemoteId && localUser) {
-      message = `User found but new account doesnt seems to have an alias pointing towards you`
-      try {
-        const localUser = (await User.scope('full').findByPk(req.jwtData?.userId)) as User
-        const petitionData = await getPetitionSigned(localUser, newUserRemoteId)
-        if (petitionData && petitionData.alsoKnownAs) {
-          const aliasList = isArray(petitionData.alsoKnownAs)
-            ? petitionData.alsoKnownAs.map((elem: string) => elem.toLowerCase())
-            : [petitionData.alsoKnownAs.toLowerCase()]
-          if (aliasList.includes(`${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url}`.toLowerCase())) {
-            // TIME TO MOVE OUT
-            // FIRST STEP: followers. send message to each follower. a move object
-            const followerIds = await Follows.findAll({
-              attributes: ['followerId'],
-              where: {
-                followedId: localUser.id
-              }
-            })
-            const followers = await User.findAll({
-              where: {
-                id: {
-                  [Op.in]: followerIds.map((elem) => elem.followerId)
-                }
-              }
-            })
-            const moveObjectToSend: activityPubObject = {
-              '@context': 'https://www.w3.org/ns/activitystreams',
-              id:
-                completeEnvironment.frontendUrl +
-                '/fediverse/blogMove/' +
-                localUser.url.toLowerCase() +
-                '/' +
-                new Date().getTime(),
-              actor: completeEnvironment.frontendUrl + '/fediverse/blog/' + localUser.url.toLowerCase(),
-              type: 'Move',
-              object: completeEnvironment.frontendUrl + '/fediverse/blog/' + localUser.url.toLowerCase(),
-              target: newUserRemoteId
-            }
-            for await (const remoteFollower of followers.filter((elem) => !!elem.remoteId)) {
-              await deletePostQueue.add('sendChunk', {
-                objectToSend: moveObjectToSend,
-                petitionBy: localUser,
-                inboxList: [remoteFollower.remoteInbox]
-              })
-            }
-
-            // second step: local followers here: create a follow request to new account
-            const localFollows = await User.findAll({
-              where: {
-                id: {
-                  [Op.in]: followerIds.map((elem) => elem.followerId)
-                },
-                email: {
-                  [Op.ne]: null
-                }
-              }
-            })
-            const followQueue = new Queue('doFollow', {
-              connection: completeEnvironment.bullmqConnection,
-              defaultJobOptions: {
-                removeOnComplete: true,
-                attempts: 3,
-                backoff: {
-                  type: 'exponential',
-                  delay: 1000
-                },
-                removeOnFail: true
-              }
-            })
-            if(newRemoteUser) {
-              followQueue.addBulk(
-                localFollows.map((follow: any) => {
-                  return {
-                    name: `follow${follow.url}-${newRemoteUser.url}`,
-                    data: { followerId: follow.id, followedId: newRemoteUser.id }
-                  }
-                })
-              )
-            }
-            // third step: return data and set message to succ ess
-            localUser.userMigratedTo = newUserRemoteId
-            await localUser.save()
-            // fourth step: send update profile
-            await sendUpdateProfile(localUser)
-            message = `Operation successful!`
-            success = true
-          } else {
-            message = `Alias not detected`
-          }
-        }
-      } catch (error) { }
+    let result = {
+      message: `No remote user found ${newUserRemoteId}`,
+      success: false
+    }
+    const newRemoteUser = await getRemoteActor(newUserRemoteId, await getAdminUser())
+    if (newUserRemoteId && localUser && newRemoteUser) {
+      result = await migrateUserFedi(localUser, newRemoteUser)
     }
 
-    res.status(success ? 200 : 500)
+    res.status(result.success ? 200 : 500)
     res.send({
       success,
-      message
+      message: result.message
     })
   })
 }

@@ -14,15 +14,18 @@ const PORT = completeEnvironment.cachePort;
 const app = express();
 function errorHandler(err: Error, req: Request, res: Response, next: Function) {
   console.error(err.stack);
-  res.send(500).json({ error: "Internal Server Error" });
+  return res.status(500).json({ error: "Internal Server Error" });
 }
-app.use(errorHandler);
 
 app.use(checkIpBlocked);
 app.use(cors());
 app.set("trust proxy", 1);
-
 cacheRoutes(app);
+
+app.use(errorHandler);
+
 app.listen(PORT, completeEnvironment.listenIp, () => {
   logger.info("started cacher");
 });
+
+
