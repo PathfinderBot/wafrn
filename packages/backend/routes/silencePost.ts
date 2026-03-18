@@ -35,10 +35,8 @@ export default function silencePostRoutes(app: Application) {
       const postToSilence = await Post.findOne({
         where: {
           id: idPostToUnsilence,
-          userId: userId
         }
       })
-      // we need to check that the user is not adding to the list a post that is not theirs. If they could do that they could theoretically deanonimize posts
       if (postToSilence) {
         await SilencedPost.create({
           userId: userId,
