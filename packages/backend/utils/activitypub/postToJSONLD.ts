@@ -404,7 +404,10 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
       _misskey_quote: misskeyQuoteURL,
       quoteUri: misskeyQuoteURL,
       // conversation: conversationString,
-      content: (standardMentionsContent + processedContent + tagsAndQuotes).replace(
+      // TODO re add standardMentionsContent and delete this comment at some point after more people has updated
+      //content: (standardMentionsContent + processedContent + tagsAndQuotes).replace(
+      content: (processedContent + tagsAndQuotes).replace(
+
         lineBreaksAtEndRegex,
         ""
       ),
