@@ -106,11 +106,6 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
   const writeStream = fs.createWriteStream(localFileName)
   stream.pipe(writeStream)
 
-  // if (res) {
-  //   res.contentType(mime)
-  //   stream.pipe(res)
-  // }
-
   return new Promise<DownloadJobResult>((resolve, reject) => {
     writeStream.on('finish', async () => {
       if (USE_EXIV_FOR_ALT_TEXT) {
