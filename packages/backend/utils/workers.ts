@@ -236,7 +236,17 @@ const workerGenerateUserKeyPair = new Worker(
     },
     concurrency: 1, // this one is VERY cpu intensive
   }
-);
+)
+
+const workerDownloadMedia = new Worker('downloadMedia', async (job: Job) => await downloadMedia(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.medium,
+  // up to two minutes
+  lockDuration: 120000
+})
 
 const workers = [
   workerInbox,
@@ -253,8 +263,9 @@ const workers = [
   workerFollow,
   workerMergeUsers,
   workerMergePost,
-  workerFetchFediTrhead
-];
+  workerFetchFediTrhead,
+  workerDownloadMedia
+]
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker);
   workers.push(workerProcessSinglePost as Worker);
@@ -320,5 +331,6 @@ export {
   workerSendPostBsky,
   workerMergeUsers,
   workerMergePost,
-  workerFetchFediTrhead
-};
+  workerFetchFediTrhead,
+  workerDownloadMedia
+}
