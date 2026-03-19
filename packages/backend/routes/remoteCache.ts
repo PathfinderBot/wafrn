@@ -280,11 +280,8 @@ const downloadMediaQueue = new Queue<DownloadJobPayload, DownloadJobResult>('dow
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    }
+    removeOnFail: true,
+    attempts: 1
   }
 })
 const downloadMediaQueueEvents = new QueueEvents('downloadMedia', {
