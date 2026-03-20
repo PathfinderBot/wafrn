@@ -198,9 +198,9 @@ const workerGenerateUserKeyPair = new Worker(
 const workerDownloadMedia = new Worker('downloadMedia', async (job: Job) => await downloadMedia(job), {
   connection: completeEnvironment.bullmqConnection,
   metrics: {
-    maxDataPoints: MetricsTime.ONE_WEEK * 2
+    maxDataPoints: 0
   },
-  concurrency: completeEnvironment.workers.medium,
+  concurrency: completeEnvironment.workers.high * 5, // EXTREMELY HiGH
   // ten seconds
   lockDuration: 10000
 })
