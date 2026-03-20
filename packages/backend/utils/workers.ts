@@ -201,8 +201,8 @@ const workerDownloadMedia = new Worker('downloadMedia', async (job: Job) => awai
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
   concurrency: completeEnvironment.workers.medium,
-  // up to two minutes
-  lockDuration: 120000
+  // ten seconds
+  lockDuration: 10000
 })
 
 const workers = [
@@ -255,7 +255,8 @@ const workersToLogFail = [
   workerGenerateUserKeyPair,
   workerFollow,
   workerMergeUsers,
-  workerMergePost
+  workerMergePost,
+  workerDownloadMedia
 ]
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
