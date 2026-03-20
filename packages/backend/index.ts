@@ -15,6 +15,7 @@ import {
   workerGenerateUserKeyPair,
   workerMergeUsers,
   workerMergePost,
+  workerDownloadMedia,
 } from "./utils/workers.js";
 
 import { SignedRequest } from "./interfaces/fediverse/signedRequest.js";
@@ -155,7 +156,8 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
     workerProcessRemoteMediaData,
     workerGenerateUserKeyPair,
     workerMergeUsers,
-    workerMergePost
+    workerMergePost,
+    workerDownloadMedia
   ];
   if (completeEnvironment.enableBsky) {
     workers.push(workerProcessFirehose as Worker);

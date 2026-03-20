@@ -1,30 +1,24 @@
 import { Application, Request, Response } from 'express'
 import crypto from 'crypto'
 import fs from 'fs'
-import axios, { AxiosResponse } from 'axios'
 import { logger } from '../utils/logger.js'
 import optimizeMedia from '../utils/optimizeMedia.js'
-import { Resolver } from 'did-resolver'
-import { getResolver } from 'plc-did-resolver'
 import { redisCache } from '../utils/redis.js'
 import { getLinkPreview } from 'link-preview-js'
 import { linkPreviewRateLimiter } from '../utils/rateLimiters.js'
-import { getMimeType } from 'stream-mime-type'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { Media } from '../models/media.js'
 import { Op } from 'sequelize'
-import { spawn } from 'child_process'
-import sequelize from 'sequelize/lib/sequelize'
-import { return404 } from '../utils/return404.js'
 import { User } from '../models/user.js'
 import { Emoji } from '../models/emoji.js'
-import { deprecate } from 'util'
 import getUserAgent from '../utils/getUserAgent.js'
+import { Queue, QueueEvents } from 'bullmq'
+import { DownloadJobPayload, DownloadJobResult } from '../utils/queueProcessors/downloadMedia.js'
 
 function sendWithCache(res: Response, localFileName: string) {
   // Does the .mime file exist?
   if (fs.existsSync(localFileName + '.mime')) {
-    let mime = fs.readFileSync(localFileName + '.mime').toString()
+    const mime = fs.readFileSync(localFileName + '.mime').toString()
     res.contentType(mime)
   }
   // 1 hour of cache
@@ -33,41 +27,6 @@ function sendWithCache(res: Response, localFileName: string) {
   res.sendFile(localFileName, { root: '.' })
 }
 
-// converting the stream parsing to a promise to be able to use async/await and catch the errors with the try/catch blocks
-function writeStream(stream: NodeJS.ReadableStream, localFileName: string, mime: string, altText: string) {
-  const writeStream = fs.createWriteStream(localFileName)
-  fs.writeFileSync(localFileName + '.mime', mime)
-  return new Promise((resolve, reject) => {
-    writeStream.on('finish', async () => {
-      writeStream.close()
-      if (altText != '') {
-        try {
-          const updateAltText = spawn('exiv2', [
-            '-M',
-            `set Exif.Photo.UserComment charset=Ascii ${altText
-              .replaceAll('"', '')
-              .replaceAll("'", '')
-              .replaceAll('\\', '')
-              .replaceAll('$', '')
-              .replaceAll('@', '')}`,
-            localFileName
-          ])
-          updateAltText.on('close', () => {
-            return resolve(localFileName)
-          })
-        } catch (error) {
-          return resolve(localFileName)
-        }
-      } else {
-        return resolve(localFileName)
-      }
-    })
-    writeStream.on('error', (error) => {
-      return reject(error)
-    })
-    stream.pipe(writeStream)
-  })
-}
 function cacheRoutes(app: Application) {
   // DEPRECATED WE MAY NUKE AT SOME POINT FOR SAFETY
   app.get('/api/cache', async (req: Request, res: Response) => {
@@ -87,7 +46,15 @@ function cacheRoutes(app: Application) {
     let force = req.query.force === 'true'
     const mediaUrl = mediaId ? await getMediaUrlCache(mediaId) : undefined
     if (mediaUrl) {
-      await getMediaFromUrl(mediaUrl, res, force)
+      try {
+        await getMediaFromUrl(mediaUrl, res, force)
+      } catch (error) {
+        logger.trace({
+          message: `Error obtaining media ${mediaUrl}`,
+          error: error
+        })
+        res.sendStatus(500)
+      }
     } else {
       res.sendStatus(404)
     }
@@ -98,7 +65,7 @@ function cacheRoutes(app: Application) {
     let redisData = await redisCache.get('media:' + id)
     let media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
     if (!redisData && media) {
-      redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
+      await redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
     }
     if (media) {
       res = media.external ? media.url : completeEnvironment.mediaUrl + media.url
@@ -149,7 +116,7 @@ function cacheRoutes(app: Application) {
       res = user.email ? `${completeEnvironment.mediaUrl}${user.avatar}` : user.avatar
     }
     if (user && !avatarCache) {
-      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
+      await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
     }
     return res
   }
@@ -196,16 +163,24 @@ function cacheRoutes(app: Application) {
       res = user.email ? `${completeEnvironment.mediaUrl}${user.headerImage}` : user.headerImage
     }
     if (user && !headerCache) {
-      redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
+      await redisCache.set('header:' + id, JSON.stringify(user.dataValues), 'EX', 60)
     }
     return res
   }
 
   app.get('/api/v2/cache/emoji/:id', async (req: Request, res: Response) => {
-    let emojiUUID = req.params.id
+    const emojiUUID = req.params.id
     const url = await getEmojiUrl(emojiUUID)
     if (url) {
-      await getMediaFromUrl(url, res)
+      try {
+        await getMediaFromUrl(url, res)
+      } catch (error) {
+        logger.trace({
+          message: `Error obtaining media ${url}`,
+          error: error
+        })
+        res.sendStatus(500)
+      }
     } else {
       res.sendStatus(404)
     }
@@ -236,7 +211,15 @@ function cacheRoutes(app: Application) {
       /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g
     const match = youtubeId.matchAll(ytRegex).toArray()
     if (match && match.length >= 7) {
-      await getMediaFromUrl(`https://img.youtube.com/vi/${match[6]}/hqdefault.jpg`, res)
+      try {
+        await getMediaFromUrl(`https://img.youtube.com/vi/${match[6]}/hqdefault.jpg`, res)
+      } catch (error) {
+        logger.trace({
+          message: `Error obtaining media youtube ${match[6]}`,
+          error: error
+        })
+        res.sendStatus(500)
+      }
     } else {
       res.sendStatus(404)
     }
@@ -293,97 +276,44 @@ function cacheRoutes(app: Application) {
   })
 }
 
+const downloadMediaQueue = new Queue<DownloadJobPayload, DownloadJobResult>('downloadMedia', {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    removeOnFail: true,
+    attempts: 1
+  }
+})
+const downloadMediaQueueEvents = new QueueEvents('downloadMedia', {
+  connection: completeEnvironment.bullmqConnection
+})
+
 async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) {
   try {
     const mediaLinkHash = crypto.createHash('sha256').update(mediaUrl).digest('hex')
-    let localFileName = `cache/${mediaLinkHash}`
+    const localFileName = `cache/${mediaLinkHash}`
+
     // if file exists
     if (fs.existsSync(localFileName) && res && !force) {
-      return await sendWithCache(res, localFileName)
-    } else {
-      try {
-        if (mediaUrl.startsWith('?cid=')) {
-          try {
-            const did = decodeURIComponent(mediaUrl.split('&did=')[1])
-            const cid = decodeURIComponent(mediaUrl.split('&did=')[0].split('?cid=')[1])
-            if ((!did || !cid) && res) {
-              return res.sendStatus(400)
-            }
-            const plcResolver = getResolver()
-            const didResolver = new Resolver(plcResolver)
-            const didData = await didResolver.resolve(did)
-            if (didData?.didDocument?.service) {
-              const url =
-                didData.didDocument.service[0].serviceEndpoint +
-                '/xrpc/com.atproto.sync.getBlob?did=' +
-                encodeURIComponent(did) +
-                '&cid=' +
-                encodeURIComponent(cid)
-              mediaUrl = url
-            } else if (did.startsWith('did:web')) {
-              // get did doc first
-              const docRes = await fetch(`https://${did.split('did:web:')[1]}/.well-known/did.json`, {
-                headers: {
-                  'User-Agent': getUserAgent('ATProtoWorker')
-                }
-              })
-              const didDoc = await docRes.json()
-              const atProtoServer = didDoc.service.find(
-                (x: any) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer'
-              )
-              if (!atProtoServer && res) {
-                return res.sendStatus(500)
-              }
-              const url =
-                atProtoServer.serviceEndpoint +
-                '/xrpc/com.atproto.sync.getBlob?did=' +
-                encodeURIComponent(did) +
-                '&cid=' +
-                encodeURIComponent(cid)
-              mediaUrl = url
-            }
-          } catch (error) {
-            if (res) {
-              return res.sendStatus(500)
-            }
-          }
-        }
-        const response = await axios.get(mediaUrl, {
-          responseType: 'stream',
-          headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') }
-        })
-        let altText = ''
-        /*
-      let dbMediaUrl = String(req.query?.media).startsWith(
-        completeEnvironment.mediaUrl
-      )
-        ? String(req.query?.media).split(completeEnvironment.mediaUrl)[1]
-        : String(req.query?.media);
-      // we are disabling this feature temporarily
-      let media = true
-        ? undefined
-        : await Media.findOne({
-            where: sequelize.where(
-              sequelize.fn("md5", sequelize.col("url")),
-              crypto.createHash("md5").update(dbMediaUrl).digest("hex")
-            ),
-          });
-      if (media) {
-        altText = media.description;
-      }
-      */
+      return sendWithCache(res, localFileName)
+    }
 
-        const { stream, mime } = await getMimeType(response.data)
-        if (res) {
-          res.contentType(mime)
-          stream.pipe(res)
+    let job = await downloadMediaQueue.getJob(mediaLinkHash)
+    if (!job) {
+      job = await downloadMediaQueue.add(
+        'downloadMedia',
+        {
+          mediaUrl
+        },
+        {
+          jobId: mediaLinkHash
         }
-        await writeStream(stream, localFileName, mime, altText)
-      } catch (error) {
-        if (res) {
-          return res.sendStatus(500)
-        }
-      }
+      )
+    }
+
+    const data = await job.waitUntilFinished(downloadMediaQueueEvents)
+    if (res) {
+      return sendWithCache(res, data.localFileName)
     }
   } catch (error) {
     logger.debug({

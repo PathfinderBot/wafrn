@@ -3,7 +3,7 @@ import { completeEnvironment } from "../backendOptions.js";
 import { logger } from "../logger.js";
 import { removeUser } from "./removeUser.js";
 import { User } from "../../models/index.js";
-import { Agent, fetch } from "undici";
+import axios from 'axios' 
 import getUserAgent from "../getUserAgent.js";
 
 async function postPetitionSigned(
@@ -53,21 +53,9 @@ async function postPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    petition = await fetch(target, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(message),
-    });
-    if (petition.ok) {
-      res = await petition.json();
-    } else {
-      logger.trace({
-        message: "error post petition signed",
-        url: target,
-      });
-    }
+    res =  (await axios.post(target, message, { headers: headers })).data
   } catch (error: any) {
-    if (petition.status === 410) {
+    if (error.response?.status === 410) {
       logger.trace(`should remove user ${target}`);
       const userToRemove = await User.findOne({
         where: {

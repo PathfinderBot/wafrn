@@ -132,7 +132,7 @@ async function postToJSONLD(
       }`;
   }
   const postMedias = await post.medias;
-  let processedContent = post.content;
+  let processedContent: string = post.content;
   const wafrnMediaRegex =
     /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm;
 
@@ -153,6 +153,7 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
   const misskeyMentions: string[] = [];
+  const standardMentions: string[] = [];
   const fediMentions: fediverseTag[] = [];
   const fediTags: fediverseTag[] = [];
   let tagsAndQuotes = "<br>";
@@ -244,6 +245,9 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
       !misskeyAskContent.includes(user.url)
     )
       misskeyMentions.push(url);
+      standardMentions.push(
+        `<span class="h-card" translate="no"><a href="${user.remoteMentionUrl}" class="u-url mention" rel="nofollow noopener" target="_blank">@<span>${url.substring(1)}</span></a></span>`
+      )
   }
   misskeyContent = await htmlToMfm(
     misskeyContent.replace(lineBreaksAtEndRegex, "")
@@ -255,7 +259,7 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   }
   const misskeyMentionContent =
     misskeyMentions.length > 0 ? `${misskeyMentions.join(" ")}\n\n` : "";
-
+  const standardMentionsContent = standardMentions.length > 0 ? `<p>${standardMentions.join(" ")}</p>`: ""
   let contentWarning = false;
   postMedias.forEach((media: any) => {
     if (media.NSFW) {
@@ -294,9 +298,9 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
   let canAnnounce: string[] = [];
   let canLike: string[] = [];
   
-  let canReplyValue: InteractionControlType = post.replyControl;
-  let canAnnounceValue: InteractionControlType = post.reblogControl;
-  let canLikeValue: InteractionControlType = post.likeControl;
+  const canReplyValue: InteractionControlType = post.replyControl;
+  const canAnnounceValue: InteractionControlType = post.reblogControl;
+  const canLikeValue: InteractionControlType = post.likeControl;
   const publicString = "https://www.w3.org/ns/activitystreams#Public"
   // canreply:
   if([InteractionControl.Anyone].includes(canReplyValue)) {
@@ -344,6 +348,15 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
     }
   }
 
+
+  const initialMentionsToRemoveTag: fediverseTag[] = standardMentions.length > 0 ?
+  [
+    {
+      type: 'WafrnMentionsTextToHide',
+      name: standardMentionsContent
+    }
+  ]
+  : [] 
   let postAsJSONLD: activityPubObject = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
@@ -391,7 +404,10 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
       _misskey_quote: misskeyQuoteURL,
       quoteUri: misskeyQuoteURL,
       // conversation: conversationString,
+      // TODO re add standardMentionsContent and delete this comment at some point after more people has updated
+      //content: (standardMentionsContent + processedContent + tagsAndQuotes).replace(
       content: (processedContent + tagsAndQuotes).replace(
+
         lineBreaksAtEndRegex,
         ""
       ),
@@ -414,6 +430,7 @@ ${await htmlToMfm(ask.question)}]]\n\n`;
           };
         }),
       tag: fediMentions
+        .concat(initialMentionsToRemoveTag)
         .concat(fediTags)
         .concat(emojis.map((emoji: any) => emojiToAPTag(emoji))),
       replies: {

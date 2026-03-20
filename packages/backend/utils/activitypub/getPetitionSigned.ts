@@ -5,6 +5,7 @@ import { User } from "../../models/index.js";
 import { removeUser } from "./removeUser.js";
 import { Op } from "sequelize";
 import { Agent, fetch } from "undici";
+import axios from 'axios' 
 import getUserAgent from "../getUserAgent.js";
 async function getPetitionSigned(
   userInput: User,
@@ -39,19 +40,15 @@ async function getPetitionSigned(
       Digest: `SHA-256=${digest}`,
       Signature: header,
     };
-    petitionResponse = await fetch(url.href, {
-      headers: headers,
-    });
-    if (petitionResponse.ok) {
-      res = await petitionResponse.json();
-    } else {
-      logger.trace({
-        message: "Error petition: " + petitionResponse?.status,
-        url: target,
-      });
+    petitionResponse = await axios.get(url.href, { headers: headers }) 
+    if (petitionResponse?.headers['content-type']?.includes('text/html')) {
+	    logger.trace('Petition returned HTML. throwing exception')
+	    throw new Error('Invalid content type')
+	  } else {
+      res = petitionResponse.data
     }
   } catch (error: any) {
-    if (petitionResponse?.status === 410) {
+    if (error.response?.status === 410) {
       const webfingerUrl = target.split(
         ".well-known/webfinger/?resource=acct:"
       )[1];

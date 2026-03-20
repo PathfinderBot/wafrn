@@ -650,11 +650,11 @@ function userRoutes(app: Application) {
     const newPassword = req.body.newPassword
     if (await bcrypt.compare(password, user.password)) {
       await updatePassword(user, newPassword)
-      res.send({ success: true })
+      return res.send({ success: true })
     }
 
     res.status(403)
-    res.send({
+    return res.send({
       success: false,
       message: 'Incorrect password'
     })
