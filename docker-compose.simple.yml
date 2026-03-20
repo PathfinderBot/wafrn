@@ -145,10 +145,15 @@ services:
       - 443:443
     env:
       ACME_EMAIL: ${ACME_EMAIL}
-      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
+      ADMINER_HOST: ${ADMINER_HOST:-adminer:8080}
       CACHE_DOMAIN: ${CACHE_DOMAIN}
+      CACHE_HOST: ${CACHE_HOST:-backend:9000}
       DOMAIN_NAME: ${DOMAIN_NAME}
+      GRAFANA_HOST: ${GRAFANA_HOST:-grafana:2345}
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
       PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
+      PDS_HOST: :${PDS_HOST:-pds:3000}
+      WEBSOCKET_HOST: ${WEBSOCKET_HOST:-backend:9000}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
