@@ -86,7 +86,7 @@ services:
       ENABLE_RAW_OUTPUT: ${ENABLE_RAW_OUTPUT:-}
     volumes:
       - ./packages/backend/uploads:/app/packages/backend/uploads
-      # - ./packages/backend/cache:/app/packages/backend/cache
+      - cache:/app/packages/backend/cache
       - frontend:/app/packages/frontend:ro
 
   migration:
@@ -200,6 +200,7 @@ volumes:
   pds:
   frontend:
   redis:
+  cache:
 
 
 networks:
