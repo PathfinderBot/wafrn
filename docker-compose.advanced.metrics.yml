@@ -90,7 +90,7 @@ services:
       replicas: 3
     volumes:
       - ./packages/backend/uploads:/app/packages/backend/uploads
-      - ./packages/backend/cache:/app/packages/backend/cache
+      # - ./packages/backend/cache:/app/packages/backend/cache
       - frontend:/app/packages/frontend:ro
 
   migration:
