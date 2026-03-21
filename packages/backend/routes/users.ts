@@ -1480,11 +1480,14 @@ function userRoutes(app: Application) {
     }
     const userId = req.jwtData?.userId as string
     const user = await User.scope('full').findByPk(userId)
-    const bskyUrl = req.body.url
+    let bskyUrl = req.body.url
+    if(bskyUrl.startsWith('@')) {
+      bskyUrl = bskyUrl.substring(1)
+    }
     const pasword = req.body.password
     if (user && bskyUrl && pasword) {
       const localIds = await getAllLocalUserIds()
-      const bskyUser = await getAtprotoUser(bskyUrl)
+      const bskyUser = await getAtprotoUser(bskyUrl, {ignoreCache: true})
       if (bskyUser && bskyUser.url === user.url) {
         return res.send({
           success: true
