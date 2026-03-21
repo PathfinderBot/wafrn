@@ -47,6 +47,7 @@ async function forcePopulateUsers(dids: string[], localUser: User) {
 
 async function getAtprotoUser(
   inputHandle: string,
+  options?: {ignoreCache?: boolean}
 ): Promise<User | undefined> {
   // we check if we found the user
   let avatarString = ``;
@@ -79,8 +80,8 @@ async function getAtprotoUser(
   if (userFound && userFound.email) {
     return (await User.findByPk(userFound.id)) as User;
   }
-  const did = handle.startsWith('did:') ? handle : (await resolveHandle(handle)) as string
-  const doc = await getDidDoc(did)
+  const did = handle.startsWith('did:') ? handle : (await resolveHandle(handle, options?.ignoreCache == true)) as string
+  const doc = await getDidDoc(did, options?.ignoreCache == true)
   if (userFound) {
     avatarString = userFound.avatar;
 
