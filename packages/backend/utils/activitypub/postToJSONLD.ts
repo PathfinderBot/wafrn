@@ -2,18 +2,15 @@ import { Op } from "sequelize";
 import {
   Media,
   Post,
-  PostTag,
   Quotes,
   sequelize,
-  User,
+  User
 } from "../../models/index.js";
 import { completeEnvironment } from "../backendOptions.js";
 import { fediverseTag } from "../../interfaces/fediverse/tags.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 import { emojiToAPTag } from "./emojiToAPTag.js";
-import { getPostReplies } from "./getPostReplies.js";
 import { getPostAndUserFromPostId } from "../cacheGetters/getPostAndUserFromPostId.js";
-import { logger } from "../logger.js";
 import { InteractionControl, InteractionControlType, Privacy } from "../../models/post.js";
 import { redisCache } from "../redis.js";
 import { htmlToMfm } from "./htmlToMfm.js";

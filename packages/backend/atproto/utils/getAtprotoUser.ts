@@ -1,7 +1,5 @@
-import { getAtProtoSession } from "./getAtProtoSession.js";
 import { sequelize, User, UserOptions } from "../../models/index.js";
-import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs.js";
-import { Model, Op, Transaction } from "sequelize";
+import { Op} from "sequelize";
 import { wait } from "../../utils/wait.js";
 import { logger } from "../../utils/logger.js";
 import { getDeletedUser } from "../../utils/cacheGetters/getDeletedUser.js";
@@ -9,7 +7,6 @@ import { completeEnvironment } from "../../utils/backendOptions.js";
 import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
 import { getRemoteActor } from "../../utils/activitypub/getRemoteActor.js";
 import { Queue } from "bullmq";
-import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSession.js";
 import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
 import { resolveHandle } from "../../utils/atproto/resolveHandleToDid.js";
 import getUserAgent from "../../utils/getUserAgent.js";

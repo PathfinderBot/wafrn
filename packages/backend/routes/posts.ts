@@ -1,26 +1,20 @@
-import { Application, Request, Response } from 'express'
-import { Op, Sequelize } from 'sequelize'
+import { Application, Response } from 'express'
+import { Op} from 'sequelize'
 import {
   Blocks,
   Post,
   PostMentionsUserRelation,
   PostReport,
-  ServerBlock,
   PostTag,
   User,
   Follows,
-  UserLikesPostRelations,
   Media,
   Ask,
-  Notification,
-  UserEmojiRelation
+  Notification
 } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
-
 import { sequelize } from '../models/index.js'
-
 import getStartScrollParam from '../utils/getStartScrollParam.js'
-import getPosstGroupDetails from '../utils/getPostGroupDetails.js'
 import { logger } from '../utils/logger.js'
 import { createPostLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
 import { Queue } from 'bullmq'
@@ -28,15 +22,11 @@ import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
 import { getPostThreadRecursive } from '../utils/activitypub/getPostThreadRecursive.js'
-import checkIpBlocked from '../utils/checkIpBlocked.js'
 import { canInteract, getUnjointedPosts } from '../utils/baseQueryNew.js'
-import * as cheerio from 'cheerio'
-import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
 import { getAvaiableEmojis } from '../utils/getAvaiableEmojis.js'
 import { redisCache } from '../utils/redis.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
-
 import showdown from 'showdown'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { bulkCreateNotifications, createNotification } from '../utils/pushNotifications.js'
@@ -46,7 +36,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
-import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
+import {  } from '../utils/cacheGetters/getAllLocalUserIds.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -265,8 +255,8 @@ export default function postsRoutes(app: Application) {
         if (!posterUser?.enableBsky && parent && !posterUser?.bskyDid) {
           if (parent.bskyUri && !parent.remotePostId) {
             const parentPoster = await User.findByPk(parent.userId)
-            if (parentPoster?.isRemoteUser) {
-              return res.status(403).send({
+            if (parentPoster?.isRemoteUser && !parentPoster?.remoteId) {
+              return res.status(400).send({
                 success: false,
                 message: 'You need to enable bluesky'
               })
@@ -292,8 +282,8 @@ export default function postsRoutes(app: Application) {
                   }
                 })
                 const parentsUser = ancestors.map((elem) => elem.user)
-                if (parentsUser.some((elem) => elem.isBlueskyUser)) {
-                  return res.status(403).send({
+                if (parentsUser.some((elem) => elem.isBlueskyUser && !elem.remoteId)) {
+                  return res.status(400).send({
                     success: false,
                     message: 'You need to enable bluesky'
                   })
