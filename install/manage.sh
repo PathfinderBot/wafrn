@@ -103,8 +103,8 @@ case $1 in
       docker compose pull
       docker compose up --build -d
       docker compose stop
-      docker volume rm cache
-      docker volume create cache
+      docker volume rm wafrn_cache
+      docker volume create wafrn_cache
       docker compose start
       docker system prune -f
       docker compose logs -t -n 50 -f
