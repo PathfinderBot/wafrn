@@ -24,7 +24,7 @@ const queueEvents = new QueueEvents("getRemoteActorId", {
   connection: completeEnvironment.bullmqConnection,
 });
 async function getRemoteActor(
-  actorUrl: string,
+  actorUrl: string | undefined,
   user: User | null,
   forceUpdate = false
 ): Promise<User | null> {

@@ -1734,8 +1734,8 @@ function userRoutes(app: Application) {
       }
 
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
-      const ask = await Ask.create({
-        question: escape(question),
+      await Ask.create({
+        question: dompurify.sanitize(question, {ALLOWED_TAGS: []}),
         apObject: null,
         creationIp: getIp(req),
         answered: false,
