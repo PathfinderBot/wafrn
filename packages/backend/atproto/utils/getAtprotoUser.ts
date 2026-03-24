@@ -1,7 +1,5 @@
-import { getAtProtoSession } from "./getAtProtoSession.js";
 import { sequelize, User, UserOptions } from "../../models/index.js";
-import { ProfileViewBasic } from "@atproto/api/dist/client/types/app/bsky/actor/defs.js";
-import { Model, Op, Transaction } from "sequelize";
+import { Op} from "sequelize";
 import { wait } from "../../utils/wait.js";
 import { logger } from "../../utils/logger.js";
 import { getDeletedUser } from "../../utils/cacheGetters/getDeletedUser.js";
@@ -9,7 +7,6 @@ import { completeEnvironment } from "../../utils/backendOptions.js";
 import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
 import { getRemoteActor } from "../../utils/activitypub/getRemoteActor.js";
 import { Queue } from "bullmq";
-import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSession.js";
 import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
 import { resolveHandle } from "../../utils/atproto/resolveHandleToDid.js";
 import getUserAgent from "../../utils/getUserAgent.js";
@@ -47,6 +44,7 @@ async function forcePopulateUsers(dids: string[], localUser: User) {
 
 async function getAtprotoUser(
   inputHandle: string,
+  options?: {ignoreCache?: boolean}
 ): Promise<User | undefined> {
   // we check if we found the user
   let avatarString = ``;
@@ -79,8 +77,8 @@ async function getAtprotoUser(
   if (userFound && userFound.email) {
     return (await User.findByPk(userFound.id)) as User;
   }
-  const did = handle.startsWith('did:') ? handle : (await resolveHandle(handle)) as string
-  const doc = await getDidDoc(did)
+  const did = handle.startsWith('did:') ? handle : (await resolveHandle(handle, options?.ignoreCache == true)) as string
+  const doc = await getDidDoc(did, options?.ignoreCache == true)
   if (userFound) {
     avatarString = userFound.avatar;
 

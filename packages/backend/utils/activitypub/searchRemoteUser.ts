@@ -69,7 +69,9 @@ async function searchRemoteUser(
     }
   }
   if(searchData && searchData.type === 'bluesky') {
-    return getAtprotoUser(searchTerm)
+    return getAtprotoUser(searchTerm, {
+      ignoreCache: true
+    })
   }
   return users.find((elem) => !!elem);
 }

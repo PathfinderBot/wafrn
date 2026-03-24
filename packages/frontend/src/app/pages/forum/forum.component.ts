@@ -130,7 +130,6 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
         break;
       }
     }
-
     this.post.set(post);
     this.postId.set(data.id);
   }

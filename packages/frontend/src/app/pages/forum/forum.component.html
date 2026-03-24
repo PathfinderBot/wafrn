@@ -20,36 +20,37 @@
   <div id="scroll-here-on-page-change"></div>
   @if (loading && this.hasPost) {
     <app-loader></app-loader>
-  }
-  @for (
-    content of forumPosts() | slice: currentPage * itemsPerPage : currentPage * itemsPerPage + itemsPerPage;
-    track content
-  ) {
-    @if (
-      content.content !== '' ||
-      content.tags.length > 0 ||
-      content.quotes.length > 0 ||
-      content.questionPoll?.questionPollQuestions ||
-      (content.medias && content.medias.length > 0)
-    ) {
-      <mat-card appearance="outlined" [id]="'post-' + content.id" class="wafrn-container post-card">
-        <app-post-header [fragment]="content" [simplified]="false"></app-post-header>
-        <app-post-fragment [fragment]="content"></app-post-fragment>
-        <hr />
-        <app-bottom-reply-bar [fragment]="content"></app-bottom-reply-bar>
-      </mat-card>
-    } @else {
-      <app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
-        <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
-        <span class="text-sm post-action"> rewooted </span>
-        <a
-          [postLink]="content"
-          [postLinkId]="content.parentId"
-          class="user-link user-name"
-          [innerHTML]="findReply(content.parentId)?.user?.name ?? 'Unknown User'"
-        ></a>
-      </app-post-ribbon>
-    }
+  } @else {
+      @for (
+        content of forumPosts() | slice: currentPage * itemsPerPage : currentPage * itemsPerPage + itemsPerPage;
+        track content
+      ) {
+        @if (
+          content.content !== '' ||
+          content.tags.length > 0 ||
+          content.quotes.length > 0 ||
+          content.questionPoll?.questionPollQuestions ||
+          (content.medias && content.medias.length > 0)
+        ) {
+          <mat-card appearance="outlined" [id]="'post-' + content.id" class="wafrn-container post-card">
+            <app-post-header [fragment]="content" [simplified]="false"></app-post-header>
+            <app-post-fragment [fragment]="content"></app-post-fragment>
+            <hr />
+            <app-bottom-reply-bar [fragment]="content"></app-bottom-reply-bar>
+          </mat-card>
+        } @else {
+          <app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
+            <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
+            <span class="text-sm post-action"> rewooted </span>
+            <a
+              [postLink]="content"
+              [postLinkId]="content.parentId"
+              class="user-link user-name"
+              [innerHTML]="findReply(content.parentId)?.user?.name ?? 'Unknown User'"
+            ></a>
+          </app-post-ribbon>
+        }
+      }
   }
 }
 
