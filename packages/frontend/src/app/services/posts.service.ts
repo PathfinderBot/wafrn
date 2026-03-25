@@ -1,7 +1,6 @@
 import { Injectable, signal, inject } from "@angular/core";
 import { ProcessedPost } from "../interfaces/processed-post";
 import { RawPost } from "../interfaces/raw-post";
-import { MediaService } from "./media.service";
 import { HttpClient } from "@angular/common/http";
 import sanitizeHtml from "sanitize-html";
 import { BehaviorSubject, firstValueFrom, lastValueFrom } from "rxjs";
@@ -9,7 +8,7 @@ import { JwtService } from "./jwt.service";
 import {
   basicPost,
   PostEmojiReaction,
-  unlinkedPosts,
+  unlinkedPosts
 } from "../interfaces/unlinked-posts";
 import { SimplifiedUser } from "../interfaces/simplified-user";
 import { UserOptions } from "../interfaces/userOptions";
@@ -24,7 +23,6 @@ import { ServiceAnnouncement } from "../interfaces/service-announcement";
   providedIn: "root",
 })
 export class PostsService {
-  private mediaService = inject(MediaService);
   private http = inject(HttpClient);
   private jwtService = inject(JwtService);
   private messageService = inject(MessageService);
@@ -646,6 +644,8 @@ export class PostsService {
     return newPost;
   }
 
+
+
   getPostHtml(
     post: ProcessedPost,
     tags: string[] = [
@@ -699,11 +699,13 @@ export class PostsService {
       "ruby",
       "rt",
       "rp",
+      "style",
       "img", // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
     ]
   ): string {
     const content = post.content;
     let sanitized = sanitizeHtml(content, {
+      allowVulnerableTags: true,
       allowedTags: tags,
       allowedAttributes: {
         img: ["src"],
@@ -844,6 +846,36 @@ export class PostsService {
     });
     // we remove stuff like script tags. we only allow certain stuff.
     const parsedAsHTML = this.parser.parseFromString(sanitized, "text/html");
+    const styles = parsedAsHTML.querySelectorAll('style');
+    Array.from(styles).forEach(e => {
+      const rules = [...(e.sheet?.cssRules ?? [])];
+      const blocked = ['z-index', 'behavior', 'overflow'];
+      const blockedSelectors = [/::slotted\s*\(/, /:host[\s(-]/, /:host$/, /::part\s*\(/, /:defined/];
+      const shadowRules: string[] = [];
+      rules.forEach(r => {
+        if (r instanceof CSSFontFaceRule) {
+          const style = document.createElement('style');
+          style.innerHTML = r.cssText;
+          document.head.appendChild(style);
+          return;
+        }
+        else if (r instanceof CSSImportRule) {
+          return;
+        }
+        else if (r instanceof CSSStyleRule) {
+          const isBlockedSelector = blockedSelectors.some(pattern => pattern.test(r.selectorText));
+          if (isBlockedSelector) return;
+          blocked.forEach(p => r.style.removeProperty(p));
+          if (r.style.position === 'fixed' || r.style.position === 'sticky') r.style.removeProperty('position');
+          shadowRules.push(r.cssText);
+          return;
+        }
+        shadowRules.push(r.cssText);
+      })
+      e.innerHTML = shadowRules.join('\n');
+      console.log(e, e.innerHTML);
+    })
+    sanitized = parsedAsHTML.documentElement.innerHTML;
     const links = parsedAsHTML.getElementsByTagName("a");
     const mentionedRemoteIds = post.mentionPost
       ? post.mentionPost?.map((elem) =>
@@ -953,6 +985,7 @@ export class PostsService {
         : `:${emoji.name}:`;
       sanitized = sanitized.replaceAll(strToReplace, this.emojiToHtml(emoji));
     });
+
     return sanitized;
   }
 

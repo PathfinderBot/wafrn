@@ -1,0 +1,6 @@
+<div #mediaInline class="fragment-content overflow-hidden" style="position: relative !important; overflow: hidden !important;">
+  <div [injectHTML]="block()" class="post-text"></div>
+  @if (typeof block() !== 'string') {
+    <app-wafrn-media [data]="$any(block)" [filteredWords]="fragment().muted_words_cw"></app-wafrn-media>
+  }
+</div>

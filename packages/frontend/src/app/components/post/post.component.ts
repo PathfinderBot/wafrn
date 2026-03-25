@@ -1,8 +1,7 @@
-import { Component, computed, ElementRef, EventEmitter, input, OnDestroy, OnInit, Output, signal, viewChild, viewChildren, inject, OnChanges } from '@angular/core'
+import { Component, computed, ElementRef, EventEmitter, input, OnDestroy, Output, signal, viewChild, viewChildren, inject, OnChanges } from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { LoginService } from 'src/app/services/login.service'
 import { PostsService } from 'src/app/services/posts.service'
-
 import {
   faArrowUpRightFromSquare,
   faCheck,
@@ -34,7 +33,7 @@ import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
   selector: 'app-post',
   templateUrl: './post.component.html',
   styleUrls: ['./post.component.scss'],
-  standalone: false
+  standalone: false,
 })
 export class PostComponent implements OnChanges, OnDestroy {
   postService = inject(PostsService);
