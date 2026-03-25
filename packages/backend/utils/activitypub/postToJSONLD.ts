@@ -146,7 +146,7 @@ async function postToJSONLD(
     processedContent = `${askContent} ${processedContent}`;
     misskeyAskContent = `$[border.style=solid,width=1,radius=6 $[border.color=0000,width=12 ${getUserName(userAsker)} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
       }):
-${await htmlToMfm(ask.question)}]]\n\n`;
+${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
   const misskeyMentions: string[] = [];

@@ -528,17 +528,6 @@ async function processSinglePost(
       }
       mentions = [...new Set(mentions)];
       if (mentions.length > 0) {
-        await Notification.destroy({
-          where: {
-            notificationType: "MENTION",
-            postId: postToProcess.id,
-          },
-        });
-        await PostMentionsUserRelation.destroy({
-          where: {
-            postId: postToProcess.id,
-          },
-        });
         await bulkCreateNotifications(
           mentions.map((mnt) => ({
             notificationType: "MENTION",
@@ -821,8 +810,13 @@ async function processReplies(uri: string, cursor?: string) {
           hierarchyLevel: 1
         }
       })) as Post
-      uriToSearch = rootPost.bskyUri as string
-      return processReplies(uriToSearch, cursor)
+      if(rootPost) {
+        uriToSearch = rootPost.bskyUri as string
+        return processReplies(uriToSearch, cursor)
+      } else {
+        return;
+      }
+      
     }
     let url = `${completeEnvironment.bskyConstellationUrl}/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {
