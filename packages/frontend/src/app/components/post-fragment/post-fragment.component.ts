@@ -25,6 +25,7 @@ import { ParticleService } from "src/app/services/particle.service";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { SettingsService } from "src/app/services/settings.service";
 import { PostContentComponent } from "../post-content/post-content.component";
+import { WafrnMedia } from "src/app/interfaces/wafrn-media";
 
 type FragmentType = "post" | "quote";
 
@@ -94,6 +95,76 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
   wordCount = computed(() => this.noTagsContent.split(" ").length);
 
   seenMedia: number[] = [];
+
+  wafrnFormattedContent = computed(() => {
+    let processedBlock: Array<string | WafrnMedia> = [];
+    this.sanitizedContent = this.postService.getPostHtml(this.fragment());
+    // wafrn silly feature
+    if (localStorage.getItem("replaceAIWithCocaine") === "true") {
+      // TODO this should be done in a better way but because we are playing with html... AAAA
+      const replaceAIWord = localStorage.getItem("replaceAIWord")
+        ? JSON.parse(localStorage.getItem("replaceAIWord") as string)
+        : "cocaine";
+      const wordsToReplace = [
+        "ai",
+        "artificial intelligence",
+        "artificial inteligence",
+        "llm",
+        "intelligence artificielle",
+        "ia",
+      ];
+      let regexpString = wordsToReplace
+        .map((elem) => `\\s${elem}\\s|^${elem}\\s|\\s${elem}$`)
+        .join("|");
+      let regexp = new RegExp(regexpString, "gi");
+      this.sanitizedContent = this.sanitizedContent.replaceAll(
+        regexp,
+        ` ${replaceAIWord} `
+      );
+      regexpString = wordsToReplace.map((elem) => `>${elem} `).join("|");
+      regexp = new RegExp(regexpString, "gi");
+      this.sanitizedContent = this.sanitizedContent.replaceAll(
+        regexp,
+        `>${replaceAIWord} `
+      );
+      regexpString = wordsToReplace.map((elem) => ` ${elem}<`).join("|");
+      regexp = new RegExp(regexpString, "gi");
+      this.sanitizedContent = this.sanitizedContent.replaceAll(
+        regexp,
+        ` ${replaceAIWord}<`
+      );
+      regexpString = wordsToReplace.map((elem) => `>${elem}<`).join("|");
+      regexp = new RegExp(regexpString, "gi");
+      this.sanitizedContent = this.sanitizedContent.replaceAll(
+        regexp,
+        `>${replaceAIWord}<`
+      );
+    }
+    this.noTagsContent = this.postService.getPostHtml(this.fragment(), []);
+    if (this.fragment().medias && this.fragment().medias?.length > 0) {
+      const mediaDetectorRegex = /\!\[media\-([0-9]+)]/gm;
+      const textDivided = this.sanitizedContent.split(mediaDetectorRegex);
+      textDivided.forEach((elem, index) => {
+        if (index % 2 == 0) {
+          if (elem != "") {
+            processedBlock.push(elem);
+          }
+        } else {
+          const medias = this.fragment().medias as WafrnMedia[];
+          const mediaToInsert = medias[parseInt(elem) - 1];
+          if (mediaToInsert) {
+            processedBlock.push(mediaToInsert);
+            this.seenMedia.push(parseInt(elem) - 1);
+          } else {
+            processedBlock.push(`![media-${elem}]`);
+          }
+        }
+      });
+    } else {
+      processedBlock = [this.sanitizedContent];
+    }
+    return processedBlock;
+  });
 
   postHasLinkPreview = computed<boolean>(
     () =>
