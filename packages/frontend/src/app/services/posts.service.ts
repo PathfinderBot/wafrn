@@ -849,7 +849,7 @@ export class PostsService {
     const styles = parsedAsHTML.querySelectorAll('style');
     Array.from(styles).forEach(e => {
       const rules = [...(e.sheet?.cssRules ?? [])];
-      const blocked = ['position', 'z-index', 'behavior', 'overflow'];
+      const blocked = ['z-index', 'behavior', 'overflow'];
       const blockedSelectors = [/::slotted\s*\(/, /:host[\s(-]/, /:host$/, /::part\s*\(/, /:defined/];
       const shadowRules: string[] = [];
       rules.forEach(r => {
@@ -866,6 +866,7 @@ export class PostsService {
           const isBlockedSelector = blockedSelectors.some(pattern => pattern.test(r.selectorText));
           if (isBlockedSelector) return;
           blocked.forEach(p => r.style.removeProperty(p));
+          if (r.style.position === 'fixed' || r.style.position === 'sticky') r.style.removeProperty('position');
           shadowRules.push(r.cssText);
           return;
         }
