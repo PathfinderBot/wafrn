@@ -2,7 +2,7 @@
 @if (displayUrl() && data().url) {
 <app-link-preview [link]="data().url"></app-link-preview>
 }
-} @else {
+} @else if (mimeType().startsWith('image') || mimeType().startsWith('audio') || mimeType().startsWith('video')) {
 <div class="media-container" [class.always-show-alt]="alwaysShowAlt()"
   [class.video-media]="mimeType().startsWith('video')" [class.fit-cover]="fitMode() === 'cover'">
   <div class="media-content-container">
@@ -54,16 +54,6 @@
     <button mat-raised-button (click)="showPicture()">Show media</button>
   </div>
   } @else {
-  @if (mimeType().includes('pdf')) {
-  <object
-  [data]="displayUrl() | safe"
-  type="application/pdf"
-  width="100%"
-  style="height: 75vh"
->
-</object>
-  <a [href]="displayUrl()" target="_blank">Click here to see the PDF file that is embedded in this post</a>
-  }
 
   @if (!hideSensitiveButton()) {
   <button class="m-2 toggle-button toggle-nsfw" mat-raised-button (click)="toggleNsfw()" title="Hide image"
@@ -77,4 +67,15 @@
   }
   }
 </div>
+} @else if (mimeType().includes('pdf')) {
+  <object
+  [data]="displayUrl() | safe"
+  type="application/pdf"
+  width="100%"
+  style="height: 75vh"
+>
+</object>
+  <a [href]="displayUrl()" target="_blank">Click here to see the PDF file that is embedded in this post</a>
+  } @else  {
+  <app-link-preview [link]="data().url"></app-link-preview>
 }

@@ -13,7 +13,7 @@
         </span>
         asked:
       </div>
-      <p class="ask-text">{{ ask.question }}</p>
+      <p class="ask-text" [innerHTML]="ask.question"></p>
     </div>
     <div class="ask-avatar">
       <app-avatar-small [user]="ask.user" class="ask-avatar"></app-avatar-small>

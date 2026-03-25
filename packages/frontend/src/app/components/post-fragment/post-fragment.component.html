@@ -31,27 +31,7 @@
     @if (fragment().ask) {
       <app-single-ask [ask]="fragment().ask!"></app-single-ask>
     }
-    @for (block of wafrnFormattedContent(); track $index) {
-      <!-- The thing that I really struggled at here is giving this @if a condition that made sense
-         for posts which already have the mentions in the body of the post. I failed to find one.
-    -->
-      @if (mentionPosts.length != 0 && !fragment().ask) {
-        <section class="reply-list">
-          <span class="reply-list-title">{{ 'post-fragment.replyingTo' | translate }}</span>
-          @for (url of mentionPosts; track $index) {
-            <a [routerLink]="['/blog/' + url]" class="subtle-link reply-list-link">{{ url }}</a>
-          }
-        </section>
-      }
-      @if (block) {
-        <div #mediaInline class="fragment-content overflow-hidden">
-          <div [injectHTML]="block" class="post-text"></div>
-          @if (typeof block !== 'string') {
-            <app-wafrn-media [data]="$any(block)" [filteredWords]="fragment().muted_words_cw"></app-wafrn-media>
-          }
-        </div>
-      }
-    }
+    <app-post-content [fragment]="fragment()"></app-post-content>
     @if (fragment().questionPoll) {
       <div>
         <app-poll [poll]="fragment().questionPoll!"></app-poll>

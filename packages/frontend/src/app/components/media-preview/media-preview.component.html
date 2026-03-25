@@ -1,20 +1,41 @@
 @if (!success) {
   <div class="w-full" style="height: 25vh">
     <mat-spinner></mat-spinner>
+    @if (error) {
+      <p>Cannot preview media, trying again...</p>
+    }
   </div>
 }
 @if (media && success) {
   <div class="w-full flex align-items-center justify-content-center" style="height: 25vh">
-    @if (!media.url.endsWith('mp4')) {
+    @if (contentType === 'image') {
       <img alt="loading" style="max-height: 25vh; max-width: 100%" [src]="elemUrl" (error)="imageLoadFailed($event)" />
     }
-    @if (media.url.endsWith('mp4')) {
+    @else if (contentType === 'video') {
       <video
         style="max-height: 25vh; max-width: 100%"
         [src]="elemUrl"
         (error)="imageLoadFailed($event)"
         controls
       ></video>
+    }
+    @else if (contentType === 'pdf') {
+      <embed
+          [src]="safeElemUrl"
+          type="application/pdf"
+          frameBorder="0"
+          scrolling="auto"
+          height="100%"
+          width="100%"
+          (error)="imageLoadFailed($event)"
+      >
+    }
+    @else if (contentType === 'audio') {
+      <audio
+        [src]="elemUrl"
+        (error)="imageLoadFailed($event)"
+        controls
+      ></audio>
     }
   </div>
 }

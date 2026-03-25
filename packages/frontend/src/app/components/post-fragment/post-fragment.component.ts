@@ -1,16 +1,14 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, ElementRef, input, OnChanges, OnDestroy, output, signal, viewChild, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
-import { Router, RouterModule } from "@angular/router";
+import { RouterModule } from "@angular/router";
 import { ProcessedPost } from "../../interfaces/processed-post";
 import { SimplifiedUser } from "../../interfaces/simplified-user";
 import { PollModule } from "../poll/poll.module";
 import { WafrnMediaModule } from "../wafrn-media/wafrn-media.module";
-
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { InjectHtmlModule } from "../../directives/inject-html/inject-html.module";
 import { Emoji } from "../../interfaces/emoji";
-import { WafrnMedia } from "../../interfaces/wafrn-media";
 import { EnvironmentService } from "../../services/environment.service";
 import { JwtService } from "../../services/jwt.service";
 import { LoginService } from "../../services/login.service";
@@ -19,15 +17,14 @@ import { PostsService } from "../../services/posts.service";
 import { EmojiReactComponent } from "../emoji-react/emoji-react.component";
 import { PostHeaderComponent } from "../post/post-header/post-header.component";
 import { SingleAskComponent } from "../single-ask/single-ask.component";
-
 import { TranslateModule } from "@ngx-translate/core";
-
 import { Subscription } from "rxjs";
 import { PostLinkModule } from "src/app/directives/post-link/post-link.module";
 import Viewer from "viewerjs";
 import { ParticleService } from "src/app/services/particle.service";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { SettingsService } from "src/app/services/settings.service";
+import { PostContentComponent } from "../post-content/post-content.component";
 
 type FragmentType = "post" | "quote";
 
@@ -57,7 +54,8 @@ type EmojiReaction = {
     SingleAskComponent,
     PostLinkModule,
     TranslateModule,
-  ],
+    PostContentComponent
+],
   templateUrl: "./post-fragment.component.html",
   styleUrl: "./post-fragment.component.scss",
 })
@@ -92,75 +90,6 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
   reactionLoading = signal<boolean>(false);
   sanitizedContent = "";
   noTagsContent = "";
-  wafrnFormattedContent = computed(() => {
-    let processedBlock: Array<string | WafrnMedia> = [];
-    this.sanitizedContent = this.postService.getPostHtml(this.fragment());
-    // wafrn silly feature
-    if (localStorage.getItem("replaceAIWithCocaine") === "true") {
-      // TODO this should be done in a better way but because we are playing with html... AAAA
-      const replaceAIWord = localStorage.getItem("replaceAIWord")
-        ? JSON.parse(localStorage.getItem("replaceAIWord") as string)
-        : "cocaine";
-      const wordsToReplace = [
-        "ai",
-        "artificial intelligence",
-        "artificial inteligence",
-        "llm",
-        "intelligence artificielle",
-        "ia",
-      ];
-      let regexpString = wordsToReplace
-        .map((elem) => `\\s${elem}\\s|^${elem}\\s|\\s${elem}$`)
-        .join("|");
-      let regexp = new RegExp(regexpString, "gi");
-      this.sanitizedContent = this.sanitizedContent.replaceAll(
-        regexp,
-        ` ${replaceAIWord} `
-      );
-      regexpString = wordsToReplace.map((elem) => `>${elem} `).join("|");
-      regexp = new RegExp(regexpString, "gi");
-      this.sanitizedContent = this.sanitizedContent.replaceAll(
-        regexp,
-        `>${replaceAIWord} `
-      );
-      regexpString = wordsToReplace.map((elem) => ` ${elem}<`).join("|");
-      regexp = new RegExp(regexpString, "gi");
-      this.sanitizedContent = this.sanitizedContent.replaceAll(
-        regexp,
-        ` ${replaceAIWord}<`
-      );
-      regexpString = wordsToReplace.map((elem) => `>${elem}<`).join("|");
-      regexp = new RegExp(regexpString, "gi");
-      this.sanitizedContent = this.sanitizedContent.replaceAll(
-        regexp,
-        `>${replaceAIWord}<`
-      );
-    }
-    this.noTagsContent = this.postService.getPostHtml(this.fragment(), []);
-    if (this.fragment().medias && this.fragment().medias?.length > 0) {
-      const mediaDetectorRegex = /\!\[media\-([0-9]+)]/gm;
-      const textDivided = this.sanitizedContent.split(mediaDetectorRegex);
-      textDivided.forEach((elem, index) => {
-        if (index % 2 == 0) {
-          if (elem != "") {
-            processedBlock.push(elem);
-          }
-        } else {
-          const medias = this.fragment().medias as WafrnMedia[];
-          const mediaToInsert = medias[parseInt(elem) - 1];
-          if (mediaToInsert) {
-            processedBlock.push(mediaToInsert);
-            this.seenMedia.push(parseInt(elem) - 1);
-          } else {
-            processedBlock.push(`![media-${elem}]`);
-          }
-        }
-      });
-    } else {
-      processedBlock = [this.sanitizedContent];
-    }
-    return processedBlock;
-  });
   characterCount = computed(() => this.noTagsContent.length);
   wordCount = computed(() => this.noTagsContent.split(" ").length);
 

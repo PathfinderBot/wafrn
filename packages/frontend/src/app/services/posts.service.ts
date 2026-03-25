@@ -1,7 +1,6 @@
 import { Injectable, signal, inject } from "@angular/core";
 import { ProcessedPost } from "../interfaces/processed-post";
 import { RawPost } from "../interfaces/raw-post";
-import { MediaService } from "./media.service";
 import { HttpClient } from "@angular/common/http";
 import sanitizeHtml from "sanitize-html";
 import { BehaviorSubject, firstValueFrom, lastValueFrom } from "rxjs";
@@ -9,7 +8,7 @@ import { JwtService } from "./jwt.service";
 import {
   basicPost,
   PostEmojiReaction,
-  unlinkedPosts,
+  unlinkedPosts
 } from "../interfaces/unlinked-posts";
 import { SimplifiedUser } from "../interfaces/simplified-user";
 import { UserOptions } from "../interfaces/userOptions";
@@ -24,7 +23,6 @@ import { ServiceAnnouncement } from "../interfaces/service-announcement";
   providedIn: "root",
 })
 export class PostsService {
-  private mediaService = inject(MediaService);
   private http = inject(HttpClient);
   private jwtService = inject(JwtService);
   private messageService = inject(MessageService);
@@ -699,9 +697,11 @@ export class PostsService {
       "ruby",
       "rt",
       "rp",
+      "style",
       "img", // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
     ]
   ): string {
+    const domParser = new DOMParser();
     const content = post.content;
     let sanitized = sanitizeHtml(content, {
       allowedTags: tags,
@@ -953,6 +953,7 @@ export class PostsService {
         : `:${emoji.name}:`;
       sanitized = sanitized.replaceAll(strToReplace, this.emojiToHtml(emoji));
     });
+
     return sanitized;
   }
 
