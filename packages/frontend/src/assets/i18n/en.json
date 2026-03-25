@@ -131,7 +131,7 @@
       "anyoneCanQuote": "Anyone can quote",
       "noOneCanQuote": "Not quotable"
     },
-    "replyControlWarning": "For now, only gotosocial, bluesky and other wafrns support this feature. Unwanted replies will be hidden from the thread on this instance, muted and only displayed in the section unauthorized replies. They may still be visible in other servers",
+    "replyControlWarning": "Not all fediverse instances support this feature yet. Unauthorized replies go to the relevant section in the menu.",
     "editingLabel": "Editing woot",
     "askReplyLabel": "Replying to ask",
     "inReplyTo": "In reply to:",
