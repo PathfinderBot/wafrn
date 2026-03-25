@@ -156,7 +156,8 @@ function getCheckFediverseSignatureFunction(force = false) {
           ) {
             // Mastodon allows two kind of signatures on POST bodys, if the http one fails we can check if there's a JSON-LD one, and if it is valid we pass it
             const signature = req.body.signature;
-            const remoteActor = await getRemoteActor(
+            const remoteKeyData = await getKey(remoteUserUrl, adminUser);
+            const remoteActor = remoteKeyData.key ? {publicKey: remoteKeyData.key} : await getRemoteActor(
               signature.creator.split("#")[0],
               (adminUser) as User
             );
