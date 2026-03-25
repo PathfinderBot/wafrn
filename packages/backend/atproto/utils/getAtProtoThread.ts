@@ -821,8 +821,13 @@ async function processReplies(uri: string, cursor?: string) {
           hierarchyLevel: 1
         }
       })) as Post
-      uriToSearch = rootPost.bskyUri as string
-      return processReplies(uriToSearch, cursor)
+      if(rootPost) {
+        uriToSearch = rootPost.bskyUri as string
+        return processReplies(uriToSearch, cursor)
+      } else {
+        return;
+      }
+      
     }
     let url = `${completeEnvironment.bskyConstellationUrl}/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {

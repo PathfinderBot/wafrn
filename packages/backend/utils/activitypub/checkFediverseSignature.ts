@@ -13,7 +13,7 @@ import { getRemoteActor } from "./getRemoteActor.js";
 import { LdSignature } from "./rsa2017.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 
-const adminUser = getAdminUser();
+const adminUser = await getAdminUser();
 
 function getCheckFediverseSignatureFunction(force = false) {
   return async function checkFediverseSignature(
@@ -88,7 +88,7 @@ function getCheckFediverseSignatureFunction(force = false) {
         remoteUserUrl: remoteUserUrl,
         valid: false,
       };
-      let remoteKeyData = await getKey(remoteUserUrl, await adminUser);
+      let remoteKeyData = await getKey(remoteUserUrl, adminUser);
       let remoteKey;
       if (remoteKeyData.key) {
         remoteKey = remoteKeyData.key;
@@ -118,9 +118,9 @@ function getCheckFediverseSignatureFunction(force = false) {
           // ok you cornered me. forced to fetch the remote actor
           const tmpUser = await getRemoteActor(
             remoteUserUrl,
-            (await adminUser) as User
+            (adminUser) as User
           );
-          remoteKeyData = await getKey(remoteUserUrl, await adminUser);
+          remoteKeyData = await getKey(remoteUserUrl, adminUser);
           if (remoteKeyData) {
             remoteKey = remoteKeyData.key;
           }
@@ -158,7 +158,7 @@ function getCheckFediverseSignatureFunction(force = false) {
             const signature = req.body.signature;
             const remoteActor = await getRemoteActor(
               signature.creator.split("#")[0],
-              (await adminUser) as User
+              (adminUser) as User
             );
             const jsonld = new LdSignature();
 
@@ -178,7 +178,7 @@ function getCheckFediverseSignatureFunction(force = false) {
               // logger.debug(
               //   `POST Signature verifications failed for ${hostUrl}: ${remoteUserUrl}`
               // );
-              getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
+              getRemoteActor(remoteUserUrl, (adminUser) as User, true)
                 .catch(() => { })
                 .then(() => { });
             }
@@ -202,7 +202,7 @@ function getCheckFediverseSignatureFunction(force = false) {
         const now = new Date();
         if (now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000) {
           // while we will still fail this request, we do initiate an async forced update, so if the client retries it'll likely have an updated signature by that time
-          getRemoteActor(remoteUserUrl, (await adminUser) as User, true)
+          getRemoteActor(remoteUserUrl, (adminUser) as User, true)
             .catch(() => { })
             .then(() => { });
         }
@@ -215,7 +215,7 @@ function getCheckFediverseSignatureFunction(force = false) {
       };
     } catch (error: any) {
       req.fediData = { fediHost: hostUrl, valid: false };
-      await getRemoteActor(remoteUserUrl, (await adminUser) as User, true);
+      await getRemoteActor(remoteUserUrl, (adminUser) as User, true);
       if (force) {
         success = false;
         logger.debug({
@@ -231,7 +231,7 @@ function getCheckFediverseSignatureFunction(force = false) {
       //logger.debug(`fail signature ${hostUrl}: ${remoteUserUrl}`)
       res.sendStatus(401);
       // we failed to get the remote user, we force an update
-      await getRemoteActor(remoteUserUrl, (await adminUser) as User, true);
+      await getRemoteActor(remoteUserUrl, (adminUser) as User, true);
       return;
     } else {
       next();
