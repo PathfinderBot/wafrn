@@ -644,6 +644,8 @@ export class PostsService {
     return newPost;
   }
 
+
+
   getPostHtml(
     post: ProcessedPost,
     tags: string[] = [
@@ -701,9 +703,9 @@ export class PostsService {
       "img", // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
     ]
   ): string {
-    const domParser = new DOMParser();
     const content = post.content;
     let sanitized = sanitizeHtml(content, {
+      allowVulnerableTags: true,
       allowedTags: tags,
       allowedAttributes: {
         img: ["src"],
@@ -844,6 +846,35 @@ export class PostsService {
     });
     // we remove stuff like script tags. we only allow certain stuff.
     const parsedAsHTML = this.parser.parseFromString(sanitized, "text/html");
+    const styles = parsedAsHTML.querySelectorAll('style');
+    Array.from(styles).forEach(e => {
+      const rules = [...(e.sheet?.cssRules ?? [])];
+      const blocked = ['position', 'z-index', 'behavior', 'overflow'];
+      const blockedSelectors = [/::slotted\s*\(/, /:host[\s(-]/, /:host$/, /::part\s*\(/, /:defined/];
+      const shadowRules: string[] = [];
+      rules.forEach(r => {
+        if (r instanceof CSSFontFaceRule) {
+          const style = document.createElement('style');
+          style.innerHTML = r.cssText;
+          document.head.appendChild(style);
+          return;
+        }
+        else if (r instanceof CSSImportRule) {
+          return;
+        }
+        else if (r instanceof CSSStyleRule) {
+          const isBlockedSelector = blockedSelectors.some(pattern => pattern.test(r.selectorText));
+          if (isBlockedSelector) return;
+          blocked.forEach(p => r.style.removeProperty(p));
+          shadowRules.push(r.cssText);
+          return;
+        }
+        shadowRules.push(r.cssText);
+      })
+      e.innerHTML = shadowRules.join('\n');
+      console.log(e, e.innerHTML);
+    })
+    sanitized = parsedAsHTML.documentElement.innerHTML;
     const links = parsedAsHTML.getElementsByTagName("a");
     const mentionedRemoteIds = post.mentionPost
       ? post.mentionPost?.map((elem) =>
