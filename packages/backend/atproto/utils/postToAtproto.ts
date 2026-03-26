@@ -4,11 +4,12 @@ import {
   Post,
   PostMentionsUserRelation,
   Quotes,
-  User
+  User,
 } from "../../models/index.js";
 import fs from "fs/promises";
 import {
-  getPostUrlForQuote
+  getPostUrlForQuote,
+  postToJSONLD,
 } from "../../utils/activitypub/postToJSONLD.js";
 import RichtextBuilder from "@atcute/bluesky-richtext-builder";
 import { Main } from "@atproto/api/dist/client/types/app/bsky/richtext/facet.js";
@@ -450,7 +451,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       };
     }
     // Shortening when media is present is handled earlier
-  } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia || (post.content.includes("<style>") && post.content.includes("</style>"))) {
+  } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
     res.embed = {
       $type: "app.bsky.embed.external",
       external: {

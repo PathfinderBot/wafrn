@@ -57,8 +57,6 @@ export class LinkPreviewComponent implements OnChanges {
         }
         if (data.title) {
           this.title = sitenamePrefix + data.title
-        } else {
-          this.title = this.url
         }
         if (data.description) {
           this.description = data.description
