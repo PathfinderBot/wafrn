@@ -528,6 +528,17 @@ async function processSinglePost(
       }
       mentions = [...new Set(mentions)];
       if (mentions.length > 0) {
+        await Notification.destroy({
+          where: {
+            notificationType: "MENTION",
+            postId: postToProcess.id,
+          },
+        });
+        await PostMentionsUserRelation.destroy({
+          where: {
+            postId: postToProcess.id,
+          },
+        });
         await bulkCreateNotifications(
           mentions.map((mnt) => ({
             notificationType: "MENTION",

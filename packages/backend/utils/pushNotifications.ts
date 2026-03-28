@@ -63,7 +63,7 @@ export async function bulkCreateNotifications(notifications: NotificationBody[],
     const sendNotifications =
       timeDiff < 3600 * 1000 ? sendPushNotificationQueue.add('sendPushNotification', { notifications: notifications.filter(elem => !elem.detached), context }) : null
     await Promise.all([
-      Notification.bulkCreate(localUserNotifications, { ignoreDuplicates: true }),
+      Notification.bulkCreate(localUserNotifications, { ignoreDuplicates: context?.ignoreDuplicates }),
       sendNotifications
     ])
   }
