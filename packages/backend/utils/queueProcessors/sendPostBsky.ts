@@ -152,7 +152,7 @@ async function sendPostBsky(job: Job) {
     // we send the post to fedi once we get the bsky data
     await prepareSendPostQueue.add('prepareSendPost', job.data, {
       jobId: post.id,
-      delay: 5000
+      delay: 2000
     })
   }
 }

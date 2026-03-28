@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, EventEmitter, input, OnDestroy, OnInit, Output, signal, viewChild, viewChildren, inject } from '@angular/core'
+import { Component, computed, ElementRef, EventEmitter, input, OnDestroy, OnInit, Output, signal, viewChild, viewChildren, inject, OnChanges } from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { LoginService } from 'src/app/services/login.service'
 import { PostsService } from 'src/app/services/posts.service'
@@ -36,7 +36,7 @@ import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
   styleUrls: ['./post.component.scss'],
   standalone: false
 })
-export class PostComponent implements OnInit, OnDestroy {
+export class PostComponent implements OnChanges, OnDestroy {
   postService = inject(PostsService);
   private readonly loginService = inject(LoginService);
 
@@ -150,7 +150,7 @@ export class PostComponent implements OnInit, OnDestroy {
     this.updateLikesSubscription?.unsubscribe()
   }
 
-  ngOnInit(): void {
+  ngOnChanges(): void {
     this.followedUsers = this.postService.followedUserIds
     this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
 

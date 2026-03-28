@@ -32,6 +32,7 @@ services:
 volumes:
   dbpg:
   redis:
+  cache:
 
 
 networks:

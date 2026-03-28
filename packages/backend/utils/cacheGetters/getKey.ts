@@ -39,7 +39,7 @@ async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: U
   }
   if (!cachedKey && remoteKey) {
     // we set the key valid for 5 minutes
-    redisCache.set('key:' + remoteUserUrl, remoteKey, 'EX', 300)
+    redisCache.set('key:' + remoteUserUrl, remoteKey, 'EX', 3600)
   }
   return { user: user, key: remoteKey }
 }

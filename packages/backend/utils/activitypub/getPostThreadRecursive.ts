@@ -572,7 +572,7 @@ async function getPostThreadRecursive(
         try {
           if (!remoteUser.banned && !remoteUserServerBaned) {
             for await (const mention of fediMentions) {
-              let mentionedUser
+              let mentionedUser = await getRemoteActor(mention.href, user)
               if (mention.href?.indexOf(completeEnvironment.frontendUrl) !== -1) {
                 const username = mention.href?.substring(
                   `${completeEnvironment.frontendUrl}/fediverse/blog/`.length
@@ -745,12 +745,12 @@ async function getPostThreadRecursive(
         const postCleanContent = dompurify.sanitize(newPost.content, { ALLOWED_TAGS: [] }).trim()
         const mentions = await newPost.getMentionPost()
         if (postCleanContent.startsWith('!ask') && mentions.length === 1) {
-          let askContent = postCleanContent.split(`!ask @${mentions[0].url}`)[1]
+          let askContent = postCleanContent.substring(`!ask @${mentions[0].url}`.length)
           if (askContent.startsWith('@' + completeEnvironment.instanceUrl)) {
             askContent = askContent.split('@' + completeEnvironment.instanceUrl)[1]
           }
           await Ask.create({
-            question: escapeHTML(askContent),
+            question: dompurify.sanitize(askContent, {ALLOWED_TAGS: []}),
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,

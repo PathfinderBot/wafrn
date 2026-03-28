@@ -1,12 +1,14 @@
 import { DidDocument } from '@atcute/identity'
 import { getServerFromDid } from './getServerFromDid.js'
 import { redisCache } from '../redis.js'
-import { completeEnvironment } from '../backendOptions.js'
 import getUserAgent from '../getUserAgent.js'
 
 
-export async function getDidDoc(inputDid: string): Promise<DidDocument | undefined> {
+export async function getDidDoc(inputDid: string, ignoreCache?: boolean): Promise<DidDocument | undefined> {
   let did = inputDid
+  if(ignoreCache) {
+    await redisCache.del('didDoc:' + did)
+  }
   if (did.startsWith('at://')) {
     did = did.replace(/^at:\/\//, '')
   }

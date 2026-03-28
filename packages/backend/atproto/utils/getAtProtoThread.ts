@@ -466,12 +466,17 @@ async function processSinglePost(
       cw =
         "This user has been marked as NSFW and the post has been labeled automatically as NSFW";
     }
+
+    let createdAt =  new Date((postPetitionPds.value as any).createdAt)
+    if(createdAt.getTime() > new Date().getTime()) {
+      createdAt = new Date();
+    }
     const newData = {
       userId: postCreator.id,
       bskyCid: postPetitionPds.cid,
       bskyUri: postPetitionPds.uri,
       content: postText,
-      createdAt: new Date((postPetitionPds.value as any).createdAt),
+      createdAt: createdAt,
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
@@ -816,8 +821,13 @@ async function processReplies(uri: string, cursor?: string) {
           hierarchyLevel: 1
         }
       })) as Post
-      uriToSearch = rootPost.bskyUri as string
-      return processReplies(uriToSearch, cursor)
+      if(rootPost) {
+        uriToSearch = rootPost.bskyUri as string
+        return processReplies(uriToSearch, cursor)
+      } else {
+        return;
+      }
+      
     }
     let url = `${completeEnvironment.bskyConstellationUrl}/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {

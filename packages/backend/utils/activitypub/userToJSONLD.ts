@@ -111,7 +111,8 @@ export async function userToJSONLD(user: User) {
         id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#main-key`,
         owner: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         publicKeyPem: user.publicKey
-      }
+      },
+      canBite: "https://www.w3.org/ns/activitystreams#Public"
     }
 
     if (user.userMigratedTo) {
