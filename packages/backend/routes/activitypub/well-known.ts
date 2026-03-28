@@ -77,7 +77,7 @@ function wellKnownRoutes(app: Application) {
     res.send({
       links: [
         {
-          rel: 'http://nodeinfo.diaspora.software/ns/schema/2.0/gay',
+          rel: 'http://nodeinfo.diaspora.software/ns/schema/2.0',
           href: `${completeEnvironment.frontendUrl}/.well-known/nodeinfo/2.0`
         }
       ]
