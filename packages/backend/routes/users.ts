@@ -17,7 +17,7 @@ import {
   UserOptions
 } from '../models/index.js'
 import { adminToken, authenticateToken } from '../utils/authenticateToken.js'
-import escape from 'escape-html';
+import escape from 'escape-html'
 import generateRandomString from '../utils/generateRandomString.js'
 import getIp from '../utils/getIP.js'
 import sendEmail from '../utils/sendEmail.js'
@@ -25,7 +25,7 @@ import validateEmail from '../utils/validateEmail.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { sequelize } from '../models/index.js'
-import * as cheerio from "cheerio";
+import * as cheerio from 'cheerio'
 import optimizeMedia from '../utils/optimizeMedia.js'
 import uploadHandler from '../utils/uploads.js'
 import { generateKeyPairSync, randomUUID } from 'crypto'
@@ -79,7 +79,7 @@ import { getAdminAtprotoSession } from '../utils/atproto/getAdminAtprotoSession.
 import { getRemoteActor } from '../utils/activitypub/getRemoteActor.js'
 import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
-import { migrateUserFedi } from '../utils/activitypub/migrateUser.js';
+import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -658,7 +658,6 @@ function userRoutes(app: Application) {
       success: false,
       message: 'Incorrect password'
     })
-
   })
 
   app.post('/api/login', loginRateLimiter, onePerSecondLimiter, async (req, res) => {
@@ -1264,7 +1263,7 @@ function userRoutes(app: Application) {
         // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
         serviceAnnouncements,
         mutedRewoots,
-        mutedQuotes,
+        mutedQuotes
       })
     }
   })
@@ -1481,13 +1480,13 @@ function userRoutes(app: Application) {
     const userId = req.jwtData?.userId as string
     const user = await User.scope('full').findByPk(userId)
     let bskyUrl = req.body.url
-    if(bskyUrl.startsWith('@')) {
+    if (bskyUrl.startsWith('@')) {
       bskyUrl = bskyUrl.substring(1)
     }
     const pasword = req.body.password
     if (user && bskyUrl && pasword) {
       const localIds = await getAllLocalUserIds()
-      const bskyUser = await getAtprotoUser(bskyUrl, {ignoreCache: true})
+      const bskyUser = await getAtprotoUser(bskyUrl, { ignoreCache: true })
       if (bskyUser && bskyUser.url === user.url) {
         return res.send({
           success: true
@@ -1735,7 +1734,7 @@ function userRoutes(app: Application) {
 
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
       await Ask.create({
-        question: dompurify.sanitize(question, {ALLOWED_TAGS: []}),
+        question: dompurify.sanitize(question, { ALLOWED_TAGS: [] }),
         apObject: null,
         creationIp: getIp(req),
         answered: false,
@@ -1899,8 +1898,8 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     await forceUpdateCacheDidsAtThread()
     await getCacheAtDids(true)
     await updateUserDidDoc(user)
-    let pronouns: string | undefined;
-    let website: string | undefined;
+    let pronouns: string | undefined
+    let website: string | undefined
     const fediAttachmentsDb = await UserOptions.findOne({
       where: {
         userId: user.id,
@@ -1908,10 +1907,10 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       }
     })
 
-    if(fediAttachmentsDb) {
-      const fediAttachments: {name: string, value: string}[] = JSON.parse(fediAttachmentsDb.optionValue)
-      pronouns = fediAttachments.find(elem => elem.name.toLowerCase() === 'pronouns')?.value
-      const websiteCheck = fediAttachments.find(elem => elem.name.toLowerCase() === 'website')?.value
+    if (fediAttachmentsDb) {
+      const fediAttachments: { name: string; value: string }[] = JSON.parse(fediAttachmentsDb.optionValue)
+      pronouns = fediAttachments.find((elem) => elem.name.toLowerCase() === 'pronouns')?.value
+      const websiteCheck = fediAttachments.find((elem) => elem.name.toLowerCase() === 'website')?.value
 
       if (websiteCheck) {
         const doc = cheerio.load(websiteCheck)
@@ -1954,10 +1953,10 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         profile.avatar = avatarData
         await fs.unlink(pngAvatar)
       }
-      if(pronouns) {
+      if (pronouns) {
         profile.pronouns = pronouns
       }
-      if(website) {
+      if (website) {
         profile.website = website
       }
       // it works now yay
