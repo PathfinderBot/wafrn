@@ -329,15 +329,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `
-              })
+                })
             await Promise.all([userWithEmail, emailSent])
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
@@ -1078,19 +1078,19 @@ function userRoutes(app: Application) {
       let followed = blog.isRemoteUser
         ? blog.followingCount
         : Follows.count({
-          where: {
-            followerId: blog.id,
-            accepted: true
-          }
-        })
+            where: {
+              followerId: blog.id,
+              accepted: true
+            }
+          })
       let followers = blog.isRemoteUser
         ? blog.followerCount
         : Follows.count({
-          where: {
-            followedId: blog.id,
-            accepted: true
-          }
-        })
+            where: {
+              followedId: blog.id,
+              accepted: true
+            }
+          })
       const publicOptions = UserOptions.findAll({
         where: {
           userId: blog.id,
@@ -1129,10 +1129,10 @@ function userRoutes(app: Application) {
 
       const postCount = blog
         ? await Post.count({
-          where: {
-            userId: blog.id
-          }
-        })
+            where: {
+              userId: blog.id
+            }
+          })
         : 0
 
       followed = await followed
@@ -1514,23 +1514,45 @@ function userRoutes(app: Application) {
 
         if (agent.did) {
           // ok now time to update stuff
+          // Wrap in a transaction so the DID invalidation + reassignment is done at the exact same time.
+          // Without this, the firehose worker can recreate a user with the same DID between the two saves
           const newDid = bskyUser.bskyDid
-          bskyUser.bskyDid = `INVALID_${bskyUser.bskyDid}`
-          await bskyUser.save()
-          user.bskyDid = newDid
-          user.enableBsky = true
-          user.bskyAppPassword = pasword
-          await user.save()
-          await Post.update(
-            {
-              userId: user.id
-            },
-            {
-              where: {
-                userId: bskyUser.id
+          const transaction = await sequelize.transaction()
+          try {
+            // Invalidate the DID on ALL non-local users that have it, not just bskyUser, in case the firehose created new bad records
+            await User.update(
+              { bskyDid: sequelize.literal(`'INVALID_' || "bskyDid"`) },
+              {
+                where: {
+                  bskyDid: newDid,
+                  id: { [Op.ne]: user.id }
+                },
+                transaction
               }
-            }
-          )
+            )
+            user.bskyDid = newDid
+            user.enableBsky = true
+            user.bskyAppPassword = pasword
+            await user.save({ transaction })
+            await Post.update(
+              { userId: user.id },
+              {
+                where: { userId: bskyUser.id },
+                transaction
+              }
+            )
+            await transaction.commit()
+          } catch (error) {
+            await transaction.rollback()
+            logger.error({
+              message: `Error during bsky account connection for user ${user.url}`,
+              error: error
+            })
+            return res.status(500).send({
+              success: false,
+              error: 'Failed to connect bluesky account. Please try again.'
+            })
+          }
           await syncBskyFollowersAndFollowing(user.id)
           await forceUpdateCacheDidsAtThread()
           await redisCache.del('bskySession:' + user.id)
