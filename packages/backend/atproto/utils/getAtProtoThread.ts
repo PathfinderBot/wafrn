@@ -1,4 +1,3 @@
-// returns the post id
 import {
   EmojiReaction,
   Media,
@@ -16,87 +15,69 @@ import {
   User,
   UserBitesPostRelation,
   UserBookmarkedPosts,
-  UserLikesPostRelations,
-} from "../../models/index.js";
-import { Model, Op, QueryTypes } from "sequelize";
+  UserLikesPostRelations
+} from '../../models/index.js'
+import { Op, QueryTypes } from 'sequelize'
+import { getAtprotoUser } from './getAtprotoUser.js'
+import { logger } from '../../utils/logger.js'
 import {
-  PostView,
-  ThreadViewPost,
-} from "@atproto/api/dist/client/types/app/bsky/feed/defs.js";
-import { getAtprotoUser } from "./getAtprotoUser.js";
-import { CreateOrUpdateOp } from "@skyware/firehose";
-import { logger } from "../../utils/logger.js";
-import { RichText } from "@atproto/api";
-import showdown from "showdown";
-import {
-  bulkCreateNotifications,
-  createNotification,
-} from "../../utils/pushNotifications.js";
-import { getAllLocalUserIds } from "../../utils/cacheGetters/getAllLocalUserIds.js";
-import {
-  InteractionControl,
-  InteractionControlType,
-  Privacy,
-} from "../../models/post.js";
-import { wait } from "../../utils/wait.js";
-import { UpdatedAt } from "sequelize-typescript";
-import { completeEnvironment } from "../../utils/backendOptions.js";
-import { MediaAttributes } from "../../models/media.js";
-import { getAdminAtprotoSession } from "../../utils/atproto/getAdminAtprotoSession.js";
-import { getPostThreadRecursive } from "../../utils/activitypub/getPostThreadRecursive.js";
-import { Queue, QueueEvents } from "bullmq";
-import { getAdminUser } from "../../utils/getAdminAndDeletedUser.js";
-import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
-import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
-import { DidDocument } from "@atcute/identity";
-import { extractUriComponents } from "./obtainUriComponents.js";
-import { getPetitionSigned } from "../../utils/activitypub/getPetitionSigned.js";
-import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
-import getUserAgent from "../../utils/getUserAgent.js";
+  AppBskyEmbedExternal,
+  AppBskyEmbedImages,
+  AppBskyEmbedRecordWithMedia,
+  AppBskyEmbedVideo,
+  AppBskyFeedPost,
+  AppBskyRichtextFacet,
+  ComAtprotoLabelDefs,
+  ComAtprotoRepoGetRecord,
+  Label,
+  RichText
+} from '@atproto/api'
+import { bulkCreateNotifications, createNotification } from '../../utils/pushNotifications.js'
+import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
+import { InteractionControl, InteractionControlType, Privacy } from '../../models/post.js'
+import { wait } from '../../utils/wait.js'
+import { completeEnvironment } from '../../utils/backendOptions.js'
+import { MediaAttributes } from '../../models/media.js'
+import { getPostThreadRecursive } from '../../utils/activitypub/getPostThreadRecursive.js'
+import { Queue } from 'bullmq'
+import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
+import { getServerFromDid } from '../../utils/atproto/getServerFromDid.js'
+import { getDidDoc } from '../../utils/atproto/getDidDoc.js'
+import { DidDocument } from '@atcute/identity'
+import { extractUriComponents } from './obtainUriComponents.js'
+import { getPetitionSigned } from '../../utils/activitypub/getPetitionSigned.js'
+import getUserAgent from '../../utils/getUserAgent.js'
 
-const markdownConverter = new showdown.Converter({
-  simplifiedAutoLink: true,
-  literalMidWordUnderscores: true,
-  strikethrough: true,
-  simpleLineBreaks: true,
-  openLinksInNewWindow: true,
-  emoji: true,
-});
-
-const adminUser = getAdminUser();
-
-const processSinglePostQueue = new Queue("processSinglePost", {
+const processSinglePostQueue = new Queue('processSinglePost', {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
     attempts: 6,
     backoff: {
-      type: "exponential",
-      delay: 2500,
+      type: 'exponential',
+      delay: 2500
     },
-    removeOnFail: false,
-  },
-});
+    removeOnFail: false
+  }
+})
 
-async function processSinglePost(
-  uri: string,
-  forceUpdate = false
-): Promise<string | undefined> {
-  let detached = false;
+// returns the post id
+async function processSinglePost(uri: string, forceUpdate = false): Promise<string | undefined> {
+  let detached = false
   if (!completeEnvironment.enableBsky) {
-    return undefined;
+    return undefined
   }
   if (!forceUpdate) {
     const existingPost = await Post.findOne({
       where: {
-        bskyUri: uri,
-      },
-    });
+        bskyUri: uri
+      }
+    })
     if (existingPost && !forceUpdate) {
-      return existingPost.id;
+      return existingPost.id
     }
   }
-  let postCreator: User | undefined;
+  let postCreator: User | undefined
   try {
     const did = extractUriComponents(uri).did
     const existingCreator = await User.findOne({
@@ -106,10 +87,8 @@ async function processSinglePost(
     })
     try {
       const doc = (await getDidDoc(did)) as DidDocument
-      const handle = (doc.alsoKnownAs as string[]).filter(elem => elem.startsWith('at://'))[0].split('at://')[1]
-      postCreator = await getAtprotoUser(
-        handle
-      );
+      const handle = (doc.alsoKnownAs as string[]).filter((elem) => elem.startsWith('at://'))[0].split('at://')[1]
+      postCreator = await getAtprotoUser(handle)
     } catch (error) {
       postCreator = existingCreator || undefined
       logger.info({
@@ -117,25 +96,26 @@ async function processSinglePost(
         error: error
       })
     }
-
   } catch (error) {
     logger.debug({
       message: `Problem obtaining user from post`,
       uri,
       forceUpdate,
-      error: error,
-    });
+      error: error
+    })
   }
-  let verifiedFedi: string | undefined;
+  let verifiedFedi: string | undefined
   const postPetitionPds = await getPostThreadPDSDirect(uri)
-  const parentUri = postPetitionPds.value?.reply?.parent?.uri ? postPetitionPds.value.reply.parent.uri : undefined;
-  let parentId: string | undefined = undefined;
+  const post = postPetitionPds?.value as AppBskyFeedPost.Main
+  const parentUri = post?.reply?.parent?.uri ? post.reply.parent.uri : undefined
+  let parentId: string | undefined = undefined
   try {
     if (parentUri) {
       parentId = await processSinglePost(parentUri, false)
     }
   } catch (error) {
     logger.debug({
+      error,
       message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
     })
   }
@@ -145,252 +125,259 @@ async function processSinglePost(
       data: postPetitionPds
     })
   }
-  if (postPetitionPds && postPetitionPds.value && ("fediverseId" in postPetitionPds.value || "bridgyOriginalUrl" in postPetitionPds.value)) {
+  if (
+    postPetitionPds &&
+    postPetitionPds.value &&
+    ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
+  ) {
     // original is fedi. lets wait half second
-    if ("bridgyOriginalUrl" in postPetitionPds.value) {
+    if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
-        completeEnvironment.bskySlingshotUrl + 
-        "/xrpc/com.bad-example.identity.resolveMiniDoc" +
-        `?identifier=${extractUriComponents(uri).did}`
-      );
+        completeEnvironment.bskySlingshotUrl +
+          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+          `?identifier=${extractUriComponents(uri).did}`
+      )
       if (res.ok) {
-        const json = (await res.json()) as { pds: string };
-        if (json.pds.toLowerCase().replace(/^https?:\/\//, "").startsWith("atproto.brid.gy")) {
+        const json = (await res.json()) as { pds: string }
+        if (
+          json.pds
+            .toLowerCase()
+            .replace(/^https?:\/\//, '')
+            .startsWith('atproto.brid.gy')
+        ) {
           // if user is on bridgy pds, verify it
-          verifiedFedi = postPetitionPds.value.bridgyOriginalUrl as string;
+          verifiedFedi = postPetitionPds.value.bridgyOriginalUrl as string
         }
       }
     } else {
       // prob wafrn post, but lets verify it
       try {
-        const fediPostObject = await getPetitionSigned(await getAdminUser(), postPetitionPds.value.fediverseId)
-        if (fediPostObject && fediPostObject.blueskyUri && postPetitionPds.uri == fediPostObject.blueskyUri && fediPostObject.blueskyCid && postPetitionPds.cid == fediPostObject.blueskyCid) {
+        const id = postPetitionPds.value.fediverseId as string
+        const fediPostObject = await getPetitionSigned(await getAdminUser(), id)
+        if (
+          fediPostObject &&
+          fediPostObject.blueskyUri &&
+          postPetitionPds.uri == fediPostObject.blueskyUri &&
+          fediPostObject.blueskyCid &&
+          postPetitionPds.cid == fediPostObject.blueskyCid
+        ) {
           // the post is real and they point each other.
-          verifiedFedi = postPetitionPds.value.fediverseId
+          verifiedFedi = id
         }
       } catch (error) {
         logger.debug({
           error,
-          message: `Error in obtaining fedi post ${postPetitionPds.value.fediverseId}`,
-        });
+          message: `Error in obtaining fedi post ${postPetitionPds.value.fediverseId}`
+        })
       }
     }
   }
   if (verifiedFedi) {
     try {
-      const remotePost = await getPostThreadRecursive(
-        await getAdminUser(),
-        verifiedFedi,
-        undefined,
-        undefined,
-        {
-          forceNotBsky: true
-        }
-      );
+      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
+        forceNotBsky: true
+      })
+      const bskyCid = postPetitionPds!.cid as string
+      const bskyUri = postPetitionPds!.uri
       if (remotePost && remotePost.remotePostId) {
-        remotePost.bskyCid = postPetitionPds.cid;
-        remotePost.bskyUri = postPetitionPds.uri;
+        remotePost.bskyCid = bskyCid
+        remotePost.bskyUri = bskyUri
         if (forceUpdate) {
           await processReplies(remotePost.bskyUri as string)
         }
         await remotePost.save()
-        return remotePost.id;
+        return remotePost.id
       } else if (remotePost) {
-        remotePost.bskyCid = postPetitionPds.cid;
-        remotePost.bskyUri = postPetitionPds.uri;
+        remotePost.bskyCid = bskyCid
+        remotePost.bskyUri = bskyUri
         // if there's already a bsky post about
         // this that doesn't have any fedi urls, delete it
         // and prob update the things
-        let existingPost = await Post.findOne({
+        const existingPost = await Post.findOne({
           where: {
-            bskyCid: postPetitionPds.cid,
-            remotePostId: null,
-          },
-        });
-        if (
-          existingPost &&
-          !(await getAllLocalUserIds()).includes(existingPost.userId)
-        ) {
+            bskyCid: bskyCid,
+            remotePostId: null
+          }
+        })
+        if (existingPost && !(await getAllLocalUserIds()).includes(existingPost.userId)) {
           // very expensive updates! but only happens when user
           // searches existing post that is alr on db
           await EmojiReaction.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await Notification.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await PostReport.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           try {
             await PostAncestor.update(
               {
-                postsId: remotePost.id,
+                postsId: remotePost.id
               },
               {
                 where: {
-                  postsId: existingPost.id,
-                },
+                  postsId: existingPost.id
+                }
               }
-            );
-          } catch { }
+            )
+          } catch {}
           await QuestionPoll.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await Quotes.update(
             {
-              quoterPostId: remotePost.id,
+              quoterPostId: remotePost.id
             },
             {
               where: {
-                quoterPostId: existingPost.id,
-              },
+                quoterPostId: existingPost.id
+              }
             }
-          );
+          )
           if (
             !(await Quotes.findOne({
               where: {
-                quotedPostId: remotePost.id,
-              },
+                quotedPostId: remotePost.id
+              }
             }))
           ) {
             await Quotes.update(
               {
-                quotedPostId: remotePost.id,
+                quotedPostId: remotePost.id
               },
               {
                 where: {
-                  quotedPostId: existingPost.id,
-                },
+                  quotedPostId: existingPost.id
+                }
               }
-            );
+            )
           }
           await RemoteUserPostView.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await SilencedPost.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await SilencedPost.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await UserBitesPostRelation.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await UserBookmarkedPosts.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await UserLikesPostRelations.update(
             {
-              postId: remotePost.id,
+              postId: remotePost.id
             },
             {
               where: {
-                postId: existingPost.id,
-              },
+                postId: existingPost.id
+              }
             }
-          );
+          )
           await Post.update(
             {
-              parentId: remotePost.id,
+              parentId: remotePost.id
             },
             {
               where: {
-                parentId: existingPost.id,
-              },
+                parentId: existingPost.id
+              }
             }
-          );
+          )
 
           await Post.destroy({
             where: {
-              bskyCid: postPetitionPds.cid,
+              bskyCid: bskyCid,
               remotePostId: null,
               userId: {
-                [Op.notIn]: await getAllLocalUserIds(),
-              },
-            },
-          });
+                [Op.notIn]: await getAllLocalUserIds()
+              }
+            }
+          })
         }
-        await remotePost.save();
+        await remotePost.save()
         if (forceUpdate) {
           await processReplies(remotePost.bskyUri as string)
         }
-        return remotePost.id;
+        return remotePost.id
       }
     } catch (error) {
       logger.debug({
         message: `Error in obtaining fedi post ${verifiedFedi}`,
-        error,
-      });
+        error
+      })
     }
   }
   if (!postCreator || !postPetitionPds) {
-    const usr = postCreator
-      ? postCreator
-      : await User.findOne({ where: { url: completeEnvironment.deletedUser } });
+    const usr = postCreator ? postCreator : await User.findOne({ where: { url: completeEnvironment.deletedUser } })
 
     const invalidPost = await Post.create({
       userId: usr?.id,
@@ -398,78 +385,72 @@ async function processSinglePost(
       parentId: parentId,
       isDeleted: true,
       createdAt: new Date(0),
-      updatedAt: new Date(0),
-    });
-    return invalidPost.id;
+      updatedAt: new Date(0)
+    })
+    return invalidPost.id
   }
-  if (postCreator && postPetitionPds.value) {
-    const medias = getPostMedias(postPetitionPds);
-    let tags: string[] = [];
-    let mentions: string[] = [];
-    let record = postPetitionPds.value as any;
-    let postText = record.text;
-    let federatedWoot = false;
-    if (record.fullText || record.bridgyOriginalText) {
-      federatedWoot = true;
-      tags = record.fullTags?.split("\n").filter((x: string) => !!x) ?? []; // also detect full tags
-      postText = record.fullText ?? record.bridgyOriginalText;
+  if (postCreator && post) {
+    const medias = getPostMedias(postPetitionPds.uri, post)
+    let tags: string[] = []
+    let mentions: string[] = []
+    let postText = post.text
+    let federatedWoot = false
+    if (post.fullText || post.bridgyOriginalText) {
+      federatedWoot = true
+      tags = (post.fullTags as string)?.split('\n').filter((x: string) => !!x) ?? [] // also detect full tags
+      postText = (post.fullText as string) ?? (post.bridgyOriginalText as string)
     }
-    if (record.facets && record.facets.length > 0 && !federatedWoot) {
+    if (post.facets && post.facets.length > 0 && !federatedWoot) {
       // lets get mentions
-      const mentionedDids = record.facets
-        .flatMap((elem: any) => elem.features)
-        .map((elem: any) => elem.did)
-        .filter((elem: any) => elem);
+      const mentionedDids = post.facets
+        .flatMap((elem) => elem.features)
+        .map((elem) => (elem as AppBskyRichtextFacet.Mention).did)
+        .filter((elem) => elem)
       if (mentionedDids && mentionedDids.length > 0) {
         const mentionedUsers = await User.findAll({
           where: {
             bskyDid: {
-              [Op.in]: mentionedDids,
-            },
-          },
-        });
-        mentions = mentionedUsers.map((elem) => elem.id);
+              [Op.in]: mentionedDids
+            }
+          }
+        })
+        mentions = mentionedUsers.map((elem) => elem.id)
       }
 
       const rt = new RichText({
         text: postText,
-        facets: record.facets,
-      });
-      let text = "";
+        facets: post.facets
+      })
+      let text = ''
 
       for (const segment of rt.segments()) {
         if (segment.isLink()) {
-          const href = segment.link?.uri;
-          text += `<a href="${href}" target="_blank">${href}</a>`;
+          const href = segment.link?.uri
+          text += `<a href="${href}" target="_blank">${href}</a>`
         } else if (segment.isMention()) {
-          const href = `${completeEnvironment.frontendUrl}/blog/${segment.mention?.did}`;
-          text += `<a href="${href}" target="_blank">${segment.text}</a>`;
+          const href = `${completeEnvironment.frontendUrl}/blog/${segment.mention?.did}`
+          text += `<a href="${href}" target="_blank">${segment.text}</a>`
         } else if (segment.isTag()) {
-          const href = `${completeEnvironment.frontendUrl
-            }/dashboard/search/${segment.text.substring(1)}`;
-          text += `<a href="${href}" target="_blank">${segment.text}</a>`;
-          tags.push(segment.text.substring(1));
+          const href = `${completeEnvironment.frontendUrl}/dashboard/search/${segment.text.substring(1)}`
+          text += `<a href="${href}" target="_blank">${segment.text}</a>`
+          tags.push(segment.text.substring(1))
         } else {
-          text += segment.text;
+          text += segment.text
         }
       }
-      postText = text;
+      postText = text
     }
-    if (!federatedWoot) postText = postText.replaceAll("\n", "<br>");
+    if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
 
-    const labels = getPostLabels(postPetitionPds.value);
-    let cw =
-      labels.length > 0
-        ? `Post is labeled as: ${labels.join(", ")}`
-        : undefined;
+    const labels = getPostLabels(postPetitionPds.value)
+    let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
     if (!cw && postCreator.NSFW) {
-      cw =
-        "This user has been marked as NSFW and the post has been labeled automatically as NSFW";
+      cw = 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
     }
 
-    let createdAt =  new Date((postPetitionPds.value as any).createdAt)
-    if(createdAt.getTime() > new Date().getTime()) {
-      createdAt = new Date();
+    let createdAt = new Date(post.createdAt)
+    if (createdAt.getTime() > new Date().getTime()) {
+      createdAt = new Date()
     }
     const newData = {
       userId: postCreator.id,
@@ -480,68 +461,65 @@ async function processSinglePost(
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...await getPostInteractionLevels(uri, parentId),
-    };
+      ...(await getPostInteractionLevels(uri, parentId))
+    }
     if (!parentId) {
-      delete newData.parentId;
+      delete newData.parentId
     }
 
     if ((await getAllLocalUserIds()).includes(newData.userId) && !forceUpdate) {
       // dirty as hell but this should stop the duplication
-      await wait(1500);
+      await wait(1500)
     }
-    let [postToProcess, created] = await Post.findOrCreate({
+    const [postToProcess, created] = await Post.findOrCreate({
       where: { bskyUri: postPetitionPds.uri },
-      defaults: newData,
-    });
+      defaults: newData
+    })
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
-    if (
-      !(await getAllLocalUserIds()).includes(postToProcess.userId) ||
-      created
-    ) {
+    if (!(await getAllLocalUserIds()).includes(postToProcess.userId) || created) {
       if (!created) {
-        postToProcess.set(newData);
-        await postToProcess.save();
+        postToProcess.set(newData)
+        await postToProcess.save()
       }
       if (medias) {
         await Media.destroy({
           where: {
-            postId: postToProcess.id,
-          },
-        });
+            postId: postToProcess.id
+          }
+        })
         await Media.bulkCreate(
-          medias.map((media: any) => {
-            return { ...media, postId: postToProcess.id };
+          medias.map((media) => {
+            return { ...media, postId: postToProcess.id }
           })
-        );
+        )
       }
       if (parentId) {
         const ancestors = await postToProcess.getAncestors({
-          attributes: ["userId"],
+          attributes: ['userId'],
           where: {
             hierarchyLevel: {
-              [Op.gt]: postToProcess.hierarchyLevel - 5,
-            },
-          },
-        });
-        mentions = mentions.concat(ancestors.map((elem) => elem.userId));
+              [Op.gt]: postToProcess.hierarchyLevel - 5
+            }
+          }
+        })
+        mentions = mentions.concat(ancestors.map((elem) => elem.userId))
       }
-      mentions = [...new Set(mentions)];
+      mentions = [...new Set(mentions)]
       if (mentions.length > 0) {
         await Notification.destroy({
           where: {
-            notificationType: "MENTION",
-            postId: postToProcess.id,
-          },
-        });
+            notificationType: 'MENTION',
+            postId: postToProcess.id
+          }
+        })
         await PostMentionsUserRelation.destroy({
           where: {
-            postId: postToProcess.id,
-          },
-        });
+            postId: postToProcess.id
+          }
+        })
         await bulkCreateNotifications(
           mentions.map((mnt) => ({
-            notificationType: "MENTION",
+            notificationType: 'MENTION',
             postId: postToProcess.id,
             notifiedUserId: mnt,
             userId: postToProcess.userId,
@@ -551,43 +529,43 @@ async function processSinglePost(
           {
             ignoreDuplicates: true,
             postContent: postText,
-            userUrl: postCreator.url,
+            userUrl: postCreator.url
           }
-        );
+        )
         await PostMentionsUserRelation.bulkCreate(
           mentions.map((mnt) => {
             return {
               userId: mnt,
-              postId: postToProcess.id,
-            };
+              postId: postToProcess.id
+            }
           }),
           { ignoreDuplicates: true }
-        );
+        )
       }
       if (tags.length > 0) {
         await PostTag.destroy({
           where: {
-            postId: postToProcess.id,
-          },
-        });
+            postId: postToProcess.id
+          }
+        })
         await PostTag.bulkCreate(
           tags.map((tag) => {
             return {
               postId: postToProcess.id,
-              tagName: tag,
-            };
+              tagName: tag
+            }
           })
-        );
+        )
       }
-      const quotedPostUri = getQuotedPostUri(postPetitionPds);
+      const quotedPostUri = getQuotedPostUri(postPetitionPds)
       if (quotedPostUri) {
-        const quotedPostId = await processSinglePost(quotedPostUri, forceUpdate);
+        const quotedPostId = await processSinglePost(quotedPostUri, forceUpdate)
         if (quotedPostId) {
-          const quotedPost = await Post.findByPk(quotedPostId);
+          const quotedPost = await Post.findByPk(quotedPostId)
           if (quotedPost) {
             await createNotification(
               {
-                notificationType: "QUOTE",
+                notificationType: 'QUOTE',
                 notifiedUserId: quotedPost.userId,
                 userId: postToProcess.userId,
                 postId: postToProcess.id,
@@ -595,15 +573,15 @@ async function processSinglePost(
               },
               {
                 postContent: postToProcess.content,
-                userUrl: postCreator?.url,
+                userUrl: postCreator?.url
               }
-            );
+            )
             await Quotes.findOrCreate({
               where: {
                 quoterPostId: postToProcess.id,
-                quotedPostId: quotedPostId,
-              },
-            });
+                quotedPostId: quotedPostId
+              }
+            })
           }
         }
       }
@@ -611,189 +589,176 @@ async function processSinglePost(
     if (forceUpdate) {
       await processReplies(postToProcess.bskyUri as string)
     }
-    return postToProcess.id;
+    return postToProcess.id
   } else {
     throw new Error(`Error obtaining user or pds petition: ${uri}`)
   }
 }
 
-function getPostMedias(post: any) {
-  let res: MediaAttributes[] = [];
-  const labels = getPostLabels(post);
-  const embed = post?.value?.embed;
+function getPostMedias(uri: string, post: AppBskyFeedPost.Main) {
+  let res: MediaAttributes[] = []
+  const embed = post?.embed
   if (embed) {
-    if (embed.external) {
-      res = res.concat([
-        {
-          mediaType: !embed.external.uri.startsWith("https://media.ternor.com/")
-            ? "text/html"
-            : "image/gif",
-          description: embed.external.title,
-          url: embed.external.uri,
-          mediaOrder: 0,
-          external: true,
-        },
-      ]);
-    }
-    if (embed.images || embed.media) {
-      // case with quote and gif / link preview
-      if (embed.media?.external) {
-        res = res.concat([
-          {
-            mediaType: !embed.media.external.uri.startsWith(
-              "https://media.ternor.com/"
-            )
-              ? "text/html"
-              : "image/gif",
-            description: embed.media.external.title,
-            url: embed.media.external.uri,
-            mediaOrder: 0,
-            external: true,
-          },
-        ]);
+    // NOTE: embed is only RecordWithMedia for the cases of quote + media
+    if ((embed as AppBskyEmbedRecordWithMedia.Main).media) {
+      // NOTE: media inside RecordWithMedia is the same type as embed inside post
+      const media = (embed as AppBskyEmbedRecordWithMedia.Main).media
+      const parsed = parsePostEmbed(uri, media)
+      if (parsed) {
+        res = res.concat(parsed)
       } else {
-        const thingToProcess = embed.images ? embed.images : embed.media.images;
-        if (thingToProcess) {
-          const toConcat = thingToProcess.map((media: any, index: any) => {
-            const cid = media.image.ref["$link"]
-              ? media.image.ref["$link"]
-              : media.image.ref.toString();
-            const { did } = extractUriComponents(post.uri)
-            return {
-              mediaType: media.image.mimeType,
-              description: media.alt,
-              height: media.aspectRatio?.height,
-              width: media.aspectRatio?.width,
-              url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(
-                did
-              )}`,
-              mediaOrder: index,
-              external: true,
-            };
-          });
-          res = res.concat(toConcat);
-        } else {
-          logger.debug({
-            message: `Bsky problem getting medias on post ${post.uri}`,
-          });
-        }
+        logger.debug({
+          message: `Bsky problem getting medias on post ${uri}`
+        })
+      }
+    } else {
+      const parsed = parsePostEmbed(uri, embed)
+      if (parsed) {
+        res = res.concat(parsed)
+      } else {
+        logger.debug({
+          message: `Bsky problem getting medias on post ${uri}`
+        })
       }
     }
-    if (embed.video) {
-      const video = embed.video;
-      const cid = video.ref["$link"]
-        ? video.ref["$link"]
-        : video.ref.toString();
-      const did = extractUriComponents(post.uri).did;
-      res = res.concat([
-        {
-          mediaType: embed.video.mimeType,
-          description: "",
-          height: embed.aspectRatio?.height,
-          width: embed.aspectRatio?.width,
-          url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
-          mediaOrder: 0,
-          external: true,
-        },
-      ]);
-    }
   }
+
+  const labels = getPostLabels(post)
   return res.map((m) => {
     return {
       ...m,
-      NSFW: labels.length > 0,
-    };
-  });
+      NSFW: labels.length > 0
+    }
+  })
+}
+
+function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
+  const { did } = extractUriComponents(postUri)
+  if ((embed as AppBskyEmbedExternal.Main).external) {
+    const external = (embed as AppBskyEmbedExternal.Main).external
+    return {
+      mediaType: external.uri.startsWith('https://media.ternor.com/') ? 'text/html' : 'image/gif',
+      description: external.title,
+      url: external.uri,
+      mediaOrder: 0,
+      external: true
+    }
+  }
+  if ((embed as AppBskyEmbedImages.Main).images) {
+    const images = (embed as AppBskyEmbedImages.Main).images
+    const toConcat = images.map((media, index) => {
+      const cid = media.image.ref['$link'] ? media.image.ref['$link'] : media.image.ref.toString()
+      return {
+        mediaType: media.image.mimeType,
+        description: media.alt,
+        height: media.aspectRatio?.height,
+        width: media.aspectRatio?.width,
+        url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
+        mediaOrder: index,
+        external: true
+      }
+    })
+    return toConcat
+  }
+  if ((embed as AppBskyEmbedVideo.Main).video) {
+    const { video, aspectRatio, alt } = embed as AppBskyEmbedVideo.Main
+    const cid = video.ref['$link'] ? video.ref['$link'] : video.ref.toString()
+    return {
+      mediaType: video.mimeType,
+      description: alt ?? '',
+      height: aspectRatio?.height,
+      width: aspectRatio?.width,
+      url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
+      mediaOrder: 0,
+      external: true
+    }
+  }
+  return null
 }
 
 // TODO improve this so we get better nsfw messages lol
-function getPostLabels(post: any) {
-  let labels = new Set<string>();
-  if (post?.value?.labels && post.value.labels.values) {
-    for (const label of post.value.labels.values) {
-      if (label.neg && labels.has(label.val)) {
-        labels.delete(label.val);
+function getPostLabels(post: AppBskyFeedPost.Main) {
+  const labels = new Set<string>()
+  if (ComAtprotoLabelDefs.isSelfLabels(post.labels)) {
+    for (const label of post.labels.values) {
+      if ((label as Label).neg && labels.has(label.val)) {
+        labels.delete(label.val)
       } else {
-        labels.add(label.val);
+        labels.add(label.val)
       }
     }
   }
-  return Array.from(labels);
+  return Array.from(labels)
 }
 
 async function getPostInteractionLevels(
   uri: string,
   parentId: string | undefined
 ): Promise<{
-  replyControl: InteractionControlType;
-  likeControl: InteractionControlType;
-  reblogControl: InteractionControlType;
-  quoteControl: InteractionControlType;
+  replyControl: InteractionControlType
+  likeControl: InteractionControlType
+  reblogControl: InteractionControlType
+  quoteControl: InteractionControlType
 }> {
-  let canQuote = InteractionControl.Anyone;
-  let canReply: InteractionControlType = InteractionControl.Anyone;
+  let canQuote = InteractionControl.Anyone
+  let canReply: InteractionControlType = InteractionControl.Anyone
   const { did, collection, rKey } = extractUriComponents(uri)
-  const [threadGate, postGate] = await Promise.all([getPostThreadPDSDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`), getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)])
+  const [threadGate, postGate] = await Promise.all([
+    getPostThreadPDSDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`),
+    getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)
+  ])
 
   if (postGate?.value?.embeddingRules.length) {
-    canQuote = InteractionControl.NoOne;
+    canQuote = InteractionControl.NoOne
   }
-  const parent = parentId ? await Post.findByPk(parentId) as Post : undefined
+  const parent = parentId ? ((await Post.findByPk(parentId)) as Post) : undefined
   if (parent && (!parent.remotePostId || parent.remotePostId?.startsWith('https://bsky.brid.gy/'))) {
-    canReply = InteractionControl.SameAsOp;
-    canQuote = InteractionControl.SameAsOp;
-  } else if (
-    threadGate.value &&
-    (threadGate.value as any).allow
-  ) {
-    const allowList = (threadGate.value as any).allow;
+    canReply = InteractionControl.SameAsOp
+    canQuote = InteractionControl.SameAsOp
+  } else if (threadGate.value && (threadGate.value as any).allow) {
+    const allowList = (threadGate.value as any).allow
     if (allowList.length == 0) {
-      canReply = InteractionControl.NoOne;
+      canReply = InteractionControl.NoOne
     } else {
       const mentiontypes: string[] = allowList
-        .map((elem: any) => elem["$type"])
-        .map((elem: string) => elem.split("app.bsky.feed.threadgate#")[1]);
-      if (mentiontypes.includes("mentionRule")) {
-        if (mentiontypes.includes("followingRule")) {
-          canReply = mentiontypes.includes("followerRule")
+        .map((elem: any) => elem['$type'])
+        .map((elem: string) => elem.split('app.bsky.feed.threadgate#')[1])
+      if (mentiontypes.includes('mentionRule')) {
+        if (mentiontypes.includes('followingRule')) {
+          canReply = mentiontypes.includes('followerRule')
             ? InteractionControl.FollowersFollowingAndMentioned
-            : InteractionControl.FollowingAndMentioned;
+            : InteractionControl.FollowingAndMentioned
         } else {
-          canReply = mentiontypes.includes("followerRule")
+          canReply = mentiontypes.includes('followerRule')
             ? InteractionControl.FollowersAndMentioned
-            : InteractionControl.MentionedUsersOnly;
+            : InteractionControl.MentionedUsersOnly
         }
       } else {
-        if (mentiontypes.includes("followingRule")) {
-          canReply = mentiontypes.includes("followerRule")
+        if (mentiontypes.includes('followingRule')) {
+          canReply = mentiontypes.includes('followerRule')
             ? InteractionControl.FollowersAndFollowing
-            : InteractionControl.Following;
+            : InteractionControl.Following
         } else {
-          canReply = mentiontypes.includes("followerRule")
-            ? InteractionControl.Followers
-            : InteractionControl.NoOne;
+          canReply = mentiontypes.includes('followerRule') ? InteractionControl.Followers : InteractionControl.NoOne
         }
       }
     }
   }
 
   // bug in bsky. force threads to be sameasop
-  if(parent) {
+  if (parent) {
     canReply = InteractionControl.SameAsOp
   }
-  if (
-    canQuote === InteractionControl.Anyone &&
-    canReply != InteractionControl.Anyone
-  ) {
-    canQuote = canReply;
+  if (canQuote === InteractionControl.Anyone && canReply != InteractionControl.Anyone) {
+    canQuote = canReply
   }
 
   return {
     quoteControl: canQuote,
     replyControl: canReply,
     likeControl: InteractionControl.Anyone,
-    reblogControl: InteractionControl.Anyone,
-  };
+    reblogControl: InteractionControl.Anyone
+  }
 }
 
 async function processReplies(uri: string, cursor?: string) {
@@ -806,12 +771,13 @@ async function processReplies(uri: string, cursor?: string) {
   if (localPost) {
     let uriToSearch = localPost.bskyUri as string
     if (localPost.hierarchyLevel != 1) {
-      const ancestors = (await sequelize.query(
-        `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
-        {
-          type: QueryTypes.SELECT
-        }
-      )
+      const ancestors = (
+        await sequelize.query(
+          `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
+          {
+            type: QueryTypes.SELECT
+          }
+        )
       ).map((elem: any) => elem.ancestorId)
       const rootPost = (await Post.findOne({
         where: {
@@ -821,69 +787,72 @@ async function processReplies(uri: string, cursor?: string) {
           hierarchyLevel: 1
         }
       })) as Post
-      if(rootPost) {
+      if (rootPost) {
         uriToSearch = rootPost.bskyUri as string
         return processReplies(uriToSearch, cursor)
       } else {
-        return;
+        return
       }
-      
     }
     let url = `${completeEnvironment.bskyConstellationUrl}/links?target=${encodeURIComponent(uriToSearch)}&collection=app.bsky.feed.post&path=.reply.root.uri`
     if (cursor) {
       url = url + `&cursor=${cursor}`
     }
-    const constellationPetition = await (await fetch(url, {
-      headers: {
-        "User-Agent": getUserAgent('ATProtoWorker')
-      }
-    })).json()
-    const uris = constellationPetition.linking_records.map((elem: any) => `at://${elem.did}/${elem.collection}/${elem.rkey}`)
-    await processSinglePostQueue.addBulk(uris.map((elem: string) => {
-      return {
-        name: 'processSinglePost',
-        data: {
-          post: elem,
-          forceUpdate: false
+    const constellationPetition = await (
+      await fetch(url, {
+        headers: {
+          'User-Agent': getUserAgent('ATProtoWorker')
         }
-      }
-    }))
+      })
+    ).json()
+    const uris = constellationPetition.linking_records.map(
+      (elem: any) => `at://${elem.did}/${elem.collection}/${elem.rkey}`
+    )
+    await processSinglePostQueue.addBulk(
+      uris.map((elem: string) => {
+        return {
+          name: 'processSinglePost',
+          data: {
+            post: elem,
+            forceUpdate: false
+          }
+        }
+      })
+    )
     if (constellationPetition.cursor) {
       await processReplies(uri, constellationPetition.cursor)
     }
   }
-
-
-
-
 }
 
 function getQuotedPostUri(post: any): string | undefined {
-  let res: string | undefined = undefined;
-  const embed = (post.value as any).embed;
-  if (embed && ["app.bsky.embed.record"].includes(embed["$type"])) {
-    res = embed.record.uri;
+  let res: string | undefined = undefined
+  const embed = (post.value as any).embed
+  if (embed && ['app.bsky.embed.record'].includes(embed['$type'])) {
+    res = embed.record.uri
   }
   // case of post with pictures and quote
-  else if (
-    embed &&
-    ["app.bsky.embed.recordWithMedia"].includes(embed["$type"])
-  ) {
-    res = embed.record.record.uri;
+  else if (embed && ['app.bsky.embed.recordWithMedia'].includes(embed['$type'])) {
+    res = embed.record.record.uri
   }
-  return res;
+  return res
 }
 
 async function getPostThreadPDSDirect(inputUri: string) {
   try {
     const { did, collection, rKey } = extractUriComponents(inputUri)
     const pdsUrl = await getServerFromDid(did)
-    const petition = await (await fetch(`${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`, {
-      headers: {
-        "User-Agent": getUserAgent('ATProtoWorker')
-      }
-    })).json()
-    return petition
+    const petition = await (
+      await fetch(
+        `${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`,
+        {
+          headers: {
+            'User-Agent': getUserAgent('ATProtoWorker')
+          }
+        }
+      )
+    ).json()
+    return petition as ComAtprotoRepoGetRecord.OutputSchema
   } catch (error) {
     logger.debug({
       message: `Error obtaining from pds: ${inputUri}`,
@@ -891,7 +860,6 @@ async function getPostThreadPDSDirect(inputUri: string) {
     })
     return undefined
   }
-
 }
 
-export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies };
+export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies }
