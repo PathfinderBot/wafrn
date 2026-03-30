@@ -442,7 +442,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
 
-    const labels = getPostLabels(postPetitionPds.value)
+    const labels = getPostLabels(postPetitionPds.value as AppBskyFeedPost.Main)
     let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
     if (!cw && postCreator.NSFW) {
       cw = 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
@@ -708,14 +708,14 @@ async function getPostInteractionLevels(
     getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)
   ])
 
-  if (postGate?.value?.embeddingRules.length) {
+  if (postGate && (postGate as any).value?.embeddingRules.length) {
     canQuote = InteractionControl.NoOne
   }
   const parent = parentId ? ((await Post.findByPk(parentId)) as Post) : undefined
   if (parent && (!parent.remotePostId || parent.remotePostId?.startsWith('https://bsky.brid.gy/'))) {
     canReply = InteractionControl.SameAsOp
     canQuote = InteractionControl.SameAsOp
-  } else if (threadGate.value && (threadGate.value as any).allow) {
+  } else if (threadGate?.value && (threadGate.value as any).allow) {
     const allowList = (threadGate.value as any).allow
     if (allowList.length == 0) {
       canReply = InteractionControl.NoOne
