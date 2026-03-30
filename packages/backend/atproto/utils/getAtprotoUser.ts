@@ -277,7 +277,7 @@ async function internalGetDBUser(did: string, url: string) {
     return foundUsers[0];
   } else {
     // OH WOW SOMETHING OFF
-    foundUsers.forEach(async (usr) => {
+    for (const usr of foundUsers) {
       if (!usr.email && !usr.remoteId) {
         if (usr.isBskyPrimary)
           usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
@@ -285,7 +285,7 @@ async function internalGetDBUser(did: string, url: string) {
           usr.alternateUrl = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
         await usr.save();
       }
-    });
+    }
     return foundUsers.find((elem) => elem.bskyDid === did);
   }
 }
