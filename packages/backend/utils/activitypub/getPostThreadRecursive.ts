@@ -427,7 +427,7 @@ async function getPostThreadRecursive(
               bskyCid = postBskyVersion.bskyCid || undefined
               bskyUri = postBskyVersion.bskyUri || undefined
               const directPetition = await getPostThreadPDSDirect(bskyUri as string)
-              if (directPetition.value.fediverseId) {
+              if (directPetition && directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything
                 const existingFedi = await Post.findOne({

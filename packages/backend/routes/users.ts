@@ -17,7 +17,7 @@ import {
   UserOptions
 } from '../models/index.js'
 import { adminToken, authenticateToken } from '../utils/authenticateToken.js'
-import escape from 'escape-html';
+import escape from 'escape-html'
 import generateRandomString from '../utils/generateRandomString.js'
 import getIp from '../utils/getIP.js'
 import sendEmail from '../utils/sendEmail.js'
@@ -25,7 +25,7 @@ import validateEmail from '../utils/validateEmail.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { sequelize } from '../models/index.js'
-import * as cheerio from "cheerio";
+import * as cheerio from 'cheerio'
 import optimizeMedia from '../utils/optimizeMedia.js'
 import uploadHandler from '../utils/uploads.js'
 import { generateKeyPairSync, randomUUID } from 'crypto'
@@ -79,7 +79,7 @@ import { getAdminAtprotoSession } from '../utils/atproto/getAdminAtprotoSession.
 import { getRemoteActor } from '../utils/activitypub/getRemoteActor.js'
 import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
-import { migrateUserFedi } from '../utils/activitypub/migrateUser.js';
+import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -329,15 +329,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `
-              })
+                })
             await Promise.all([userWithEmail, emailSent])
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
@@ -658,7 +658,6 @@ function userRoutes(app: Application) {
       success: false,
       message: 'Incorrect password'
     })
-
   })
 
   app.post('/api/login', loginRateLimiter, onePerSecondLimiter, async (req, res) => {
@@ -1079,19 +1078,19 @@ function userRoutes(app: Application) {
       let followed = blog.isRemoteUser
         ? blog.followingCount
         : Follows.count({
-          where: {
-            followerId: blog.id,
-            accepted: true
-          }
-        })
+            where: {
+              followerId: blog.id,
+              accepted: true
+            }
+          })
       let followers = blog.isRemoteUser
         ? blog.followerCount
         : Follows.count({
-          where: {
-            followedId: blog.id,
-            accepted: true
-          }
-        })
+            where: {
+              followedId: blog.id,
+              accepted: true
+            }
+          })
       const publicOptions = UserOptions.findAll({
         where: {
           userId: blog.id,
@@ -1130,10 +1129,10 @@ function userRoutes(app: Application) {
 
       const postCount = blog
         ? await Post.count({
-          where: {
-            userId: blog.id
-          }
-        })
+            where: {
+              userId: blog.id
+            }
+          })
         : 0
 
       followed = await followed
@@ -1264,7 +1263,7 @@ function userRoutes(app: Application) {
         // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
         serviceAnnouncements,
         mutedRewoots,
-        mutedQuotes,
+        mutedQuotes
       })
     }
   })
@@ -1481,13 +1480,13 @@ function userRoutes(app: Application) {
     const userId = req.jwtData?.userId as string
     const user = await User.scope('full').findByPk(userId)
     let bskyUrl = req.body.url
-    if(bskyUrl.startsWith('@')) {
+    if (bskyUrl.startsWith('@')) {
       bskyUrl = bskyUrl.substring(1)
     }
     const pasword = req.body.password
     if (user && bskyUrl && pasword) {
       const localIds = await getAllLocalUserIds()
-      const bskyUser = await getAtprotoUser(bskyUrl, {ignoreCache: true})
+      const bskyUser = await getAtprotoUser(bskyUrl, { ignoreCache: true })
       if (bskyUser && bskyUser.url === user.url) {
         return res.send({
           success: true
@@ -1515,23 +1514,45 @@ function userRoutes(app: Application) {
 
         if (agent.did) {
           // ok now time to update stuff
+          // Wrap in a transaction so the DID invalidation + reassignment is done at the exact same time.
+          // Without this, the firehose worker can recreate a user with the same DID between the two saves
           const newDid = bskyUser.bskyDid
-          bskyUser.bskyDid = `INVALID_${bskyUser.bskyDid}`
-          await bskyUser.save()
-          user.bskyDid = newDid
-          user.enableBsky = true
-          user.bskyAppPassword = pasword
-          await user.save()
-          await Post.update(
-            {
-              userId: user.id
-            },
-            {
-              where: {
-                userId: bskyUser.id
+          const transaction = await sequelize.transaction()
+          try {
+            // Invalidate the DID on ALL non-local users that have it, not just bskyUser, in case the firehose created new bad records
+            await User.update(
+              { bskyDid: sequelize.literal(`'INVALID_' || "bskyDid"`) },
+              {
+                where: {
+                  bskyDid: newDid,
+                  id: { [Op.ne]: user.id }
+                },
+                transaction
               }
-            }
-          )
+            )
+            user.bskyDid = newDid
+            user.enableBsky = true
+            user.bskyAppPassword = pasword
+            await user.save({ transaction })
+            await Post.update(
+              { userId: user.id },
+              {
+                where: { userId: bskyUser.id },
+                transaction
+              }
+            )
+            await transaction.commit()
+          } catch (error) {
+            await transaction.rollback()
+            logger.error({
+              message: `Error during bsky account connection for user ${user.url}`,
+              error: error
+            })
+            return res.status(500).send({
+              success: false,
+              error: 'Failed to connect bluesky account. Please try again.'
+            })
+          }
           await syncBskyFollowersAndFollowing(user.id)
           await forceUpdateCacheDidsAtThread()
           await redisCache.del('bskySession:' + user.id)
@@ -1735,7 +1756,7 @@ function userRoutes(app: Application) {
 
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
       await Ask.create({
-        question: dompurify.sanitize(question, {ALLOWED_TAGS: []}),
+        question: dompurify.sanitize(question, { ALLOWED_TAGS: [] }),
         apObject: null,
         creationIp: getIp(req),
         answered: false,
@@ -1899,8 +1920,8 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
     await forceUpdateCacheDidsAtThread()
     await getCacheAtDids(true)
     await updateUserDidDoc(user)
-    let pronouns: string | undefined;
-    let website: string | undefined;
+    let pronouns: string | undefined
+    let website: string | undefined
     const fediAttachmentsDb = await UserOptions.findOne({
       where: {
         userId: user.id,
@@ -1908,10 +1929,10 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
       }
     })
 
-    if(fediAttachmentsDb) {
-      const fediAttachments: {name: string, value: string}[] = JSON.parse(fediAttachmentsDb.optionValue)
-      pronouns = fediAttachments.find(elem => elem.name.toLowerCase() === 'pronouns')?.value
-      const websiteCheck = fediAttachments.find(elem => elem.name.toLowerCase() === 'website')?.value
+    if (fediAttachmentsDb) {
+      const fediAttachments: { name: string; value: string }[] = JSON.parse(fediAttachmentsDb.optionValue)
+      pronouns = fediAttachments.find((elem) => elem.name.toLowerCase() === 'pronouns')?.value
+      const websiteCheck = fediAttachments.find((elem) => elem.name.toLowerCase() === 'website')?.value
 
       if (websiteCheck) {
         const doc = cheerio.load(websiteCheck)
@@ -1954,10 +1975,10 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
         profile.avatar = avatarData
         await fs.unlink(pngAvatar)
       }
-      if(pronouns) {
+      if (pronouns) {
         profile.pronouns = pronouns
       }
-      if(website) {
+      if (website) {
         profile.website = website
       }
       // it works now yay
