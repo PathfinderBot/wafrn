@@ -637,7 +637,7 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   if ((embed as AppBskyEmbedExternal.Main).external) {
     const external = (embed as AppBskyEmbedExternal.Main).external
     return {
-      mediaType: external.uri.startsWith('https://media.ternor.com/') ? 'text/html' : 'image/gif',
+      mediaType: external.uri.startsWith('https://media.ternor.com/') ? 'image/gif' : 'text/html',
       description: external.title,
       url: external.uri,
       mediaOrder: 0,
