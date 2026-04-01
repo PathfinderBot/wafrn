@@ -32,8 +32,9 @@ async function getAllLocalUserIds(): Promise<string[]> {
   return res
 }
 async function getAllLocalUserIdsSet(): Promise<Set<string>> {
-  if (localUsersSet.size === 0) {
-    await getAllLocalUserIds()
+  if (localUsersSet.size === 0 || !await redisCache.get('allLocalUserIds')) {
+    const ids = await getAllLocalUserIds();
+    ids.forEach(elem => localUsersSet.add(elem)) 
   }
 
   return localUsersSet;
