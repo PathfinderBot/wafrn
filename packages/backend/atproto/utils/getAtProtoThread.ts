@@ -400,7 +400,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       tags = (post.fullTags as string)?.split('\n').filter((x: string) => !!x) ?? [] // also detect full tags
       postText = (post.fullText as string) ?? (post.bridgyOriginalText as string)
     }
-    if (post.facets && post.facets.length > 0 && !federatedWoot) {
+    if (post.facets && post.facets.length > 0) {
       // lets get mentions
       const mentionedDids = post.facets
         .flatMap((elem) => elem.features)
@@ -416,30 +416,33 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         })
         mentions = mentionedUsers.map((elem) => elem.id)
       }
+      if(!federatedWoot) {
+          const rt = new RichText({
+          text: postText,
+          facets: post.facets
+        })
+        let text = ''
 
-      const rt = new RichText({
-        text: postText,
-        facets: post.facets
-      })
-      let text = ''
-
-      for (const segment of rt.segments()) {
-        if (segment.isLink()) {
-          const href = segment.link?.uri
-          text += `<a href="${href}" target="_blank">${href}</a>`
-        } else if (segment.isMention()) {
-          const href = `${completeEnvironment.frontendUrl}/blog/${segment.mention?.did}`
-          text += `<a href="${href}" target="_blank">${segment.text}</a>`
-        } else if (segment.isTag()) {
-          const href = `${completeEnvironment.frontendUrl}/dashboard/search/${segment.text.substring(1)}`
-          text += `<a href="${href}" target="_blank">${segment.text}</a>`
-          tags.push(segment.text.substring(1))
-        } else {
-          text += segment.text
+        for (const segment of rt.segments()) {
+          if (segment.isLink()) {
+            const href = segment.link?.uri
+            text += `<a href="${href}" target="_blank">${href}</a>`
+          } else if (segment.isMention()) {
+            const href = `${completeEnvironment.frontendUrl}/blog/${segment.mention?.did}`
+            text += `<a href="${href}" target="_blank">${segment.text}</a>`
+          } else if (segment.isTag()) {
+            const href = `${completeEnvironment.frontendUrl}/dashboard/search/${segment.text.substring(1)}`
+            text += `<a href="${href}" target="_blank">${segment.text}</a>`
+            tags.push(segment.text.substring(1))
+          } else {
+            text += segment.text
+          }
         }
+        postText = text
       }
-      postText = text
+      
     }
+
     if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
 
     const labels = getPostLabels(postPetitionPds.value as AppBskyFeedPost.Main)
