@@ -2,7 +2,7 @@ import { Expo, type ExpoPushErrorTicket } from 'expo-server-sdk'
 import { logger } from './logger.js'
 import { Notification, PushNotificationToken } from '../models/index.js'
 import { Queue } from 'bullmq'
-import { getAllLocalUserIds } from './cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from './cacheGetters/getAllLocalUserIds.js'
 import dompurify from 'isomorphic-dompurify'
 import { completeEnvironment } from './backendOptions.js'
 
@@ -53,7 +53,8 @@ export async function deleteToken(token: string) {
 const expoClient = new Expo()
 
 export async function bulkCreateNotifications(notifications: NotificationBody[], context?: NotificationContext) {
-  const localUserNotifications = notifications
+  const localUserIds = await getAllLocalUserIdsSet()
+  const localUserNotifications = notifications.filter((elem) => localUserIds.has(elem.notifiedUserId))
   if (localUserNotifications.length > 0) {
     if (context && context.postContent) {
       context.postContent = dompurify.sanitize(context.postContent, { ALLOWED_TAGS: [] })
@@ -70,7 +71,11 @@ export async function bulkCreateNotifications(notifications: NotificationBody[],
 }
 
 export async function createNotification(notification: NotificationBody, context?: NotificationContext) {
-
+  const localUserIds = await getAllLocalUserIdsSet()
+  if (!localUserIds.has(notification.notifiedUserId)) {
+    // do not create notifications for external users
+    return;
+  }
     if (
       notification.postId &&
       notification.notificationType != 'EMOJIREACT' &&
