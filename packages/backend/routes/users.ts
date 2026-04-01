@@ -1527,7 +1527,7 @@ function userRoutes(app: Application) {
                   bskyDid: newDid,
                   id: { [Op.ne]: user.id }
                 },
-                transaction
+                transaction: transaction
               }
             )
             user.bskyDid = newDid
