@@ -5,7 +5,6 @@ import { acceptRemoteFollow } from '../activitypub/acceptRemoteFollow.js'
 
 async function fix() {
   const localUsers = await getAllLocalUserIds()
-  console.log(localUsers)
   const follows = await Follows.findAll({
     where: {
       accepted: true,

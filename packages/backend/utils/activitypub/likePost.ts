@@ -15,7 +15,7 @@ import { Queue } from "bullmq";
 import _ from "underscore";
 import { emojiToAPTag } from "./emojiToAPTag.js";
 import { Privacy } from "../../models/post.js";
-import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from "../cacheGetters/getAllLocalUserIds.js";
 
 const sendPostQueue = new Queue("sendPostToInboxes", {
   connection: completeEnvironment.bullmqConnection,
@@ -124,9 +124,9 @@ async function likePostRemote(like: any, dislike = false) {
     },
   });
   // remote user
-  const localUsers = await getAllLocalUserIds();
-  let usersToSendThePost = [await User.findByPk(likedPost.userId)].filter(
-    (elem) => elem && !localUsers.includes(elem.id)
+  const localUsers = await getAllLocalUserIdsSet();
+  const usersToSendThePost = [await User.findByPk(likedPost.userId)].filter(
+    (elem) => elem && !localUsers.has(elem.id)
   );
 
   try {
@@ -258,9 +258,9 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
     },
   });
   // user who reacted to the post. if no shared inbox we assume no emojireact on software.
-  const localUsersIds = await getAllLocalUserIds();
+  const localUsersIds = await getAllLocalUserIdsSet();
   let usersToSendThePost = [await User.findByPk(reactedPost.userId)].filter(
-    (elem) => elem && !localUsersIds.includes(elem.id)
+    (elem) => elem && !localUsersIds.has(elem.id)
   );
 
   try {

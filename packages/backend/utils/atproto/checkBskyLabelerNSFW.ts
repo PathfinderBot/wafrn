@@ -1,7 +1,7 @@
 import { Label } from "@atproto/api";
 import { promiseRace } from "../../atproto/utils/promiseRace.js";
 import { Post } from "../../models/index.js";
-import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from "../cacheGetters/getAllLocalUserIds.js";
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
 import { logger } from "../logger.js";
 import { getAdminAtprotoSession } from "./getAdminAtprotoSession.js";
@@ -11,9 +11,9 @@ async function checkBskyLabelersNSFW(posts: Post[]): Promise<void> {
     return;
   }
   try {
-    const localUsers = await getAllLocalUserIds();
+    const localUsers = await getAllLocalUserIdsSet();
     const dids: string[] = posts
-      .filter((elem) => elem.bskyUri && !localUsers.includes(elem.userId))
+      .filter((elem) => elem.bskyUri && !localUsers.has(elem.userId))
       .map((elem) => elem.bskyUri as string);
     const agent = await getAdminAtprotoSession();
     const getLabelsPetition = agent.com.atproto.label.queryLabels({

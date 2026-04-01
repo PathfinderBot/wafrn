@@ -36,7 +36,6 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
-import {  } from '../utils/cacheGetters/getAllLocalUserIds.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,

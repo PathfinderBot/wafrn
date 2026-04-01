@@ -33,7 +33,7 @@ import {
   RichText
 } from '@atproto/api'
 import { bulkCreateNotifications, createNotification } from '../../utils/pushNotifications.js'
-import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../../utils/cacheGetters/getAllLocalUserIds.js'
 import { InteractionControl, InteractionControlType, Privacy } from '../../models/post.js'
 import { wait } from '../../utils/wait.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
@@ -199,7 +199,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             remotePostId: null
           }
         })
-        if (existingPost && !(await getAllLocalUserIds()).includes(existingPost.userId)) {
+        if (existingPost && !(await getAllLocalUserIdsSet()).has(existingPost.userId)) {
           // very expensive updates! but only happens when user
           // searches existing post that is alr on db
           await EmojiReaction.update(
@@ -470,7 +470,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       delete newData.parentId
     }
 
-    if ((await getAllLocalUserIds()).includes(newData.userId) && !forceUpdate) {
+    if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate) {
       // dirty as hell but this should stop the duplication
       await wait(1500)
     }
@@ -479,7 +479,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       defaults: newData
     })
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
-    if (!(await getAllLocalUserIds()).includes(postToProcess.userId) || created) {
+    if (!(await getAllLocalUserIdsSet()).has(postToProcess.userId) || created) {
       if (!created) {
         postToProcess.set(newData)
         await postToProcess.save()
