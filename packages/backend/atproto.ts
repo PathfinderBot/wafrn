@@ -43,7 +43,7 @@ const firehoseQueue = new Queue("firehoseQueue", {
   connection: completeEnvironment.bullmqConnection,
   defaultJobOptions: {
     removeOnComplete: true,
-    attempts: 6,
+    attempts: 3,
     backoff: {
       type: "exponential",
       delay: 25000,
