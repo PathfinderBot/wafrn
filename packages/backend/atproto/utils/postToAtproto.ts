@@ -9,7 +9,6 @@ import {
 import fs from "fs/promises";
 import {
   getPostUrlForQuote,
-  postToJSONLD,
 } from "../../utils/activitypub/postToJSONLD.js";
 import RichtextBuilder from "@atcute/bluesky-richtext-builder";
 import { Main } from "@atproto/api/dist/client/types/app/bsky/richtext/facet.js";
