@@ -1,19 +1,16 @@
 import { Application, Response } from 'express'
-import { Blocks, Follows, Notification, User } from '../models/index.js'
+import { Follows, Notification, User } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
-
-import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
 import { logger } from '../utils/logger.js'
-import { remoteFollow } from '../utils/activitypub/remoteFollow.js'
+import {  } from '../utils/activitypub/remoteFollow.js'
 import { remoteUnfollow } from '../utils/activitypub/remoteUnfollow.js'
-import { Model, Op, Sequelize } from 'sequelize'
+import {  } from 'sequelize'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { follow } from '../utils/follow.js'
 import { redisCache } from '../utils/redis.js'
-import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
-import { getNotYetAcceptedFollowedids } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
+import {  } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
-import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
+import {  } from '../utils/cacheGetters/getMutedPosts.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { forceUpdateCacheDidsAtThread, getCacheAtDids } from '../atproto/cache/getCacheAtDids.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -40,7 +37,7 @@ export default function followsRoutes(app: Application) {
         }
       }
       // bsky user
-      if (userToBeFollowed && userToBeFollowed.isBlueskyUser) {
+      if (userToBeFollowed && userToBeFollowed.isBlueskyUser && !userToBeFollowed.remoteId) {
         const localUser = await User.findByPk(posterId)
         if (localUser?.enableBsky && localUser?.bskyDid) {
           // follow on bsk
@@ -55,7 +52,7 @@ export default function followsRoutes(app: Application) {
             return res.sendStatus(500)
           }
         } else {
-          return res.status(403).send({
+          return res.status(400).send({
             error: true,
             message: 'You are trying to follow a bsky user. You need to enable bluesky on your profile settings'
           })

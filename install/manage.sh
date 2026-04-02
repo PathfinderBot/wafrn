@@ -103,9 +103,10 @@ case $1 in
       docker compose pull
       docker compose up --build -d
       docker compose stop
-      rm -rf packages/backend/cache/ && mkdir packages/backend/cache/ && touch packages/backend/cache/.gitkeep
-      docker compose start
       docker system prune -f
+      docker compose down
+      docker volume rm wafrn_cache
+      docker compose up -d
       docker compose logs -t -n 50 -f
     popd
     ;;
@@ -144,7 +145,7 @@ case $1 in
         docker start wafrn-db-1
         zstdcat db.sql.zst | docker exec -i wafrn-db-1 psql -X -f - -d postgres
         echo "Restoring uploads directory"
-        rm -rf "$SCRIPT_DIR/../packages/backend/uploads/*"
+        rm -rf "$SCRIPT_DIR/../packages/backend/uploads" && mkdir "$SCRIPT_DIR/../packages/backend/uploads"
         tar --zstd -xf uploads.tar.zst -C "$SCRIPT_DIR/../packages/backend/uploads"
         if [ "$ENABLE_BSKY" == "true" ]; then
           echo "Restoring pds data"

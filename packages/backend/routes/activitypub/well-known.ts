@@ -77,7 +77,7 @@ function wellKnownRoutes(app: Application) {
     res.send({
       links: [
         {
-          rel: 'http://nodeinfo.diaspora.software/ns/schema/2.0/gay',
+          rel: 'http://nodeinfo.diaspora.software/ns/schema/2.0',
           href: `${completeEnvironment.frontendUrl}/.well-known/nodeinfo/2.0`
         }
       ]
@@ -207,6 +207,19 @@ function wellKnownRoutes(app: Application) {
         }
       }
     ])
+  })
+  app.get('/.well-known/apple-app-site-association', (req, res) => {
+    res.json({
+      applinks: {
+        apps: [],
+        details: [
+          {
+            appID: '837R3VKT4W.dev.djara.wafrn-rn',
+            paths: ['*']
+          }
+        ]
+      }
+    })
   })
   app.get('/api/v1/instance', async (req, res) => {
     res.set({

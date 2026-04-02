@@ -22,9 +22,7 @@ export class ForumService {
     } catch (error) {
       return []
     }
-    
-    console.log(response)
-    response.rewootIds?.forEach((id) => {
+      response.rewootIds?.forEach((id) => {
       this.postService.rewootedPosts().add(id)
     })
 

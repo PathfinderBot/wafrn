@@ -131,7 +131,7 @@ const workerProcessFirehose = completeEnvironment.enableBsky
       metrics: {
         maxDataPoints: MetricsTime.ONE_WEEK * 2
       },
-      concurrency: completeEnvironment.workers.medium,
+      concurrency: completeEnvironment.workers.high,
       // up to one minute
       lockDuration: 60000
     })
@@ -256,7 +256,6 @@ const workersToLogFail = [
   workerFollow,
   workerMergeUsers,
   workerMergePost,
-  workerDownloadMedia
 ]
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)

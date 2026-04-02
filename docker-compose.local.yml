@@ -45,6 +45,7 @@ volumes:
   pds:
   frontend:
   redis:
+  cache:
 
 
 networks:
