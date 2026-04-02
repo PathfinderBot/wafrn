@@ -85,7 +85,7 @@ services:
       FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
 
       ENABLE_RAW_OUTPUT: ${ENABLE_RAW_OUTPUT:-}
-      WORKERS_NUMBER: ${WORKERS_NUMBER:3}
+      
     deploy:
       mode: replicated
       replicas: 3
