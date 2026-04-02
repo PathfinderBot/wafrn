@@ -107,32 +107,16 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
-    ports:
-      - 80:80
-      - 443:443
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
       CACHE_DOMAIN: ${CACHE_DOMAIN}
       MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-
-      # DONATION_URL: ${DONATION_URL}
       FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
       FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
       FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
-      # REGISTRATION_LEVEL: ${REGISTRATION_LEVEL:-}
-      # REGISTRATIONS_DISABLED_TEXT: ${REGISTRATIONS_DISABLED_TEXT:-}
-      # BUBBLE_SERVERS_SHOW_TYPE: ${BUBBLE_SERVERS_SHOW_TYPE:-}
-      # BLOCKED_SERVERS_SHOW_TYPE: ${BLOCKED_SERVERS_SHOW_TYPE:-}
-      # AUTOFOLLOW_MAIN_ADMIN: ${AUTOFOLLOW_MAIN_ADMIN:-}
-      # PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}
-      # REGISTRATION_MINIMUM_AGE: ${REGISTRATION_MINIMUM_AGE:-}
     volumes:
-      - "caddy:/data"
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
-      - ./packages/caddy:/etc/caddy/config
 
   caddy:
     image: caddy:2

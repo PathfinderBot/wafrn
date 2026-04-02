@@ -101,40 +101,44 @@ services:
     restart: no
     command: "npm exec tsx migrate.ts init-container"
 
-
   frontend:
     restart: unless-stopped
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
-    ports:
-      - 80:80
-      - 443:443
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
-      PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
       CACHE_DOMAIN: ${CACHE_DOMAIN}
       MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-
-      DONATION_URL: ${DONATION_URL}
-      ACME_EMAIL: ${ACME_EMAIL}
       FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
       FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
       FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
-      REGISTRATION_LEVEL: ${REGISTRATION_LEVEL:-}
-      REGISTRATIONS_DISABLED_TEXT: ${REGISTRATIONS_DISABLED_TEXT:-}
-      BUBBLE_SERVERS_SHOW_TYPE: ${BUBBLE_SERVERS_SHOW_TYPE:-}
-      BLOCKED_SERVERS_SHOW_TYPE: ${BLOCKED_SERVERS_SHOW_TYPE:-}
-      AUTOFOLLOW_MAIN_ADMIN: ${AUTOFOLLOW_MAIN_ADMIN:-}
-      PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}
-      REGISTRATION_MINIMUM_AGE: ${REGISTRATION_MINIMUM_AGE:-}
     volumes:
-      - "caddy:/data"
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
+
+  caddy:
+    image: caddy:2
+    volumes:
+      - caddy:/data
+      - ./packages/backend/uploads:/var/www/html/uploads
       - ./packages/caddy:/etc/caddy/config
+    ports:
+      - 80:80
+      - 443:443
+    env:
+      ACME_EMAIL: ${ACME_EMAIL}
+      ADMINER_HOST: ${ADMINER_HOST:-adminer:8080}
+      CACHE_DOMAIN: ${CACHE_DOMAIN}
+      CACHE_HOST: ${CACHE_HOST:-backend:9000}
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      GRAFANA_HOST: ${GRAFANA_HOST:-grafana:2345}
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
+      PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
+      PDS_HOST: :${PDS_HOST:-pds:3000}
+      WEBSOCKET_HOST: ${WEBSOCKET_HOST:-backend:9000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     build:

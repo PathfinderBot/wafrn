@@ -2,7 +2,7 @@ services:
   frontend:
     image: caddy:2
     restart: unless-stopped
-    command: caddy run --config ${PWD}/packages/frontend/Caddyfile --adapter caddyfile
+    command: caddy run --config ${PWD}/Caddyfile --adapter caddyfile
     ports:
       - 80:80
       - 443:443
@@ -11,7 +11,7 @@ services:
       - 2019:2019
     volumes:
       - "caddy:/data"
-      - ${PWD}/packages:${PWD}/packages
+      - ${PWD}:${PWD}
 
   db:
     image: postgres:17
