@@ -231,7 +231,7 @@ services:
       USE_WORKERS: true
     deploy:
       mode: replicated
-      replicas: ${WORKERS_NUMBER}
+      replicas: 3
       
   prometheus:
     restart: unless-stopped
