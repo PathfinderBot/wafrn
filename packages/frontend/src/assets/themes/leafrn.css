@@ -1,3 +1,7 @@
+/*
+Theme by @nwenny@app.wafrn.net
+*/
+
 /* FONT OVERRIDE (keep or change if u like it, remove for default fonts) + no rounded corners anywhere */
 @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap');
 
@@ -149,7 +153,7 @@ color: var(--button-accent-color);
 /* SIDE MENU */
 
 .instance-logo {
-        content: url('/leafrn.webp');
+        content: url('/assets/leafrn.webp');
     }
 /* ^ use a wafrn upload link here too */
 
