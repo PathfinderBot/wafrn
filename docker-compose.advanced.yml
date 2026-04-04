@@ -208,11 +208,7 @@ services:
       replicas: 1
     command: "npm exec tsx atproto.ts"
 
-  cache:
-    <<: *default_backend
-    deploy:
-      mode: replicated
-      replicas: 1
+  
 
   websocket:
     <<: *default_backend
