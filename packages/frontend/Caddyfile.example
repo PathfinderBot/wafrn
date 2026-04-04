@@ -93,6 +93,10 @@ monitoring.${{DOMAIN_NAME}} {
     import /etc/caddy/config/monitoring_domain_post/* ${{DOMAIN_NAME}}
 }
 
+bullboard.${{DOMAIN_NAME}}{
+    reverse_proxy ${{BULLBOARD_HOST:-bullboard:3000}}
+}
+
 ${{PDS_DOMAIN_NAME}} *.${{PDS_DOMAIN_NAME}} {
     import /etc/caddy/config/pds_domain_pre/* ${{DOMAIN_NAME}} ${{PDS_DOMAIN_NAME}}
 

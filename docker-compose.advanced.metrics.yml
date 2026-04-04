@@ -315,6 +315,21 @@ services:
       db:
         condition: service_healthy
 
+  bullboard:
+    container_name: bullboard
+    image: deadly0/bull-board
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_USE_TLS: 'false'
+      BULL_PREFIX: bull
+      AUTH_REQUIRE: true
+      AUTH_LOGIN: admin
+      AUTH_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - redis
+
 volumes:
   dbpg:
   caddy:
