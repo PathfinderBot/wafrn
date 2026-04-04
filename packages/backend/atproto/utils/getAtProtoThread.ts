@@ -594,6 +594,13 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     return postToProcess.id
   } else {
+    logger.error({
+      message: `Error obtaining user or pds petition: ${uri}`,
+      error: {
+        postCreator: postCreator,
+        post: post
+      }
+    })
     throw new Error(`Error obtaining user or pds petition: ${uri}`)
   }
 }
