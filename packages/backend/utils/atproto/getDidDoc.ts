@@ -12,14 +12,14 @@ export async function getDidDoc(inputDid: string, ignoreCache?: boolean): Promis
   if (did.startsWith('at://')) {
     did = did.replace(/^at:\/\//, '')
   }
-  let cacheResult = await redisCache.get('didDoc:' + did)
+  const cacheResult = await redisCache.get('didDoc:' + did)
   if (cacheResult) {
     return JSON.parse(cacheResult) as DidDocument
   }
   if (did.startsWith('did:plc:')) {
     try {
-      const server = await getServerFromDid(did)
-      let petitionRes = await (await (fetch(`${server}/xrpc/com.atproto.repo.describeRepo?repo=${encodeURIComponent(did)}`))).json()
+      const server = await getServerFromDid(did, ignoreCache)
+      const petitionRes = await (await (fetch(`${server}/xrpc/com.atproto.repo.describeRepo?repo=${encodeURIComponent(did)}`))).json()
       await redisCache.set('didDoc:' + did, JSON.stringify(petitionRes.didDoc), 'EX', 60)
       return petitionRes.didDoc as DidDocument
     } catch {

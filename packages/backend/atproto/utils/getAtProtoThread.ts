@@ -471,8 +471,19 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
 
     if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate) {
-      // dirty as hell but this should stop the duplication
-      await wait(1500)
+      
+      const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
+      if(`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
+        // OH SHIT THIS USER IS NO LONGER IN WAFRN
+        const oldDid = postCreator.bskyDid
+        postCreator.bskyDid = null;
+        postCreator.enableBsky = false;
+        postCreator.alternateUrl = undefined;
+        await postCreator.save();
+        postCreator = await getAtprotoUser(oldDid as string, {ignoreCache: true})
+      } else {
+        // await wait(1500)
+      }
     }
     const [postToProcess, created] = await Post.findOrCreate({
       where: { bskyUri: postPetitionPds.uri },

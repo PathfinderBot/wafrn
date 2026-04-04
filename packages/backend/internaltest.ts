@@ -1,24 +1,9 @@
 import { Op } from "sequelize";
 import { migrateUserFedi } from "./utils/activitypub/migrateUser.js";
 import { User } from "./models/index.js";
+import { getAtprotoUser } from "./atproto/utils/getAtprotoUser.js";
 
 
-const origin = await User.findOne({
-    where: {
-        url: {
-            [Op.iLike]: 'pocketbroto'
-        }
-    }
-})
+const atUser = await getAtprotoUser( 'did:plc:an2e3qjrwpfizkms3k2li23v', {ignoreCache: true})
 
-const target = await User.findOne({
-    where: {
-        url: {
-            [Op.iLike]: 'brotosolar'
-        }
-    }
-})
-
-const result = await migrateUserFedi(origin as User, target as User)
-
-console.log(result)
+console.log(atUser)

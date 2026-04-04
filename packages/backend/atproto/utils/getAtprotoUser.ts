@@ -110,7 +110,7 @@ async function getAtprotoUser(
   // TODO check if current user exist
   let bskyUserResponse = undefined;
   try {
-    const pds = await getServerFromDid(did)
+    const pds = await getServerFromDid(did, options?.ignoreCache)
     const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`, {
       headers: {
         "User-Agent": getUserAgent('ATProtoWorker')
