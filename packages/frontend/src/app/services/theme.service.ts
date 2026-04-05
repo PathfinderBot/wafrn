@@ -45,7 +45,8 @@ const themeVariants = [
   'catppuccin_latte',
   'catppuccin_macchiato',
   'catppuccin_mocha',
-  'cohfrn'
+  'cohfrn',
+  'leafrn'
 ] as const
 type ThemeTuple = typeof themeVariants
 export type Theme = ThemeTuple[number]
@@ -77,6 +78,7 @@ export const themeData: ThemeData = {
   fan: { name: 'Fan', compatibility: 'both' },
   waffler: { name: 'Waffler', compatibility: 'both' },
   cohfrn: { name: 'Cohfrn', compatibility: 'both' },
+  leafrn: { name: 'Leafrn', compatibility: 'both' },
   catppuccin_frappe: { name: 'Catppuccin Frappe', compatibility: 'both' },
   catppuccin_latte: { name: 'Catppuccin Latte', compatibility: 'both' },
   catppuccin_macchiato: { name: 'Catppuccin Macchiato', compatibility: 'both' },
@@ -100,7 +102,7 @@ export const themeGroupList: ThemeGroupList = {
   },
   computeryThemes: {
     name: 'Computery themes',
-    entries: ['unwafrn', 'wafrnverse', 'wafrn98', 'aqua', 'fan', 'cohfrn', 'waffler']
+    entries: ['unwafrn', 'wafrnverse', 'wafrn98', 'aqua', 'fan', 'cohfrn', 'waffler', 'leafrn']
   },
   experimentalThemes: {
     name: 'Experimental themes',

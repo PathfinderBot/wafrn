@@ -36,7 +36,6 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
-import {  } from '../utils/cacheGetters/getAllLocalUserIds.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -399,8 +398,8 @@ export default function postsRoutes(app: Application) {
           }
         }
 
-        let content = req.body.content ? ' ' + req.body.content.trim() : ''
-        const content_warning = req.body.content_warning
+        let content = (req.body.content ? ' ' + req.body.content.trim() : '').substring(0, 2*1024*1024)
+        const content_warning = req.body.content_warning.substring(0, 2*1024)
           ? req.body.content_warning.trim()
           : posterUser?.NSFW
             ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
@@ -553,7 +552,7 @@ export default function postsRoutes(app: Application) {
           }
 
           post.content = content
-          post.markdownContent = req.body.content
+          post.markdownContent = req.body.content.substring(0, 2*1024*1024)
           post.content_warning = content_warning
           post.privacy = bodyPrivacy
           await post.save()
@@ -600,7 +599,7 @@ export default function postsRoutes(app: Application) {
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,
-            markdownContent: req.body.content,
+            markdownContent: req.body.content.substring(0, 2*1024*1024),
             isReblog: isReblog,
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,

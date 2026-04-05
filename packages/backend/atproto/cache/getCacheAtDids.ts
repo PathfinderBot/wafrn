@@ -43,17 +43,13 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       attributes: ['followedId'],
       //group: ['followedId'],
       where: {
-        followerId: {
-          [Op.in]: localIds
-        }
+        followerId: localIds
       }
     })
     const localUsersWithDidPromise = User.findAll({
       attributes: ['bskyDid'],
       where: {
-        id: {
-          [Op.in]: localIds
-        },
+        id: localIds,
         bskyDid: {
           [Op.ne]: null
         }

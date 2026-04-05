@@ -208,6 +208,19 @@ function wellKnownRoutes(app: Application) {
       }
     ])
   })
+  app.get('/.well-known/apple-app-site-association', (req, res) => {
+    res.json({
+      applinks: {
+        apps: [],
+        details: [
+          {
+            appID: '837R3VKT4W.dev.djara.wafrn-rn',
+            paths: ['*']
+          }
+        ]
+      }
+    })
+  })
   app.get('/api/v1/instance', async (req, res) => {
     res.set({
       "content-type": "application/activity+json",
