@@ -147,7 +147,7 @@ async function syncBskyFollowsJob(job: Job) {
             })).json()
             // do things
             if(blocksResponse.records.length) {
-                blocksResponse.records.forEach(element => {
+                blocksResponse.records.forEach((element: any) => {
                     blockedDids.push(element.value.subject)
                 });
             }
