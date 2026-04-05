@@ -1330,6 +1330,7 @@ function userRoutes(app: Application) {
             identifier: user.bskyDid,
             password: password
           })
+          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
         } catch (error) {
           logger.error({
             message: `Failed to update bsky account password for user ${user.url}`,
@@ -1351,7 +1352,6 @@ function userRoutes(app: Application) {
             message: `Contact the administrator: no master invite code available`
           })
         }
-
         await createBskyAccount({
           agent,
           user,
