@@ -64,7 +64,6 @@ import { sendUpdateProfile } from '../utils/activitypub/sendUpdateProfile.js'
 import axios from 'axios'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
 import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../utils/cacheGetters/getAllLocalUserIds.js'
-import { syncBskyFollowersAndFollowing } from '../utils/atproto/syncBskyFollowersAndFollowing.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { SelfLabels } from '@atproto/api/dist/client/types/com/atproto/label/defs.js'
 import { InviteCode } from '../models/inviteCode.js'
@@ -74,6 +73,7 @@ import { getRemoteActor } from '../utils/activitypub/getRemoteActor.js'
 import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
 import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
+import { syncBskyAccountData } from '../utils/atproto/syncBskyAccountData.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -1547,7 +1547,7 @@ function userRoutes(app: Application) {
               error: 'Failed to connect bluesky account. Please try again.'
             })
           }
-          await syncBskyFollowersAndFollowing(user.id)
+          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
           await forceUpdateCacheDidsAtThread()
           await redisCache.del('bskySession:' + user.id)
           await updateUserDidDoc(user)

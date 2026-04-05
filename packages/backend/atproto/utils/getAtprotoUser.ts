@@ -37,7 +37,6 @@ async function forcePopulateUsers(dids: string[], localUser: User) {
   if (notFoundUsers.length > 0) {
     for await (const did of notFoundUsers) {
       await getAtprotoUser(did);
-      await wait(100);
     }
   }
 }

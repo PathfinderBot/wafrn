@@ -512,12 +512,7 @@ async function getPostThreadRecursive(
                   connection: completeEnvironment.bullmqConnection,
                   defaultJobOptions: {
                     removeOnComplete: true,
-                    attempts: 6,
-                    backoff: {
-                      type: 'exponential',
-                      delay: 2500
-                    },
-                    removeOnFail: false
+                    removeOnFail: true
                   }
                 })
                 processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })

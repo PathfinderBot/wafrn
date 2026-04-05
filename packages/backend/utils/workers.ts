@@ -18,6 +18,8 @@ import { mergeUser } from './queueProcessors/mergeUser.js'
 import { mergePost } from './queueProcessors/mergePost.js'
 import { fetchFediThread } from './queueProcessors/fetchFediThread.js'
 import { downloadMedia } from './queueProcessors/downloadMedia.js'
+import { syncBskyFollowsJob } from './queueProcessors/syncBskyFollows.js'
+import { syncBskyPosts } from './queueProcessors/syncBskyPosts.js'
 
 logger.info('started worker')
 const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
@@ -205,6 +207,22 @@ const workerDownloadMedia = new Worker('downloadMedia', async (job: Job) => awai
   lockDuration: 10000
 })
 
+const workerSyncBskyFollows = new Worker('syncBskyFollows', (job: Job) => syncBskyFollowsJob(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.low,
+})
+
+const workerSyncBskyPosts = new Worker('syncBskyPosts', (job: Job) => syncBskyPosts(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.low,
+})
+
 const workers = [
   workerInbox,
   workerDeletePost,
@@ -221,7 +239,9 @@ const workers = [
   workerMergeUsers,
   workerMergePost,
   workerFetchFediTrhead,
-  workerDownloadMedia
+  workerDownloadMedia,
+  workerSyncBskyFollows,
+  workerSyncBskyPosts
 ]
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
@@ -256,6 +276,8 @@ const workersToLogFail = [
   workerFollow,
   workerMergeUsers,
   workerMergePost,
+  workerSyncBskyFollows,
+  workerSyncBskyPosts
 ]
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
@@ -289,5 +311,7 @@ export {
   workerMergeUsers,
   workerMergePost,
   workerFetchFediTrhead,
-  workerDownloadMedia
+  workerDownloadMedia,
+  workerSyncBskyFollows,
+  workerSyncBskyPosts
 }
