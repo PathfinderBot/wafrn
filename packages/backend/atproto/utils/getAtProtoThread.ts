@@ -486,6 +486,10 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       where: { bskyUri: postPetitionPds.uri },
       defaults: newData
     })
+    // some linting issues sorry this one could be in other place but the linter complains about other part of the code (npm run type-check)
+    if(!postCreator) {
+      return;
+  }
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
     if (!(await getAllLocalUserIdsSet()).has(postToProcess.userId) || created) {
       if (!created) {
