@@ -1,12 +1,14 @@
 
 import { Job } from "bullmq"
 import { getAdminUser } from "../getAdminAndDeletedUser.js";
-import { Follows, sequelize, User } from "../../models/index.js";
+import { Blocks, Follows, sequelize, User } from "../../models/index.js";
 import { Op } from "sequelize";
 import { forcePopulateUsers } from "../../atproto/utils/getAtprotoUser.js";
 import { getAdminAtprotoSession } from "../atproto/getAdminAtprotoSession.js";
 import { logger } from "../logger.js";
 import { getAtProtoSession } from "../../atproto/utils/getAtProtoSession.js";
+import { getServerFromDid } from "../atproto/getServerFromDid.js";
+import getUserAgent from "../getUserAgent.js";
 
 
 async function syncBskyFollowsJob(job: Job) {
@@ -132,6 +134,64 @@ async function syncBskyFollowsJob(job: Job) {
             })
             await createFollowingTransaction.rollback()
         }
+    // blocks
+    const blockedDids: string[] = []
+    const pds = await getServerFromDid(user.bskyDid, true)
+    let remainingBlocks = 100;
+    let url = pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(user.bskyDid)}&collection=app.bsky.graph.block&limit=100&reverse=false`
+    while(remainingBlocks != 0) {
+            const blocksResponse = await (await fetch(url, {
+                headers: {
+                    "User-Agent": getUserAgent('ATProtoWorker')
+                }
+            })).json()
+            // do things
+            if(blocksResponse.records.length) {
+                blocksResponse.records.forEach(element => {
+                    blockedDids.push(element.value.subject)
+                });
+            }
+            url = pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(user.bskyDid)}&collection=app.bsky.graph.block&limit=100&reverse=false&cursor=${blocksResponse.cursor}`
+            remainingBlocks = blocksResponse.records.length
+            if(!blocksResponse.cursor) {
+                remainingBlocks = 0;
+            }
+    }
+    await forcePopulateUsers(blockedDids, await getAdminUser())
+    const createBlocksTransaction = await sequelize.transaction()
+    const usersToBlock = await User.findAll({
+            transaction: createBlocksTransaction,
+            where: {
+                bskyDid: {
+                [Op.in]: blockedDids
+                },
+                id: {
+                    [Op.notIn]: sequelize.literal(`(SELECT "blockedId" FROM "blocks" WHERE "blockerId"='${user.id}')`)
+                }
+            }
+        })
+    try {
+        await Blocks.bulkCreate(
+                usersToBlock.map(newBlock => {
+                    return {
+                        blockedId: newBlock.id,
+                        blockerId: userId,
+                    }
+                }),
+                {
+                    transaction: createBlocksTransaction
+                }
+            )
+            await createBlocksTransaction.commit()
+    } catch (error) {
+        logger.debug({
+            message: `Error while trying to sync bsky blocks by ${user.url}`,
+            error: error
+        })
+        await createBlocksTransaction.rollback()
+    }
+
+
     }
 }
 

@@ -37,6 +37,9 @@ async function syncBskyPosts(job: Job) {
             )
             url = pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(user.bskyDid)}&collection=app.bsky.feed.post&limit=100&reverse=false&cursor=${postsResponse.cursor}`
             remainingPosts = postsResponse.records.length
+            if(!postsResponse.cursor) {
+                remainingPosts = 0;
+            }
         }
         
     }
