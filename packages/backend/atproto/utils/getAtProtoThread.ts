@@ -106,6 +106,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   let verifiedFedi: string | undefined
   const postPetitionPds = await getPostThreadPDSDirect(uri)
+  if(!postPetitionPds) {
+    return;
+  }
   const post = postPetitionPds?.value as AppBskyFeedPost.Main
   const parentUri = post?.reply?.parent?.uri ? post.reply.parent.uri : undefined
   let parentId: string | undefined = undefined
@@ -117,12 +120,6 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     logger.debug({
       error,
       message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
-    })
-  }
-  if (!postPetitionPds || !postPetitionPds.value) {
-    logger.debug({
-      message: `Petition without data: ${uri}`,
-      data: postPetitionPds
     })
   }
   if (
@@ -478,7 +475,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         const oldDid = postCreator.bskyDid
         postCreator.bskyDid = null;
         postCreator.enableBsky = false;
-        postCreator.alternateUrl = undefined;
+        postCreator.alternateUrl = undefined
         await postCreator.save();
         postCreator = await getAtprotoUser(oldDid as string, {ignoreCache: true})
       } else {
@@ -605,14 +602,17 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     return postToProcess.id
   } else {
-    logger.error({
-      message: `Error obtaining user or pds petition: ${uri}`,
+    
+    if(!postPetitionPds) {
+      logger.error({
+      message: `Error obtaining user: ${uri}`,
       error: {
         postCreator: postCreator,
         post: post
       }
     })
-    throw new Error(`Error obtaining user or pds petition: ${uri}`)
+      throw new Error(`Error obtaining user: ${uri}`)
+    }
   }
 }
 
