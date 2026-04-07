@@ -27,7 +27,7 @@ const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.low
+  concurrency: completeEnvironment.workers.high
 })
 
 const workerPrepareSendPost = new Worker('prepareSendPost', (job: Job) => prepareSendRemotePostWorker(job), {
@@ -134,8 +134,6 @@ const workerProcessFirehose = completeEnvironment.enableBsky
         maxDataPoints: MetricsTime.ONE_WEEK * 2
       },
       concurrency: completeEnvironment.workers.high,
-      // up to one minute
-      lockDuration: 60000
     })
   : null
 
@@ -157,8 +155,6 @@ const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) =
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
   concurrency: completeEnvironment.workers.high,
-  // up to one minute
-  lockDuration: 60000
 })
 
 const workerSendPushNotification = new Worker(
