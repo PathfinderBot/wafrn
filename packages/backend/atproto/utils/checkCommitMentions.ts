@@ -1,11 +1,7 @@
-import { ParsedCommit } from '@skyware/firehose'
-import { Post } from '../../models/index.js'
-import { Op, Sequelize } from 'sequelize'
-import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
 import { RichText } from '@atproto/api'
 import { getQuotedPostUri } from './getAtProtoThread.js'
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
-import { Commit, Collection, CommitBase, CommitType, CommitCreate } from '@skyware/jetstream'
+import { Commit, CommitType, CommitCreate } from '@skyware/jetstream'
 
 // Preemptive checks to see if
 function checkCommitMentions(

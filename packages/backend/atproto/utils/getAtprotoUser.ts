@@ -37,7 +37,6 @@ async function forcePopulateUsers(dids: string[], localUser: User) {
   if (notFoundUsers.length > 0) {
     for await (const did of notFoundUsers) {
       await getAtprotoUser(did);
-      await wait(100);
     }
   }
 }
@@ -110,7 +109,7 @@ async function getAtprotoUser(
   // TODO check if current user exist
   let bskyUserResponse = undefined;
   try {
-    const pds = await getServerFromDid(did)
+    const pds = await getServerFromDid(did, options?.ignoreCache)
     const response = await (await fetch(pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(did)}&collection=app.bsky.actor.profile&limit=1&reverse=false`, {
       headers: {
         "User-Agent": getUserAgent('ATProtoWorker')
@@ -277,7 +276,7 @@ async function internalGetDBUser(did: string, url: string) {
     return foundUsers[0];
   } else {
     // OH WOW SOMETHING OFF
-    foundUsers.forEach(async (usr) => {
+    for (const usr of foundUsers) {
       if (!usr.email && !usr.remoteId) {
         if (usr.isBskyPrimary)
           usr.url = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
@@ -285,7 +284,7 @@ async function internalGetDBUser(did: string, url: string) {
           usr.alternateUrl = `@handle.invalid_${usr.bskyDid}_${new Date().getTime()}`;
         await usr.save();
       }
-    });
+    }
     return foundUsers.find((elem) => elem.bskyDid === did);
   }
 }

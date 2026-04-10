@@ -42,7 +42,7 @@ import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import escapeHTML from 'escape-html'
 import { wait } from '../wait.js'
 import { canInteract } from '../baseQueryNew.js'
-import { getAllLocalUserIds } from '../cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
 
 const updateMediaDataQueue = new Queue('processRemoteMediaData', {
   connection: completeEnvironment.bullmqConnection,
@@ -134,7 +134,7 @@ async function getPostThreadRecursive(
       const bskyVersionId = await processSinglePost(uri, false)
       if (bskyVersionId) {
         const bskyVersion = (await Post.findByPk(bskyVersionId)) as Post
-        if (!bskyVersion.remotePostId && !(await getAllLocalUserIds()).includes(bskyVersion.userId)) {
+        if (!bskyVersion.remotePostId && !(await getAllLocalUserIdsSet()).has(bskyVersion.userId)) {
           // we have the bsky post in the db, it is not from a local user
           const localPostWithExistingremoteId = await Post.findOne({
             where: {
@@ -427,7 +427,7 @@ async function getPostThreadRecursive(
               bskyCid = postBskyVersion.bskyCid || undefined
               bskyUri = postBskyVersion.bskyUri || undefined
               const directPetition = await getPostThreadPDSDirect(bskyUri as string)
-              if (directPetition.value.fediverseId) {
+              if (directPetition && directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything
                 const existingFedi = await Post.findOne({
@@ -512,12 +512,7 @@ async function getPostThreadRecursive(
                   connection: completeEnvironment.bullmqConnection,
                   defaultJobOptions: {
                     removeOnComplete: true,
-                    attempts: 6,
-                    backoff: {
-                      type: 'exponential',
-                      delay: 2500
-                    },
-                    removeOnFail: false
+                    removeOnFail: true
                   }
                 })
                 processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })
@@ -572,7 +567,7 @@ async function getPostThreadRecursive(
         try {
           if (!remoteUser.banned && !remoteUserServerBaned) {
             for await (const mention of fediMentions) {
-              let mentionedUser
+              let mentionedUser = await getRemoteActor(mention.href, user)
               if (mention.href?.indexOf(completeEnvironment.frontendUrl) !== -1) {
                 const username = mention.href?.substring(
                   `${completeEnvironment.frontendUrl}/fediverse/blog/`.length
@@ -732,7 +727,7 @@ async function getPostThreadRecursive(
           if (parent?.detached) {
             detachedReply = true
           }
-          if (!detachedReply && parent && (await getAllLocalUserIds()).includes(parent.userId)) {
+          if (!detachedReply && parent && (await getAllLocalUserIdsSet()).has(parent.userId)) {
             detachedReply = !(await canInteract(parent.replyControl, newPost.userId, parent.id))
           }
           if (detachedReply) {
@@ -745,12 +740,12 @@ async function getPostThreadRecursive(
         const postCleanContent = dompurify.sanitize(newPost.content, { ALLOWED_TAGS: [] }).trim()
         const mentions = await newPost.getMentionPost()
         if (postCleanContent.startsWith('!ask') && mentions.length === 1) {
-          let askContent = postCleanContent.split(`!ask @${mentions[0].url}`)[1]
+          let askContent = postCleanContent.substring(`!ask @${mentions[0].url}`.length)
           if (askContent.startsWith('@' + completeEnvironment.instanceUrl)) {
             askContent = askContent.split('@' + completeEnvironment.instanceUrl)[1]
           }
           await Ask.create({
-            question: escapeHTML(askContent),
+            question: dompurify.sanitize(askContent, {ALLOWED_TAGS: []}),
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,

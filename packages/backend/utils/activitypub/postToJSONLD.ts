@@ -15,7 +15,7 @@ import { InteractionControl, InteractionControlType, Privacy } from "../../model
 import { redisCache } from "../redis.js";
 import { htmlToMfm } from "./htmlToMfm.js";
 import showdown from "showdown";
-import { getAllLocalUserIds } from "../cacheGetters/getAllLocalUserIds.js";
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from "../cacheGetters/getAllLocalUserIds.js";
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -146,7 +146,7 @@ async function postToJSONLD(
     processedContent = `${askContent} ${processedContent}`;
     misskeyAskContent = `$[border.style=solid,width=1,radius=6 $[border.color=0000,width=12 ${getUserName(userAsker)} [asked](${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
       }):
-${await htmlToMfm(ask.question)}]]\n\n`;
+${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n`;
   }
   const mentions: string[] = post.mentionPost.map((elem: any) => elem.id);
   const misskeyMentions: string[] = [];
@@ -558,7 +558,7 @@ function getUserName(user?: User | undefined | null): string {
 async function getPostUrlForQuote(post: any): Promise<string> {
   const isPostFromFedi = !!post.remotePostId;
   let res = `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`;
-  if (post.bskyUri && !(await getAllLocalUserIds()).includes(post.userId)) {
+  if (post.bskyUri && !(await getAllLocalUserIdsSet()).has(post.userId)) {
     const parts = post.bskyUri.split("/app.bsky.feed.post/");
     const userDid = parts[0].split("at://")[1];
     res = `https://bsky.app/profile/${userDid}/post/${parts[1]}`;
