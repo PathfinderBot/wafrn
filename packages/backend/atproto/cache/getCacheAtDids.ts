@@ -4,6 +4,7 @@ import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.
 import { Queue } from 'bullmq'
 import { UserFollowHashtags } from '../../models/userFollowHashtag.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { redisCache } from '../../utils/redis.js'
 
 let superCache:
   | undefined
@@ -26,6 +27,23 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
   }
   let cacheResult = forceUpdate ? undefined : superCache
   if (!cacheResult) {
+    const superRedisStarter = await redisCache.get('cacheDids')
+    if(superRedisStarter) {
+      const tmpRedisVersion:
+	      {
+	        followedDids: string[];
+	        localUserDids: string[];
+	        followedUsersLocalIds: string[];
+	        followedHashtags: string[];
+	      } = JSON.parse(superRedisStarter);
+        superCache = {
+          followedDids: new Set(tmpRedisVersion.followedDids),
+          localUserDids: new Set(tmpRedisVersion.localUserDids),
+          followedUsersLocalIds: new Set(tmpRedisVersion.followedUsersLocalIds),
+          followedHashtags: new Set(tmpRedisVersion.followedHashtags)
+        }
+        return superCache
+    }
     const localIds = await getAllLocalUserIds()
     const followsPromise = Follows.findAll({
       include: [
@@ -98,6 +116,15 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       followedUsersLocalIds: followedUsersLocalIds,
       followedHashtags: followedHashtags
     }
+
+        const redisVersion = {
+	      followedDids: Array.from(followedDids),
+	      localUserDids: Array.from(localUserDids),
+	      followedUsersLocalIds: Array.from(followedUsersLocalIds),
+	      followedHashtags: Array.from(followedHashtags)
+	    }
+      // TODO find a better way
+	    await redisCache.set('cacheDids', JSON.stringify(redisVersion), 'EX', 600)
   }
   superCache = cacheResult
   return cacheResult
