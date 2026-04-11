@@ -18,9 +18,6 @@ if (cursorCache) {
 }
 
 let cachedDids = await getCacheAtDids();
-// const firehose = new Firehose({
-//   relay: `wss://atproto.africa`
-// })
 
 const jetstream = new Jetstream({
   endpoint: completeEnvironment.bskyJetstreamUrl,
@@ -48,6 +45,15 @@ const firehoseQueue = new Queue("firehoseQueue", {
   },
 });
 
+const lowPriorityFirehoseQueue = new Queue("lowPriorityFirehoseQueue", {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 2,
+    removeOnFail: true,
+  },
+});
+
 jetstream.on("commit", async (event) => {
   const cacheData = cachedDids;
   const commit = event.commit;
@@ -67,7 +73,11 @@ jetstream.on("commit", async (event) => {
         path: `${commit.collection}/${commit.rkey}`,
       },
     };
-    await firehoseQueue.add("processFirehoseQueue", data);
+    if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete') {
+      await lowPriorityFirehoseQueue.add("lowPriorityFirehoseQueue", data)
+    } else {
+      await firehoseQueue.add("processFirehoseQueue", data);
+    }
   }
 });
 

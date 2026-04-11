@@ -137,6 +137,17 @@ const workerProcessFirehose = completeEnvironment.enableBsky
     })
   : null
 
+  
+const lowPriorityFirehoseQueue = completeEnvironment.enableBsky
+  ? new Worker('lowPriorityFirehoseQueue', async (job: Job) => await processFirehose(job), {
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2
+      },
+      concurrency: completeEnvironment.workers.medium,
+    })
+  : null
+
 const workerProcessSinglePost = completeEnvironment.enableBsky
   ? new Worker('processSinglePost', async (job: Job) => await processSinglePostJob(job), {
       connection: completeEnvironment.bullmqConnection,
@@ -243,6 +254,7 @@ if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
   workers.push(workerProcessSinglePost as Worker)
   workers.push(workerSendPostBsky as Worker)
+  workers.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workers.forEach((worker) => {
@@ -279,6 +291,7 @@ if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
   workersToLogFail.push(workerProcessSinglePost as Worker)
   workersToLogFail.push(workerSendPostBsky as Worker)
+  workersToLogFail.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workersToLogFail.forEach((worker) =>
@@ -309,5 +322,6 @@ export {
   workerFetchFediTrhead,
   workerDownloadMedia,
   workerSyncBskyFollows,
-  workerSyncBskyPosts
+  workerSyncBskyPosts,
+  lowPriorityFirehoseQueue
 }
