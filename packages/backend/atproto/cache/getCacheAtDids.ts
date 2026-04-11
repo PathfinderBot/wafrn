@@ -4,6 +4,7 @@ import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.
 import { Queue } from 'bullmq'
 import { UserFollowHashtags } from '../../models/userFollowHashtag.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { redisCache } from '../../utils/redis.js'
 
 let superCache:
   | undefined
@@ -26,6 +27,14 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
   }
   let cacheResult = forceUpdate ? undefined : superCache
   if (!cacheResult) {
+    const superRedisStarter = await redisCache.get('cacheDids')
+    const tmpRedisVersion:
+      {
+        followedDids: string[];
+        localUserDids: string[];
+        followedUsersLocalIds: string[];
+        followedHashtags: string[];
+      } = superRedisStarter ? JSON.parse(superRedisStarter) : {followedDids: [], localUserDids: [], followedUsersLocalIds: [], followedHashtags: []}
     const localIds = await getAllLocalUserIds()
     const followsPromise = Follows.findAll({
       include: [
@@ -34,7 +43,8 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
           as: 'followed',
           where: {
             bskyDid: {
-              [Op.ne]: null
+              [Op.ne]: null,
+              [Op.notIn]: tmpRedisVersion.followedDids
             }
           },
           required: true
@@ -51,7 +61,8 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       where: {
         id: localIds,
         bskyDid: {
-          [Op.ne]: null
+          [Op.ne]: null,
+          [Op.notIn]: tmpRedisVersion.localUserDids
         }
       }
     })
@@ -72,13 +83,14 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       }
     })
 
-    const followedUsersLocalIds = new Set<string>(dids.map((elem) => elem.id).filter((elem) => elem != ''))
+    const followedUsersLocalIds = new Set<string>(dids.map((elem) => elem.id).filter((elem) => elem != '').concat(tmpRedisVersion.followedUsersLocalIds))
     const localUserDids = new Set<string>(
-      localUsersWithDid.map((elem) => elem.bskyDid || '').filter((elem) => elem != '')
+      localUsersWithDid.map((elem) => elem.bskyDid || '').filter((elem) => elem != '').concat(tmpRedisVersion.localUserDids)
     )
     const followedDids = new Set<string>([
       ...dids.map((elem) => elem.bskyDid || '').filter((elem) => elem != ''),
-      ...Array.from(localUserDids)
+      ...Array.from(localUserDids),
+      ...tmpRedisVersion.followedDids
     ])
 
     const followedHashtagsQuery = await UserFollowHashtags.findAll({
@@ -90,6 +102,7 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
         .map((elem) => elem.tagName)
         .filter((elem) => !!elem)
         .map((elem) => elem.toLowerCase())
+        .concat(tmpRedisVersion.followedHashtags)
     )
 
     cacheResult = {
@@ -98,6 +111,13 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       followedUsersLocalIds: followedUsersLocalIds,
       followedHashtags: followedHashtags
     }
+    const redisVersion = {
+      followedDids: Array.from(followedDids),
+      localUserDids: Array.from(localUserDids),
+      followedUsersLocalIds: Array.from(followedUsersLocalIds),
+      followedHashtags: Array.from(followedHashtags)
+    }
+    await redisCache.set('cacheDids', JSON.stringify(redisVersion))
   }
   superCache = cacheResult
   return cacheResult
