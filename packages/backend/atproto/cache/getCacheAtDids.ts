@@ -55,7 +55,7 @@ async function getCacheAtDids(forceUpdate = false, data?: forceUpdateDidsCacheQu
           tmpRedisVersion.followedHashtags.push(data.addFollowedHashtag)
         }
         if(touched) {
-          await redisCache.set('cacheDids', JSON.stringify(tmpRedisVersion), 'EX', 600)
+          await redisCache.set('cacheDids', JSON.stringify(tmpRedisVersion), 'EX', 3600)
         }
         superCache = {
           followedDids: new Set(tmpRedisVersion.followedDids),
@@ -146,7 +146,7 @@ async function getCacheAtDids(forceUpdate = false, data?: forceUpdateDidsCacheQu
 	      followedHashtags: Array.from(followedHashtags)
 	    }
       // TODO find a better way
-	    await redisCache.set('cacheDids', JSON.stringify(redisVersion), 'EX', 600)
+	    await redisCache.set('cacheDids', JSON.stringify(redisVersion), 'EX', 3600)
   }
   superCache = cacheResult
   return cacheResult
