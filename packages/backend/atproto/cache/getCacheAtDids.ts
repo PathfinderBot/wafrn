@@ -164,7 +164,7 @@ async function forceUpdateCacheDidsAtThread(data: forceUpdateDidsCacheQueue) {
       }
     }
   })
-  await forceUpdaDidsteQueue.add('forceUpdateDids', {})
+  await forceUpdaDidsteQueue.add('forceUpdateDids', data)
 }
 
 export { getCacheAtDids, forceUpdateCacheDidsAtThread }
