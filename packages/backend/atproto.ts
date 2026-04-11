@@ -17,7 +17,7 @@ if (cursorCache) {
   } catch (error) {}
 }
 
-let cachedDids = await getCacheAtDids(true);
+let cachedDids = await getCacheAtDids();
 // const firehose = new Firehose({
 //   relay: `wss://atproto.africa`
 // })
@@ -84,7 +84,7 @@ const workerForceUpdateAtDidCache = new Worker(
   "forceUpdateDids",
   async (job: Job) => {
     logger.info(`Atproto force update of dids`);
-    const tmp = await getCacheAtDids(true);
+    const tmp = await getCacheAtDids(true, job.data);
     cachedDids = tmp;
   },
   {

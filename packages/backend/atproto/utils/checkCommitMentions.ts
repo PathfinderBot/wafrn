@@ -85,21 +85,21 @@ function checkCommitMentions(
     const parent = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
     res =
       // lets  store by default less replies. only ones that are replies to local users
-      // cacheData.followedDids.has(root) || cacheData.followedDids.has(parent) ||
-      cacheData.localUserDids.has(root) || cacheData.followedDids.has(parent)
+      cacheData.followedDids.has(parent) ||
+      cacheData.localUserDids.has(root) 
 
     if (res) {
-      logger.debug('Post in reply to local user or followed user')
+      logger.debug('Post in reply to local user')
       return res;}
   }
 
   if (record && record.embed && (record.embed.$type === 'app.bsky.embed.record' || record.embed.$type === 'app.bsky.embed.recordWithMedia')) {
     const uri = (record.embed.record as { uri: string | undefined }).uri?.replace('at://', '').split('/app.bsky.feed')[0] ?? ''
     res =
-      cacheData.followedDids.has(uri) || cacheData.localUserDids.has(uri)
+      cacheData.localUserDids.has(uri)
 
     if (res) {
-      logger.debug('Post quotes someone we follow or local user')
+      logger.debug('Post quotes local user')
 
       return res};
   }
