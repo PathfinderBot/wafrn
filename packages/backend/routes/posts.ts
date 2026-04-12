@@ -589,7 +589,7 @@ export default function postsRoutes(app: Application) {
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          let initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({where: {hierarchyLevel : 1}}))[0]) : undefined
+          const initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({where: {hierarchyLevel : 1}}))[0]) : undefined
           if(initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }
@@ -603,7 +603,11 @@ export default function postsRoutes(app: Application) {
             isReblog: isReblog,
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
-            likeControl: req.body.canLike || InteractionControl.Anyone
+            likeControl: req.body.canLike || InteractionControl.Anyone,
+            rootId: initialPost?.id,
+            isReply: parent ? (parent.isReply || parent.userId != posterId) : false,
+            isBskyExclusive: parent ? parent.isBskyExclusive : false
+
           })
         }
 
