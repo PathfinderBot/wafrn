@@ -73,7 +73,7 @@ jetstream.on("commit", async (event) => {
         path: `${commit.collection}/${commit.rkey}`,
       },
     };
-    if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete') {
+    if(commit.operation === 'delete') {
       await lowPriorityFirehoseQueue.add("lowPriorityFirehoseQueue", data)
     } else {
       await firehoseQueue.add("processFirehoseQueue", data);
