@@ -196,6 +196,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const encoder = new TextEncoder();
 
   const postMax = 300;
+  let current = 0;
   // A bit more to account for unicode and such
   const shortenerWithMediaLength = 31;
   const textOnlyShortenerLength = 15;
@@ -210,8 +211,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     else text += token.raw;
 
     const length = encoder.encode(text).byteLength;
+    current = current + length
     // well a bit dirty but yeah taking the case out is worse and ughh
-    if (length > postMax && medias.length && medias.length <= 4 || encoder.encode(postText).length > postMax) {
+    if (current > postMax && medias.length && medias.length <= 4 ) {
       const lengthLeft =
         postMax - builder.text.length - shortenerWithMediaLength;
       if (token.type === "link")
@@ -226,7 +228,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       postShortened = true;
       break;
-    } else if (length > postMax) {
+    } else if (current > postMax) {
       const lengthLeft =
         postMax - builder.text.length - textOnlyShortenerLength;
       if (token.type === "link")
