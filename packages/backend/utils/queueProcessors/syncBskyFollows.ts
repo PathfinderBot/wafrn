@@ -95,7 +95,7 @@ async function syncBskyFollowsJob(job: Job) {
         const didsToForceFollow = wafrnOnlyFollowsToAddToBsky.map(elem => elem.followed.bskyDid).filter(elem => !followingDids.includes(elem as string))
         if(user.email && didsToForceFollow.length > 0) {
             const userAgent = await getAtProtoSession(user, true)
-            for await (const did of didsToForceFollow) {
+            for await (const did of didsToForceFollow.filter(elem => elem && elem.toLowerCase().startsWith('did'))) {
                 await userAgent.follow(did as string)
             }
         }
