@@ -604,7 +604,6 @@ export default function postsRoutes(app: Application) {
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
             likeControl: req.body.canLike || InteractionControl.Anyone,
-            rootId: initialPost?.id,
             isReply: parent ? (parent.isReply || parent.userId != posterId) : false,
             isBskyExclusive: parent ? parent.isBskyExclusive : false
 
