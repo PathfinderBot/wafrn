@@ -294,7 +294,7 @@ export class ViewBlogComponent
     if(!featured){
       this.loading.set(false);
     }
-    if (tmpPosts.length === 0) {
+    if (tmpPosts.length === 0 && !featured) {
       this.noMorePosts = true;
     }
     this.cdr.detectChanges();
