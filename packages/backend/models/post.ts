@@ -93,7 +93,7 @@ export interface PostAttributes {
   quoteControl?: InteractionControlType
   displayUrl: string | null
   detached?: boolean,
-  rootId?: string,
+  //rootId?: string,
   isBskyExclusive?: boolean,
   isReply?: boolean
 }
@@ -227,12 +227,12 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   declare parentId: string
 
 
-  @ForeignKey(() => Post)
-  @Column({
-    allowNull: true,
-    type: DataType.UUID
-  })
-  declare rootId: string
+  // @ForeignKey(() => Post)
+  // @Column({
+  //   allowNull: true,
+  //   type: DataType.UUID
+  // })
+  // declare rootId: string
 
 
   @Column({
@@ -276,10 +276,10 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   declare setParent: BelongsToSetAssociationMixin<Post, string>;
 
 
-  @BelongsTo(() => Post, "rootId")
-  declare root: Post;
-  declare getRoot: BelongsToGetAssociationMixin<Post>;
-  declare setRoot: BelongsToSetAssociationMixin<Post, string>;
+  // @BelongsTo(() => Post, "rootId")
+  // declare root: Post;
+  // declare getRoot: BelongsToGetAssociationMixin<Post>;
+  // declare setRoot: BelongsToSetAssociationMixin<Post, string>;
 
 
   @HasMany(() => Post, 'parentId')
