@@ -62,7 +62,7 @@ export default function dashboardRoutes(app: Application) {
           isReblog: true
         },
         {
-          parentId: null
+          isReply: false
         }
       ]
 
