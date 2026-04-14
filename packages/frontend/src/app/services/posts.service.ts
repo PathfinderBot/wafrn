@@ -841,7 +841,8 @@ export class PostsService {
           "word-wrap": [new RegExp(".*")],
           "writing-mode": [new RegExp(".*")],
         },
-      },  
+      },
+      allowVulnerableTags: true,
     });
     // we remove stuff like script tags. we only allow certain stuff.
     const parsedAsHTML = this.parser.parseFromString(sanitized, "text/html");
