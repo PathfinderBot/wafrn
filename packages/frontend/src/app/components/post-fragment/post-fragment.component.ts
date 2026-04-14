@@ -294,7 +294,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
           external: reaction.emoji?.external == true,
           name: reaction.content,
           img: image
-            ? `${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${reaction.emoji?.uuid}`
+            ? `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${reaction.emoji?.uuid}`
             : undefined,
           users: [], // this will be filled below,
           tooltip: "",

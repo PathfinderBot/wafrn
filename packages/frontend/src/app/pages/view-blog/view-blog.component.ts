@@ -148,7 +148,7 @@ export class ViewBlogComponent
 
   private getAvatarUrl(blogDetails: BlogDetails): string {
     return (
-      EnvironmentService.environment.cacheDomain +
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) +
       "/api/v2/cache/avatar/" +
       blogDetails.id
     );

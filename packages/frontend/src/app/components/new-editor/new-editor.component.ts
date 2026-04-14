@@ -262,7 +262,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   ]
   
   emojiCacherUrl =
-    EnvironmentService.environment.cacheDomain + "/api/v2/cache/emoji/";
+    (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) + "/api/v2/cache/emoji/";
 
   parser = new DOMParser();
 

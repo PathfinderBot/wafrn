@@ -1,0 +1,89 @@
+:host {
+  --mat-button-protected-disabled-label-text-color: var(--mat-sys-on-surface);
+  --mat-button-protected-container-height: 32px;
+  --mat-button-protected-horizontal-padding: 8px;
+  --mat-button-protected-container-shape: var(--mat-sys-corner-small);
+  --mat-button-protected-container-color: var(--mat-sys-surface-container-high);
+}
+
+.muted-words {
+  color: var(--mat-sys-outline);
+  font-size: 0.9rem;
+}
+
+.post-content.hidden {
+  display: none !important;
+}
+
+.post-content section:empty {
+  display: none !important;
+}
+
+.reply-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75ch;
+  width: fit-content;
+  border-bottom: 1px solid var(--mat-sys-surface-container-highest);
+  font-size: 0.8rem;
+}
+
+.reply-list-title {
+  color: var(--mat-sys-outline);
+}
+
+.reacted:not([disabled]) {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+}
+
+.external-emoji {
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  color: var(--mat-sys-primary);
+  height: var(--mat-button-protected-container-height, 40px);
+  font-family: var(--mat-button-protected-label-text-font, var(--mat-sys-label-large-font));
+  font-size: var(--mat-button-protected-label-text-size, var(--mat-sys-label-large-size));
+  letter-spacing: var(--mat-button-protected-label-text-tracking, var(--mat-sys-label-large-tracking));
+  text-transform: var(--mat-button-protected-label-text-transform);
+  font-weight: var(--mat-button-protected-label-text-weight, var(--mat-sys-label-large-weight));
+  padding: 0 var(--mat-button-protected-horizontal-padding, 24px);
+  vertical-align: middle;
+  border-radius: var(--mat-button-protected-container-shape, var(--mat-sys-corner-full));
+}
+
+.post-emoji {
+  min-width: 24px;
+}
+
+@media (pointer: coarse), (hover: none) {
+  .post-emoji,
+  .external-emoji {
+    pointer-events: none;
+  }
+}
+
+.carousel-media {
+  max-width: 75% !important;
+}
+
+.post-contains-muted-words {
+  filter: grayscale(100%);
+}
+
+.post-contains-muted-words:hover {
+  filter: none;
+}
+
+
+.post-emoji {
+  display: inline-flex;
+  max-height: 1.5em;
+  max-width: 1.5em;
+  vertical-align: middle;
+}
