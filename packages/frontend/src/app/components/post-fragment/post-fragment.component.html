@@ -45,7 +45,7 @@
       }
       @if (block) {
         <div #mediaInline class="fragment-content overflow-hidden">
-          <div [injectHTML]="block" class="post-text"></div>
+          <app-post-html-content [fragment]="block"></app-post-html-content>
           @if (typeof block !== 'string') {
             <app-wafrn-media [data]="$any(block)" [filteredWords]="fragment().muted_words_cw"></app-wafrn-media>
           }

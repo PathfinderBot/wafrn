@@ -700,6 +700,7 @@ export class PostsService {
       "rt",
       "rp",
       "img", // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
+      "style"
     ]
   ): string {
     const content = post.content;
@@ -722,7 +723,7 @@ export class PostsService {
           "width",
           "scrolldelay",
         ],
-        "*": ["title", "lang", "style"],
+        "*": ["title", "lang", "style", "class"],
       },
       allowedStyles: {
         "*": {

@@ -28,6 +28,7 @@ import Viewer from "viewerjs";
 import { ParticleService } from "src/app/services/particle.service";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { SettingsService } from "src/app/services/settings.service";
+import { PostHtmlContentComponent } from "../post/post-html-content/post-html-content.component";
 
 type FragmentType = "post" | "quote";
 
@@ -57,7 +58,8 @@ type EmojiReaction = {
     SingleAskComponent,
     PostLinkModule,
     TranslateModule,
-  ],
+    PostHtmlContentComponent
+],
   templateUrl: "./post-fragment.component.html",
   styleUrl: "./post-fragment.component.scss",
 })
