@@ -105,7 +105,8 @@ const settingKeyVariants = [
   'disableFollowingCounts',
   'disablePostCounts',
   'showMediaDescriptions',
-  'markAllMediaAsNSFW'
+  'markAllMediaAsNSFW',
+  'disableBsky'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -469,6 +470,14 @@ export class SettingsService {
       translationKey: 'settings.disableReplies',
       serverKey: 'wafrn.disableReplies',
       localStorageKey: 'disableReplies',
+      type: 'checkbox',
+      default: false
+    },
+    disableBsky: {
+      key: 'disableBsky',
+      translationKey: 'settings.disableBsky',
+      serverKey: 'wafrn.disableBsky',
+      localStorageKey: 'disableBsky',
       type: 'checkbox',
       default: false
     },
@@ -912,6 +921,7 @@ export class SettingsService {
         { type: 'key', value: 'disableRewootsExploreLocal' },
         { type: 'key', value: 'disableRewootsDashboard' },
         { type: 'key', value: 'disableReplies' },
+        { type: 'key', value: 'disableBsky' },
         { type: 'key', value: 'automaticallyExpandPosts' },
         { type: 'key', value: 'expandQuotes' },
         { type: 'key', value: 'disableLinkPreviews' },

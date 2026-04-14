@@ -376,7 +376,8 @@ export class LoginService {
       hideNoDescriptionMedia: 'wafrn.hideNoDescriptionMedia',
       disableRewootsExploreLocal: 'wafrn.disableRewootsExploreLocal',
       disableRewootsDashboard: 'wafrn.disableRewootsDashboard',
-      disableReplies: 'wafrn.disableReplies'
+      disableReplies: 'wafrn.disableReplies',
+      disableBsky: 'wafrn.disableBsky'
     }
 
     try {

@@ -57,14 +57,29 @@ export default function dashboardRoutes(app: Application) {
       })
 
       const disableReplies = dbOptiondisableReplies?.optionValue === 'true'
-      const disableRepliesOr = [
+      const disableRepliesOr = disableReplies ?  [
         {
           isReblog: true
         },
         {
           isReply: false
         }
-      ]
+      ] : []
+
+      const dbOptiondisableBsky = await UserOptions.findOne({
+        where: {
+          userId: posterId,
+          optionName: 'wafrn.disableBsky'
+        }
+      })
+
+      const disableBsky = dbOptiondisableBsky?.optionValue === 'true'
+      if(disableBsky) {
+        disableRepliesOr.push({
+          isBskyExclusive: false
+        } as any)
+      }
+
 
       switch (level) {
         case 2: {
@@ -111,7 +126,7 @@ export default function dashboardRoutes(app: Application) {
             }
           ]
 
-          if (disableReplies) {
+          if (disableReplies || disableBsky) {
             and.push({
               [Op.or]: disableRepliesOr
             })
@@ -196,7 +211,7 @@ export default function dashboardRoutes(app: Application) {
             }
           ]
 
-          if (disableReplies) {
+          if (disableReplies || disableBsky) {
             and.push({
               [Op.or]: disableRepliesOr
             })
