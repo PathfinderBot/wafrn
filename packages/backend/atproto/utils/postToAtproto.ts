@@ -210,8 +210,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     if (token.type === "link") text += token.text;
     else text += token.raw;
 
-    const length = encoder.encode(text).byteLength;
-    current = current + length
+    current = current +  encoder.encode(token.raw).byteLength;
     // well a bit dirty but yeah taking the case out is worse and ughh
     if (current > postMax && medias.length && medias.length <= 4 ) {
       const lengthLeft =
