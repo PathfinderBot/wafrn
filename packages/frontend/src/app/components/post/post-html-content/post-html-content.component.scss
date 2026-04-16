@@ -39,13 +39,12 @@ $theme: mat.define-theme(
 
 @include mat.typography-hierarchy($theme);
 
-:root {
   @include mat.badge-overrides(
     (
       background-color: var(--mat-button-filled-container-color, var(--mat-sys-primary))
     )
   );
-}
+
 
 // Variables
 :root {
@@ -62,7 +61,6 @@ $theme: mat.define-theme(
 // I hope to not use !important here eventually, so...
 // TODO: No !important
 
-:root,
 body,
 html {
   --mat-menu-item-label-text-font: Inter, sans-serif;
@@ -280,9 +278,6 @@ body {
 /* Currently encompasses the bottom-sheet style for dialogs, as well as the full-width post style for narrow screens.*/
 @media screen and (max-width: 800px) {
   /* START bottom-sheet */
-  :root {
-    --mat-dialog-container-shape: 16px 16px 0px 0px;
-  }
 
   .cdk-global-overlay-wrapper {
     align-items: flex-end !important;
@@ -436,9 +431,7 @@ mat-tab-header {
   // Notch fixes
   --mat-toolbar-standard-height: calc(64px + env(safe-area-inset-bottom));
   --mat-toolbar-mobile-height: calc(56px + env(safe-area-inset-bottom));
-  :root & {
     padding-bottom: env(safe-area-inset-bottom);
-  }
 }
 
 .wafrn-toolbar-section {
@@ -554,7 +547,7 @@ mat-drawer {
 }
 
 // The cards
-:root .post-card {
+.post-card {
   margin-inline: 1rem;
   margin-bottom: 1rem;
   padding: 1rem;
@@ -567,18 +560,18 @@ mat-drawer {
   }
 }
 
-:root .post-card-ios {
+.post-card-ios {
   // content-visibility: visible !important; // Removed due flickering on ios
 }
 
 @media screen and (min-width: 992px) {
-  :root .post-card {
+  .post-card {
     margin-inline: 1.5rem;
   }
 }
 
 // Elements inside cards
-:root .user-link {
+.user-link {
   text-decoration: none;
   color: unset;
 
@@ -632,19 +625,6 @@ mat-drawer {
   margin: 0;
 }
 
-:root .mention {
-  display: inline-block;
-  padding: 0 4px 0 4px;
-  color: var(--mat-sys-on-surface);
-  background-color: var(--mat-sys-secondary-container);
-  font-weight: 500;
-  text-decoration: none;
-  border-radius: var(--mat-sys-corner-small);
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
 
 .tag-list {
   display: flex;
@@ -720,3 +700,19 @@ mat-drawer {
 .post-text img {
   max-width: 100% !important;
 }
+
+.mention {
+  display: inline-block;
+  padding: 0 4px 0 4px;
+  color: var(--mat-sys-on-surface);
+  background-color: var(--mat-sys-secondary-container);
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--mat-sys-corner-small);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+
