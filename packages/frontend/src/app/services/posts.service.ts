@@ -70,7 +70,7 @@ export class PostsService {
       external: false,
       uuid: emoji.name,
     };
-  });
+  }).filter(elem => !!elem) as Emoji[];
 
   public silencedPostsIds: string[] = [];
   public mutedUsers: string[] = [];
