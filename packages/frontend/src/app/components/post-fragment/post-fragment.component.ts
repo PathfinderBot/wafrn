@@ -85,7 +85,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
   userId: string;
   mentionPosts: string[] = [];
   availableEmojiNames: Set<string> = new Set();
-
+  userPrefersReducedMotion = this.loginService.userPrefersReducedMotion()
   userCannotReact = computed<boolean>(() => {
     const ownPost = this.fragment().userId === this.userId;
     return this.reactionLoading() || ownPost;

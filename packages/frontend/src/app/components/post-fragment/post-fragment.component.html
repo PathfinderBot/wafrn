@@ -45,7 +45,11 @@
       }
       @if (block) {
         <div #mediaInline class="fragment-content overflow-hidden">
-          <app-post-html-content [fragment]="block"></app-post-html-content>
+          @if(!userPrefersReducedMotion) {
+            <app-post-html-content [fragment]="block"></app-post-html-content>
+          } @else{
+            <div [innerHTML]="block"></div>
+          }
           @if (typeof block !== 'string') {
             <app-wafrn-media [data]="$any(block)" [filteredWords]="fragment().muted_words_cw"></app-wafrn-media>
           }

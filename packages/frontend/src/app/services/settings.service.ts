@@ -106,7 +106,8 @@ const settingKeyVariants = [
   'disablePostCounts',
   'showMediaDescriptions',
   'markAllMediaAsNSFW',
-  'disableBsky'
+  'disableBsky',
+  'forceReducedMotion',
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -478,6 +479,14 @@ export class SettingsService {
       translationKey: 'settings.disableBsky',
       serverKey: 'wafrn.disableBsky',
       localStorageKey: 'disableBsky',
+      type: 'checkbox',
+      default: false
+    },
+    forceReducedMotion: {
+      key: 'forceReducedMotion',
+      serverKey: 'forceReducedMotion',
+      localStorageKey: 'forceReducedMotion',
+      translationKey: 'settings.forceReducedMotion',
       type: 'checkbox',
       default: false
     },
