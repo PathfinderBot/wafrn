@@ -374,17 +374,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
   }
   if (!postCreator || !postPetitionPds) {
-    const usr = postCreator ? postCreator : await User.findOne({ where: { url: completeEnvironment.deletedUser } })
-
-    const invalidPost = await Post.create({
-      userId: usr?.id,
-      content: `Failed to get atproto post`,
-      parentId: parentId,
-      isDeleted: true,
-      createdAt: new Date(0),
-      updatedAt: new Date(0)
-    })
-    return invalidPost.id
+    return undefined
   }
   if (postCreator && post) {
     const medias = getPostMedias(postPetitionPds.uri, post)
@@ -452,6 +442,13 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if (createdAt.getTime() > new Date().getTime()) {
       createdAt = new Date()
     }
+
+    let isReply = false;
+    if(parentId) {
+      const parentPost = (await Post.findByPk(parentId)) as Post
+      isReply = parentPost.isReply || parentPost.userId != postCreator.id
+    }
+
     const newData = {
       userId: postCreator.id,
       bskyCid: postPetitionPds.cid,
@@ -461,7 +458,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...(await getPostInteractionLevels(uri, parentId))
+      ...(await getPostInteractionLevels(uri, parentId)),
+      isBskyExclusive: true, // TODO hmmm
+      isReply: isReply
     }
     if (!parentId) {
       delete newData.parentId

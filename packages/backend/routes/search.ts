@@ -87,14 +87,14 @@ export default function searchRoutes(app: Application) {
                 urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
                 urlString.split('/profile/')[1].split('/post/')
               let bskyProfile = profileAndPost[0]
-              let bskyUri = profileAndPost[1]
+              const bskyUri = profileAndPost[1]
               if (!bskyProfile.startsWith('did:')) {
-                let profileToGet = await getAtprotoUser(`${bskyProfile}`)
+                const profileToGet = await getAtprotoUser(`${bskyProfile}`)
                 if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
             }
             uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
           } 
-            let bskyPostId = await processSinglePost(uri, true)
+            const bskyPostId = await processSinglePost(uri, true)
             if (bskyPostId) {
               postsIds = [bskyPostId]
             }
@@ -259,7 +259,7 @@ export default function searchRoutes(app: Application) {
     }
     res = res.concat(await localUsers)
     if ((await remoteUsers) && (await remoteUsers).length >= 1) {
-      let tmpRemote = await remoteUsers
+      const tmpRemote = await remoteUsers
       res = res.concat(tmpRemote as User[])
     }
     // we want to check that we dont get duplicated users

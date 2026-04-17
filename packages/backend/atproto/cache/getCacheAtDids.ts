@@ -4,6 +4,8 @@ import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.
 import { Queue } from 'bullmq'
 import { UserFollowHashtags } from '../../models/userFollowHashtag.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { redisCache } from '../../utils/redis.js'
+import { forceUpdateDidsCacheQueue } from '../../interfaces/atproto/forceUpdateDidsCacheUpdate.js'
 
 let superCache:
   | undefined
@@ -15,7 +17,7 @@ let superCache:
     }
 
 // TODO improve this. This function is called A LOT and we could use a lot less of JSON PARSE
-async function getCacheAtDids(forceUpdate = false): Promise<{
+async function getCacheAtDids(forceUpdate = false, data?: forceUpdateDidsCacheQueue): Promise<{
   followedDids: Set<string>
   localUserDids: Set<string>
   followedUsersLocalIds: Set<string>
@@ -26,6 +28,44 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
   }
   let cacheResult = forceUpdate ? undefined : superCache
   if (!cacheResult) {
+    const superRedisStarter = await redisCache.get('cacheDids')
+    if(superRedisStarter) {
+      const tmpRedisVersion:
+	      {
+	        followedDids: string[];
+	        localUserDids: string[];
+	        followedUsersLocalIds: string[];
+	        followedHashtags: string[];
+	      } = JSON.parse(superRedisStarter);
+        let touched = false
+        if(data?.addFollowedDid) {
+          touched = true;
+          tmpRedisVersion.followedDids.push(data.addFollowedDid)
+        }
+        if(data?.addLocalUserDid) {
+          touched = true;
+          tmpRedisVersion.localUserDids.push(data.addLocalUserDid)
+        }
+        if(data?.addFollowedId) {
+          touched = true;
+          tmpRedisVersion.followedUsersLocalIds.push(data.addFollowedId)
+        }
+        if(data?.addFollowedHashtag) {
+          touched = true;
+          tmpRedisVersion.followedHashtags.push(data.addFollowedHashtag)
+        }
+        if(touched) {
+          await redisCache.set('cacheDids', JSON.stringify(tmpRedisVersion), 'EX', 3600)
+        }
+        superCache = {
+          followedDids: new Set(tmpRedisVersion.followedDids),
+          localUserDids: new Set(tmpRedisVersion.localUserDids),
+          followedUsersLocalIds: new Set(tmpRedisVersion.followedUsersLocalIds),
+          followedHashtags: new Set(tmpRedisVersion.followedHashtags)
+        }
+        
+        return superCache
+    }
     const localIds = await getAllLocalUserIds()
     const followsPromise = Follows.findAll({
       include: [
@@ -98,12 +138,21 @@ async function getCacheAtDids(forceUpdate = false): Promise<{
       followedUsersLocalIds: followedUsersLocalIds,
       followedHashtags: followedHashtags
     }
+
+        const redisVersion = {
+	      followedDids: Array.from(followedDids),
+	      localUserDids: Array.from(localUserDids),
+	      followedUsersLocalIds: Array.from(followedUsersLocalIds),
+	      followedHashtags: Array.from(followedHashtags)
+	    }
+      // TODO find a better way
+	    await redisCache.set('cacheDids', JSON.stringify(redisVersion), 'EX', 3600)
   }
   superCache = cacheResult
   return cacheResult
 }
 
-async function forceUpdateCacheDidsAtThread() {
+async function forceUpdateCacheDidsAtThread(data: forceUpdateDidsCacheQueue) {
   const forceUpdaDidsteQueue = new Queue('forceUpdateDids', {
     connection: completeEnvironment.bullmqConnection,
     defaultJobOptions: {
@@ -115,7 +164,7 @@ async function forceUpdateCacheDidsAtThread() {
       }
     }
   })
-  await forceUpdaDidsteQueue.add('forceUpdateDids', {})
+  await forceUpdaDidsteQueue.add('forceUpdateDids', data)
 }
 
 export { getCacheAtDids, forceUpdateCacheDidsAtThread }

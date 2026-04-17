@@ -93,7 +93,7 @@ async function processFirehose(job: Job) {
             let user = undefined
             let likedPostId = undefined
             try {
-              if ((await getCacheAtDids()).followedDids.has(job.data.repo)) {
+              if ((await getCacheAtDids(false)).followedDids.has(job.data.repo)) {
                 const postLikedUri = record.subject.uri
                 const postId = await processSinglePost(postLikedUri)
                 if (postId) {

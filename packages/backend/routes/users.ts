@@ -1548,7 +1548,9 @@ function userRoutes(app: Application) {
             })
           }
           await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
-          await forceUpdateCacheDidsAtThread()
+          await forceUpdateCacheDidsAtThread({
+            addLocalUserDid: newDid
+          })
           await redisCache.del('bskySession:' + user.id)
           await updateUserDidDoc(user)
           return res.send({ success: true })
@@ -1911,8 +1913,6 @@ It is slow because we have to send every fedi server that has ever seen a post o
 
 async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
-    await forceUpdateCacheDidsAtThread()
-    await getCacheAtDids(true)
     await updateUserDidDoc(user)
     let pronouns: string | undefined
     let website: string | undefined

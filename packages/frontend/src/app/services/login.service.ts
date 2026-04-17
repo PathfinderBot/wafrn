@@ -376,7 +376,9 @@ export class LoginService {
       hideNoDescriptionMedia: 'wafrn.hideNoDescriptionMedia',
       disableRewootsExploreLocal: 'wafrn.disableRewootsExploreLocal',
       disableRewootsDashboard: 'wafrn.disableRewootsDashboard',
-      disableReplies: 'wafrn.disableReplies'
+      disableReplies: 'wafrn.disableReplies',
+      disableBsky: 'wafrn.disableBsky',
+      forceReducedMotion: 'wafrn.forceReducedMotion'
     }
 
     try {
@@ -572,5 +574,10 @@ export class LoginService {
     await firstValueFrom(
       this.http.post(EnvironmentService.environment.baseUrl + '/connect-bsky-account', { url: account, password })
     )
+  }
+
+  userPrefersReducedMotion(): boolean {
+    const res = window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true || localStorage.getItem('forceReducedMotion') === 'true';
+    return res;
   }
 }

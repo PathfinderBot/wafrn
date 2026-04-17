@@ -27,7 +27,7 @@ const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.low
+  concurrency: completeEnvironment.workers.high
 })
 
 const workerPrepareSendPost = new Worker('prepareSendPost', (job: Job) => prepareSendRemotePostWorker(job), {
@@ -134,8 +134,17 @@ const workerProcessFirehose = completeEnvironment.enableBsky
         maxDataPoints: MetricsTime.ONE_WEEK * 2
       },
       concurrency: completeEnvironment.workers.high,
-      // up to one minute
-      lockDuration: 60000
+    })
+  : null
+
+  
+const lowPriorityFirehoseQueue = completeEnvironment.enableBsky
+  ? new Worker('lowPriorityFirehoseQueue', async (job: Job) => await processFirehose(job), {
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2
+      },
+      concurrency: completeEnvironment.workers.medium,
     })
   : null
 
@@ -157,8 +166,6 @@ const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) =
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
   concurrency: completeEnvironment.workers.high,
-  // up to one minute
-  lockDuration: 60000
 })
 
 const workerSendPushNotification = new Worker(
@@ -247,6 +254,7 @@ if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
   workers.push(workerProcessSinglePost as Worker)
   workers.push(workerSendPostBsky as Worker)
+  workers.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workers.forEach((worker) => {
@@ -283,6 +291,7 @@ if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
   workersToLogFail.push(workerProcessSinglePost as Worker)
   workersToLogFail.push(workerSendPostBsky as Worker)
+  workersToLogFail.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workersToLogFail.forEach((worker) =>
@@ -313,5 +322,6 @@ export {
   workerFetchFediTrhead,
   workerDownloadMedia,
   workerSyncBskyFollows,
-  workerSyncBskyPosts
+  workerSyncBskyPosts,
+  lowPriorityFirehoseQueue
 }

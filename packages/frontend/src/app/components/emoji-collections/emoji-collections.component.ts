@@ -134,7 +134,7 @@ export class EmojiCollectionsComponent implements AfterViewInit, OnDestroy {
   emoji = output<Emoji>();
 
   emojiCacherUrl =
-    EnvironmentService.environment.cacheDomain + "/api/v2/cache/emoji/";
+    (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) + "/api/v2/cache/emoji/";
   baseEmojisUrl = "/api/uploads";
 
   constructor() {

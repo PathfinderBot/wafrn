@@ -2,6 +2,7 @@ import { RichText } from '@atproto/api'
 import { getQuotedPostUri } from './getAtProtoThread.js'
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
 import { Commit, CommitType, CommitCreate } from '@skyware/jetstream'
+import { logger } from '../../utils/logger.js'
 
 // Preemptive checks to see if
 function checkCommitMentions(
@@ -19,6 +20,7 @@ function checkCommitMentions(
 
 
   if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete'){
+    logger.debug('Delete post automatic accept')
     return true;
   }
   const didsToCheck = cacheData.followedDids
@@ -43,13 +45,13 @@ function checkCommitMentions(
         })
         let tags = rt.segments().filter((elem) => elem.isTag())
         if (tags && tags.some((tag) => cacheData.followedHashtags.has(tag.text.substring(1).toLowerCase()))) {
-          res = true
+          logger.debug('Post contains followed hashtag')
           return true
         }
       }
 
       if (mentions && mentions.length && mentions.some((mention: string) => cacheData.localUserDids.has(mention))) {
-        res = true
+        logger.debug('Post contains a mention of a local user')
         return res
       }
     }
@@ -72,6 +74,7 @@ function checkCommitMentions(
       cacheData.localUserDids.has(likedPostUri) ||
       cacheData.localUserDids.has(followedUser)
     ) {
+      logger.debug('Saving follow')
       return true
     }
   }
@@ -81,18 +84,24 @@ function checkCommitMentions(
     const root = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
     const parent = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
     res =
-      cacheData.followedDids.has(root) || cacheData.followedDids.has(parent) ||
-      cacheData.localUserDids.has(root) || cacheData.followedDids.has(parent)
+      // lets  store by default less replies. only ones that are replies to local users
+      cacheData.followedDids.has(parent) ||
+      cacheData.localUserDids.has(root) 
 
-    if (res) return res;
+    if (res) {
+      logger.debug('Post in reply to local user')
+      return res;}
   }
 
   if (record && record.embed && (record.embed.$type === 'app.bsky.embed.record' || record.embed.$type === 'app.bsky.embed.recordWithMedia')) {
     const uri = (record.embed.record as { uri: string | undefined }).uri?.replace('at://', '').split('/app.bsky.feed')[0] ?? ''
     res =
-      cacheData.followedDids.has(uri) || cacheData.localUserDids.has(uri)
+      cacheData.localUserDids.has(uri)
 
-    if (res) return res;
+    if (res) {
+      logger.debug('Post quotes local user')
+
+      return res};
   }
 
   return res

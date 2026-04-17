@@ -700,7 +700,8 @@ export class PostsService {
       "rt",
       "rp",
       "img", // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
-    ]
+      "style"
+    ],
   ): string {
     const content = post.content;
     let sanitized = sanitizeHtml(content, {
@@ -722,7 +723,7 @@ export class PostsService {
           "width",
           "scrolldelay",
         ],
-        "*": ["title", "lang", "style"],
+        "*": ["title", "lang", "style", "class"],
       },
       allowedStyles: {
         "*": {
@@ -841,6 +842,7 @@ export class PostsService {
           "writing-mode": [new RegExp(".*")],
         },
       },
+      allowVulnerableTags: true,
     });
     // we remove stuff like script tags. we only allow certain stuff.
     const parsedAsHTML = this.parser.parseFromString(sanitized, "text/html");
@@ -1077,7 +1079,7 @@ export class PostsService {
   }
 
   emojiToHtml(emoji: Emoji): string {
-    return `<img class="post-emoji" loading="lazy" src="${`${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${emoji.uuid}`}" title="${emoji.name
+    return `<img class="post-emoji" loading="lazy" src="${`${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${emoji.uuid}`}" title="${emoji.name
       }" alt="${emoji.name}">`;
   }
 
