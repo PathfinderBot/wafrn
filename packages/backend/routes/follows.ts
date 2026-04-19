@@ -12,8 +12,8 @@ import {  } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import {  } from '../utils/cacheGetters/getMutedPosts.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 
 export default function followsRoutes(app: Application) {
   // TODO refactor? It works, but I have a few res.send and thats not nice!
@@ -47,7 +47,6 @@ export default function followsRoutes(app: Application) {
             await follow(posterId, req.body.userId, res, followResult)
             await forceUpdateCacheDidsAtThread({
               addFollowedDid: userToBeFollowed.bskyDid as string,
-              addFollowedId: userToBeFollowed.id
             })
             return res.send({ success: true })
           } else {
