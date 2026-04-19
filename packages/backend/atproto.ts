@@ -6,6 +6,7 @@ import { completeEnvironment } from "./utils/backendOptions.js";
 import { redisCache } from "./utils/redis.js";
 import { forceUpdateDidsCacheQueue } from "./interfaces/atproto/forceUpdateDidsCacheUpdate.js";
 import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_DIDS_CACHE_KEY } from "./constants.js";
+import { forcePopulateCache } from "./atproto/cache/forcePopulateCache.js";
 
 //const firehose = new Firehose(`wss://bolson.bsky.dev`);
 
@@ -22,9 +23,9 @@ if (cursorCache) {
   }
 }
 
-const cacheLoaded = await redisCache.exists('cache:atprotoDids')
+const cacheLoaded = await redisCache.exists(LOCAL_USER_DIDS_CACHE_KEY)
 if(!cacheLoaded) {
-  console.log('NO CACHE')
+  await forcePopulateCache()
 }
 const jetstream = new Jetstream({
   endpoint: completeEnvironment.bskyJetstreamUrl,
