@@ -86,7 +86,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.2.0",
     "htmlparser2": "^9.0.0",
-    "ioredis": "^5.3.2",
+    "ioredis": "^5.10.1",
     "isomorphic-dompurify": "^2.7.0",
     "jsonld": "^8.3.2",
     "jsonwebtoken": "^9.0.0",
