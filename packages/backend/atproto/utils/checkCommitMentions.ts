@@ -69,8 +69,7 @@ async function checkCommitMentions(
     const followedUser = commit.collection.startsWith('app.bsky.graph.follow') ? record?.subject : ''
 
     if (
-      await redisCache.sismember('cache:didsToCheck', did) ||
-      (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [likedPostUri, followedUser])).some(elem => elem != 0)
+      (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [likedPostUri, followedUser])).some((elem: any) => elem != 0)
     ) {
       logger.debug('Saving follow')
       return true
@@ -86,7 +85,7 @@ async function checkCommitMentions(
     const rootDid = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
     const parentDid = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
     // we check if root or parent are local users
-    if((await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [rootDid, parentDid] )).some(elem => elem != 0)){
+    if((await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [rootDid, parentDid] )).some((elem: any) => elem != 0)){
       logger.debug(`Post is in reply to a post of a local user`)
       return true;
     }
