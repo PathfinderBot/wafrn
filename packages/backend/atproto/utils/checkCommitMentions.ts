@@ -67,11 +67,11 @@ async function checkCommitMentions(
       likedPostUri = likedPostUri.split('/')[2]
     }
     const followedUser = commit.collection.startsWith('app.bsky.graph.follow') ? record?.subject : ''
-
-    if (
-      (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [likedPostUri, followedUser])).some((elem: any) => elem != 0)
+    const toCheck = [likedPostUri, followedUser].filter(elem => !!elem)
+    if ( toCheck.length && 
+      (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, toCheck)).some((elem: any) => elem != 0)
     ) {
-      logger.debug('Saving follow')
+      logger.debug('Saving follow or like')
       return true
     }
   }
