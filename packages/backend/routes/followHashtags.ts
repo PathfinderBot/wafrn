@@ -22,7 +22,7 @@ function followHashtagRoutes(app: Application) {
     if (!success) {
       res.status(400)
     }
-    await forceUpdateCacheDidsAtThread()
+    await forceUpdateCacheDidsAtThread({addFollowedHashtag: req.body.hashtag.toLowerCase()})
 
     res.send({ success: success })
   })
@@ -42,7 +42,7 @@ function followHashtagRoutes(app: Application) {
     if (!success) {
       res.status(400)
     }
-    await forceUpdateCacheDidsAtThread()
+    await forceUpdateCacheDidsAtThread({})
     res.send({ success: success })
   })
 

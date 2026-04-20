@@ -91,8 +91,11 @@ export interface PostAttributes {
   likeControl?: InteractionControlType
   reblogControl?: InteractionControlType
   quoteControl?: InteractionControlType
-  displayUrl: String | null
-  detached?: boolean
+  displayUrl: string | null
+  detached?: boolean,
+  //rootId?: string,
+  isBskyExclusive?: boolean,
+  isReply?: boolean
 }
 
 @Table({
@@ -181,6 +184,20 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     type: DataType.BOOLEAN,
     defaultValue: false
   })
+  declare isReply: boolean
+
+  @Column({
+    allowNull: true,
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
+  declare isBskyExclusive: boolean
+
+  @Column({
+    allowNull: true,
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
   declare isDeleted: boolean
 
   @ForeignKey(() => User)
@@ -208,6 +225,15 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     type: DataType.UUID
   })
   declare parentId: string
+
+
+  // @ForeignKey(() => Post)
+  // @Column({
+  //   allowNull: true,
+  //   type: DataType.UUID
+  // })
+  // declare rootId: string
+
 
   @Column({
     allowNull: true,
@@ -248,6 +274,13 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   declare parent: Post;
   declare getParent: BelongsToGetAssociationMixin<Post>;
   declare setParent: BelongsToSetAssociationMixin<Post, string>;
+
+
+  // @BelongsTo(() => Post, "rootId")
+  // declare root: Post;
+  // declare getRoot: BelongsToGetAssociationMixin<Post>;
+  // declare setRoot: BelongsToSetAssociationMixin<Post, string>;
+
 
   @HasMany(() => Post, 'parentId')
   declare children: Post[]

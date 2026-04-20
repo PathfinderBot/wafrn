@@ -596,6 +596,8 @@ async function getPostThreadRecursive(
             user,
             postPetition.inReplyTo.id ? postPetition.inReplyTo.id : postPetition.inReplyTo
           )
+          postToCreate.isReply = parent ? parent.isReply || parent.userId != postToCreate.userId : false
+          postToCreate.isBskyExclusive = false
           postToCreate.parentId = parent?.id
         }
 

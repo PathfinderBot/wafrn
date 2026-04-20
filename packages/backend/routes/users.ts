@@ -52,7 +52,7 @@ import { acceptRemoteFollow } from '../utils/activitypub/acceptRemoteFollow.js'
 import showdown from 'showdown'
 import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from '@atproto/api'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { forceUpdateCacheDidsAtThread, getCacheAtDids } from '../atproto/cache/getCacheAtDids.js'
+import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 import dompurify from 'isomorphic-dompurify'
 import { Queue } from 'bullmq'
 import * as OTPAuth from 'otpauth'
@@ -1548,7 +1548,9 @@ function userRoutes(app: Application) {
             })
           }
           await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
-          await forceUpdateCacheDidsAtThread()
+          await forceUpdateCacheDidsAtThread({
+            addLocalUserDid: newDid
+          })
           await redisCache.del('bskySession:' + user.id)
           await updateUserDidDoc(user)
           return res.send({ success: true })
@@ -1911,8 +1913,6 @@ It is slow because we have to send every fedi server that has ever seen a post o
 
 async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
-    await forceUpdateCacheDidsAtThread()
-    await getCacheAtDids(true)
     await updateUserDidDoc(user)
     let pronouns: string | undefined
     let website: string | undefined

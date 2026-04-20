@@ -25,20 +25,23 @@ const mergeUsersQueue = new Queue("mergeUsers", {
 });
 
 async function forcePopulateUsers(dids: string[], localUser: User) {
-  const userFounds = await User.findAll({
-    where: {
-      bskyDid: {
-        [Op.in]: dids,
+  try {
+    const userFounds = await User.findAll({
+      where: {
+        bskyDid: {
+          [Op.in]: dids,
+        },
       },
-    },
-  });
-  const foundUsersDids = userFounds.map((elem) => elem.bskyDid);
-  const notFoundUsers = dids.filter((elem) => !foundUsersDids.includes(elem));
-  if (notFoundUsers.length > 0) {
-    for await (const did of notFoundUsers) {
-      await getAtprotoUser(did);
+    });
+    const foundUsersDids = userFounds.map((elem) => elem.bskyDid);
+    const notFoundUsers = dids.filter((elem) => !foundUsersDids.includes(elem));
+    if (notFoundUsers.length > 0) {
+      for await (const did of notFoundUsers) {
+        await getAtprotoUser(did);
+      }
     }
-  }
+  } catch(error: any){}
+  
 }
 
 async function getAtprotoUser(

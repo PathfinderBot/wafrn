@@ -1,11 +1,12 @@
-import { Firehose } from "@skyware/firehose";
 import { Jetstream } from "@skyware/jetstream";
-import { getCacheAtDids } from "./atproto/cache/getCacheAtDids.js";
 import { Job, Queue, Worker } from "bullmq";
 import { checkCommitMentions } from "./atproto/utils/checkCommitMentions.js";
 import { logger } from "./utils/logger.js";
 import { completeEnvironment } from "./utils/backendOptions.js";
 import { redisCache } from "./utils/redis.js";
+import { forceUpdateDidsCacheQueue } from "./interfaces/atproto/forceUpdateDidsCacheUpdate.js";
+import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_DIDS_CACHE_KEY } from "./constants.js";
+import { forcePopulateCache } from "./atproto/cache/forcePopulateCache.js";
 
 //const firehose = new Firehose(`wss://bolson.bsky.dev`);
 
@@ -14,14 +15,18 @@ let cursor = new Date().getTime();
 if (cursorCache) {
   try {
     cursor = new Date(cursorCache).getTime();
-  } catch (error) {}
+  } catch (error) {
+    logger.warn({
+      message: `Error starting the jetstream`,
+      error: error
+    })
+  }
 }
 
-let cachedDids = await getCacheAtDids(true);
-// const firehose = new Firehose({
-//   relay: `wss://atproto.africa`
-// })
-
+const cacheLoaded = await redisCache.exists(LOCAL_USER_DIDS_CACHE_KEY)
+if(!cacheLoaded) {
+  await forcePopulateCache()
+}
 const jetstream = new Jetstream({
   endpoint: completeEnvironment.bskyJetstreamUrl,
   wantedCollections: [
@@ -48,14 +53,20 @@ const firehoseQueue = new Queue("firehoseQueue", {
   },
 });
 
+const lowPriorityFirehoseQueue = new Queue("lowPriorityFirehoseQueue", {
+  connection: completeEnvironment.bullmqConnection,
+  defaultJobOptions: {
+    removeOnComplete: true,
+    attempts: 2,
+    removeOnFail: true,
+  },
+});
+
 jetstream.on("commit", async (event) => {
-  const cacheData = cachedDids;
   const commit = event.commit;
 
   if (
-    cacheData.followedDids.has(event.did) ||
-    checkCommitMentions(event.did, commit, cacheData) ||
-    commit.collection === "net.wafrn.feed.bite"
+    await checkCommitMentions(event.did, commit)
   ) {
     await redisCache.set("jetstreamCursor", event.time_us);
     const data = {
@@ -67,7 +78,11 @@ jetstream.on("commit", async (event) => {
         path: `${commit.collection}/${commit.rkey}`,
       },
     };
-    await firehoseQueue.add("processFirehoseQueue", data);
+    if(commit.operation === 'delete' || ['app.bsky.graph.follow', 'app.bsky.feed.like'].includes(commit.collection)) {
+      await lowPriorityFirehoseQueue.add("lowPriorityFirehoseQueue", data)
+    } else {
+      await firehoseQueue.add("processFirehoseQueue", data);
+    }
   }
 });
 
@@ -83,9 +98,16 @@ jetstream.start();
 const workerForceUpdateAtDidCache = new Worker(
   "forceUpdateDids",
   async (job: Job) => {
-    logger.info(`Atproto force update of dids`);
-    const tmp = await getCacheAtDids(true);
-    cachedDids = tmp;
+    const data = job.data as forceUpdateDidsCacheQueue;
+    if(data?.addFollowedDid) {
+      await redisCache.sadd(FOLLOWED_BSKY_DIDS_CACHE_KEY, data.addFollowedDid)
+    }
+    if(data?.addLocalUserDid) {
+      await redisCache.sadd(LOCAL_USER_DIDS_CACHE_KEY, data.addLocalUserDid)
+    }
+    if(data?.addFollowedHashtag) {
+      await redisCache.sadd(FOLLOWED_HASHTAGS_CACHE_KEY, data.addFollowedHashtag.toLowerCase().trim())
+    }
   },
   {
     connection: completeEnvironment.bullmqConnection,

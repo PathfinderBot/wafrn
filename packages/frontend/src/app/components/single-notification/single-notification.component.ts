@@ -50,7 +50,7 @@ export class SingleNotificationComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.notification.emojiReact) {
-      this.emojiUrl = `${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${this.notification.emojiReact.uuid}`;
+      this.emojiUrl = `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${this.notification.emojiReact.uuid}`;
     }
   }
 }

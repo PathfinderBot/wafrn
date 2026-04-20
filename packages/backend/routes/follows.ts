@@ -12,8 +12,8 @@ import {  } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import {  } from '../utils/cacheGetters/getMutedPosts.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { forceUpdateCacheDidsAtThread, getCacheAtDids } from '../atproto/cache/getCacheAtDids.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 
 export default function followsRoutes(app: Application) {
   // TODO refactor? It works, but I have a few res.send and thats not nice!
@@ -45,8 +45,9 @@ export default function followsRoutes(app: Application) {
           const followResult = (await agent.follow(userToBeFollowed.bskyDid as string)) as any
           if (followResult.validationStatus == 'valid') {
             await follow(posterId, req.body.userId, res, followResult)
-            await forceUpdateCacheDidsAtThread()
-            await getCacheAtDids(true)
+            await forceUpdateCacheDidsAtThread({
+              addFollowedDid: userToBeFollowed.bskyDid as string,
+            })
             return res.send({ success: true })
           } else {
             return res.sendStatus(500)
@@ -109,8 +110,8 @@ export default function followsRoutes(app: Application) {
             if (user) {
               const agent = await getAtProtoSession(user)
               await agent.deleteFollow(follow.bskyUri)
-              await forceUpdateCacheDidsAtThread()
-              await getCacheAtDids(true)
+              // we rather follow too many than not enough for a bit, cache will do the rest
+              await forceUpdateCacheDidsAtThread({})
             }
           }
           userUnfollowed.removeFollower(posterId)

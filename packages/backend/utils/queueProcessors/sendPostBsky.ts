@@ -7,6 +7,8 @@ import { postToAtproto } from '../../atproto/utils/postToAtproto.js'
 import { wait } from '../wait.js'
 import { logger } from '../logger.js'
 import { AtUri } from '@atproto/api'
+import { redisBloom } from '../redis.js'
+import { ROOT_REPLIED_POSTS } from '../../constants.js'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
@@ -53,6 +55,9 @@ async function sendPostBsky(job: Job) {
           if (!isReblog) {
             let agent = await getAtProtoSession(localUser)
             const atProtoObject = await postToAtproto(post, agent)
+            if(atProtoObject.reply?.root) {
+              await redisBloom.add(ROOT_REPLIED_POSTS, atProtoObject.reply.root)
+            }
             const bskyPost = await agent.post(atProtoObject)
             const {rkey} = new AtUri(bskyPost.uri)
             if(bskyPost && agent.session && post.quoteControl != InteractionControl.Anyone) {

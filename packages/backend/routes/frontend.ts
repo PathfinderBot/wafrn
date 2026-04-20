@@ -383,9 +383,9 @@ async function getPostSEOCache(id: string): Promise<MetaTagOptions & { content?:
       65
     )
 
-  // Description cut to 190 characters
+  // Description cut to 300 characters
   if (post.content_warning) {
-    res.description = `Post has content warning: ${sanitizeStringForSEO(post.content_warning)}`.substring(0, 190)
+    res.description = `Post has content warning: ${sanitizeStringForSEO(post.content_warning)}`.substring(0, 300)
   } else {
     const contentSanitized = sanitizeStringForSEO(post.content)
 
@@ -434,7 +434,7 @@ async function getPostSEOCache(id: string): Promise<MetaTagOptions & { content?:
       }
     }
 
-    res.description = `${contentSanitized}${quotedPostContent}${askedPostContent}`.substring(0, 190)
+    res.description = `${contentSanitized}${quotedPostContent}${askedPostContent}`.substring(0, 300)
   }
 
   const safeMedia = post.medias.filter((media) => media.NSFW === false)

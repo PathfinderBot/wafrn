@@ -64,7 +64,7 @@ export class EmojiReactComponent {
       // Play emoji
       const emojiIsImage = emoji.url !== "";
       if (emojiIsImage) {
-        const fullUrl = `${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${emoji.uuid}`;
+        const fullUrl = `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${emoji.uuid}`;
         this.particle.imageReact(fullUrl);
       } else {
         this.particle.emojiReact(emoji.name);
