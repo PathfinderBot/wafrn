@@ -8,7 +8,6 @@ import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_D
 
 export const up: Migration = async (params) => {
   const queryInterface = params.context;
-  redisBloom.reserve(ROOT_REPLIED_POSTS, 0.01, 1000000)
   // lets get all dids that are followed and all the local dids
   const localUserDidsQuery = (await queryInterface.sequelize.query(`SELECT "bskyDid" FROM "users" WHERE "email" IS NOT NULL and "bskyDid" IS NOT NULL`))[0].map((elem: any) => elem.bskyDid) as string[]
   await redisCache.sadd(LOCAL_USER_DIDS_CACHE_KEY,localUserDidsQuery)
