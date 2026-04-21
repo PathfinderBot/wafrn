@@ -135,7 +135,7 @@ services:
     ports:
       - 80:80
       - 443:443
-    env:
+    environment:
       ACME_EMAIL: ${ACME_EMAIL}
       ADMINER_HOST: ${ADMINER_HOST:-adminer:8080}
       CACHE_DOMAIN: ${CACHE_DOMAIN}
