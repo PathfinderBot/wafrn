@@ -1,38 +1,36 @@
-import { ParsedCommit } from '@skyware/firehose'
-import { Post } from '../../models/index.js'
-import { Op, Sequelize } from 'sequelize'
-import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
 import { RichText } from '@atproto/api'
 import { getQuotedPostUri } from './getAtProtoThread.js'
 import { PostView } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
-import { Commit, Collection, CommitBase, CommitType, CommitCreate } from '@skyware/jetstream'
+import { Commit, CommitType, CommitCreate } from '@skyware/jetstream'
+import { logger } from '../../utils/logger.js'
+import { redisCache, redisBloom } from '../../utils/redis.js'
+import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_DIDS_CACHE_KEY, ROOT_REPLIED_POSTS } from '../../constants.js'
 
 // Preemptive checks to see if
-function checkCommitMentions(
+async function checkCommitMentions(
   did: string,
   commit: Commit<"app.bsky.feed.threadgate" | "app.bsky.feed.like" | "app.bsky.feed.post" | "app.bsky.feed.repost" | "app.bsky.graph.block" | "app.bsky.graph.follow" | "net.wafrn.feed.bite">,
-  cacheData: {
-    followedDids: Set<string>
-    localUserDids: Set<string>
-    followedUsersLocalIds: Set<string>
-    followedHashtags: Set<string>
-  }
-): boolean {
+): Promise<boolean> {
   let res = false
   let record = (commit as any).record
 
 
   if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete'){
+    logger.debug('Delete post automatic accept')
     return true;
   }
-  const didsToCheck = cacheData.followedDids
+
+  if(await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, did)) {
+    logger.debug('Post by followed user')
+    return true;
+  }
   let quotedPostUri: string | undefined = undefined
   if (
       commit.operation === CommitType.Create &&
       commit.collection.startsWith('app.bsky.feed.post') &&
       (commit.record as any)?.facets
     ) {
-      const mentions = record?.facets
+      const mentions: string[] = record?.facets
         .flatMap((elem: any) => elem.features)
         .map((elem: any) => elem.did)
         .filter((elem: any) => elem)
@@ -45,15 +43,14 @@ function checkCommitMentions(
           text: record.text,
           facets: record.facets
         })
-        let tags = rt.segments().filter((elem) => elem.isTag())
-        if (tags && tags.some((tag) => cacheData.followedHashtags.has(tag.text.substring(1).toLowerCase()))) {
-          res = true
-          return true
+        const tags = Array.from(rt.segments().filter((elem) => elem.isTag() && elem.text).map(elem => elem.text.toLowerCase().toString().trim()))
+        if(tags && tags.length && (await redisCache.smismember(FOLLOWED_HASHTAGS_CACHE_KEY, tags )).some(elem => elem != 0)) {
+          logger.debug('Post contains followed hashtag')
+          return true;
         }
       }
-
-      if (mentions && mentions.length && mentions.some((mention: string) => cacheData.localUserDids.has(mention))) {
-        res = true
+      if(mentions && mentions.length && (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, mentions)).some(elem => elem != 0)) {
+        logger.debug('Post contains a mention of a local user')
         return res
       }
     }
@@ -70,33 +67,39 @@ function checkCommitMentions(
       likedPostUri = likedPostUri.split('/')[2]
     }
     const followedUser = commit.collection.startsWith('app.bsky.graph.follow') ? record?.subject : ''
-
-    if (
-      didsToCheck.has(did) ||
-      cacheData.localUserDids.has(likedPostUri) ||
-      cacheData.localUserDids.has(followedUser)
+    const toCheck = [likedPostUri, followedUser].filter(elem => !!elem)
+    if ( toCheck.length && 
+      (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, toCheck)).some((elem: any) => elem != 0)
     ) {
+      logger.debug('Saving follow or like')
       return true
     }
   }
   // second one first approach: is post being replied on db? if so we store it.
   record = (commit as CommitCreate<"app.bsky.feed.post">).record
-  if (record && record.reply) {
-    const root = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
-    const parent = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
-    res =
-      cacheData.followedDids.has(root) || cacheData.followedDids.has(parent) ||
-      cacheData.localUserDids.has(root) || cacheData.followedDids.has(parent)
-
-    if (res) return res;
+  if (record && record.reply && await redisBloom.exists(ROOT_REPLIED_POSTS, record.reply.root.uri)) {
+    logger.debug('Post in reply to post that we know has been replied (bloom filter)')
+    return true
+  }
+  if(record && record.reply) {
+    const rootDid = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
+    const parentDid = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
+    // we check if root or parent are local users
+    if((await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [rootDid, parentDid] )).some((elem: any) => elem != 0)){
+      logger.debug(`Post is in reply to a post of a local user`)
+      return true;
+    }
   }
 
-  if (record && record.embed && (record.embed.$type === 'app.bsky.embed.record' || record.embed.$type === 'app.bsky.embed.recordWithMedia')) {
-    const uri = (record.embed.record as { uri: string | undefined }).uri?.replace('at://', '').split('/app.bsky.feed')[0] ?? ''
+  if (quotedPostUri) {
+    const quotedUserDid = quotedPostUri.replace('at://', '').split('/app.bsky.feed')[0] ?? ''
     res =
-      cacheData.followedDids.has(uri) || cacheData.localUserDids.has(uri)
+      await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, quotedUserDid ) != 0
 
-    if (res) return res;
+    if (res) {
+      logger.debug('Post quotes local user')
+
+      return res};
   }
 
   return res

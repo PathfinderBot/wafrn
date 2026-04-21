@@ -34,11 +34,15 @@
     import /etc/caddy/config/cache_domain_pre/* {$DOMAIN_NAME} {$CACHE_DOMAIN}
 
     handle /api/cache* {
-        reverse_proxy {$CACHE_HOST:-backend:9000}
+        reverse_proxy {$BACKEND_HOST:-backend:9000} {
+            lb_policy least_conn
+        }
     }
 
     handle /api/v2/cache/* {
-        reverse_proxy {$CACHE_HOST:-backend:9000}
+        reverse_proxy {$BACKEND_HOST:-backend:9000} {
+            lb_policy least_conn
+        }
     }
 
     import /etc/caddy/config/cache_domain_post/* {$DOMAIN_NAME} {$CACHE_DOMAIN}
@@ -63,7 +67,9 @@
     @api path /api* /fediverse* /contexts* /post* /blog* /.well-known*
 
     handle @api {
-        reverse_proxy {$BACKEND_HOST:-backend:9000}
+        reverse_proxy {$BACKEND_HOST:-backend:9000} {
+            lb_policy least_conn
+        }
     }
 
 
@@ -88,6 +94,10 @@ monitoring.{$DOMAIN_NAME} {
     reverse_proxy {$GRAFANA_HOST:-grafana:2345}
 
     import /etc/caddy/config/monitoring_domain_post/* {$DOMAIN_NAME}
+}
+
+bullboard.${{DOMAIN_NAME}} {
+    reverse_proxy ${{BULLBOARD_HOST:-bullboard:3000}}
 }
 
 {$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {

@@ -4,8 +4,8 @@ import { redisCache } from "../redis.js";
 import { completeEnvironment } from "../backendOptions.js";
 import getUserAgent from "../getUserAgent.js";
 
-async function getServerFromDid(did: string): Promise<string> {
-    const cacheRes = await redisCache.get('didServer:' + did)
+async function getServerFromDid(did: string, ignoreCache?: boolean): Promise<string> {
+    const cacheRes = ignoreCache ? null :await redisCache.get('didServer:' + did)
     if (cacheRes) {
         return cacheRes
     }

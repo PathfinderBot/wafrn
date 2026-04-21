@@ -15,20 +15,15 @@ export default async function processExternalCustomCss(userId: string, unprocess
     if (m[1]) {
       const linkMatch = m[1].replace(/['"]/gm, '')
       try {
-        const extMedia = await Media.findOrCreate({
-          where: {
-            url: linkMatch,
-          },
-          defaults: {
-            NSFW: false,
-            userId: userId,
-            description: "",
-            ipUpload: "MEDIA_FROM_CUSTOM_CSS_FROM_ANOTHER_INSTANCE",
-            external: true
-          }
+        const extMedia = await Media.create({
+          NSFW: false,
+          userId: userId,
+          description: "",
+          ipUpload: "MEDIA_FROM_CUSTOM_CSS_FROM_ANOTHER_INSTANCE",
+          external: true
         })
         processedCSS = processedCSS.replaceAll(linkMatch,
-          new URL('/api/v2/cache/media/' + extMedia[0].id, completeEnvironment.externalCacheurl).href
+          new URL('/api/v2/cache/media/' + extMedia.id, completeEnvironment.externalCacheurl).href
         )
       } catch {
         logger.error({ link: linkMatch }, "cannot media this")

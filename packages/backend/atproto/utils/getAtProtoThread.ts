@@ -33,7 +33,7 @@ import {
   RichText
 } from '@atproto/api'
 import { bulkCreateNotifications, createNotification } from '../../utils/pushNotifications.js'
-import { getAllLocalUserIds } from '../../utils/cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../../utils/cacheGetters/getAllLocalUserIds.js'
 import { InteractionControl, InteractionControlType, Privacy } from '../../models/post.js'
 import { wait } from '../../utils/wait.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
@@ -106,6 +106,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   let verifiedFedi: string | undefined
   const postPetitionPds = await getPostThreadPDSDirect(uri)
+  if(!postPetitionPds) {
+    return;
+  }
   const post = postPetitionPds?.value as AppBskyFeedPost.Main
   const parentUri = post?.reply?.parent?.uri ? post.reply.parent.uri : undefined
   let parentId: string | undefined = undefined
@@ -117,12 +120,6 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     logger.debug({
       error,
       message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
-    })
-  }
-  if (!postPetitionPds || !postPetitionPds.value) {
-    logger.debug({
-      message: `Petition without data: ${uri}`,
-      data: postPetitionPds
     })
   }
   if (
@@ -199,7 +196,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             remotePostId: null
           }
         })
-        if (existingPost && !(await getAllLocalUserIds()).includes(existingPost.userId)) {
+        if (existingPost && !(await getAllLocalUserIdsSet()).has(existingPost.userId)) {
           // very expensive updates! but only happens when user
           // searches existing post that is alr on db
           await EmojiReaction.update(
@@ -377,17 +374,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
   }
   if (!postCreator || !postPetitionPds) {
-    const usr = postCreator ? postCreator : await User.findOne({ where: { url: completeEnvironment.deletedUser } })
-
-    const invalidPost = await Post.create({
-      userId: usr?.id,
-      content: `Failed to get atproto post`,
-      parentId: parentId,
-      isDeleted: true,
-      createdAt: new Date(0),
-      updatedAt: new Date(0)
-    })
-    return invalidPost.id
+    return undefined
   }
   if (postCreator && post) {
     const medias = getPostMedias(postPetitionPds.uri, post)
@@ -455,6 +442,13 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if (createdAt.getTime() > new Date().getTime()) {
       createdAt = new Date()
     }
+
+    let isReply = false;
+    if(parentId) {
+      const parentPost = (await Post.findByPk(parentId)) as Post
+      isReply = parentPost.isReply || parentPost.userId != postCreator.id
+    }
+
     const newData = {
       userId: postCreator.id,
       bskyCid: postPetitionPds.cid,
@@ -464,22 +458,39 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...(await getPostInteractionLevels(uri, parentId))
+      ...(await getPostInteractionLevels(uri, parentId)),
+      isBskyExclusive: true, // TODO hmmm
+      isReply: isReply
     }
     if (!parentId) {
       delete newData.parentId
     }
 
-    if ((await getAllLocalUserIds()).includes(newData.userId) && !forceUpdate) {
-      // dirty as hell but this should stop the duplication
-      await wait(1500)
+    if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate) {
+      
+      const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
+      if(`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
+        // OH SHIT THIS USER IS NO LONGER IN WAFRN
+        const oldDid = postCreator.bskyDid
+        postCreator.bskyDid = null;
+        postCreator.enableBsky = false;
+        postCreator.alternateUrl = undefined
+        await postCreator.save();
+        postCreator = await getAtprotoUser(oldDid as string, {ignoreCache: true})
+      } else {
+        // await wait(1500)
+      }
     }
     const [postToProcess, created] = await Post.findOrCreate({
       where: { bskyUri: postPetitionPds.uri },
       defaults: newData
     })
+    // some linting issues sorry this one could be in other place but the linter complains about other part of the code (npm run type-check)
+    if(!postCreator) {
+      return;
+  }
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
-    if (!(await getAllLocalUserIds()).includes(postToProcess.userId) || created) {
+    if (!(await getAllLocalUserIdsSet()).has(postToProcess.userId) || created) {
       if (!created) {
         postToProcess.set(newData)
         await postToProcess.save()
@@ -594,7 +605,17 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     return postToProcess.id
   } else {
-    throw new Error(`Error obtaining user or pds petition: ${uri}`)
+    
+    if(!postPetitionPds) {
+      logger.error({
+      message: `Error obtaining user: ${uri}`,
+      error: {
+        postCreator: postCreator,
+        post: post
+      }
+    })
+      throw new Error(`Error obtaining user: ${uri}`)
+    }
   }
 }
 

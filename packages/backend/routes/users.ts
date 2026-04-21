@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Model, Op, UUIDV4 } from 'sequelize'
+import { Op } from 'sequelize'
 import {
   Ask,
   Blocks,
@@ -17,7 +17,6 @@ import {
   UserOptions
 } from '../models/index.js'
 import { adminToken, authenticateToken } from '../utils/authenticateToken.js'
-import escape from 'escape-html'
 import generateRandomString from '../utils/generateRandomString.js'
 import getIp from '../utils/getIP.js'
 import sendEmail from '../utils/sendEmail.js'
@@ -28,7 +27,7 @@ import { sequelize } from '../models/index.js'
 import * as cheerio from 'cheerio'
 import optimizeMedia from '../utils/optimizeMedia.js'
 import uploadHandler from '../utils/uploads.js'
-import { generateKeyPairSync, randomUUID } from 'crypto'
+import { randomUUID } from 'crypto'
 import { logger } from '../utils/logger.js'
 import {
   createAccountLimiter,
@@ -39,7 +38,6 @@ import {
 import fs from 'fs/promises'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
-import checkIpBlocked from '../utils/checkIpBlocked.js'
 import { redisCache } from '../utils/redis.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
@@ -54,24 +52,19 @@ import { acceptRemoteFollow } from '../utils/activitypub/acceptRemoteFollow.js'
 import showdown from 'showdown'
 import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from '@atproto/api'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { forceUpdateCacheDidsAtThread, getCacheAtDids } from '../atproto/cache/getCacheAtDids.js'
+import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 import dompurify from 'isomorphic-dompurify'
 import { Queue } from 'bullmq'
 import * as OTPAuth from 'otpauth'
 import verifyTotp from '../utils/verifyTotp.js'
-import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
-import { isArray } from 'underscore'
 import { follow } from '../utils/follow.js'
-import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
 import { getFollowedHashtags } from '../utils/getFollowedHashtags.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { sendUpdateProfile } from '../utils/activitypub/sendUpdateProfile.js'
 import axios from 'axios'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
-import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
-import { syncBskyFollowersAndFollowing } from '../utils/atproto/syncBskyFollowersAndFollowing.js'
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
-import { Record } from '@atproto/api/dist/client/types/app/bsky/feed/threadgate.js'
 import { SelfLabels } from '@atproto/api/dist/client/types/com/atproto/label/defs.js'
 import { InviteCode } from '../models/inviteCode.js'
 import { isAdult } from '../utils/isAdult.js'
@@ -80,6 +73,7 @@ import { getRemoteActor } from '../utils/activitypub/getRemoteActor.js'
 import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
 import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
+import { syncBskyAccountData } from '../utils/atproto/syncBskyAccountData.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -1336,6 +1330,7 @@ function userRoutes(app: Application) {
             identifier: user.bskyDid,
             password: password
           })
+          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
         } catch (error) {
           logger.error({
             message: `Failed to update bsky account password for user ${user.url}`,
@@ -1357,7 +1352,6 @@ function userRoutes(app: Application) {
             message: `Contact the administrator: no master invite code available`
           })
         }
-
         await createBskyAccount({
           agent,
           user,
@@ -1485,14 +1479,14 @@ function userRoutes(app: Application) {
     }
     const pasword = req.body.password
     if (user && bskyUrl && pasword) {
-      const localIds = await getAllLocalUserIds()
+      const localIds = await getAllLocalUserIdsSet()
       const bskyUser = await getAtprotoUser(bskyUrl, { ignoreCache: true })
       if (bskyUser && bskyUser.url === user.url) {
         return res.send({
           success: true
         })
       }
-      if (bskyUser && bskyUser.bskyDid && !localIds.includes(bskyUser.id)) {
+      if (bskyUser && bskyUser.bskyDid && !localIds.has(bskyUser.id)) {
         const serviceUrl = completeEnvironment.bskyPds.startsWith('http')
           ? completeEnvironment.bskyPds
           : 'https://' + completeEnvironment.bskyPds
@@ -1553,8 +1547,10 @@ function userRoutes(app: Application) {
               error: 'Failed to connect bluesky account. Please try again.'
             })
           }
-          await syncBskyFollowersAndFollowing(user.id)
-          await forceUpdateCacheDidsAtThread()
+          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
+          await forceUpdateCacheDidsAtThread({
+            addLocalUserDid: newDid
+          })
           await redisCache.del('bskySession:' + user.id)
           await updateUserDidDoc(user)
           return res.send({ success: true })
@@ -1917,8 +1913,6 @@ It is slow because we have to send every fedi server that has ever seen a post o
 
 async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
-    await forceUpdateCacheDidsAtThread()
-    await getCacheAtDids(true)
     await updateUserDidDoc(user)
     let pronouns: string | undefined
     let website: string | undefined

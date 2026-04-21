@@ -2,7 +2,7 @@ import { Op } from 'sequelize'
 import { User } from '../../models/index.js'
 import { Follows } from '../../models/follows.js'
 import { v4 as uuidv4 } from 'uuid'
-import { appendFileSync, createWriteStream, writeFileSync } from 'fs'
+import { appendFileSync, writeFileSync } from 'fs'
 import { completeEnvironment } from '../backendOptions.js'
 
 const localUser = await User.findOne({

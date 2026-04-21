@@ -48,7 +48,7 @@ export class WafrnMediaComponent implements OnInit, AfterViewInit {
   ];
   readonly tmpUrl = computed<string>(
     () =>
-      EnvironmentService.environment.cacheDomain +
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) +
       "/api/v2/cache/media/" +
       this.data().id
   );

@@ -148,7 +148,7 @@ export class ViewBlogComponent
 
   private getAvatarUrl(blogDetails: BlogDetails): string {
     return (
-      EnvironmentService.environment.cacheDomain +
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) +
       "/api/v2/cache/avatar/" +
       blogDetails.id
     );
@@ -294,7 +294,7 @@ export class ViewBlogComponent
     if(!featured){
       this.loading.set(false);
     }
-    if (tmpPosts.length === 0) {
+    if (tmpPosts.length === 0 && !featured) {
       this.noMorePosts = true;
     }
     this.cdr.detectChanges();

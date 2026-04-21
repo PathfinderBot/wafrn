@@ -16,7 +16,6 @@ import { Op, Model } from 'sequelize'
 import { logger } from '../../utils/logger.js'
 import { DeleteOp, RepoOp } from '@skyware/firehose'
 import { processSinglePost } from '../utils/getAtProtoThread.js'
-import { getCacheAtDids } from '../cache/getCacheAtDids.js'
 import { deletePostCommon } from '../../utils/deletePost.js'
 import { redisCache } from '../../utils/redis.js'
 import { likePostRemote } from '../../utils/activitypub/likePost.js'
@@ -25,6 +24,7 @@ import { Privacy } from '../../models/post.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { wait } from '../../utils/wait.js'
 import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
+import { FOLLOWED_BSKY_DIDS_CACHE_KEY } from '../../constants.js'
 
 const adminUser = getAdminUser()
 async function processFirehose(job: Job) {
@@ -93,7 +93,7 @@ async function processFirehose(job: Job) {
             let user = undefined
             let likedPostId = undefined
             try {
-              if ((await getCacheAtDids()).followedDids.has(job.data.repo)) {
+              if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, job.data.repo )) {
                 const postLikedUri = record.subject.uri
                 const postId = await processSinglePost(postLikedUri)
                 if (postId) {

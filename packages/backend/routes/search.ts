@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op, col, where, Sequelize } from 'sequelize'
+import { Op } from 'sequelize'
 import { Emoji, Post, PostTag, User, UserEmojiRelation } from '../models/index.js'
 import { sequelize } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
@@ -7,8 +7,6 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 import { searchRemoteUser } from '../utils/activitypub/searchRemoteUser.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getPostThreadRecursive } from '../utils/activitypub/getPostThreadRecursive.js'
-import checkIpBlocked from '../utils/checkIpBlocked.js'
-import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getUnjointedPosts } from '../utils/baseQueryNew.js'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
@@ -89,14 +87,14 @@ export default function searchRoutes(app: Application) {
                 urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
                 urlString.split('/profile/')[1].split('/post/')
               let bskyProfile = profileAndPost[0]
-              let bskyUri = profileAndPost[1]
+              const bskyUri = profileAndPost[1]
               if (!bskyProfile.startsWith('did:')) {
-                let profileToGet = await getAtprotoUser(`${bskyProfile}`)
+                const profileToGet = await getAtprotoUser(`${bskyProfile}`)
                 if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
             }
             uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
           } 
-            let bskyPostId = await processSinglePost(uri, true)
+            const bskyPostId = await processSinglePost(uri, true)
             if (bskyPostId) {
               postsIds = [bskyPostId]
             }
@@ -261,7 +259,7 @@ export default function searchRoutes(app: Application) {
     }
     res = res.concat(await localUsers)
     if ((await remoteUsers) && (await remoteUsers).length >= 1) {
-      let tmpRemote = await remoteUsers
+      const tmpRemote = await remoteUsers
       res = res.concat(tmpRemote as User[])
     }
     // we want to check that we dont get duplicated users

@@ -42,7 +42,7 @@ import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import escapeHTML from 'escape-html'
 import { wait } from '../wait.js'
 import { canInteract } from '../baseQueryNew.js'
-import { getAllLocalUserIds } from '../cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
 
 const updateMediaDataQueue = new Queue('processRemoteMediaData', {
   connection: completeEnvironment.bullmqConnection,
@@ -134,7 +134,7 @@ async function getPostThreadRecursive(
       const bskyVersionId = await processSinglePost(uri, false)
       if (bskyVersionId) {
         const bskyVersion = (await Post.findByPk(bskyVersionId)) as Post
-        if (!bskyVersion.remotePostId && !(await getAllLocalUserIds()).includes(bskyVersion.userId)) {
+        if (!bskyVersion.remotePostId && !(await getAllLocalUserIdsSet()).has(bskyVersion.userId)) {
           // we have the bsky post in the db, it is not from a local user
           const localPostWithExistingremoteId = await Post.findOne({
             where: {
@@ -512,12 +512,7 @@ async function getPostThreadRecursive(
                   connection: completeEnvironment.bullmqConnection,
                   defaultJobOptions: {
                     removeOnComplete: true,
-                    attempts: 6,
-                    backoff: {
-                      type: 'exponential',
-                      delay: 2500
-                    },
-                    removeOnFail: false
+                    removeOnFail: true
                   }
                 })
                 processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })
@@ -601,6 +596,8 @@ async function getPostThreadRecursive(
             user,
             postPetition.inReplyTo.id ? postPetition.inReplyTo.id : postPetition.inReplyTo
           )
+          postToCreate.isReply = parent ? parent.isReply || parent.userId != postToCreate.userId : false
+          postToCreate.isBskyExclusive = false
           postToCreate.parentId = parent?.id
         }
 
@@ -732,7 +729,7 @@ async function getPostThreadRecursive(
           if (parent?.detached) {
             detachedReply = true
           }
-          if (!detachedReply && parent && (await getAllLocalUserIds()).includes(parent.userId)) {
+          if (!detachedReply && parent && (await getAllLocalUserIdsSet()).has(parent.userId)) {
             detachedReply = !(await canInteract(parent.replyControl, newPost.userId, parent.id))
           }
           if (detachedReply) {

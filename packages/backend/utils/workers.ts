@@ -18,6 +18,8 @@ import { mergeUser } from './queueProcessors/mergeUser.js'
 import { mergePost } from './queueProcessors/mergePost.js'
 import { fetchFediThread } from './queueProcessors/fetchFediThread.js'
 import { downloadMedia } from './queueProcessors/downloadMedia.js'
+import { syncBskyFollowsJob } from './queueProcessors/syncBskyFollows.js'
+import { syncBskyPosts } from './queueProcessors/syncBskyPosts.js'
 
 logger.info('started worker')
 const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
@@ -25,7 +27,7 @@ const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.low
+  concurrency: completeEnvironment.workers.high
 })
 
 const workerPrepareSendPost = new Worker('prepareSendPost', (job: Job) => prepareSendRemotePostWorker(job), {
@@ -132,8 +134,17 @@ const workerProcessFirehose = completeEnvironment.enableBsky
         maxDataPoints: MetricsTime.ONE_WEEK * 2
       },
       concurrency: completeEnvironment.workers.high,
-      // up to one minute
-      lockDuration: 60000
+    })
+  : null
+
+  
+const lowPriorityFirehoseQueue = completeEnvironment.enableBsky
+  ? new Worker('lowPriorityFirehoseQueue', async (job: Job) => await processFirehose(job), {
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2
+      },
+      concurrency: completeEnvironment.workers.medium,
     })
   : null
 
@@ -155,8 +166,6 @@ const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) =
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
   concurrency: completeEnvironment.workers.high,
-  // up to one minute
-  lockDuration: 60000
 })
 
 const workerSendPushNotification = new Worker(
@@ -205,6 +214,22 @@ const workerDownloadMedia = new Worker('downloadMedia', async (job: Job) => awai
   lockDuration: 10000
 })
 
+const workerSyncBskyFollows = new Worker('syncBskyFollows', (job: Job) => syncBskyFollowsJob(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.low,
+})
+
+const workerSyncBskyPosts = new Worker('syncBskyPosts', (job: Job) => syncBskyPosts(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.low,
+})
+
 const workers = [
   workerInbox,
   workerDeletePost,
@@ -221,12 +246,15 @@ const workers = [
   workerMergeUsers,
   workerMergePost,
   workerFetchFediTrhead,
-  workerDownloadMedia
+  workerDownloadMedia,
+  workerSyncBskyFollows,
+  workerSyncBskyPosts
 ]
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
   workers.push(workerProcessSinglePost as Worker)
   workers.push(workerSendPostBsky as Worker)
+  workers.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workers.forEach((worker) => {
@@ -256,11 +284,14 @@ const workersToLogFail = [
   workerFollow,
   workerMergeUsers,
   workerMergePost,
+  workerSyncBskyFollows,
+  workerSyncBskyPosts
 ]
 if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
   workersToLogFail.push(workerProcessSinglePost as Worker)
   workersToLogFail.push(workerSendPostBsky as Worker)
+  workersToLogFail.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workersToLogFail.forEach((worker) =>
@@ -289,5 +320,8 @@ export {
   workerMergeUsers,
   workerMergePost,
   workerFetchFediTrhead,
-  workerDownloadMedia
+  workerDownloadMedia,
+  workerSyncBskyFollows,
+  workerSyncBskyPosts,
+  lowPriorityFirehoseQueue
 }

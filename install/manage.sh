@@ -119,6 +119,7 @@ case $1 in
     pushd "$BACKUP_DIR"
       echo "Backing up database"
       docker start wafrn-db-1
+      sleep 5
       docker exec wafrn-db-1 pg_dumpall -c | zstd -9 > db.sql.zst
       echo "Backing up uploads folder"
       tar --zstd -cf uploads.tar.zst -C "$SCRIPT_DIR/../packages/backend/uploads" .
@@ -143,7 +144,10 @@ case $1 in
       pushd "$RESTORE_DIR"
         echo "Restoring database"
         docker start wafrn-db-1
+        echo "waiting 10 seconds for the database to start"
+        sleep 10
         zstdcat db.sql.zst | docker exec -i wafrn-db-1 psql -X -f - -d postgres
+        echo "VACUUM ANALYZE" | docker exec -i wafrn-db-1 psql -X -f - -d postgres
         echo "Restoring uploads directory"
         rm -rf "$SCRIPT_DIR/../packages/backend/uploads" && mkdir "$SCRIPT_DIR/../packages/backend/uploads"
         tar --zstd -xf uploads.tar.zst -C "$SCRIPT_DIR/../packages/backend/uploads"

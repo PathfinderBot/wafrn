@@ -2,7 +2,7 @@ import { Expo, type ExpoPushErrorTicket } from 'expo-server-sdk'
 import { logger } from './logger.js'
 import { Notification, PushNotificationToken } from '../models/index.js'
 import { Queue } from 'bullmq'
-import { getAllLocalUserIds, getAllLocalUserIdsSet } from './cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIdsSet } from './cacheGetters/getAllLocalUserIds.js'
 import dompurify from 'isomorphic-dompurify'
 import { completeEnvironment } from './backendOptions.js'
 

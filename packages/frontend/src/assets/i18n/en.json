@@ -417,6 +417,8 @@
     "disableRewootsExploreLocal": "Disable rewoots in Explore local feed",
     "disableRewootsDashboard": "Disable rewoots in Dashboard",
     "disableReplies": "Disable replies in feeds",
+    "disableBsky": "Disable bsky posts in feeds",
+    "forceReducedMotion": "Reduced motion: epilepsy safe html for posts and disable custom user themes",
     "mutedWords": "Muted words",
     "mutedWordsDescription": "One word per line. Woots with these phrases will be placed behind a CW.",
     "superMutedWords": "Blocked words",
