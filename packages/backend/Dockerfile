@@ -21,6 +21,8 @@ RUN npm install
 # copy the rest of the files
 COPY packages/backend .
 
+COPY .env .
+
 # create log folder early to prevent node err: cannot open logs/*.log
 RUN mkdir -p logs
 

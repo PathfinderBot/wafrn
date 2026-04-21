@@ -78,7 +78,7 @@ export const baseEnvironment: Environment = {
     targets: [
       {
         target: "pino/file",
-        level: 'trace',
+        level: 'debug',
         options: {
           destination: 1, // set to 1 to log to stdout
         },
