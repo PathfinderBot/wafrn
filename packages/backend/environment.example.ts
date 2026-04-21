@@ -1,4 +1,6 @@
+import process from "node:process";
 import { Environment } from "./interfaces/environment.js";
+import { Buffer } from "node:buffer";
 
 export const baseEnvironment: Environment = {
   prod: true,
