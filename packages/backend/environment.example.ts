@@ -78,9 +78,9 @@ export const baseEnvironment: Environment = {
     targets: [
       {
         target: "pino/file",
-        level: process.env.LOG_LEVEL ?? "debug",
+        level: 'trace',
         options: {
-          destination: process.env.LOG_DESTINATION ?? "logs/backendlog.log", // set to 1 to log to stdout
+          destination: 1, // set to 1 to log to stdout
         },
       },
     ],
