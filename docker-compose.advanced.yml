@@ -125,6 +125,11 @@ services:
     volumes:
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 8080:80
+      - 8443:443
 
   caddy:
     image: caddy:2
