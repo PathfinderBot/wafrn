@@ -115,13 +115,7 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
-    environment:
-      DOMAIN_NAME: ${DOMAIN_NAME}
-      CACHE_DOMAIN: ${CACHE_DOMAIN}
-      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-      FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
-      FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
-      FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
+    env_file: .env
     volumes:
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
