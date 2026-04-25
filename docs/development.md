@@ -144,7 +144,6 @@ export const baseEnvironment: Environment = {
   mediaUrl: 'https://local.dev.wafrn.net/api/uploads',
   // You should run also this project github.com/gabboman/fediversemediacacher. In my case, https://cache.wafrn.net/?media= The cache is there because at some point in the past I configured it to precache images. No need for it to be honest
   externalCacheurl: 'https://local.dev.wafrn.net/api/cache?media=',
-  // If main cache fails due to IP limits you can install additional proxies, and use them here. The cache will try these as well before failing.
   // after the first run, create the admin user. and a deleted user. You will have to edit the user url in db so it starts with an @
   adminUser: 'admin',
   // admin email wich you will recive things like "someone registred and you need to review this"

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
+COMPOSE_FILENAME="docker-compose.advanced.yml"
+
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${SCRIPT_DIR}/../.env"
@@ -9,9 +12,8 @@ BACKUP_ROOT_DIR=${BACKUP_ROOT_DIR:-$HOME/backup}
 BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-10}
 BACKUP_POST_BACKUP_TOOL=${BACKUP_POST_BACKUP_TOOL:-$HOME/post_backup.sh}
 
-declare -a docker_compose_files=("docker-compose.simple.yml" "docker-compose.simple.metrics.yml" "docker-compose.advanced.yml" "docker-compose.advanced.metrics.yml")
+declare -a docker_compose_files=("docker-compose.no-caddy.yml" "docker-compose.advanced.yml" "docker-compose.advanced.metrics.yml")
 
-COMPOSE_FILENAME=
 
 check_files_for_update () {
   PARAMS=$1
@@ -19,13 +21,6 @@ check_files_for_update () {
   COMPOSE_FILENAME="docker-compose."
   SHOULD_EXIT=0
 
-  # figure out which docker compose file we were using
-  for compose_filename in "${docker_compose_files[@]}"
-  do
-    if diff -q docker-compose.yml $compose_filename &>/dev/null; then
-      COMPOSE_FILENAME=$compose_filename
-    fi
-  done
 
   # check if that docker compose file will change
   if git diff --name-only '@' '@{u}' | grep -q $COMPOSE_FILENAME; then
