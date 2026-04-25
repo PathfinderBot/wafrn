@@ -1,0 +1,41 @@
+{
+    email {$ACME_EMAIL}
+
+    log {
+
+    }
+
+    metrics {
+        per_host
+    }
+
+    admin 0.0.0.0:2019
+
+    on_demand_tls {
+        ask {$PDS_HOST:-pds:3000}/tls-check
+    }
+}
+
+{$MEDIA_DOMAIN} {
+    reverse_proxy frontend-1:80
+}
+
+{$CACHE_DOMAIN} {
+    reverse_proxy frontend-1:80
+}
+
+{$DOMAIN_NAME} {
+    reverse_proxy frontend-1:80
+}
+
+monitoring.{$DOMAIN_NAME} {
+    reverse_proxy frontend-1:80
+}
+
+bullboard.{$DOMAIN_NAME} {
+    reverse_proxy frontend-1:80
+}
+
+{$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
+    reverse_proxy frontend-1:80
+}
