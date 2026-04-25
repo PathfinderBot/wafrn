@@ -49,6 +49,10 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
     env_file: .env
+    environment:
+      BACKEND_HOST: "wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000"
+      CACHE_HOST: "cache:9000"
+      WEBSOCKET_HOST: "wafrn-websocket-1:9000"
     volumes:
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
