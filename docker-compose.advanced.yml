@@ -16,8 +16,8 @@ services:
     restart: unless-stopped
     env_file: .env
     environment: &default_backend_env_vars
-    - FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
-    - USE_WORKERS: false
+      FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
+      USE_WORKERS: false
 
     deploy:
       mode: replicated
