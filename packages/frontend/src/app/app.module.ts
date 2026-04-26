@@ -1,4 +1,4 @@
-import { NgModule, isDevMode } from '@angular/core'
+import { NgModule, inject, isDevMode, provideAppInitializer } from '@angular/core'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http'
@@ -17,6 +17,8 @@ import { HttpClient } from '@angular/common/http'
 import { HotkeyManagerComponent } from './components/hotkey-manager/hotkey-manager.component'
 import buildData from '../buildData.json'
 import { ThemeManagerComponent } from './components/theme-manager/theme-manager.component'
+import { tap } from 'rxjs'
+import { EnvironmentService } from './services/environment.service'
 
 const globalRippleConfig: RippleGlobalOptions = {
   disabled: true,
@@ -58,7 +60,15 @@ const globalRippleConfig: RippleGlobalOptions = {
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: WafrnAuthInterceptor, multi: true },
     { provide: MAT_RIPPLE_GLOBAL_OPTIONS, useValue: globalRippleConfig },
-    provideHttpClient(withInterceptorsFromDi(), withFetch())
+    provideHttpClient(withInterceptorsFromDi(), withFetch()),
+    provideAppInitializer(() => {
+      const http = inject(HttpClient);
+      const environmentService = inject(EnvironmentService);
+      return http.get('/api/environment').pipe(tap((data: any) => {
+        console.log(data)
+        environmentService.replaceEnvironment(data)
+      }))
+    })
   ]
 })
 export class AppModule {}

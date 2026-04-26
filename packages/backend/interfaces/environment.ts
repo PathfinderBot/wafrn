@@ -19,7 +19,6 @@ export interface Environment {
   instanceUrl: string
   mediaUrl: string
   externalCacheurl: string
-  externalCacheBackups: string[]
   adminUser: string
   adminEmail: string
   adminPassword: string

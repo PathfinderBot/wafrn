@@ -85,11 +85,9 @@ else
 
   echo Please select from the following packages:
   # workers dont work well on minimum install and ªªªª
-  #echo "1: Minimum install (default); Runs the bare minimum to get Wafrn running"
-  #echo "2: Monitoring support; Minimum install with added Grafana to monitor your instance"
   echo "3: Advanced install (recommended); More advanced config, with separate workers to handle the load. Preferred options for larger instances."
   echo "4: Advanced install with monitoring support; The full package: advanced install plus Grafana support"
-
+  echo "5: Installation without caddy. Useful if you have more stuff already installed on the machine"
   read INSTALL_TYPE
 
   echo
@@ -101,9 +99,6 @@ fi
 
 export DOCKER_COMPOSE_FILENAME=docker-compose.simple.yml
 
-if [[ $INSTALL_TYPE == "2" ]]; then
-  export DOCKER_COMPOSE_FILENAME=docker-compose.simple.metrics.yml
-fi
 
 if [[ $INSTALL_TYPE == "3" ]]; then
   export DOCKER_COMPOSE_FILENAME=docker-compose.advanced.yml
@@ -111,6 +106,10 @@ fi
 
 if [[ $INSTALL_TYPE == "4" ]]; then
   export DOCKER_COMPOSE_FILENAME=docker-compose.advanced.metrics.yml
+fi
+
+if [[ $INSTALL_TYPE == "5" ]]; then
+  export DOCKER_COMPOSE_FILENAME=docker-compose.no-caddy.yml
 fi
 
 if [[ ! $BLUESKY_SUPPORT =~ ^[Yy]$ ]]; then
@@ -232,6 +231,9 @@ source $HOME/wafrn/.env
 
 echo "Well done. The database user and password have been introduced in the config file over at '~/wafrn/.env'"
 echo
+if [[ $INSTALL_TYPE == "5" ]]; then
+  echo "Now you need to put your reverse proxy pointing to the port 8080 for the domains '${DOMAIN_NAME}', 'cdn.${DOMAIN_NAME}' and media.${DOMAIN_NAME}. You can put cdn and media behind cloudflare or any other CDN network. Please check the instructions"
+fi
 echo "You can log in at https://${DOMAIN_NAME} with the email '${ADMIN_EMAIL}' and the password '${ADMIN_PASSWORD}'"
 echo
 echo "For the Bluesky integration to work make sure to read the docs on what to do as next steps."
