@@ -12,7 +12,7 @@
     admin 0.0.0.0:2019
 
     on_demand_tls {
-        ask http://{$PDS_HOST:-pds:3000}/tls-check
+        ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
 
     import /etc/caddy/config/global/* {$DOMAIN_NAME}
@@ -113,7 +113,7 @@ http://{$PDS_DOMAIN_NAME} http://*.{$PDS_DOMAIN_NAME} {$PDS_DOMAIN_NAME} *.{$PDS
         file_server
     }
 
-    reverse_proxy {$PDS_HOST:-pds:3000}
+    reverse_proxy {$PDS_HOST:wafrn-pds-1:3000}
 
     import /etc/caddy/config/pds_domain_post/* {$DOMAIN_NAME} {$PDS_DOMAIN_NAME}
 }
