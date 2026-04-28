@@ -16,26 +16,6 @@
     }
 }
 
-{$MEDIA_DOMAIN} {
-    reverse_proxy wafrn-frontend-1:80
-}
-
-{$CACHE_DOMAIN} {
-    reverse_proxy wafrn-frontend-1:80
-}
-
-{$DOMAIN_NAME} {
-    reverse_proxy wafrn-frontend-1:80
-}
-
-monitoring.{$DOMAIN_NAME} {
-    reverse_proxy wafrn-frontend-1:80
-}
-
-bullboard.{$DOMAIN_NAME} {
-    reverse_proxy wafrn-frontend-1:80
-}
-
-{$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
+{$DOMAIN_NAME} {$MEDIA_DOMAIN} {$CACHE_DOMAIN} *.{$DOMAIN_NAME} {$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
     reverse_proxy wafrn-frontend-1:80
 }
