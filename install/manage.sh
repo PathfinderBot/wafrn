@@ -18,7 +18,6 @@ declare -a docker_compose_files=("docker-compose.no-caddy.yml" "docker-compose.a
 check_files_for_update () {
   PARAMS=$1
 
-  COMPOSE_FILENAME="docker-compose."
   SHOULD_EXIT=0
 
 

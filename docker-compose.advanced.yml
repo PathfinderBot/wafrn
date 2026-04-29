@@ -90,6 +90,8 @@ services:
     profiles:
       - bluesky
     env_file: .env
+    ports:
+      - localhost:3000:3000
     environment:
       PDS_DATA_DIRECTORY: /pds
       PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
