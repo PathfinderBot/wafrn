@@ -39,6 +39,7 @@ import { extractUriComponents } from './obtainUriComponents.js'
 import { getPetitionSigned } from '../../utils/activitypub/getPetitionSigned.js'
 import getUserAgent from '../../utils/getUserAgent.js'
 import { getQueue } from '../../utils/queues.js'
+import { filterLanguageCode } from '../../utils/languages.js'
 
 const processSinglePostQueue = getQueue('processSinglePost')
 
@@ -424,6 +425,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       isReply = parentPost.isReply || parentPost.userId != postCreator.id
     }
 
+    const postLanguage = getPostLanguage(post);
+
     const newData = {
       userId: postCreator.id,
       bskyCid: postPetitionPds.cid,
@@ -435,7 +438,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       content_warning: cw,
       ...(await getPostInteractionLevels(uri, parentId)),
       isBskyExclusive: true, // TODO hmmm
-      isReply: isReply
+      isReply: isReply,
+      language: postLanguage,
     }
     if (!parentId) {
       delete newData.parentId
@@ -859,6 +863,15 @@ async function getPostThreadPDSDirect(inputUri: string) {
     })
     return undefined
   }
+}
+
+/** Checks if `post.langs` has only 1 value and if its present in languages.ts */
+function getPostLanguage(post: AppBskyFeedPost.Main): string | undefined {
+  if (post.langs && post.langs.length == 1) {
+    return filterLanguageCode(post.langs[0])
+  }
+
+  return undefined
 }
 
 export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies }
