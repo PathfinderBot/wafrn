@@ -15,11 +15,9 @@
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
 
-    import /etc/caddy/config/global/* {$DOMAIN_NAME}
 }
 
 http://{$MEDIA_DOMAIN} {$MEDIA_DOMAIN} {
-    import /etc/caddy/config/media_domain_pre/* {$DOMAIN_NAME} {$MEDIA_DOMAIN}
 
     handle {
         root * /var/www/html/uploads/
@@ -27,11 +25,9 @@ http://{$MEDIA_DOMAIN} {$MEDIA_DOMAIN} {
         file_server
     }
 
-    import /etc/caddy/config/media_domain_post/* {$DOMAIN_NAME} {$MEDIA_DOMAIN}
 }
 
 http://{$CACHE_DOMAIN} {$CACHE_DOMAIN} {
-    import /etc/caddy/config/cache_domain_pre/* {$DOMAIN_NAME} {$CACHE_DOMAIN}
 
     handle /api/cache* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
@@ -45,12 +41,9 @@ http://{$CACHE_DOMAIN} {$CACHE_DOMAIN} {
         }
     }
 
-    import /etc/caddy/config/cache_domain_post/* {$DOMAIN_NAME} {$CACHE_DOMAIN}
 }
 
 http://{$DOMAIN_NAME} {$DOMAIN_NAME} {
-    import /etc/caddy/config/main_domain_pre/* {$DOMAIN_NAME}
-
 
     @atPaths path_regexp at ^/@(.*)$
     redir @atPaths /fediverse/blog/{re.at.1} 301
@@ -71,7 +64,6 @@ http://{$DOMAIN_NAME} {$DOMAIN_NAME} {
         reverse_proxy {$ADMINER_HOST:-adminer:8080}
     }
 
-    import /etc/caddy/config/main_domain_mid/* {$DOMAIN_NAME}
 
     handle {
         root * /var/www/html/frontend/
@@ -79,15 +71,12 @@ http://{$DOMAIN_NAME} {$DOMAIN_NAME} {
         file_server
     }
 
-    import /etc/caddy/config/main_domain_post/* {$DOMAIN_NAME}
 }
 
 http://monitoring.{$DOMAIN_NAME} monitoring.{$DOMAIN_NAME}  {
-    import /etc/caddy/config/monitoring_domain_pre/* {$DOMAIN_NAME}
 
     reverse_proxy {$GRAFANA_HOST:-grafana:2345}
 
-    import /etc/caddy/config/monitoring_domain_post/* {$DOMAIN_NAME}
 }
 
 http://bullboard.{$DOMAIN_NAME} bullboard.{$DOMAIN_NAME} {
@@ -95,7 +84,6 @@ http://bullboard.{$DOMAIN_NAME} bullboard.{$DOMAIN_NAME} {
 }
 
 http://{$PDS_DOMAIN_NAME} http://*.{$PDS_DOMAIN_NAME} {$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
-    import /etc/caddy/config/pds_domain_pre/* {$DOMAIN_NAME} {$PDS_DOMAIN_NAME}
 
     tls {
         on_demand
@@ -115,5 +103,4 @@ http://{$PDS_DOMAIN_NAME} http://*.{$PDS_DOMAIN_NAME} {$PDS_DOMAIN_NAME} *.{$PDS
 
     reverse_proxy {$PDS_HOST:wafrn-pds-1:3000}
 
-    import /etc/caddy/config/pds_domain_post/* {$DOMAIN_NAME} {$PDS_DOMAIN_NAME}
 }
