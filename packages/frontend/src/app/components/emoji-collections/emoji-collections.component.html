@@ -27,8 +27,8 @@
       }
     </div>
 
-    <cdk-virtual-scroll-viewport itemSize="55" class="emoji-viewport" minBufferPx="200" maxBufferPx="300"
-      [style.height.px]="this.virtualHeight()">
+    <cdk-virtual-scroll-viewport itemSize="55" class="emoji-viewport" minBufferPx="200" maxBufferPx="300">
+      <!-- [style.height.px]="this.virtualHeight()"> -->
       <div *cdkVirtualFor="let row of this.vcRows()" class="emoji-row" [class.emoji-header]="row.tag === 0">
         @if (row.tag == 0) {
         <h3 class="m-0 text-xl line-height-3 flex-1 emoji-header-text">
