@@ -95,7 +95,8 @@ export interface PostAttributes {
   detached?: boolean,
   //rootId?: string,
   isBskyExclusive?: boolean,
-  isReply?: boolean
+  isReply?: boolean,
+  language: string | undefined,
 }
 
 @Table({
@@ -269,6 +270,13 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     type: DataType.BOOLEAN
   })
   declare detached: boolean;
+
+  @Column({
+    type: DataType.STRING(3),
+    allowNull: true,
+    defaultValue: undefined,
+  })
+  declare language: string | undefined;
 
   @BelongsTo(() => Post, "parentId")
   declare parent: Post;
