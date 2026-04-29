@@ -91,7 +91,7 @@ services:
       - bluesky
     env_file: .env
     ports:
-      - localhost:3000:3000
+      - 127.0.0.1:3000:3000
     environment:
       PDS_HOSTNAME: ${PDS_DOMAIN_NAME}
       PDS_JWT_SECRET: ${PDS_JWT_SECRET}
