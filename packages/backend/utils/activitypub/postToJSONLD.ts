@@ -455,6 +455,11 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
       },
     },
   };
+
+  if (post.language) {
+    postAsJSONLD.object.contentMap = { [post.language]: postAsJSONLD.object.content }
+  }
+
   const newObject: any = {};
   const objKeys = Object.keys(postAsJSONLD.object);
   objKeys.forEach((key) => {
