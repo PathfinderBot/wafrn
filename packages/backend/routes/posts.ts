@@ -36,6 +36,7 @@ import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 import { getFlowProducer, getQueue } from '../utils/queues.js'
+import { filterLanguageCode } from '../utils/languages.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -533,6 +534,7 @@ export default function postsRoutes(app: Application) {
           post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
           post.privacy = bodyPrivacy
+          post.language = filterLanguageCode(req.body.language)
           await post.save()
         } else {
           if (req.body.parent) {
@@ -583,8 +585,8 @@ export default function postsRoutes(app: Application) {
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
             likeControl: req.body.canLike || InteractionControl.Anyone,
             isReply: parent ? (parent.isReply || parent.userId != posterId) : false,
-            isBskyExclusive: parent ? parent.isBskyExclusive : false
-
+            isBskyExclusive: parent ? parent.isBskyExclusive : false,
+            language: filterLanguageCode(req.body.language),
           })
         }
 
