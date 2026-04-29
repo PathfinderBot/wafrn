@@ -552,8 +552,10 @@ export function filterLanguageCode(text: any): string | undefined {
     code = text.substring(0, 3).toLowerCase();
   }
   
-  if (Object.hasOwn(LANGUAGES_MAP, code)) {
-    return code;
+  const language = LANGUAGES_MAP[code]
+
+  if (language) {
+    return language.code2 != '' ? language.code2 : language.code3
   }
 
   return undefined;
