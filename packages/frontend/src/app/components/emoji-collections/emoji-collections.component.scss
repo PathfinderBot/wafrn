@@ -4,6 +4,15 @@ $narrow: 800px;
   background-color: var(--mat-sys-surface-container-low);
   box-shadow: 0 0 6px var(--mat-sys-outline-variant);
   border-radius: 4px;
+  flex-flow: column nowrap;
+  flex-grow: 1;
+  display: flex;
+}
+
+:host {
+  flex-flow: column nowrap;
+  flex-grow: 1;
+  display: flex;
 }
 
 .post-emoji-preview {
@@ -15,7 +24,7 @@ $narrow: 800px;
   height: 100%;
   display: flex;
   justify-content: space-between;
-  flex-direction: row;
+  flex-flow: row nowrap;
 
   @media (max-width: $narrow) {
     flex-direction: column-reverse;
@@ -28,6 +37,7 @@ $narrow: 800px;
   display: flex;
   flex-direction: column;
   row-gap: 20px;
+  flex-grow: 1;
 }
 .emoji-viewport ::ng-deep .cdk-virtual-scroll-content-wrapper {
   display: flex;
@@ -80,7 +90,7 @@ $narrow: 800px;
     height: 64px;
     overflow-y: hidden;
     overflow-x: scroll;
-    position: absolute;
+    // position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
