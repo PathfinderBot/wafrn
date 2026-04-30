@@ -15,9 +15,11 @@
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
 
+    {$AUTO_HTTPS_MODE}
+
 }
 
-http://{$MEDIA_DOMAIN} {$MEDIA_DOMAIN} {
+{$MEDIA_DOMAIN} {
 
     handle {
         root * /var/www/html/uploads/
@@ -27,7 +29,7 @@ http://{$MEDIA_DOMAIN} {$MEDIA_DOMAIN} {
 
 }
 
-http://{$CACHE_DOMAIN} {$CACHE_DOMAIN} {
+{$CACHE_DOMAIN} {
 
     handle /api/cache* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
@@ -43,7 +45,7 @@ http://{$CACHE_DOMAIN} {$CACHE_DOMAIN} {
 
 }
 
-http://{$DOMAIN_NAME} {$DOMAIN_NAME} {
+{$DOMAIN_NAME} {
 
     @atPaths path_regexp at ^/@(.*)$
     redir @atPaths /fediverse/blog/{re.at.1} 301
@@ -73,17 +75,17 @@ http://{$DOMAIN_NAME} {$DOMAIN_NAME} {
 
 }
 
-http://monitoring.{$DOMAIN_NAME} monitoring.{$DOMAIN_NAME}  {
+monitoring.{$DOMAIN_NAME}  {
 
     reverse_proxy {$GRAFANA_HOST:-grafana:2345}
 
 }
 
-http://bullboard.{$DOMAIN_NAME} bullboard.{$DOMAIN_NAME} {
+bullboard.{$DOMAIN_NAME} {
     reverse_proxy {$BULLBOARD_HOST:-bullboard:3000}
 }
 
-http://{$PDS_DOMAIN_NAME} http://*.{$PDS_DOMAIN_NAME} {$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
+{$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
 
     tls {
         on_demand

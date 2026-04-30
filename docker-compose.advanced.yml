@@ -53,6 +53,7 @@ services:
       BACKEND_HOST: "wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000"
       CACHE_HOST: "cache:9000"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
+      AUTO_HTTPS_MODE: "auto_https disable_redirects"
     volumes:
       - "caddy:/data"
       - "frontend:/var/www/html/frontend"
