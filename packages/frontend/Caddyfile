@@ -2,33 +2,37 @@
     email {$ACME_EMAIL}
 
     log {
-
+        output stdout
+        format console
     }
-
     metrics {
         per_host
     }
 
     admin 0.0.0.0:2019
 
+    # Toggle HTTPS behavior via env
+    {$AUTO_HTTPS_MODE:auto_https on}
+
     on_demand_tls {
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
-
-    {$AUTO_HTTPS_MODE}
-
 }
 
+# -----------------------
+# MEDIA (uploads)
+# -----------------------
 {$MEDIA_DOMAIN} {
-
     handle {
         root * /var/www/html/uploads/
         try_files {path} /index.html
         file_server
     }
-
 }
 
+# -----------------------
+# CACHE (cdn)
+# -----------------------
 {$CACHE_DOMAIN} {
 
     handle /api/cache* {
@@ -42,9 +46,11 @@
             lb_policy least_conn
         }
     }
-
 }
 
+# -----------------------
+# MAIN FRONTEND
+# -----------------------
 {$DOMAIN_NAME} {
 
     @atPaths path_regexp at ^/@(.*)$
@@ -53,6 +59,7 @@
     handle_path /api/websocket* {
         reverse_proxy {$WEBSOCKET_HOST:-backend:9000}
     }
+
     @api path /api* /fediverse* /contexts* /post* /blog* /.well-known*
 
     handle @api {
@@ -61,31 +68,32 @@
         }
     }
 
-
     handle_path /adminer* {
         reverse_proxy {$ADMINER_HOST:-adminer:8080}
     }
-
 
     handle {
         root * /var/www/html/frontend/
         try_files {path} /index.html
         file_server
     }
-
 }
 
-monitoring.{$DOMAIN_NAME}  {
-
+# -----------------------
+# MONITORING
+# -----------------------
+monitoring.{$DOMAIN_NAME} {
     reverse_proxy {$GRAFANA_HOST:-grafana:2345}
-
 }
 
 bullboard.{$DOMAIN_NAME} {
     reverse_proxy {$BULLBOARD_HOST:-bullboard:3000}
 }
 
-{$PDS_DOMAIN_NAME} *.{$PDS_DOMAIN_NAME} {
+# -----------------------
+# PDS (Bluesky / ATProto)
+# -----------------------
+{$PDS_DOMAIN_NAME}, *.{$PDS_DOMAIN_NAME} {
 
     tls {
         on_demand
@@ -104,5 +112,4 @@ bullboard.{$DOMAIN_NAME} {
     }
 
     reverse_proxy {$PDS_HOST:wafrn-pds-1:3000}
-
 }
