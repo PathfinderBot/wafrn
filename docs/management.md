@@ -17,3 +17,22 @@ The `exportType` can be one of the following:
 > **Note:** Only the default option (`1`) will generate a backup file compatible with some Mastodon import tools, although if Bluesky is enabled it will also contain Bluesky posts that these importers might choke on. All options are supported by Wafrn's own importer however, including importing Bluesky data.
 
 Once export is finished this tool will write out a randomized URL to the console where the user can download their backup file. Once downloaded this file should be deleted manually from the server.
+
+## Clearing Remote Cache
+
+The following can be used to clear the remote cache:
+
+```
+docker compose down
+docker volume rm wafrn_cache
+docker compose up -d
+```
+The remote cache is also cleared on update.
+
+## Importing Fedinuke and IFTAS DNI Blocklists
+
+Wafrn supports importing seirdy's fedinuke and IFTAS DNI using the following script:
+
+```sh
+docker exec -ti wafrn-backend-1 npm exec  tsx updateDatabase/blockHosts.ts
+```
