@@ -15,7 +15,7 @@
     {$AUTO_HTTPS_MODE:auto_https on}
     
     
-    trusted_proxies 127.0.0.1
+    trusted_proxies 127.0.0.1/8s
     
     
     on_demand_tls {
