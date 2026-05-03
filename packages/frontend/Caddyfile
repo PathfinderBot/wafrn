@@ -15,8 +15,6 @@
     {$AUTO_HTTPS_MODE:auto_https on}
     
     
-    trusted_proxies 127.0.0.1/8
-    
     
     on_demand_tls {
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
@@ -38,6 +36,8 @@ http://{$MEDIA_DOMAIN}, {$MEDIA_DOMAIN} {
 # CACHE (cdn)
 # -----------------------
 http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
+
+    trusted_proxies static 127.0.0.1/8
 
     handle /api/cache* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
