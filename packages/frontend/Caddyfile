@@ -13,7 +13,11 @@
 
     # Toggle HTTPS behavior via env
     {$AUTO_HTTPS_MODE:auto_https on}
-
+    
+    
+    trusted_proxies 127.0.0.1
+    
+    
     on_demand_tls {
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
@@ -22,7 +26,7 @@
 # -----------------------
 # MEDIA (uploads)
 # -----------------------
-{$MEDIA_DOMAIN} {
+http://{$MEDIA_DOMAIN}, {$MEDIA_DOMAIN} {
     handle {
         root * /var/www/html/uploads/
         try_files {path} /index.html
@@ -33,7 +37,7 @@
 # -----------------------
 # CACHE (cdn)
 # -----------------------
-{$CACHE_DOMAIN} {
+http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
 
     handle /api/cache* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
@@ -51,7 +55,7 @@
 # -----------------------
 # MAIN FRONTEND
 # -----------------------
-{$DOMAIN_NAME} {
+http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
 
     @atPaths path_regexp at ^/@(.*)$
     redir @atPaths /fediverse/blog/{re.at.1} 301
@@ -82,18 +86,18 @@
 # -----------------------
 # MONITORING
 # -----------------------
-monitoring.{$DOMAIN_NAME} {
+http://monitoring.{$DOMAIN_NAME}, monitoring.{$DOMAIN_NAME} {
     reverse_proxy {$GRAFANA_HOST:-grafana:2345}
 }
 
-bullboard.{$DOMAIN_NAME} {
+http://bullboard.{$DOMAIN_NAME}, bullboard.{$DOMAIN_NAME} {
     reverse_proxy {$BULLBOARD_HOST:-bullboard:3000}
 }
 
 # -----------------------
 # PDS (Bluesky / ATProto)
 # -----------------------
-{$PDS_DOMAIN_NAME}, *.{$PDS_DOMAIN_NAME} {
+http://{$PDS_DOMAIN_NAME}, http://*.{$PDS_DOMAIN_NAME}, {$PDS_DOMAIN_NAME}, *.{$PDS_DOMAIN_NAME} {
 
     tls {
         on_demand
