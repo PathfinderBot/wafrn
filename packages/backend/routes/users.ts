@@ -283,7 +283,7 @@ function userRoutes(app: Application) {
               birthDate: new Date(req.body.birthDate),
               avatar: avatarURL,
               activated: false,
-              registerIp: getIp(req, true),
+              registerIp: getIp(req),
               lastLoginIp: 'ACCOUNT_NOT_ACTIVATED',
               banned: false,
               activationCode,
@@ -708,7 +708,7 @@ function userRoutes(app: Application) {
                     { expiresIn: '31536000s' }
                   )
                 })
-                userWithEmail.lastLoginIp = getIp(req, true)
+                userWithEmail.lastLoginIp = getIp(req)
                 await userWithEmail.save()
               }
             } else {
@@ -783,7 +783,7 @@ function userRoutes(app: Application) {
                   { expiresIn: '31536000s' }
                 )
               })
-              userWithEmail.lastLoginIp = getIp(req, true)
+              userWithEmail.lastLoginIp = getIp(req)
               await userWithEmail.save()
             }
           }

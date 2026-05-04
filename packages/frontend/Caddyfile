@@ -13,6 +13,10 @@
 
     # Toggle HTTPS behavior via env
     {$AUTO_HTTPS_MODE:auto_https on}
+
+    servers {
+        trusted_proxies static 172.0.0.1/8
+    }
     
     
     
