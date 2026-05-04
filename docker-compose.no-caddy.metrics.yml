@@ -229,6 +229,8 @@ volumes:
   pds:
   frontend:
   redis:
+  prometheus_data:
+  grafana_data:
   cache:
 
 
