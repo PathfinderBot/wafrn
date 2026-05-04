@@ -12,7 +12,7 @@
     admin 0.0.0.0:2019
 
     # Toggle HTTPS behavior via env
-    {$AUTO_HTTPS_MODE:auto_https on}
+    {$AUTO_HTTPS_MODE}
 
     servers {
         trusted_proxies static 172.0.0.1/8
