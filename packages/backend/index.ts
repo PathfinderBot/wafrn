@@ -58,6 +58,7 @@ import { completeEnvironment } from "./utils/backendOptions.js";
 import cron from "node-cron";
 import { nukeBannedUsers } from "./utils/maintenanceTasks/nukeBannedUsers.js";
 import { sequelize } from "./models/sequelize.js";
+import getIp from "./utils/getIP.js";
 
 function errorHandler(err: Error, req: Request, res: Response, next: Function) {
   console.error(err.stack);
@@ -110,6 +111,14 @@ app.use("/api/environment", (req: Request, res: Response) => {
     featureFlags: {
       drafts: true
     }
+  });
+});
+
+
+app.use("/api/myIp", (req: Request, res: Response) => {
+  res.send({
+    headers: req.headers,
+    ip: getIp(req)
   });
 });
 
