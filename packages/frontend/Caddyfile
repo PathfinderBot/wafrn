@@ -41,7 +41,6 @@ http://{$MEDIA_DOMAIN}, {$MEDIA_DOMAIN} {
 # -----------------------
 http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
 
-    trusted_proxies static 127.0.0.1/8
 
     handle /api/cache* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
