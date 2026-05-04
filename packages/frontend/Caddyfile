@@ -59,6 +59,10 @@ http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
 # MAIN FRONTEND
 # -----------------------
 http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
+    
+    
+    
+    encode zstd gzip
 
     @atPaths path_regexp at ^/@(.*)$
     redir @atPaths /fediverse/blog/{re.at.1} 301
