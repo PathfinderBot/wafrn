@@ -6,7 +6,6 @@ import { logger } from "./utils/logger.js";
 import {
   workerInbox,
   workerPrepareSendPost,
-  workerGetUser,
   workerSendPostChunk,
   workerProcessFirehose,
   workerDeletePost,
@@ -161,7 +160,6 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
     workerInbox,
     workerSendPostChunk,
     workerPrepareSendPost,
-    workerGetUser,
     workerDeletePost,
     workerProcessRemotePostView,
     workerProcessRemoteMediaData,
