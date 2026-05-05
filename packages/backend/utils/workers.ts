@@ -2,6 +2,7 @@ import { Job, MetricsTime, Worker } from 'bullmq'
 import { inboxWorker } from './queueProcessors/inbox.js'
 import { prepareSendRemotePostWorker } from './queueProcessors/prepareSendRemotePost.js'
 import { sendPostToInboxes } from './queueProcessors/sendPostToInboxes.js'
+import { getRemoteActorIdProcessor } from './queueProcessors/getRemoteActorIdProcessor.js'
 import { logger } from './logger.js'
 import { processRemotePostView } from './queueProcessors/processRemotePostView.js'
 import { processRemoteMedia } from './queueProcessors/remoteMediaProcessor.js'
@@ -91,6 +92,14 @@ const workerDeletePost = new Worker('deletePostQueue', (job: Job) => sendPostToI
   lockDuration: 120000
 })
 
+const workerGetUser = new Worker('getRemoteActorId', async (job: Job) => await getRemoteActorIdProcessor(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.high,
+  lockDuration: 120000
+})
 
 const workerProcessRemotePostView = new Worker(
   'processRemoteView',
@@ -224,6 +233,7 @@ const workerSyncBskyPosts = new Worker('syncBskyPosts', (job: Job) => syncBskyPo
 const workers = [
   workerInbox,
   workerDeletePost,
+  workerGetUser,
   workerPrepareSendPost,
   workerProcessRemotePostView,
   workerSendPostChunk,
@@ -265,6 +275,7 @@ workers.forEach((worker) => {
 const workersToLogFail = [
   workerInbox,
   workerDeletePost,
+  workerGetUser,
   workerPrepareSendPost,
   workerProcessRemotePostView,
   workerSendPostChunk,
@@ -296,6 +307,7 @@ export {
   workerInbox,
   workerSendPostChunk,
   workerPrepareSendPost,
+  workerGetUser,
   workerDeletePost,
   workerProcessRemotePostView,
   workerProcessRemoteMediaData,
