@@ -1,13 +1,13 @@
 import { User } from '../models/user.js'
 import { completeEnvironment } from './backendOptions.js'
 
-const adminUser = User.findOne({
+const adminUser = User.scope('full').findOne({
     where: {
       url: completeEnvironment.adminUser
     }
   })
 
-const deletedUser = User.findOne({
+const deletedUser = User.scope('full').findOne({
     where: {
       url: completeEnvironment.deletedUser
     }
