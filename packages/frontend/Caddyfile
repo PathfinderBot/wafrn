@@ -105,7 +105,7 @@ http://monitoring.{$DOMAIN_NAME}, monitoring.{$DOMAIN_NAME} {
 }
 
 http://bullboard.{$DOMAIN_NAME}, bullboard.{$DOMAIN_NAME} {
-    reverse_proxy {$BULLBOARD_HOST:-bullboard:3000}
+    reverse_proxy {$BULLBOARD_HOST:bullboard:3000}
 }
 
 # -----------------------
