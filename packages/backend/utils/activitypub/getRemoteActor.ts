@@ -109,12 +109,12 @@ async function getRemoteActor(
       error: error,
     });
   }
-  // update user if last update was more than 24 hours ago
+  // update user if last update was more than 1 week ago
   if (remoteUser && remoteUser.url !== completeEnvironment.deletedUser) {
     const lastUpdate = new Date(remoteUser.updatedAt);
     const now = new Date();
     if (
-      now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000 ||
+      now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000 * 7 ||
       forceUpdate
     ) {
       getRemoteActorIdProcessor({ actorUrl: actorUrl, userId: user.id, forceUpdate: true })
