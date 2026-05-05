@@ -101,7 +101,7 @@ http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
 # MONITORING
 # -----------------------
 http://monitoring.{$DOMAIN_NAME}, monitoring.{$DOMAIN_NAME} {
-    reverse_proxy {$GRAFANA_HOST:-grafana:2345}
+    reverse_proxy {$GRAFANA_HOST:wafrn-grafana-1:2345}
 }
 
 http://bullboard.{$DOMAIN_NAME}, bullboard.{$DOMAIN_NAME} {

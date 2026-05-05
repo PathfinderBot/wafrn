@@ -141,7 +141,7 @@ async function getRemoteActorIdProcessor(data: {
   const actorUrlId = await getUserIdFromRemoteId(actorUrl)
   let res = actorUrlId ? (await User.findByPk(actorUrlId)) as User : undefined
   let url = undefined
-  const transaction = await sequelize.transaction()
+  //const transaction = await sequelize.transaction()
 
   try {
     url = new URL(actorUrl)
@@ -157,7 +157,7 @@ async function getRemoteActorIdProcessor(data: {
   try {
     if (forceUpdate && url != undefined) {
     let federatedHost = await FederatedHost.findOne({
-      transaction: transaction,
+      //transaction: transaction,
       where: sequelize.where(
         sequelize.fn('lower', sequelize.col('displayName')),
         url?.host ? url.host.toLowerCase() : ''
@@ -167,7 +167,9 @@ async function getRemoteActorIdProcessor(data: {
     if (hostBanned) {
       res = await getDeletedUser()
     } else {
-      const user = (await User.findByPk(data.userId, {transaction: transaction})) as User
+      const user = (await User.findByPk(data.userId, {
+        //transaction: transaction
+        })) as User
       const userPetition = await getPetitionSigned(user, actorUrl)
       if (userPetition) {
         if (!federatedHost && url) {
@@ -175,14 +177,16 @@ async function getRemoteActorIdProcessor(data: {
             displayName: url.host.toLocaleLowerCase(),
             publicInbox: userPetition.endpoints?.sharedInbox ? userPetition.endpoints?.sharedInbox : ''
           }
-          federatedHost = (await FederatedHost.findOrCreate({ where: federatedHostToCreate, transaction: transaction }))[0]
+          federatedHost = (await FederatedHost.findOrCreate({ where: federatedHostToCreate,
+            // transaction: transaction
+          }))[0]
         }
         if (!url || !federatedHost) {
           logger.warn({
             message: 'Url is not valid wtf',
             trace: new Error().stack
           })
-          await transaction.commit()
+          // await transaction.commit()
           return await getDeletedUser()
         }
         const remoteMentionUrl = typeof userPetition.url === 'string' ? userPetition.url : ''
@@ -235,7 +239,7 @@ async function getRemoteActorIdProcessor(data: {
         await federatedHost.save()
         let userRes
         const existingUsers = await User.findAll({
-          transaction: transaction,
+          // transaction: transaction,
           where: {
             [Op.or]: [
               sequelize.where(sequelize.fn('lower', sequelize.col('url')), userData.url.toLowerCase()),
@@ -247,7 +251,9 @@ async function getRemoteActorIdProcessor(data: {
         })
         if (res) {
           if (res.id !== (await getDeletedUser()).id) {
-            userRes = await User.findByPk(res.id, {transaction: transaction})
+            userRes = await User.findByPk(res.id, {
+              // transaction: transaction
+            })
             if (existingUsers.length > 1) {
               logger.debug({
                 message: `Multiple fedi users found for ${userData.url} (${userData.remoteId}): ${existingUsers.length}`
@@ -271,7 +277,7 @@ async function getRemoteActorIdProcessor(data: {
                       followerId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         followerId: existingUser.id
                       },
@@ -282,7 +288,7 @@ async function getRemoteActorIdProcessor(data: {
                       followedId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         followedId: existingUser.id
                       }
@@ -293,7 +299,7 @@ async function getRemoteActorIdProcessor(data: {
                       userId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         userId: existingUser.id
                       }
@@ -304,7 +310,7 @@ async function getRemoteActorIdProcessor(data: {
                       userId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         userId: existingUser.id
                       }
@@ -315,7 +321,7 @@ async function getRemoteActorIdProcessor(data: {
                       userId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         userId: existingUser.id
                       }
@@ -326,7 +332,7 @@ async function getRemoteActorIdProcessor(data: {
                       blockedId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         blockedId: existingUser.id
                       }
@@ -337,7 +343,7 @@ async function getRemoteActorIdProcessor(data: {
                       blockerId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         blockerId: existingUser.id
                       }
@@ -348,7 +354,7 @@ async function getRemoteActorIdProcessor(data: {
                       muterId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         muterId: existingUser.id
                       }
@@ -359,7 +365,7 @@ async function getRemoteActorIdProcessor(data: {
                       mutedId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         mutedId: existingUser.id
                       }
@@ -370,7 +376,7 @@ async function getRemoteActorIdProcessor(data: {
                       userId: userRes.id
                     },
                     {
-                      transaction: transaction,
+                      // transaction: transaction,
                       where: {
                         userId: existingUser.id
                       }
@@ -384,7 +390,7 @@ async function getRemoteActorIdProcessor(data: {
             if (userRes) {
               userRes.set(userData)
               await userRes.save({
-                transaction: transaction
+                // transaction: transaction
               })
             } else {
               redisCache.del('userRemoteId:' + actorUrl.toLocaleLowerCase())
@@ -394,10 +400,12 @@ async function getRemoteActorIdProcessor(data: {
           if (existingUsers && existingUsers[0]) {
             existingUsers[0].set(userData)
             await existingUsers[0].save({
-              transaction: transaction,
+              // transaction: transaction,
             })
           } else {
-            userRes = await User.create(userData,  {transaction: transaction,})
+            userRes = await User.create(userData,  {
+              // transaction: transaction,
+              })
           }
         }
         if (userRes && userRes.id && userRes.url != completeEnvironment.deletedUser && userPetition) {
@@ -448,7 +456,7 @@ async function getRemoteActorIdProcessor(data: {
                 }
                 if (mergeAcc > 0) {
                   const oldUser = await User.findOne({
-                    transaction: transaction,
+                    // transaction: transaction,
                     where: {
                       bskyDid: atUri.replace(/^at:\/\//, '')
                     }
@@ -464,7 +472,7 @@ async function getRemoteActorIdProcessor(data: {
 
                   // if bridgy user, to prevent more issues, return the existing bsky user instead
                   if (mergeAcc === 2) {
-                    await transaction.commit()
+                    // await transaction.commit()
                     return oldUser
                   }
                 }
@@ -483,7 +491,7 @@ async function getRemoteActorIdProcessor(data: {
         if (userRes && userRes.id && userRes.url != completeEnvironment.deletedUser) {
           if (userPetition && userPetition.attachment && userPetition.attachment.length) {
             await UserOptions.destroy({
-              transaction: transaction,
+              // transaction: transaction,
               where: {
                 userId: userRes.id,
                 optionName: {
@@ -498,7 +506,7 @@ async function getRemoteActorIdProcessor(data: {
               optionValue: JSON.stringify(properties),
               public: true
             },{
-              transaction: transaction,
+              // transaction: transaction,
             })
           }
         }
@@ -527,6 +535,6 @@ async function getRemoteActorIdProcessor(data: {
   } catch (error) {
     logger.error(error)
   }
-  await transaction.commit()
+  //await transaction.commit()
   return res
 }
