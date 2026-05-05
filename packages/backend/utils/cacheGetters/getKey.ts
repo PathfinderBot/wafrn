@@ -1,21 +1,9 @@
-import { Queue } from 'bullmq'
 import { User } from '../../models/index.js'
 import { redisCache } from '../redis.js'
 import { getUserIdFromRemoteId } from './getUserIdFromRemoteId.js'
-import { completeEnvironment } from '../backendOptions.js'
+import { getRemoteActor } from '../activitypub/getRemoteActor.js'
+import { getAdminUser } from '../getAdminAndDeletedUser.js'
 
-const queue = new Queue('getRemoteActorId', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    removeOnFail: true,
-    attempts: 2,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    }
-  }
-})
 
 async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: User; key?: string }> {
   const cachedKey = await redisCache.get('key:' + remoteUserUrl)
@@ -27,14 +15,12 @@ async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: U
       user = (await User.findByPk(userId)) || undefined
       remoteKey = user?.publicKey ?? ''
     } else {
-      await queue.add(
-        'getRemoteActorId',
-        { actorUrl: remoteUserUrl, userId: adminUser.id, forceUpdate: true },
-        {
-          jobId: remoteUserUrl.replaceAll(':', '_').replaceAll('/', '_')
-        }
-      )
-      return {}
+      const res = await getRemoteActor('remoteUserUrl', await getAdminUser(), false )
+      user = res;
+      remoteKey = user?.publicKey || ''
+      if(!user){
+        return {}
+      }
     }
   }
   if (!cachedKey && remoteKey) {
