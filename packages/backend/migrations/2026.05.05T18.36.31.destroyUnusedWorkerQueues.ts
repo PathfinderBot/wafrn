@@ -11,7 +11,7 @@ export const up: Migration = async (params) => {
         attempts: 1
       }
     })
-    await getRemoteActorQueue.obliterate()
+    await getRemoteActorQueue.obliterate({ force: true })
 };
 
 
