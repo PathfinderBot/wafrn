@@ -123,6 +123,7 @@ async function getRemoteActor(
         { actorUrl: actorUrl, userId: user.id, forceUpdate: true },
         {
           jobId: actorUrl.replaceAll(":", "_").replaceAll("/", "_"),
+          priority: 2097152
         }
       );
     }

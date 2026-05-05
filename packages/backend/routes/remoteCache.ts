@@ -306,7 +306,8 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) 
           mediaUrl
         },
         {
-          jobId: mediaLinkHash
+          jobId: mediaLinkHash,
+          priority: 1
         }
       )
     }

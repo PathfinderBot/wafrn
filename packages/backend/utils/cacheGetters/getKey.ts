@@ -31,7 +31,8 @@ async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: U
         'getRemoteActorId',
         { actorUrl: remoteUserUrl, userId: adminUser.id, forceUpdate: true },
         {
-          jobId: remoteUserUrl.replaceAll(':', '_').replaceAll('/', '_')
+          jobId: remoteUserUrl.replaceAll(':', '_').replaceAll('/', '_'),
+          priority: 2097152
         }
       )
       return {}
