@@ -12,8 +12,8 @@ import { Op } from 'sequelize'
 import { User } from '../models/user.js'
 import { Emoji } from '../models/emoji.js'
 import getUserAgent from '../utils/getUserAgent.js'
-import { ParentOptions, Queue, QueueEvents } from 'bullmq'
-import { DownloadJobPayload, DownloadJobResult } from '../utils/queueProcessors/downloadMedia.js'
+import { Job, ParentOptions, Queue, QueueEvents } from 'bullmq'
+import { DownloadJobPayload, DownloadJobResult, downloadMedia } from '../utils/queueProcessors/downloadMedia.js'
 
 function sendWithCache(res: Response, localFileName: string) {
   // Does the .mime file exist?
@@ -301,22 +301,17 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, 
       return;
     }
 
-    let job = await downloadMediaQueue.getJob(mediaLinkHash)
+    let job = undefined //await downloadMediaQueue.getJob(mediaLinkHash)
     if (!job) {
-      job = await downloadMediaQueue.add(
-        'downloadMedia',
-        {
+      job = await downloadMedia({
+        data: {
           mediaUrl
-        },
-        {
-          priority: extraJobData ? extraJobData.priority : 1,
-          jobId: mediaLinkHash,
-          parent: extraJobData?.parentData
         }
-      )
+      } as Job)
     }
 
-    const data = await job.waitUntilFinished(downloadMediaQueueEvents)
+    // const data = await job.waitUntilFinished(downloadMediaQueueEvents)
+    const data = job
     if (res) {
       return sendWithCache(res, data.localFileName)
     }
