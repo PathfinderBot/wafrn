@@ -12,7 +12,7 @@ import { Op } from 'sequelize'
 import { User } from '../models/user.js'
 import { Emoji } from '../models/emoji.js'
 import getUserAgent from '../utils/getUserAgent.js'
-import { Queue, QueueEvents } from 'bullmq'
+import { ParentOptions, Queue, QueueEvents } from 'bullmq'
 import { DownloadJobPayload, DownloadJobResult } from '../utils/queueProcessors/downloadMedia.js'
 
 function sendWithCache(res: Response, localFileName: string) {
@@ -288,7 +288,7 @@ const downloadMediaQueueEvents = new QueueEvents('downloadMedia', {
   connection: completeEnvironment.bullmqConnection
 })
 
-async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, priority = 1) {
+async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, extraJobData? : {parentData?: ParentOptions , priority: number}) {
   try {
     const mediaLinkHash = crypto.createHash('sha256').update(mediaUrl).digest('hex')
     const localFileName = `cache/${mediaLinkHash}`
@@ -309,8 +309,9 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, 
           mediaUrl
         },
         {
+          priority: extraJobData ? extraJobData.priority : 1,
           jobId: mediaLinkHash,
-          priority: priority,
+          parent: extraJobData?.parentData
         }
       )
     }
