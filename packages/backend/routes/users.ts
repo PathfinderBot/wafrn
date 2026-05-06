@@ -1756,11 +1756,11 @@ function userRoutes(app: Application) {
             [Op.or]: [
               {
                 blockerId: userAsking,
-                blockedId: { [Op.in]: [userRecivingAsk.id] }
+                blockedId: userRecivingAsk.id
               },
               {
-                blockedId: userRecivingAsk.id,
-                blockerId: { [Op.in]: [userAsking] }
+                blockerId: userRecivingAsk.id,
+                blockedId: userAsking
               }
             ]
           }
