@@ -19,7 +19,7 @@ async function processRemoteMedia(job: Job) {
       ? media.url
       : completeEnvironment.mediaUrl + media.url;
     let fileLocation = "";
-    await getMediaFromUrl(mediaUrl);
+    await getMediaFromUrl(mediaUrl, undefined, false, 2097152);
     // get the local file name from redis using the hash of the media url
     const mediaLinkHash = crypto
       .createHash("sha256")

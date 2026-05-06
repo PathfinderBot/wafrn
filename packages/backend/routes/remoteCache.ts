@@ -42,30 +42,30 @@ function cacheRoutes(app: Application) {
   })
 
   app.get('/api/v2/cache/media/:id', async (req: Request, res: Response) => {
-    let mediaId = req.params.id
-    let force = req.query.force === 'true'
+    const mediaId = req.params.id
+    const force = req.query.force === 'true'
     const mediaUrl = mediaId ? await getMediaUrlCache(mediaId) : undefined
     if (mediaUrl) {
       try {
-        await getMediaFromUrl(mediaUrl, res, force)
+        return await getMediaFromUrl(mediaUrl, res, force)
       } catch (error) {
         logger.trace({
           message: `Error obtaining media ${mediaUrl}`,
           error: error
         })
-        res.sendStatus(500)
+        return res.sendStatus(500)
       }
     } else {
-      res.sendStatus(404)
+      return res.sendStatus(404)
     }
   })
 
   async function getMediaUrlCache(id: string): Promise<string> {
     let res = ''
-    let redisData = await redisCache.get('media:' + id)
-    let media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
+    const redisData = await redisCache.get('media:' + id)
+    const media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
     if (!redisData && media) {
-      await redisCache.set('media:' + id, JSON.stringify(media), 'EX', 600)
+      await redisCache.set('media:' + id, JSON.stringify(media), 'EX', 3600 * 24)
     }
     if (media) {
       res = media.external ? media.url : completeEnvironment.mediaUrl + media.url
@@ -116,16 +116,16 @@ function cacheRoutes(app: Application) {
       res = user.email ? `${completeEnvironment.mediaUrl}${user.avatar}` : user.avatar
     }
     if (user && !avatarCache) {
-      await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 60)
+      await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 3600 * 24)
     }
     return res
   }
 
   app.get('/api/v2/cache/header/:id', async (req: Request, res: Response) => {
     try {
-      let userId = req.params.id
-      let force = req.query.force === 'true'
-      let url = await getHeaderUrlCache(userId)
+      const userId = req.params.id
+      const force = req.query.force === 'true'
+      const url = await getHeaderUrlCache(userId)
       if (url) {
         await getMediaFromUrl(url, res, force)
       } else {
@@ -163,7 +163,7 @@ function cacheRoutes(app: Application) {
       res = user.email ? `${completeEnvironment.mediaUrl}${user.headerImage}` : user.headerImage
     }
     if (user && !headerCache) {
-      await redisCache.set('header:' + id, JSON.stringify(user.dataValues), 'EX', 60)
+      await redisCache.set('header:' + id, JSON.stringify(user.dataValues), 'EX', 3600 * 24)
     }
     return res
   }
@@ -288,14 +288,17 @@ const downloadMediaQueueEvents = new QueueEvents('downloadMedia', {
   connection: completeEnvironment.bullmqConnection
 })
 
-async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) {
+async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, priority = 1) {
   try {
     const mediaLinkHash = crypto.createHash('sha256').update(mediaUrl).digest('hex')
     const localFileName = `cache/${mediaLinkHash}`
 
     // if file exists
-    if (fs.existsSync(localFileName) && res && !force) {
-      return sendWithCache(res, localFileName)
+    if (fs.existsSync(localFileName) && !force) {
+      if(res) {
+        return sendWithCache(res, localFileName)
+      }
+      return;
     }
 
     let job = await downloadMediaQueue.getJob(mediaLinkHash)
@@ -307,7 +310,7 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false) 
         },
         {
           jobId: mediaLinkHash,
-          priority: 1,
+          priority: priority,
         }
       )
     }
