@@ -51,7 +51,7 @@ async function checkCommitMentions(
       }
       if(mentions && mentions.length && (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, mentions)).some(elem => elem != 0)) {
         logger.debug('Post contains a mention of a local user')
-        return res
+        return true
       }
     }
   // first we check if there are any mentions to local users. if so we return true
