@@ -1750,6 +1750,28 @@ function userRoutes(app: Application) {
         })
       }
 
+      if (userAsking) {
+        const blocksExisting = await Blocks.count({
+          where: {
+            [Op.or]: [
+              {
+                blockerId: userAsking,
+                blockedId: userRecivingAsk.id
+              },
+              {
+                blockerId: userRecivingAsk.id,
+                blockedId: userAsking
+              }
+            ]
+          }
+        })
+        if (blocksExisting > 0) {
+          return res.send({
+            success: false
+          })
+        }
+      }
+
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
       await Ask.create({
         question: dompurify.sanitize(question, { ALLOWED_TAGS: [] }),
