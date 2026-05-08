@@ -107,7 +107,7 @@ Once the scripts run and everything is okay you should be able to access your we
 
 ## Upgrading, Updating and Backups
 
-Before you update please check the [CHANGELOG.md](../CHANGELOG.md) for any breaking changes that you might need to be aware of
+Before you update, please check release notes for any breaking changes or additional instructions that you might need to be aware of.
 
 Go to your `wafrn` directory and enter:
 
@@ -129,7 +129,7 @@ By default the installation will create a backup every day and keep it for 10 da
 You can also restore a backup if needed:
 
 ```bash
-./install/manage.sh restore <backup_directory>
+./install/manage.sh restore /full/path/to/backup_directory
 ```
 
 ## Bluesky integraton
