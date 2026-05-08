@@ -1,5 +1,37 @@
 # Wafrn Management
 
+## Backups
+
+### Backing Up
+
+Wafrn can be backed up using the following while inside the wafrn directory:
+
+``sh
+./install/manage.sh backup
+``
+
+If you used the installer to set up your Wafrn server, this script is automatically run every day using a cronjob.
+
+It is recommend to back up your instance before running an update or importing data.
+
+### Restoring from Backup
+
+You may restore your instance from backup while in the wafrn folder using the following script:
+
+``sh
+./install/manage.sh restore /full/path/to/backup_directory
+``
+
+## Updating / Upgrading
+
+Before updating, check release notes to ensure you are aware of any breaking changes or additional instructions.
+
+Wafrn may be updated with the following script while you are inside the wafrn directory:
+
+``sh
+./install/manage.sh update
+``
+
 ## Exporting / backing up users
 
 If any user asks you to backup their data, or you want to create a backup for yourself, you can run the following command:
@@ -36,3 +68,14 @@ Wafrn supports importing seirdy's fedinuke and IFTAS DNI using the following scr
 ```sh
 docker exec -ti wafrn-backend-1 npm exec  tsx updateDatabase/blockHosts.ts
 ```
+
+## Migrating to a New Server
+
+If you need to move your Wafrn to a new server, here is an overview of the process:
+
+* Install Wafrn on the new server with dummy information. This will be overwritten later.
+* Create a backup of your instance on the old server.
+* Upload this backup to the new server.
+* Overwrite the new server's .env with the old server's information.
+* Use the restore from backup script outlined in the Backups section to overwrite the new server's data.
+* If all succeeds, your Wafrn install is now migrated to a new server!
