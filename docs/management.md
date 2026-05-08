@@ -1,10 +1,12 @@
 # Wafrn Management
 
+**All commands should be run in the `wafrn` directory unless otherwise stated.**
+
 ## Backups
 
 ### Backing Up
 
-Wafrn can be backed up using the following while inside the wafrn directory:
+Wafrn can be backed up using the following:
 
 ```sh
 ./install/manage.sh backup
@@ -16,7 +18,7 @@ It is recommend to back up your instance before running an update or importing d
 
 ### Restoring from Backup
 
-You may restore your instance from backup while in the wafrn folder using the following script:
+You may restore your instance from backup:
 
 ```sh
 ./install/manage.sh restore /full/path/to/backup_directory
@@ -26,7 +28,7 @@ You may restore your instance from backup while in the wafrn folder using the fo
 
 Before updating, check release notes to ensure you are aware of any breaking changes or additional instructions.
 
-Wafrn may be updated with the following script while you are inside the wafrn directory:
+Wafrn may be updated with the following script:
 
 ```sh
 ./install/manage.sh update
@@ -63,7 +65,7 @@ The remote cache is also cleared on update.
 
 ## Importing Fedinuke and IFTAS DNI Blocklists
 
-Wafrn supports importing seirdy's fedinuke and IFTAS DNI using the following script:
+Wafrn supports importing [seirdy's FediNuke](https://seirdy.one/posts/2023/05/02/fediverse-blocklists/) and [IFTAS DNI](https://about.iftas.org/library/iftas-dni-list/) using the following script:
 
 ```sh
 docker exec -ti wafrn-backend-1 npm exec  tsx updateDatabase/blockHosts.ts
