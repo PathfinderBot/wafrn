@@ -6,9 +6,9 @@
 
 Wafrn can be backed up using the following while inside the wafrn directory:
 
-``sh
+```sh
 ./install/manage.sh backup
-``
+```
 
 If you used the installer to set up your Wafrn server, this script is automatically run every day using a cronjob.
 
@@ -18,9 +18,9 @@ It is recommend to back up your instance before running an update or importing d
 
 You may restore your instance from backup while in the wafrn folder using the following script:
 
-``sh
+```sh
 ./install/manage.sh restore /full/path/to/backup_directory
-``
+```
 
 ## Updating / Upgrading
 
@@ -28,9 +28,9 @@ Before updating, check release notes to ensure you are aware of any breaking cha
 
 Wafrn may be updated with the following script while you are inside the wafrn directory:
 
-``sh
+```sh
 ./install/manage.sh update
-``
+```
 
 ## Exporting / backing up users
 
