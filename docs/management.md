@@ -94,11 +94,13 @@ docker exec -it wafrn-backend-1 sh
 ```
 2. Edit the `utils/maintenanceTasks/mailCampaing.ts` file (if sending a regular email) or the `utils/maintenanceTasks/emergenciEmail` (if sending an emergency email) files to match the content of the email you want to send.
 3. Run the command to send the email.
+
 If sending a regular email:
 ```sh
 npm i -g tsx
 tsx utils/maintenanceTasks/mailCampaing.ts
 ```
+
 If sending an emergency email:
 ```sh
 npm i -g tsx
