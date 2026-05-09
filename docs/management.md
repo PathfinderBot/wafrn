@@ -12,7 +12,9 @@ Wafrn can be backed up using the following:
 ./install/manage.sh backup
 ```
 
-If you used the installer to set up your Wafrn server, this script is automatically run every day using a cronjob.
+If you used the installer to set up your Wafrn server, this script is automatically run every day using a cronjob. You can modify it to happen as frequently or infrequently as you like via the crontab of the user you installed Wafrn under.
+
+You can [add post-backup scripts](https://codeberg.org/wafrn/wafrn-opentofu/src/branch/main/scripts/post_backup.template.sh) that you can configure to copy the backups to an off-site location, like any S3 compatible bucket. These will automatically be run every time a backup is made.
 
 It is recommend to back up your instance before running an update or importing data.
 
