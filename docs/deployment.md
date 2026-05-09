@@ -105,33 +105,6 @@ docker compose up --build -d
 
 Once the scripts run and everything is okay you should be able to access your website at `https://wafrn.example.com`
 
-## Upgrading, Updating and Backups
-
-Before you update, please check release notes for any breaking changes or additional instructions that you might need to be aware of.
-
-Go to your `wafrn` directory and enter:
-
-```bash
-./install/manage.sh update
-```
-
-This will check if there are any known breaking changes with the files and if not will update your local setup to the latest version.
-
-This small management script can also backup and restore your instance. For example you can backup before an update:
-
-```bash
-./install/manage.sh backup
-./install/manage.sh update
-```
-
-By default the installation will create a backup every day and keep it for 10 days. You can also [add post-backup scripts](https://codeberg.org/wafrn/wafrn-opentofu/src/branch/main/scripts/post_backup.template.sh) that you can configure to copy the backups to an off-site location, like any S3 compatible bucket.
-
-You can also restore a backup if needed:
-
-```bash
-./install/manage.sh restore /full/path/to/backup_directory
-```
-
 ## Bluesky integraton
 
 If you used the OCI integration or the installer and enabled Bluesky then it should already work you.
