@@ -92,19 +92,17 @@ Wafrn automatically sends basic emails like password resets or email verificatio
 ```sh
 docker exec -it wafrn-backend-1 sh
 ```
-2. Edit the `utils/maintenanceTasks/mailCampaing.ts` file (if sending a regular email) or the `utils/maintenanceTasks/emergenciEmail` (if sending an emergency email) files to match the content of the email you want to send.
+2. Edit the `utils/maintenanceTasks/mailCampaing.ts` file (if sending a campaign email) or the `utils/maintenanceTasks/emergenciEmail` (if sending an emergency email) file to match the content of the email you want to send.
 3. Run the command to send the email.
 
-If sending a regular email:
+If sending a campaign email:
 ```sh
-npm i -g tsx
-tsx utils/maintenanceTasks/mailCampaing.ts
+npx tsx utils/maintenanceTasks/mailCampaing.ts
 ```
 
 If sending an emergency email:
 ```sh
-npm i -g tsx
-tsx utils/maintenanceTasks/emergenciEmail.ts
+npx tsx utils/maintenanceTasks/emergenciEmail.ts
 ```
 If this fails, check to make sure modifications have been made.
 
