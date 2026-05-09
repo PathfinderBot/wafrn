@@ -83,3 +83,27 @@ If you need to move your Wafrn to a new server, here is an overview of the proce
 * Overwrite the new server's .env with the old server's information.
 * Use the restore from backup script outlined in the Backups section to overwrite the new server's data.
 * If all succeeds, your Wafrn install is now migrated to a new server!
+
+## Sending Custom Mass Emails
+
+Wafrn automatically sends basic emails like password resets or email verification emails when configured. This section is for sending custom mass emails to users, such as announcements or security notices.
+
+1. Enter a backend container. For example, if you want to enter wafrn-backend-1:
+```sh
+docker exec -it wafrn-backend-1 sh
+```
+2. Edit the `utils/maintenanceTasks/mailCampaing.ts` file (if sending a regular email) or the `utils/maintenanceTasks/emergenciEmail` (if sending an emergency email) files to match the content of the email you want to send.
+3. Run the command to send the email.
+If sending a regular email:
+```sh
+npm i -g tsx
+tsx utils/maintenanceTasks/mailCampaing.ts
+```
+If sending an emergency email:
+```sh
+npm i -g tsx
+tsx utils/maintenanceTasks/emergenciEmail.ts
+```
+If this fails, check to make sure modifications have been made.
+
+The emergency email script ignores user email preferences and should only be used for legitimate concerns such as a security notice. The mail campaign script respects user preferences and should be used for all other purposes.
