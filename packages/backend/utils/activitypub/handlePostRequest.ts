@@ -5,24 +5,12 @@ import { getFollowerRemoteIds } from '../cacheGetters/getFollowerRemoteIds.js'
 import { logger } from '../logger.js'
 import { postToJSONLD } from './postToJSONLD.js'
 import { getRemoteActor } from './getRemoteActor.js'
-import { Queue } from 'bullmq'
-import { completeEnvironment } from '../backendOptions.js'
+import { getQueue } from '../queues.js'
 import { FederatedHost, Follows, User } from '../../models/index.js'
 import { Op } from 'sequelize'
 import { Privacy } from '../../models/post.js'
 
-const processPostViewQueue = new Queue('processRemoteView', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 25000
-    },
-    removeOnFail: true
-  }
-})
+const processPostViewQueue = getQueue('processRemoteView')
 
 async function handlePostRequest(req: SignedRequest, res: Response) {
   if (req.params?.id) {

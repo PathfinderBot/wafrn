@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op} from 'sequelize'
+import { Op } from 'sequelize'
 import {
   Blocks,
   Post,
@@ -17,7 +17,7 @@ import { sequelize } from '../models/index.js'
 import getStartScrollParam from '../utils/getStartScrollParam.js'
 import { logger } from '../utils/logger.js'
 import { createPostLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
@@ -47,30 +47,8 @@ const markdownConverter = new showdown.Converter({
   encodeEmails: false
 })
 
-const prepareSendPostQueue = new Queue('prepareSendPost', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
-
-const sendPostBskyQueue = new Queue('sendPostBsky', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'fixed'
-    },
-    removeOnFail: true
-  }
-})
+const prepareSendPostQueue = getQueue('prepareSendPost')
+const sendPostBskyQueue = getQueue('sendPostBsky')
 export default function postsRoutes(app: Application) {
   app.get(
     '/api/article/:user?/:slug',
@@ -81,8 +59,8 @@ export default function postsRoutes(app: Application) {
       const postSlug = req.params?.slug
       const user = userUrl
         ? await User.findOne({
-            where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
-          })
+          where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
+        })
         : await getAdminUser()
       if (!user) {
         res.sendStatus(404)
@@ -188,16 +166,16 @@ export default function postsRoutes(app: Application) {
             createdAt: { [Op.lt]: getStartScrollParam(req) },
             featured: featured
               ? {
-                  [Op.ne]: null
-                }
+                [Op.ne]: null
+              }
               : {
-                  [Op.or]: [
-                    {
-                      [Op.ne]: null
-                    },
-                    { [Op.eq]: null }
-                  ]
-                },
+                [Op.or]: [
+                  {
+                    [Op.ne]: null
+                  },
+                  { [Op.eq]: null }
+                ]
+              },
             userId: blogId,
             privacy: {
               [Op.in]: privacyArray
@@ -365,19 +343,19 @@ export default function postsRoutes(app: Application) {
           // only count on reblogs
           const blocksExistingOnParents = parent
             ? await Blocks.count({
-                where: {
-                  [Op.or]: [
-                    {
-                      blockerId: posterId,
-                      blockedId: parent.userId
-                    },
-                    {
-                      blockedId: posterId,
-                      blockerId: parent.userId
-                    }
-                  ]
-                }
-              })
+              where: {
+                [Op.or]: [
+                  {
+                    blockerId: posterId,
+                    blockedId: parent.userId
+                  },
+                  {
+                    blockedId: posterId,
+                    blockerId: parent.userId
+                  }
+                ]
+              }
+            })
             : 0
 
           if (bannedUsers > 0) {
@@ -398,8 +376,8 @@ export default function postsRoutes(app: Application) {
           }
         }
 
-        let content = (req.body.content ? ' ' + req.body.content.trim() : '').substring(0, 2*1024*1024)
-        const content_warning = req.body.content_warning.substring(0, 2*1024)
+        let content = (req.body.content ? ' ' + req.body.content.trim() : '').substring(0, 2 * 1024 * 1024)
+        const content_warning = req.body.content_warning.substring(0, 2 * 1024)
           ? req.body.content_warning.trim()
           : posterUser?.NSFW
             ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
@@ -552,7 +530,7 @@ export default function postsRoutes(app: Application) {
           }
 
           post.content = content
-          post.markdownContent = req.body.content.substring(0, 2*1024*1024)
+          post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
           post.privacy = bodyPrivacy
           await post.save()
@@ -589,8 +567,8 @@ export default function postsRoutes(app: Application) {
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          const initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({where: {hierarchyLevel : 1}}))[0]) : undefined
-          if(initialPost && initialPost.replyControl != InteractionControl.Anyone) {
+          const initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({ where: { hierarchyLevel: 1 } }))[0]) : undefined
+          if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }
           post = await Post.create({
@@ -599,7 +577,7 @@ export default function postsRoutes(app: Application) {
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,
-            markdownContent: req.body.content.substring(0, 2*1024*1024),
+            markdownContent: req.body.content.substring(0, 2 * 1024 * 1024),
             isReblog: isReblog,
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
@@ -783,18 +761,7 @@ export default function postsRoutes(app: Application) {
       })
       if (medias.length) {
         // We force update the media metadata because of posibility of it not having height and width metadata
-        const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-          connection: completeEnvironment.bullmqConnection,
-          defaultJobOptions: {
-            removeOnComplete: true,
-            attempts: 3,
-            backoff: {
-              type: 'exponential',
-              delay: 1000
-            },
-            removeOnFail: true
-          }
-        })
+        const updateMediaDataQueue = getQueue('processRemoteMediaData')
         await updateMediaDataQueue.addBulk(
           medias.map((media: any) => {
             return {

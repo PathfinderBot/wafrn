@@ -8,21 +8,10 @@ import getIp from '../utils/getIP.js'
 import optimizeMedia from '../utils/optimizeMedia.js'
 import { logger } from '../utils/logger.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 
-const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
 export default function mediaRoutes(app: Application) {
   app.post(

@@ -31,19 +31,9 @@ import { getAllLocalUserIds } from './cacheGetters/getAllLocalUserIds.js'
 import { checkBskyLabelersNSFW } from './atproto/checkBskyLabelerNSFW.js'
 import { isAdult } from './isAdult.js'
 import { logger } from './logger.js'
+import { getQueue } from './queues.js'
 
-const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
 async function getQuotes(postIds: string[]): Promise<Quotes[]> {
   return await Quotes.findAll({
@@ -483,8 +473,8 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
           ...x,
           ...(pronouns
             ? {
-                pronouns
-              }
+              pronouns
+            }
             : {})
         }
       }),
@@ -536,8 +526,8 @@ async function canInteract(
   let userFollowers = userFollowersInput
     ? userFollowersInput
     : getFollowedsIds(userId, false, {
-        getFollowersInstead: true
-      })
+      getFollowersInstead: true
+    })
   let mentions = mentionsInput ? mentionsInput : getMentionedUserIds([postId])
   let post: Promise<Post | null> | Post | null = Post.findByPk(postId)
   await Promise.all([usersFollowing, userFollowers, mentions, post])

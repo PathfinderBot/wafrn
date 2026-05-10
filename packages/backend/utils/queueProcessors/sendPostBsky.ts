@@ -9,6 +9,7 @@ import { logger } from '../logger.js'
 import { AtUri } from '@atproto/api'
 import { redisBloom } from '../redis.js'
 import { ROOT_REPLIED_POSTS } from '../../constants.js'
+import { getQueue } from '../queues.js'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
@@ -55,12 +56,12 @@ async function sendPostBsky(job: Job) {
           if (!isReblog) {
             let agent = await getAtProtoSession(localUser)
             const atProtoObject = await postToAtproto(post, agent)
-            if(atProtoObject.reply?.root) {
+            if (atProtoObject.reply?.root) {
               await redisBloom.add(ROOT_REPLIED_POSTS, atProtoObject.reply.root)
             }
             const bskyPost = await agent.post(atProtoObject)
-            const {rkey} = new AtUri(bskyPost.uri)
-            if(bskyPost && agent.session && post.quoteControl != InteractionControl.Anyone) {
+            const { rkey } = new AtUri(bskyPost.uri)
+            if (bskyPost && agent.session && post.quoteControl != InteractionControl.Anyone) {
               await agent.com.atproto.repo.createRecord({
                 repo: agent.session.did,
                 collection: 'app.bsky.feed.postgate',
@@ -69,25 +70,25 @@ async function sendPostBsky(job: Job) {
                   $type: 'app.bsky.feed.postgate',
                   post: bskyPost.uri,
                   embeddingRules: [
-                    {'$type': 'app.bsky.feed.postgate#disableRule'}
+                    { '$type': 'app.bsky.feed.postgate#disableRule' }
                   ],
                   createdAt: new Date().toISOString()
                 }
               })
             }
-            if(post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone && agent.session) {
+            if (post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone && agent.session) {
               const gates: string[] = []
-              if([InteractionControl.FollowersFollowingAndMentioned, InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned].includes(post.replyControl)) {
+              if ([InteractionControl.FollowersFollowingAndMentioned, InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#mentionRule')
               }
-              if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
+              if ([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#followerRule')
               }
 
-              if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
+              if ([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#followingRule')
               }
-              if(post.quoteControl !== InteractionControl.Anyone){
+              if (post.quoteControl !== InteractionControl.Anyone) {
               }
               await agent.com.atproto.repo.createRecord({
                 repo: agent.session.did,
@@ -96,9 +97,11 @@ async function sendPostBsky(job: Job) {
                 record: {
                   $type: 'app.bsky.feed.threadgate',
                   post: bskyPost.uri,
-                  allow: gates.map(elem => { return {
-                    '$type': elem
-                  }}),
+                  allow: gates.map(elem => {
+                    return {
+                      '$type': elem
+                    }
+                  }),
                   createdAt: new Date().toISOString()
                 }
               })
@@ -142,18 +145,7 @@ async function sendPostBsky(job: Job) {
     }
   }
   if (post) {
-    const prepareSendPostQueue = new Queue('prepareSendPost', {
-      connection: completeEnvironment.bullmqConnection,
-      defaultJobOptions: {
-        removeOnComplete: true,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 5000
-        },
-        removeOnFail: true
-      }
-    })
+    const prepareSendPostQueue = getQueue('prepareSendPost')
     // we send the post to fedi once we get the bsky data
     await prepareSendPostQueue.add('prepareSendPost', job.data, {
       jobId: post.id,

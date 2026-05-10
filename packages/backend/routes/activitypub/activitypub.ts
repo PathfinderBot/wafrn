@@ -2,7 +2,7 @@ import { Application, Request, Response } from "express";
 import { User, Emoji, sequelize, Quotes, Post } from "../../models/index.js";
 import { getCheckFediverseSignatureFunction } from "../../utils/activitypub/checkFediverseSignature.js";
 import { return404 } from "../../utils/return404.js";
-import { Queue } from "bullmq";
+import { getQueue } from "../../utils/queues.js";
 import { SignedRequest } from "../../interfaces/fediverse/signedRequest.js";
 import { getPostReplies } from "../../utils/activitypub/getPostReplies.js";
 import { redisCache } from "../../utils/redis.js";
@@ -39,18 +39,7 @@ async function getLocalUserByUrlCache(url: string): Promise<User | undefined> {
   return cacheResult ? JSON.parse(cacheResult) : undefined;
 }
 
-const inboxQueue = new Queue("inbox", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 1000,
-    },
-    removeOnFail: true,
-  },
-});
+const inboxQueue = getQueue("inbox");
 
 // all the stuff related to activitypub goes here
 

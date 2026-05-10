@@ -1,9 +1,10 @@
-import { Job, Queue } from 'bullmq'
+import { Job } from 'bullmq'
 import { Follows, Post, User, UserLikesPostRelations } from '../../models/index.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { logger } from '../logger.js'
 import { Op } from 'sequelize'
 import { completeEnvironment } from '../backendOptions.js'
+import { getQueue } from '../queues.js'
 import { removeUser } from '../activitypub/removeUser.js'
 
 
@@ -46,27 +47,17 @@ async function mergeUser(job: Job) {
       ]
     }
   })
-  
-  const mergePostQueue = new Queue('mergePosts', {
-    connection: completeEnvironment.bullmqConnection,
-    defaultJobOptions: {
-      removeOnComplete: true,
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 1000
-      },
-      removeOnFail: true
-    }
-  })
+
+  const mergePostQueue = getQueue('mergePosts')
 
   mergePostQueue.addBulk(
     postsFromUserToMerge.map(post => {
       return {
-      name: `mergePost-${post.id}`,
-      data: { postId: post.id} }
+        name: `mergePost-${post.id}`,
+        data: { postId: post.id }
+      }
     })
-    
+
   )
 
   // now for the remainings we just migrate all of them to the new user
@@ -157,9 +148,10 @@ async function mergeUser(job: Job) {
   userToMerge.save()
   primaryUser.save()
   await removeUser(userToMerge.id)
-  
+
   logger.info({
-    message: `Merged users ${primaryUser.url} (primary) and ${userToMerge?.url}` }
+    message: `Merged users ${primaryUser.url} (primary) and ${userToMerge?.url}`
+  }
   )
 }
 

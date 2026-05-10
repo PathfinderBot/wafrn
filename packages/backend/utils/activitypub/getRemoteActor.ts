@@ -1,4 +1,4 @@
-import { Job, Queue, QueueEvents } from "bullmq";
+import { Job, QueueEvents } from "bullmq";
 import { sequelize, User } from "../../models/index.js";
 
 import { logger } from "../logger.js";
@@ -7,19 +7,9 @@ import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { forcePopulateUsers } from "../../atproto/utils/getAtprotoUser.js";
 import { redisCache } from "../redis.js";
 import { completeEnvironment } from "../backendOptions.js";
+import { getQueue } from "../queues.js";
 
-const queue = new Queue("getRemoteActorId", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    removeOnFail: true,
-    attempts: 2,
-    backoff: {
-      type: "exponential",
-      delay: 1000,
-    },
-  },
-});
+const queue = getQueue("getRemoteActorId");
 const queueEvents = new QueueEvents("getRemoteActorId", {
   connection: completeEnvironment.bullmqConnection,
 });

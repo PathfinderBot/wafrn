@@ -4,22 +4,11 @@ import { completeEnvironment } from '../backendOptions.js'
 import { postToJSONLD } from './postToJSONLD.js'
 import { LdSignature } from './rsa2017.js'
 import _ from 'underscore'
-import { Queue } from 'bullmq'
 import { redisCache } from '../redis.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
+import { getQueue } from '../queues.js'
 
-const sendPostQueue = new Queue('sendPostToInboxes', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const sendPostQueue = getQueue('sendPostToInboxes')
 async function federatePostHasBeenEdited(postToEdit: any) {
   const user = await User.scope('full').findByPk(postToEdit.userId)
   if (!user) return

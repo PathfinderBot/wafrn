@@ -17,39 +17,17 @@ import {
   Quotes,
   PostTag,
 } from "../../models/index.js";
-import { Job, Queue } from "bullmq";
+import { Job } from "bullmq";
 import { Privacy } from "../../models/post.js";
 import { completeEnvironment } from "../backendOptions.js";
+import { getQueue } from "../queues.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
 import { include } from "underscore";
 import { wait } from "../wait.js";
 
-const processPostViewQueue = new Queue("processRemoteView", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 25000,
-    },
-    removeOnFail: true,
-  },
-});
-
-const sendPostQueue = new Queue("sendPostToInboxes", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "fixed",
-      delay: 25000,
-    },
-    removeOnFail: true,
-  },
-});
+const processPostViewQueue = getQueue("processRemoteView");
+const sendPostQueue = getQueue("sendPostToInboxes");
 
 async function prepareSendRemotePostWorker(job: Job) {
   let highPriorityInboxes: string[] = [];

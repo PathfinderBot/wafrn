@@ -1,10 +1,11 @@
 import { Jetstream } from "@skyware/jetstream";
-import { Job, Queue, Worker } from "bullmq";
+import { Job, Worker } from "bullmq";
 import { checkCommitMentions } from "./atproto/utils/checkCommitMentions.js";
 import { logger } from "./utils/logger.js";
 import { completeEnvironment } from "./utils/backendOptions.js";
 import { redisCache } from "./utils/redis.js";
 import { forceUpdateDidsCacheQueue } from "./interfaces/atproto/forceUpdateDidsCacheUpdate.js";
+import { getQueue } from "./utils/queues.js";
 import {
   FOLLOWED_BSKY_DIDS_CACHE_KEY,
   FOLLOWED_HASHTAGS_CACHE_KEY,
@@ -13,23 +14,8 @@ import {
 
 import { forcePopulateCache } from "./atproto/cache/forcePopulateCache.js";
 
-const firehoseQueue = new Queue("firehoseQueue", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 2,
-    removeOnFail: true,
-  },
-});
-
-const lowPriorityFirehoseQueue = new Queue("lowPriorityFirehoseQueue", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 2,
-    removeOnFail: true,
-  },
-});
+const firehoseQueue = getQueue("firehoseQueue");
+const lowPriorityFirehoseQueue = getQueue("lowPriorityFirehoseQueue");
 
 async function getCursor(): Promise<number> {
   const cursorCache = await redisCache.get("jetstreamCursor");

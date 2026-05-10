@@ -1,4 +1,4 @@
-import { Queue } from 'bullmq'
+import { getQueue } from '../queues.js'
 import { Op } from 'sequelize'
 import { isArray } from 'util'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
@@ -74,18 +74,7 @@ async function migrateUserFedi(
 }
 
 async function migrateInternal(localUser: User, newUserRemoteId: string) {
-  const deletePostQueue = new Queue('deletePostQueue', {
-    connection: completeEnvironment.bullmqConnection,
-    defaultJobOptions: {
-      removeOnComplete: true,
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 1000
-      },
-      removeOnFail: true
-    }
-  })
+  const deletePostQueue = getQueue('deletePostQueue')
   // TIME TO MOVE OUT
   // FIRST STEP: followers. send message to each follower. a move object
   const followerIds = await Follows.findAll({
@@ -133,18 +122,7 @@ async function migrateInternal(localUser: User, newUserRemoteId: string) {
       }
     }
   })
-  const followQueue = new Queue('doFollow', {
-    connection: completeEnvironment.bullmqConnection,
-    defaultJobOptions: {
-      removeOnComplete: true,
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 1000
-      },
-      removeOnFail: true
-    }
-  })
+  const followQueue = getQueue('doFollow')
   const newRemoteUser = await getRemoteActor(newUserRemoteId, await getAdminUser())
   if (newRemoteUser) {
     followQueue.addBulk(

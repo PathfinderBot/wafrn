@@ -54,7 +54,7 @@ import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from '@atproto/api'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 import dompurify from 'isomorphic-dompurify'
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import * as OTPAuth from 'otpauth'
 import verifyTotp from '../utils/verifyTotp.js'
 import { follow } from '../utils/follow.js'
@@ -85,18 +85,7 @@ const markdownConverter = new showdown.Converter({
 })
 const forbiddenCharacters = [':', '@', '/', '<', '>', '"', '&', '?']
 
-const generateUserKeyPairQueue = new Queue('generateUserKeyPair', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const generateUserKeyPairQueue = getQueue('generateUserKeyPair')
 
 const serviceUrl = completeEnvironment.bskyPds
   ? completeEnvironment.bskyPds.startsWith('http')
@@ -104,18 +93,7 @@ const serviceUrl = completeEnvironment.bskyPds
     : 'https://' + completeEnvironment.bskyPds
   : ''
 
-const deletePostQueue = new Queue('deletePostQueue', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const deletePostQueue = getQueue('deletePostQueue')
 
 const slurs = [
   'chinaman',

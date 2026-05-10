@@ -1,7 +1,7 @@
 import { Application, Response } from "express";
 import { adminToken, authenticateToken } from "../utils/authenticateToken.js";
 import AuthorizedRequest from "../interfaces/authorizedRequest.js";
-import { Queue } from "bullmq";
+import { getQueue } from "../utils/queues.js";
 import { FederatedHost } from "../models/index.js";
 import { completeEnvironment } from "../utils/backendOptions.js";
 import optionalAuthentication from "../utils/optionalAuthentication.js";
@@ -12,117 +12,17 @@ export default function statusRoutes(app: Application) {
     authenticateToken,
     adminToken,
     async (req: AuthorizedRequest, res: Response) => {
-      const sendPostsQueue = new Queue("sendPostToInboxes", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 1000,
-          },
-          removeOnFail: true,
-        },
-      });
-      const prepareSendPostQueue = new Queue("prepareSendPost", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 1000,
-          },
-          removeOnFail: true,
-        },
-      });
-
-      const deletePostQueue = new Queue("deletePostQueue", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 1000,
-          },
-          removeOnFail: true,
-        },
-      });
-
-      const inboxQueue = new Queue("inbox", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 3,
-          backoff: {
-            type: "exponential",
-            delay: 1000,
-          },
-          removeOnFail: true,
-        },
-      });
-      const firehoseQueue = new Queue("firehoseQueue", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 6,
-          backoff: {
-            type: "exponential",
-            delay: 25000,
-          },
-          removeOnFail: false,
-        },
-      });
-
-      const mergeUsersQueue = new Queue("mergeUsers", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 6,
-          backoff: {
-            type: "exponential",
-            delay: 25000,
-          },
-          removeOnFail: false,
-        },
-      });
-
-      const mergePostQueue = new Queue("mergePosts", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          attempts: 6,
-          backoff: {
-            type: "exponential",
-            delay: 25000,
-          },
-          removeOnFail: false,
-        },
-      });
-
-      const getRemoteActorQueue = new Queue("getRemoteActorId", {
-        connection: completeEnvironment.bullmqConnection,
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true,
-          attempts: 2,
-          backoff: {
-            type: "exponential",
-            delay: 1000,
-          },
-        },
-      });
-
-      const sendPostBskyQueue = new Queue("sendPostBsky", {
-        connection: completeEnvironment.bullmqConnection,
-      });
-      const workerGenerateUserKeyPair = new Queue("generateUserKeyPair", {
-        connection: completeEnvironment.bullmqConnection,
-      });
-      const wsWaitingQueue = new Queue("updateNotificationsSocket", {
-        connection: completeEnvironment.bullmqConnection,
-      });
+      const sendPostsQueue = getQueue("sendPostToInboxes");
+      const prepareSendPostQueue = getQueue("prepareSendPost");
+      const deletePostQueue = getQueue("deletePostQueue");
+      const inboxQueue = getQueue("inbox");
+      const firehoseQueue = getQueue("firehoseQueue");
+      const mergeUsersQueue = getQueue("mergeUsers");
+      const mergePostQueue = getQueue("mergePosts");
+      const getRemoteActorQueue = getQueue("getRemoteActorId");
+      const sendPostBskyQueue = getQueue("sendPostBsky");
+      const workerGenerateUserKeyPair = getQueue("generateUserKeyPair");
+      const wsWaitingQueue = getQueue("updateNotificationsSocket");
       const createKeyPairWaiting = workerGenerateUserKeyPair.count();
       const atProtoAwaiting = firehoseQueue.count();
       const sendPostFailed = sendPostsQueue.getMetrics("failed");
