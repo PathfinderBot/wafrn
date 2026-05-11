@@ -13,7 +13,7 @@ async function sendPostToInboxes(job: Job) {
     // at some point we should remove the array thing but at the same time yeah
     const tmp = await promiseRace(
       [postPetitionSigned(objectToSend, localUser, inbox)],
-      5000
+      30000
     );
 
     if (tmp[0] === undefined || tmp[0] === null) {
