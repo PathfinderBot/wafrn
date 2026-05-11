@@ -229,7 +229,7 @@ function frontend(app: Application) {
         if (req.params?.id) {
           const cachedResponse = await redisCache.get(`postHttpResponse:${req.params.id}`)
           const possibleObjectToSend = cachedResponse ? JSON.parse(cachedResponse) : undefined
-          if (possibleObjectToSend && (possibleObjectToSend.to.includes("https://www.w3.org/ns/activitystreams#Public") || possibleObjectToSend.cc.includes("https://www.w3.org/ns/activitystreams#Public"))) {
+          if (possibleObjectToSend && (possibleObjectToSend.to?.includes("https://www.w3.org/ns/activitystreams#Public") || possibleObjectToSend.cc?.includes("https://www.w3.org/ns/activitystreams#Public"))) {
             res.set({
               'content-type': 'application/activity+json',
               'cache-control': 'public, max-age=300'
