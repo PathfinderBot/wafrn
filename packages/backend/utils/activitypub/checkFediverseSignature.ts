@@ -21,9 +21,9 @@ function getCheckFediverseSignatureFunction(force = false) {
     res: Response,
     next: NextFunction
   ) {
-    if(req.headers["Accept"] && (req.headers["Accept"] as string).toLowerCase().includes('application/activity+yaml') ) {
+    if (req.headers["Accept"] && (req.headers["Accept"] as string).toLowerCase().includes('application/activity+yaml')) {
       res.status(406);
-      return res.send({error: 'We do not accept yaml-ld', message: 'YAML-LD will generate a lot of safety issues: https://pyyaml.org/wiki/PyYAMLDocumentation#:~:text=Warning,though '})
+      return res.send({ error: 'We do not accept yaml-ld', message: 'YAML-LD will generate a lot of safety issues: https://pyyaml.org/wiki/PyYAMLDocumentation#:~:text=Warning,though ' })
     }
     let success = !force;
     let hostUrl = req.header("user-agent")
@@ -157,12 +157,13 @@ function getCheckFediverseSignatureFunction(force = false) {
             // Mastodon allows two kind of signatures on POST bodys, if the http one fails we can check if there's a JSON-LD one, and if it is valid we pass it
             const signature = req.body.signature;
             const remoteKeyData = await getKey(remoteUserUrl, adminUser);
-            const remoteActor = remoteKeyData.key ? {publicKey: remoteKeyData.key} : await getRemoteActor(
+            const remoteActor = remoteKeyData.key ? { publicKey: remoteKeyData.key } : await getRemoteActor(
               signature.creator.split("#")[0],
               (adminUser) as User
             );
             const jsonld = new LdSignature();
-
+            req.body = await jsonld.compactToWellKnown(req.body);
+            req.body.signature = signature
             if (
               remoteActor &&
               (await jsonld
