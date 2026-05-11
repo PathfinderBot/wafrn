@@ -25,6 +25,7 @@ import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
 import { include } from "underscore";
 import { wait } from "../wait.js";
+import { isHostInBackoff } from "../deliveryCircuitBreaker.js";
 
 const processPostViewQueue = getQueue("processRemoteView");
 const sendPostQueue = getQueue("sendPostToInboxes");
@@ -269,17 +270,51 @@ async function prepareSendRemotePostWorker(job: Job) {
             );
           });
           inboxes = [...highPriorityInboxes, ...inboxes]
-          await sendPostQueue.addBulk(inboxes.map(elem => {
-            return {
-              name: 'sendChunk',
-              data: {
-                  objectToSend: objectToSendComplete,
-                  petitionBy: localUser.dataValues,
-                  inboxList: elem,
-                }
-                
+          
+          // Filter out inboxes from hosts in backoff period (circuit breaker)
+          const inboxesToDeliver: string[] = []
+          const inboxesSkipped: string[] = []
+          
+          for (const inbox of inboxes) {
+            if (await isHostInBackoff(inbox)) {
+              inboxesSkipped.push(inbox)
+            } else {
+              inboxesToDeliver.push(inbox)
+            }
+          }
+          
+          if (inboxesSkipped.length > 0) {
+            logger.info({
+              message: 'Skipped inbox deliveries due to circuit breaker',
+              postId: post.id,
+              skippedCount: inboxesSkipped.length,
+              totalCount: inboxes.length,
+              skippedInboxes: inboxesSkipped.slice(0, 10) // Log first 10
+            })
+          }
+          
+          // Create child jobs using addBulk for atomic operation
+          // These jobs deliver the post to each inbox (fan-out pattern)
+          // All child jobs are tracked under prepareSendPost parent via job.id
+          const childJobs = inboxesToDeliver.map((inbox, index) => ({
+            name: 'sendChunk',
+            data: {
+              objectToSend: objectToSendComplete,
+              petitionBy: localUser.dataValues,
+              inboxList: inbox,
+              parentJobId: job.id,
+              childIndex: index,
+              totalChildren: inboxesToDeliver.length
+            },
+            opts: {
+              // Unique ID to prevent duplicates on retry
+              jobId: `${post.id}-inbox-${index}`
             }
           }))
+          
+          if (childJobs.length > 0) {
+            await sendPostQueue.addBulk(childJobs)
+          }
         }
       }
     } catch (error) {

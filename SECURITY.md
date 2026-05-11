@@ -2,7 +2,7 @@
 
 Please contact with the wafrn team:
 
-email: info@mail.wafrn.net
+email: info@wafrn.net
 fedi: @gabboman@app.wafrn.net
 bluesky: @gabboman.at.app.wafrn.net
 

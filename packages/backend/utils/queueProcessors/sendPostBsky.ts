@@ -1,4 +1,4 @@
-import { Job, Queue } from 'bullmq'
+import { Job } from 'bullmq'
 import { Media, Post, PostTag, Quotes, User, Notification } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
 import { InteractionControl, Privacy } from '../../models/post.js'
@@ -9,7 +9,6 @@ import { logger } from '../logger.js'
 import { AtUri } from '@atproto/api'
 import { redisBloom } from '../redis.js'
 import { ROOT_REPLIED_POSTS } from '../../constants.js'
-import { getQueue } from '../queues.js'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
@@ -144,14 +143,8 @@ async function sendPostBsky(job: Job) {
       logger.debug({ message: `Error sending post to bluesky`, error })
     }
   }
-  if (post) {
-    const prepareSendPostQueue = getQueue('prepareSendPost')
-    // we send the post to fedi once we get the bsky data
-    await prepareSendPostQueue.add('prepareSendPost', job.data, {
-      jobId: post.id,
-      delay: 2000
-    })
-  }
+  // FlowProducer handles enqueueing prepareSendPost as a child job
+  // No manual queue.add() needed here
 }
 
 export { sendPostBsky }

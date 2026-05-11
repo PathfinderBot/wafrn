@@ -189,4 +189,39 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
       await worker.pause();
     });
   }
+
+  // Graceful shutdown handler
+  async function gracefulShutdown(signal: string) {
+    logger.info(`Received ${signal}, starting graceful shutdown...`);
+    
+    try {
+      logger.info(`Closing ${workers.length} workers...`);
+      await Promise.all(
+        workers.map(async (worker) => {
+          try {
+            logger.debug(`Closing worker: ${worker.name}`);
+            await worker.close();
+            logger.debug(`Worker closed: ${worker.name}`);
+          } catch (error) {
+            logger.warn({
+              message: `Error closing worker ${worker.name}`,
+              error,
+            });
+          }
+        })
+      );
+      logger.info("All workers closed successfully");
+      process.exit(0);
+    } catch (error) {
+      logger.error({
+        message: "Error during graceful shutdown",
+        error,
+      });
+      process.exit(1);
+    }
+  }
+
+  // Register signal handlers for graceful shutdown
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 });
