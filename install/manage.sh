@@ -160,7 +160,11 @@ case $1 in
     ;;
   clean)
     pushd "$SCRIPT_DIR/.."
-    rm -rf packages/backend/cache/ && mkdir packages/backend/cache/
+    echo "Stoping wafrn to clean cache"
+    docker compose down
+    docker volume rm wafrn_cache
+    docker compose up -d
+    echo "Wafrn restarted"
     popd
     ;;
   logs)
