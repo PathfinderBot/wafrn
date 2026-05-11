@@ -93,7 +93,7 @@ async function processFirehose(job: Job) {
             let user = undefined
             let likedPostId = undefined
             try {
-              if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, job.data.repo )) {
+              if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, job.data.repo)) {
                 const postLikedUri = record.subject.uri
                 const postId = await processSinglePost(postLikedUri)
                 if (postId) {
@@ -179,7 +179,7 @@ async function processFirehose(job: Job) {
           case 'app.bsky.feed.post': {
             const postBskyUri = `at://${job.data.repo}/${operation.path}`
             const postCreated = await processSinglePost(postBskyUri)
-            if(!postCreated) {
+            if (!postCreated) {
               logger.debug(`Failed to obtain post: ${postBskyUri}`)
             }
             break
@@ -189,7 +189,8 @@ async function processFirehose(job: Job) {
             if (!record.subject) {
               logger.error({
                 message: `Missing basic info for rewoot`,
-                record})
+                record
+              })
               break
             }
             const postToBeRewooted = await processSinglePost(record.subject.uri, false)
@@ -274,10 +275,16 @@ async function processFirehose(job: Job) {
           case 'app.bsky.graph.block': {
             const userBlocked = await getAtprotoUser(record.subject)
             if (userBlocked) {
-              await Blocks.create({
-                blockedId: userBlocked.id,
-                blockerId: remoteUser.id,
-                bskyPath: operation.path
+              await Blocks.findOrCreate({
+                where: {
+                  blockedId: userBlocked.id,
+                  blockerId: remoteUser.id
+                },
+                defaults: {
+                  bskyPath: operation.path,
+                  blockedId: userBlocked.id,
+                  blockerId: remoteUser.id
+                }
               })
             }
             break

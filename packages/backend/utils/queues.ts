@@ -16,10 +16,10 @@ export const QUEUE_CONFIGS: any = {
   },
   "sendPostToInboxes": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 3,
+    attempts: 50,
     "backoff": {
       "type": "exponential",
-      "delay": 1000
+      "delay": 2500
     },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
@@ -61,10 +61,10 @@ export const QUEUE_CONFIGS: any = {
   },
   "deletePostQueue": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 3,
+    attempts: 50,
     "backoff": {
       "type": "exponential",
-      "delay": 1000
+      "delay": 2500
     },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
