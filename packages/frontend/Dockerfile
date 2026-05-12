@@ -1,8 +1,9 @@
 # Build stage
-FROM node:24-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
 
 RUN apk add --no-cache perl curl tini bash git
 
+RUN mkdir -p /app/packages/frontend
 WORKDIR /app/packages/frontend
 
 COPY package.json /app
@@ -32,19 +33,17 @@ RUN npm run build
 
 RUN mv dist/wafrn/browser /app/frontend
 
-COPY packages/frontend/Caddyfile.example /app/Caddyfile
 RUN cp /app/packages/frontend/src/assets/pds-homepage.txt /app/pds-homepage.txt
-
-COPY packages/cadd[y]/Caddyfil[e] /app/Caddyfile
 
 FROM caddy:2
 
 RUN apk add perl
 
-COPY --from=builder /app/Caddyfile /etc/caddy/Caddyfile
+COPY packages/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/pds-homepage.txt /pds-homepage/pds.txt
 COPY --from=builder /app/frontend/ /app/frontend
 COPY --from=builder /app/packages/frontend/docker-entrypoint.sh /docker-entrypoint.sh
+RUN mkdir -p /var/www/html
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 

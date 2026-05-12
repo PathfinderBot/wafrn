@@ -14,78 +14,11 @@ services:
       migration:
         condition: service_completed_successfully
     restart: unless-stopped
+    env_file: .env
     environment: &default_backend_env_vars
-      NODE_ENV: production
-      ADMIN_USER: ${ADMIN_USER}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      DOMAIN_NAME: ${DOMAIN_NAME}
-
-      CACHE_DOMAIN: ${CACHE_DOMAIN}
-      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-
-      DONATION_URL: ${DONATION_URL}
-
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-      SMTP_FROM: ${SMTP_FROM}
-
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DBNAME: ${POSTGRES_DBNAME}
-
-      WEBPUSH_EMAIL: ${WEBPUSH_EMAIL}
-      WEBPUSH_PRIVATE: ${WEBPUSH_PRIVATE}
-      WEBPUSH_PUBLIC: ${WEBPUSH_PUBLIC}
-
-      ENABLE_BSKY: ${ENABLE_BSKY}
-      PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
-      PDS_JWT_SECRET: ${PDS_JWT_SECRET}
-      PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
-
-      USE_WORKERS: false
-      LOG_SQL_QUERIES: ${LOG_SQL_QUERIES:-}
-      UPLOAD_LIMIT: ${UPLOAD_LIMIT:-}
-      POSTS_PER_PAGE: ${POSTS_PER_PAGE:-}
-      LOG_LEVEL: ${LOG_LEVEL:-}
-      BLOCKLIST_URI: ${BLOCKLIST_URI:-}
-      FRONTEND_PATH: ${FRONTEND_PATH:-}
-      DISABLE_REQUIRE_SEND_EMAIL: ${DISABLE_REQUIRE_SEND_EMAIL:-}
-      BLOCKED_IPS: ${BLOCKED_IPS:-}
-      REVIEW_REGISTRATIONS: ${REVIEW_REGISTRATIONS:-}
-      IGNORE_BLOCK_HOSTS: ${IGNORE_BLOCK_HOSTS:-}
-
-      CONSTELLATION_URL: ${CONSTELLATION_URL:-}
-      SLINGSHOT_URL: ${SLINGSHOT_URL:-}
-      JETSTREAM_URL: ${JETSTREAM_URL:-}
-
-      FRONTEND_LOGO: ${FRONTEND_LOGO:-}
-      FRONTEND_API_URL: ${FRONTEND_API_URL:-}
-      FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-}
-      FRONTEND_CACHE_URL: ${FRONTEND_CACHE_URL:-}
-      FRONTEND_CACHE_BACKUP_URLS: ${FRONTEND_CACHE_BACKUP_URLS:-}
-      FRONTEND_SHORTEN_POSTS: ${FRONTEND_SHORTEN_POSTS:-}
-      FRONTEND_DISABLE_PWA: ${FRONTEND_DISABLE_PWA:-}
-      FRONTEND_MAINTENANCE: ${FRONTEND_MAINTENANCE:-}
-      FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
-      FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
-      FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
-
-      REGISTRATION_LEVEL: ${REGISTRATION_LEVEL:-}
-      REGISTRATIONS_DISABLED_TEXT: ${REGISTRATIONS_DISABLED_TEXT:-}
-      BUBBLE_SERVERS_SHOW_TYPE: ${BUBBLE_SERVERS_SHOW_TYPE:-}
-      BLOCKED_SERVERS_SHOW_TYPE: ${BLOCKED_SERVERS_SHOW_TYPE:-}
-      AUTOFOLLOW_MAIN_ADMIN: ${AUTOFOLLOW_MAIN_ADMIN:-}
-      PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}
-      REGISTRATION_MINIMUM_AGE: ${REGISTRATION_MINIMUM_AGE:-}
-
       FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
+      USE_WORKERS: false
 
-      ENABLE_RAW_OUTPUT: ${ENABLE_RAW_OUTPUT:-}
-      
     deploy:
       mode: replicated
       replicas: 3
@@ -115,37 +48,20 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
-    ports:
-      - 80:80
-      - 443:443
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    env_file: .env
     environment:
-      DOMAIN_NAME: ${DOMAIN_NAME}
-      PDS_DOMAIN_NAME: ${PDS_DOMAIN_NAME}
-      CACHE_DOMAIN: ${CACHE_DOMAIN}
-      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
-
-      DONATION_URL: ${DONATION_URL}
-      ACME_EMAIL: ${ACME_EMAIL}
-      FRONTEND_SHORT_TITLE: ${FRONTEND_SHORT_TITLE:-}
-      FRONTEND_LONG_TITLE: ${FRONTEND_LONG_TITLE:-}
-      FRONTEND_DESCRIPTION: ${FRONTEND_DESCRIPTION:-}
-      REGISTRATION_LEVEL: ${REGISTRATION_LEVEL:-}
-      REGISTRATIONS_DISABLED_TEXT: ${REGISTRATIONS_DISABLED_TEXT:-}
-      BUBBLE_SERVERS_SHOW_TYPE: ${BUBBLE_SERVERS_SHOW_TYPE:-}
-      BLOCKED_SERVERS_SHOW_TYPE: ${BLOCKED_SERVERS_SHOW_TYPE:-}
-      AUTOFOLLOW_MAIN_ADMIN: ${AUTOFOLLOW_MAIN_ADMIN:-}
-      PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX:-}
-      REGISTRATION_MINIMUM_AGE: ${REGISTRATION_MINIMUM_AGE:-}
-      CACHE_HOST: "cache:9000"
       BACKEND_HOST: "wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000"
+      CACHE_HOST: "cache:9000"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
     volumes:
       - "caddy:/data"
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
-      - ./packages/caddy:/etc/caddy/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 80:80
+      - 443:443
 
   db:
     build:
@@ -154,10 +70,7 @@ services:
     #command: -c 'max_connections=500'
     restart: unless-stopped
     shm_size: '2gb'
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DBNAME}
+    env_file: .env
     volumes:
       - dbpg:/var/lib/postgresql/data
 
@@ -176,6 +89,9 @@ services:
     restart: unless-stopped
     profiles:
       - bluesky
+    env_file: .env
+    ports:
+      - 127.0.0.1:3000:3000
     environment:
       PDS_HOSTNAME: ${PDS_DOMAIN_NAME}
       PDS_JWT_SECRET: ${PDS_JWT_SECRET}
@@ -185,8 +101,6 @@ services:
       PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
       PDS_BLOB_UPLOAD_LIMIT: 157286400
       PDS_DID_PLC_URL: "https://plc.directory"
-      #PDS_BSKY_APP_VIEW_URL: "https://api.blacksky.community"
-      #PDS_BSKY_APP_VIEW_DID: "did:web:api.blacksky.community"
       PDS_BSKY_APP_VIEW_URL: ${PDS_APPVIEW_URL:-https://api.bsky.app}
       PDS_BSKY_APP_VIEW_DID: ${PDS_APPVIEW_DID:-did:web:api.bsky.app}
       PDS_REPORT_SERVICE_URL: ${PDS_MOD_URL:-https://mod.bsky.app}
@@ -207,9 +121,6 @@ services:
       mode: replicated
       replicas: 1
     command: "npm exec tsx atproto.ts"
-
-  
-
   websocket:
     <<: *default_backend
     deploy:
@@ -227,6 +138,19 @@ services:
     deploy:
       mode: replicated
       replicas: 3
+
+  bullboard:
+    container_name: bullboard
+    image: nauverse/bull-board
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis:6379
+      BULL_PREFIX: bull
+      AUTH_REQUIRE: true
+      USER_USERNAME: admin
+      USER_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - redis
 
 volumes:
   dbpg:

@@ -47,19 +47,9 @@ import { DidDocument } from '@atcute/identity'
 import { extractUriComponents } from './obtainUriComponents.js'
 import { getPetitionSigned } from '../../utils/activitypub/getPetitionSigned.js'
 import getUserAgent from '../../utils/getUserAgent.js'
+import { getQueue } from '../../utils/queues.js'
 
-const processSinglePostQueue = new Queue('processSinglePost', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 6,
-    backoff: {
-      type: 'exponential',
-      delay: 2500
-    },
-    removeOnFail: false
-  }
-})
+const processSinglePostQueue = getQueue('processSinglePost')
 
 // returns the post id
 async function processSinglePost(uri: string, forceUpdate = false): Promise<string | undefined> {
@@ -106,7 +96,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   let verifiedFedi: string | undefined
   const postPetitionPds = await getPostThreadPDSDirect(uri)
-  if(!postPetitionPds) {
+  if (!postPetitionPds) {
     return;
   }
   const post = postPetitionPds?.value as AppBskyFeedPost.Main
@@ -131,8 +121,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
         completeEnvironment.bskySlingshotUrl +
-          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
-          `?identifier=${extractUriComponents(uri).did}`
+        '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+        `?identifier=${extractUriComponents(uri).did}`
       )
       if (res.ok) {
         const json = (await res.json()) as { pds: string }
@@ -240,7 +230,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
                 }
               }
             )
-          } catch {}
+          } catch { }
           await QuestionPoll.update(
             {
               postId: remotePost.id
@@ -403,8 +393,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         })
         mentions = mentionedUsers.map((elem) => elem.id)
       }
-      if(!federatedWoot) {
-          const rt = new RichText({
+      if (!federatedWoot) {
+        const rt = new RichText({
           text: postText,
           facets: post.facets
         })
@@ -427,7 +417,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         }
         postText = text
       }
-      
+
     }
 
     if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
@@ -444,7 +434,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
 
     let isReply = false;
-    if(parentId) {
+    if (parentId) {
       const parentPost = (await Post.findByPk(parentId)) as Post
       isReply = parentPost.isReply || parentPost.userId != postCreator.id
     }
@@ -467,16 +457,16 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
 
     if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate) {
-      
+
       const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
-      if(`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
+      if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
         // OH SHIT THIS USER IS NO LONGER IN WAFRN
         const oldDid = postCreator.bskyDid
         postCreator.bskyDid = null;
         postCreator.enableBsky = false;
         postCreator.alternateUrl = undefined
         await postCreator.save();
-        postCreator = await getAtprotoUser(oldDid as string, {ignoreCache: true})
+        postCreator = await getAtprotoUser(oldDid as string, { ignoreCache: true })
       } else {
         // await wait(1500)
       }
@@ -486,9 +476,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       defaults: newData
     })
     // some linting issues sorry this one could be in other place but the linter complains about other part of the code (npm run type-check)
-    if(!postCreator) {
+    if (!postCreator) {
       return;
-  }
+    }
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
     if (!(await getAllLocalUserIdsSet()).has(postToProcess.userId) || created) {
       if (!created) {
@@ -605,15 +595,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     return postToProcess.id
   } else {
-    
-    if(!postPetitionPds) {
+
+    if (!postPetitionPds) {
       logger.error({
-      message: `Error obtaining user: ${uri}`,
-      error: {
-        postCreator: postCreator,
-        post: post
-      }
-    })
+        message: `Error obtaining user: ${uri}`,
+        error: {
+          postCreator: postCreator,
+          post: post
+        }
+      })
       throw new Error(`Error obtaining user: ${uri}`)
     }
   }

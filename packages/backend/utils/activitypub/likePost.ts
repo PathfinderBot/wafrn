@@ -16,19 +16,9 @@ import _ from "underscore";
 import { emojiToAPTag } from "./emojiToAPTag.js";
 import { Privacy } from "../../models/post.js";
 import { getAllLocalUserIds, getAllLocalUserIdsSet } from "../cacheGetters/getAllLocalUserIds.js";
+import { getQueue } from "../queues.js";
 
-const sendPostQueue = new Queue("sendPostToInboxes", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 1000,
-    },
-    removeOnFail: true,
-  },
-});
+const sendPostQueue = getQueue("sendPostToInboxes");
 
 async function likePostRemote(like: any, dislike = false) {
   const user = await User.findOne({

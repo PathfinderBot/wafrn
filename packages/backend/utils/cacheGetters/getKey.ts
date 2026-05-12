@@ -1,21 +1,10 @@
-import { Queue } from 'bullmq'
+import { getQueue } from '../queues.js'
 import { User } from '../../models/index.js'
 import { redisCache } from '../redis.js'
 import { getUserIdFromRemoteId } from './getUserIdFromRemoteId.js'
 import { completeEnvironment } from '../backendOptions.js'
 
-const queue = new Queue('getRemoteActorId', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    removeOnFail: true,
-    attempts: 2,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    }
-  }
-})
+const queue = getQueue('getRemoteActorId')
 
 async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: User; key?: string }> {
   const cachedKey = await redisCache.get('key:' + remoteUserUrl)
@@ -31,7 +20,8 @@ async function getKey(remoteUserUrl: string, adminUser: any): Promise<{ user?: U
         'getRemoteActorId',
         { actorUrl: remoteUserUrl, userId: adminUser.id, forceUpdate: true },
         {
-          jobId: remoteUserUrl.replaceAll(':', '_').replaceAll('/', '_')
+          jobId: remoteUserUrl.replaceAll(':', '_').replaceAll('/', '_'),
+          priority: 2097152
         }
       )
       return {}

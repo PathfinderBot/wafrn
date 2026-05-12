@@ -17,44 +17,22 @@ import {
   Quotes,
   PostTag,
 } from "../../models/index.js";
-import { Job, Queue } from "bullmq";
+import { Job } from "bullmq";
 import { Privacy } from "../../models/post.js";
 import { completeEnvironment } from "../backendOptions.js";
+import { getQueue } from "../queues.js";
 import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.js";
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
 import { include } from "underscore";
 import { wait } from "../wait.js";
 
-const processPostViewQueue = new Queue("processRemoteView", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 25000,
-    },
-    removeOnFail: true,
-  },
-});
-
-const sendPostQueue = new Queue("sendPostToInboxes", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: "fixed",
-      delay: 25000,
-    },
-    removeOnFail: true,
-  },
-});
+const processPostViewQueue = getQueue("processRemoteView");
+const sendPostQueue = getQueue("sendPostToInboxes");
 
 async function prepareSendRemotePostWorker(job: Job) {
-  let highPriorityInboxes: string[] = [];
+  const highPriorityInboxes: string[] = [];
   //async function sendRemotePost(localUser: any, post: any) {
-  const post = await Post.findByPk(job.id);
+  const post = await Post.findByPk(job.data.postId);
   if (!post) {
     return;
   }
@@ -96,9 +74,8 @@ async function prepareSendRemotePostWorker(job: Job) {
           "https://www.w3.org/ns/activitystreams",
           `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
         ],
-        actor: `${
-          completeEnvironment.frontendUrl
-        }/fediverse/blog/${localUser.url.toLowerCase()}`,
+        actor: `${completeEnvironment.frontendUrl
+          }/fediverse/blog/${localUser.url.toLowerCase()}`,
         id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${post.id}`,
         type: "QuoteRequest",
         object: await getPostUrlForQuote(quote.dataValues.quotedPost),
@@ -232,8 +209,7 @@ async function prepareSendRemotePostWorker(job: Job) {
         const bodySignature = await ldSignature.signRsaSignature2017(
           objectToSend,
           localUser.privateKey,
-          `${
-            completeEnvironment.frontendUrl
+          `${completeEnvironment.frontendUrl
           }/fediverse/blog/${localUser.url.toLocaleLowerCase()}`,
           completeEnvironment.instanceUrl,
           new Date(post.createdAt)
@@ -291,17 +267,47 @@ async function prepareSendRemotePostWorker(job: Job) {
             );
           });
           inboxes = [...highPriorityInboxes, ...inboxes]
-          await sendPostQueue.addBulk(inboxes.map(elem => {
-            return {
-              name: 'sendChunk',
-              data: {
-                  objectToSend: objectToSendComplete,
-                  petitionBy: localUser.dataValues,
-                  inboxList: elem,
-                }
-                
+
+          // Filter out inboxes from hosts in backoff period (circuit breaker)
+          const inboxesToDeliver: string[] = []
+          const inboxesSkipped: string[] = []
+
+          for (const inbox of inboxes) {
+            inboxesToDeliver.push(inbox)
+          }
+
+          if (inboxesSkipped.length > 0) {
+            logger.info({
+              message: 'Skipped inbox deliveries due to circuit breaker',
+              postId: post.id,
+              skippedCount: inboxesSkipped.length,
+              totalCount: inboxes.length,
+              skippedInboxes: inboxesSkipped.slice(0, 10) // Log first 10
+            })
+          }
+
+          // Create child jobs using addBulk for atomic operation
+          // These jobs deliver the post to each inbox (fan-out pattern)
+          // All child jobs are tracked under prepareSendPost parent via job.id
+          const childJobs = inboxesToDeliver.map((inbox, index) => ({
+            name: 'sendChunk',
+            data: {
+              objectToSend: objectToSendComplete,
+              petitionBy: localUser.dataValues,
+              inboxList: inbox,
+              parentJobId: job.id,
+              childIndex: index,
+              totalChildren: inboxesToDeliver.length
+            },
+            opts: {
+              // Unique ID to prevent duplicates on retry
+              jobId: `${post.id}-inbox-${index}`
             }
           }))
+
+          if (childJobs.length > 0) {
+            await sendPostQueue.addBulk(childJobs)
+          }
         }
       }
     } catch (error) {

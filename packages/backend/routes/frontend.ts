@@ -225,6 +225,18 @@ function frontend(app: Application) {
     getCheckContentNegotiation(),
     async (req: SignedRequest, res: Response) => {
       if (req.fediData?.valid) {
+        // Check for cached response to avoid re-processing for repeated federated requests
+        if (req.params?.id) {
+          const cachedResponse = await redisCache.get(`postHttpResponse:${req.params.id}`)
+          const possibleObjectToSend = cachedResponse ? JSON.parse(cachedResponse) : undefined
+          if (possibleObjectToSend && (possibleObjectToSend.to?.includes("https://www.w3.org/ns/activitystreams#Public") || possibleObjectToSend.cc?.includes("https://www.w3.org/ns/activitystreams#Public"))) {
+            res.set({
+              'content-type': 'application/activity+json',
+              'cache-control': 'public, max-age=300'
+            })
+            return res.send(possibleObjectToSend)
+          }
+        }
         return await handlePostRequest(req, res)
       }
 

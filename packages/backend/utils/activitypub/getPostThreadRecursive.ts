@@ -37,25 +37,13 @@ import { getDeletedUser } from '../cacheGetters/getDeletedUser.js'
 import { InteractionControl, InteractionControlType, Privacy } from '../../models/post.js'
 import { getPostThreadPDSDirect, processSinglePost } from '../../atproto/utils/getAtProtoThread.js'
 import * as cheerio from 'cheerio'
-import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
 import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import escapeHTML from 'escape-html'
-import { wait } from '../wait.js'
 import { canInteract } from '../baseQueryNew.js'
-import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
+import { getQueue } from '../queues.js'
 
-const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
 async function getPostThreadRecursive(
   user: any,
@@ -348,12 +336,12 @@ async function getPostThreadRecursive(
             parent.hierarchyLevel === 1
               ? parent
               : ((
-                  await parent.getAncestors({
-                    where: {
-                      hierarchyLevel: 1
-                    }
-                  })
-                )[0] as Post)
+                await parent.getAncestors({
+                  where: {
+                    hierarchyLevel: 1
+                  }
+                })
+              )[0] as Post)
           ).remotePostId
           const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
           if (opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
@@ -361,7 +349,7 @@ async function getPostThreadRecursive(
           }
         }
         let postTextContent = `${postPetition.content ? postPetition.content : ''}` // Fix for bridgy giving this as undefined
-        if(invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
+        if (invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
           postTextContent = postTextContent.substring(invisibleMentionsToRemove.name.length)
         }
         if (postPetition.type == 'Video') {
@@ -453,7 +441,7 @@ async function getPostThreadRecursive(
                   postBskyVersion.remotePostId = postPetition.id
                   await postBskyVersion.save()
                 }
-                if(!localPostToForceUpdate) {
+                if (!localPostToForceUpdate) {
                   return postBskyVersion
                 }
               } else {
@@ -508,26 +496,9 @@ async function getPostThreadRecursive(
               }
             } else {
               if (!options.ignoreBridgyRepeat) {
-                const processSinglePostQueue = new Queue('processSinglePost', {
-                  connection: completeEnvironment.bullmqConnection,
-                  defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true
-                  }
-                })
+                const processSinglePostQueue = getQueue('processSinglePost')
                 processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })
-                const processFediPostQueue = new Queue('processFediPostQueue', {
-                  connection: completeEnvironment.bullmqConnection,
-                  defaultJobOptions: {
-                    removeOnComplete: true,
-                    attempts: 6,
-                    backoff: {
-                      type: 'exponential',
-                      delay: 2500
-                    },
-                    removeOnFail: false
-                  }
-                })
+                const processFediPostQueue = getQueue('processFediPostQueue')
                 processFediPostQueue.add('processSinglePost', { post: remotePostId }, { delay: 1000 })
               }
             }
@@ -551,9 +522,9 @@ async function getPostThreadRecursive(
           bskyCid: postPetition.blueskyCid,
           ...(bskyCid && bskyUri
             ? {
-                bskyCid,
-                bskyUri
-              }
+              bskyCid,
+              bskyUri
+            }
             : {}),
           ...replyControl
         }
@@ -631,12 +602,12 @@ async function getPostThreadRecursive(
             const postsToQuotePromise: any[] = []
             if (completeEnvironment.enableBsky) {
               postPetition.tag
-              ?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')
-              .forEach((quote: fediverseTag) => {
-                
-                postsToQuotePromise.push(processSinglePost(quote.href as string))
-                postToCreate.content = postToCreate.content.replace(quote.name, '')
-              })
+                ?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')
+                .forEach((quote: fediverseTag) => {
+
+                  postsToQuotePromise.push(processSinglePost(quote.href as string))
+                  postToCreate.content = postToCreate.content.replace(quote.name, '')
+                })
             }
             postPetition.tag
               ?.filter((elem: fediverseTag) => elem.type === 'Link')
@@ -723,7 +694,7 @@ async function getPostThreadRecursive(
         }
         try {
           await addAsksToPost(newPost, fediTags)
-        } catch (error) {}
+        } catch (error) { }
         if (mentionedUsersIds.length != 0) {
           // check if detached
           if (parent?.detached) {
@@ -747,7 +718,7 @@ async function getPostThreadRecursive(
             askContent = askContent.split('@' + completeEnvironment.instanceUrl)[1]
           }
           await Ask.create({
-            question: dompurify.sanitize(askContent, {ALLOWED_TAGS: []}),
+            question: dompurify.sanitize(askContent, { ALLOWED_TAGS: [] }),
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,
@@ -799,7 +770,7 @@ async function getPostThreadRecursive(
                 }
               }
             )
-          } catch {}
+          } catch { }
           await QuestionPoll.update(
             {
               postId: newPost.id

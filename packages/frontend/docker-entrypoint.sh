@@ -3,9 +3,6 @@ set -e
 
 perl -pi -e 's/NGSW_([_A-Z]+)/$ENV{$1}/g' /app/frontend/ngsw.json
 
-perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /etc/caddy/Caddyfile
-perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /etc/caddy/Caddyfile
-
 perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /app/frontend/index.html
 perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /app/frontend/index.html
 

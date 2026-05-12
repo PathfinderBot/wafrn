@@ -23,20 +23,10 @@ import { LdSignature } from '../activitypub/rsa2017.js'
 import { getDeletedUser } from '../cacheGetters/getDeletedUser.js'
 import { logger } from '../logger.js'
 import { wait } from '../wait.js'
+import { getQueue } from '../queues.js'
 
 async function nukeBannedUsers() {
-  const deletePostQueue = new Queue('deletePostQueue', {
-    connection: completeEnvironment.bullmqConnection,
-    defaultJobOptions: {
-      removeOnComplete: true,
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 1000
-      },
-      removeOnFail: true
-    }
-  })
+  const deletePostQueue = getQueue('deletePostQueue')
   const users = await User.scope('full').findAll({
     where: {
       selfDeleted: true,
@@ -250,7 +240,7 @@ async function nukeBannedUsers() {
     logger.debug(`--- Nuking bites ---`)
     await Bites.destroy({
       where: {
-        [Op.or] : [
+        [Op.or]: [
           {
             biterId: {
               [Op.in]: usersToNukeIds
@@ -272,7 +262,7 @@ async function nukeBannedUsers() {
         }
       }
     })
-    
+
     logger.debug(`--- Nuking posts Completed ---`)
     await wait(3600000)
     await User.update({
@@ -298,7 +288,7 @@ async function nukeBannedUsers() {
         error: error
       })
     }
-    
+
     logger.debug('--- Nuking users complete ---')
   }
 }

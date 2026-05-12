@@ -1,19 +1,9 @@
 import { User } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
 import { Queue } from 'bullmq'
+import { getQueue } from '../queues.js'
 
-const mergeUsersQueue = new Queue("mergeUsers", {
-    connection: completeEnvironment.bullmqConnection,
-    defaultJobOptions: {
-        removeOnComplete: true,
-        attempts: 6,
-        backoff: {
-            type: "exponential",
-            delay: 25000,
-        },
-        removeOnFail: false,
-    },
-});
+const mergeUsersQueue = getQueue('mergeUsers')
 
 const primaryUser = await User.findOne({
     where: {

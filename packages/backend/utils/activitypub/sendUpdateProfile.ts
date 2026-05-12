@@ -1,4 +1,4 @@
-import { Queue } from 'bullmq'
+import { getQueue } from '../queues.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
 import { FederatedHost, sequelize, User } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
@@ -6,18 +6,7 @@ import { userToJSONLD } from './userToJSONLD.js'
 import { Op } from 'sequelize'
 import { redisCache } from '../redis.js'
 
-const lowPriorityQueue = new Queue('deletePostQueue', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const lowPriorityQueue = getQueue('deletePostQueue')
 
 async function sendUpdateProfile(user: User) {
   await redisCache.del('fediverse:user:base:' + user.id)

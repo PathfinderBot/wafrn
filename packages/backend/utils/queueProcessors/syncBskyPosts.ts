@@ -3,14 +3,9 @@ import { User } from "../../models/index.js"
 import { getServerFromDid } from "../atproto/getServerFromDid.js"
 import getUserAgent from "../getUserAgent.js"
 import { completeEnvironment } from "../backendOptions.js"
+import { getQueue } from "../queues.js"
 
-const processSinglePostQueue = new Queue('processSinglePost', {
-                  connection: completeEnvironment.bullmqConnection,
-                  defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true
-                  }
-                })
+const processSinglePostQueue = getQueue('processSinglePost')
 async function syncBskyPosts(job: Job) {
     const userId = job.data.userId
     const user = await User.findByPk(userId)
@@ -18,7 +13,7 @@ async function syncBskyPosts(job: Job) {
         const pds = await getServerFromDid(user.bskyDid, true)
         let remainingPosts = 100;
         let url = pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(user.bskyDid)}&collection=app.bsky.feed.post&limit=100&reverse=false`
-        while(remainingPosts != 0) {
+        while (remainingPosts != 0) {
             const postsResponse = await (await fetch(url, {
                 headers: {
                     "User-Agent": getUserAgent('ATProtoWorker')
@@ -37,12 +32,12 @@ async function syncBskyPosts(job: Job) {
             )
             url = pds + `/xrpc/com.atproto.repo.listRecords?repo=${encodeURIComponent(user.bskyDid)}&collection=app.bsky.feed.post&limit=100&reverse=false&cursor=${postsResponse.cursor}`
             remainingPosts = postsResponse.records.length
-            if(!postsResponse.cursor) {
+            if (!postsResponse.cursor) {
                 remainingPosts = 0;
             }
         }
-        
+
     }
 }
 
-export {syncBskyPosts}
+export { syncBskyPosts }
