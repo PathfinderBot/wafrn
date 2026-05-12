@@ -1,5 +1,6 @@
 services:
   backend: &default_backend
+    image: codeberg.org/wafrn/wafrn-backend:main
     build: &default_backend_build
       context: .
       dockerfile: packages/backend/Dockerfile
@@ -45,6 +46,7 @@ services:
 
   frontend:
     restart: unless-stopped
+    image: codeberg.org/wafrn/wafrn-frontend:main
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile

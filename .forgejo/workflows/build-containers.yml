@@ -4,6 +4,7 @@ on:
     branches: 
       - 'main'
       - 'preproduction'
+      - 'development'
 
 env:
   REGISTRY: codeberg.org
