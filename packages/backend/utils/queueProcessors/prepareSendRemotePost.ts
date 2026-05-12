@@ -30,9 +30,9 @@ const processPostViewQueue = getQueue("processRemoteView");
 const sendPostQueue = getQueue("sendPostToInboxes");
 
 async function prepareSendRemotePostWorker(job: Job) {
-  let highPriorityInboxes: string[] = [];
+  const highPriorityInboxes: string[] = [];
   //async function sendRemotePost(localUser: any, post: any) {
-  const post = await Post.findByPk(job.id);
+  const post = await Post.findByPk(job.data.postId);
   if (!post) {
     return;
   }

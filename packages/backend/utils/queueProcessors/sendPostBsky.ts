@@ -143,8 +143,6 @@ async function sendPostBsky(job: Job) {
       logger.debug({ message: `Error sending post to bluesky`, error })
     }
   }
-  // FlowProducer handles enqueueing prepareSendPost as a child job
-  // No manual queue.add() needed here
 }
 
 export { sendPostBsky }

@@ -35,7 +35,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
-import { getQueue } from '../utils/queues.js'
+import { getFlowProducer, getQueue } from '../utils/queues.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -771,18 +771,7 @@ export default function postsRoutes(app: Application) {
           })
         )
       }
-      const jobData = { postId: post.id, petitionBy: post.userId }
-
-      if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-        await sendPostBskyQueue.add('sendPostBsky', jobData, {
-          delay: 500
-        })
-      } else {
-        await prepareSendPostQueue.add('prepareSendPost', jobData, {
-          jobId: post.id,
-          delay: 1500
-        })
-      }
+      triggerPostFederation(post, user)
       success = true
     }
     res.send({
@@ -878,10 +867,26 @@ function getMaxPrivacy(privacies: PrivacyType[]) {
 
 async function triggerPostFederation(post: Post, user: User) {
   const jobData = { postId: post.id, petitionBy: post.userId }
+  const flowProducer = getFlowProducer()
 
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    await sendPostBskyQueue.add('sendPostBsky', jobData, {
-      delay: 500
+    await flowProducer.add({
+      name: 'prepareSendPost',
+      queueName: 'prepareSendPost',
+      data: jobData,
+      opts: {
+      },
+      children: [
+        {
+          name: 'sendPostBsky',
+          queueName: 'sendPostBsky',
+          data: jobData,
+          opts: {
+            jobId: post.id,
+            delay: 500
+          }
+        }
+      ]
     })
   } else {
     await prepareSendPostQueue.add('prepareSendPost', jobData, {
