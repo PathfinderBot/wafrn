@@ -140,6 +140,19 @@ services:
       mode: replicated
       replicas: 3
 
+  bullboard:
+    container_name: bullboard
+    image: nauverse/bull-board
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis:6379
+      BULL_PREFIX: bull
+      AUTH_REQUIRE: true
+      USER_USERNAME: admin
+      USER_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - redis
+
 volumes:
   dbpg:
   caddy:

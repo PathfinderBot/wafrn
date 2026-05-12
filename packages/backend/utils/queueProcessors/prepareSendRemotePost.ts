@@ -25,7 +25,6 @@ import { activityPubObject } from "../../interfaces/fediverse/activityPubObject.
 import { getPetitionSigned } from "../activitypub/getPetitionSigned.js";
 import { include } from "underscore";
 import { wait } from "../wait.js";
-import { isHostInBackoff } from "../deliveryCircuitBreaker.js";
 
 const processPostViewQueue = getQueue("processRemoteView");
 const sendPostQueue = getQueue("sendPostToInboxes");
@@ -75,9 +74,8 @@ async function prepareSendRemotePostWorker(job: Job) {
           "https://www.w3.org/ns/activitystreams",
           `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
         ],
-        actor: `${
-          completeEnvironment.frontendUrl
-        }/fediverse/blog/${localUser.url.toLowerCase()}`,
+        actor: `${completeEnvironment.frontendUrl
+          }/fediverse/blog/${localUser.url.toLowerCase()}`,
         id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${post.id}`,
         type: "QuoteRequest",
         object: await getPostUrlForQuote(quote.dataValues.quotedPost),
@@ -211,8 +209,7 @@ async function prepareSendRemotePostWorker(job: Job) {
         const bodySignature = await ldSignature.signRsaSignature2017(
           objectToSend,
           localUser.privateKey,
-          `${
-            completeEnvironment.frontendUrl
+          `${completeEnvironment.frontendUrl
           }/fediverse/blog/${localUser.url.toLocaleLowerCase()}`,
           completeEnvironment.instanceUrl,
           new Date(post.createdAt)
@@ -270,19 +267,15 @@ async function prepareSendRemotePostWorker(job: Job) {
             );
           });
           inboxes = [...highPriorityInboxes, ...inboxes]
-          
+
           // Filter out inboxes from hosts in backoff period (circuit breaker)
           const inboxesToDeliver: string[] = []
           const inboxesSkipped: string[] = []
-          
+
           for (const inbox of inboxes) {
-            if (await isHostInBackoff(inbox)) {
-              inboxesSkipped.push(inbox)
-            } else {
-              inboxesToDeliver.push(inbox)
-            }
+            inboxesToDeliver.push(inbox)
           }
-          
+
           if (inboxesSkipped.length > 0) {
             logger.info({
               message: 'Skipped inbox deliveries due to circuit breaker',
@@ -292,7 +285,7 @@ async function prepareSendRemotePostWorker(job: Job) {
               skippedInboxes: inboxesSkipped.slice(0, 10) // Log first 10
             })
           }
-          
+
           // Create child jobs using addBulk for atomic operation
           // These jobs deliver the post to each inbox (fan-out pattern)
           // All child jobs are tracked under prepareSendPost parent via job.id
@@ -311,7 +304,7 @@ async function prepareSendRemotePostWorker(job: Job) {
               jobId: `${post.id}-inbox-${index}`
             }
           }))
-          
+
           if (childJobs.length > 0) {
             await sendPostQueue.addBulk(childJobs)
           }
