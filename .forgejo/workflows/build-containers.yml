@@ -21,7 +21,7 @@ jobs:
       attestations: write
       id-token: write
 
-    runs-on: docker
+    runs-on: docker-mstar
     container:
       image: ghcr.io/catthehacker/ubuntu:act-24.04
     steps:
