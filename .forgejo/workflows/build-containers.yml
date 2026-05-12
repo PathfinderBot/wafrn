@@ -13,7 +13,7 @@ jobs:
   build-backend:
     strategy:
       matrix:
-        package: [frontend, backend, db]
+        package: [frontend, backend]
 
     permissions:
       contents: read
@@ -21,7 +21,7 @@ jobs:
       attestations: write
       id-token: write
 
-    runs-on: docker
+    runs-on: [docker, docker-mstar]
     container:
       image: ghcr.io/catthehacker/ubuntu:act-24.04
     steps:
