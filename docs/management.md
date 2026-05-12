@@ -65,6 +65,12 @@ docker compose up -d
 ```
 The remote cache is also cleared when updating Wafrn.
 
+A script is also available for clearing the cache. This script is set up to run daily via a cronjob if you set up your instance using the installer.
+
+```sh
+./install/manage.sh clear
+```
+
 ## Importing Fedinuke and IFTAS DNI Blocklists
 
 Wafrn supports importing [seirdy's FediNuke](https://seirdy.one/posts/2023/05/02/fediverse-blocklists/) and [IFTAS DNI](https://about.iftas.org/library/iftas-dni-list/) using the following script:
