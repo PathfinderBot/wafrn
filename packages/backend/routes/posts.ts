@@ -868,14 +868,14 @@ async function triggerPostFederation(post: Post, user: User) {
   const jobData = { postId: post.id, petitionBy: post.userId }
   const flowProducer = getFlowProducer()
 
-  if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
+  if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid && (!post.parent || (await post.getParent()).bskyUri)) {
     // Create a flow where sendPostBsky is the parent of prepareSendPost
     await flowProducer.add({
       name: 'prepareSendPost',
       queueName: 'prepareSendPost',
       data: jobData,
       opts: {
-        delay: 2000
+        delay: 500
       },
       children: [
         {
@@ -884,7 +884,6 @@ async function triggerPostFederation(post: Post, user: User) {
           data: jobData,
           opts: {
             jobId: post.id,
-            delay: 500
           }
         }
       ]
@@ -897,7 +896,7 @@ async function triggerPostFederation(post: Post, user: User) {
       data: jobData,
       opts: {
         jobId: post.id,
-        delay: 1500
+        delay: 750
       }
     })
   }
