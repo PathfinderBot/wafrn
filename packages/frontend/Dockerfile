@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
 
 RUN apk add --no-cache perl curl tini bash git
 
