@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.04.02",
+  "version": "2026.05.01-DEV",
   "description": "wafrn",
   "main": "index.ts",
   "scripts": {
