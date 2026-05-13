@@ -65,6 +65,7 @@ export class PendingUsersComponent {
     await this.adminService.getPendingActivationUsers().then((response) => {
       this.pendingUsers = response.map((elem) => {
         elem.avatar = EnvironmentService.environment.baseMediaUrl + elem.avatar
+        elem.registerIp = elem.registerIp?.split(',')[0]
         return elem
       })
     })

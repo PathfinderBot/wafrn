@@ -10,10 +10,14 @@ $narrow: 800px;
   height: 100%;
   overflow: hidden;
   overscroll-behavior: contain;
+  display: flex;
+  flex-flow: column nowrap;
+  flex-grow: 1;
 }
 :host {
   width: 50vw;
-  display: block;
+  display: flex;
+  flex-flow: column nowrap;
   padding: 8px 16px;
   overflow-x: hidden;
   overflow-y: hidden;

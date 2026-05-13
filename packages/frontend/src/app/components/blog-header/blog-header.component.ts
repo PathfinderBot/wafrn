@@ -137,10 +137,14 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     this.allowAsk = this.loginService.loggedIn.value
       ? [1, 2].includes(askLevel)
       : askLevel == 1;
+    this.allowAsk = 
+      this.allowAsk && !blog.blocked;
     this.allowAsk =
       this.allowAsk && this.loginService.getLoggedUserUUID() != blog.id;
     this.allowRemoteAsk =
       askLevel != 3 && this.loginService.getLoggedUserUUID() != blog.id;
+    this.allowRemoteAsk =
+      this.allowRemoteAsk && !blog.blocked;
     this.isMe = blog.id == this.loginService.getLoggedUserUUID();
     let path = this.activatedRoute.snapshot.routeConfig?.path;
     if (path && this.allowAsk && path.toLowerCase().endsWith("/ask")) {

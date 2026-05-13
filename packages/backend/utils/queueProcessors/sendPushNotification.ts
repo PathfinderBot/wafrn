@@ -8,36 +8,16 @@ import {
   type NotificationBody,
   type NotificationContext
 } from '../pushNotifications.js'
-import { Job, Queue } from 'bullmq'
+import { Job } from 'bullmq'
 import { Op } from 'sequelize'
 import { getMutedPosts } from '../cacheGetters/getMutedPosts.js'
 import { sendWebPushNotifications } from '../webpush.js'
 import getBlockedIds from '../cacheGetters/getBlockedIds.js'
 import { completeEnvironment } from '../backendOptions.js'
+import { getQueue } from '../queues.js'
 
-const deliveryCheckQueue = new Queue('checkPushNotificationDelivery', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    }
-  }
-})
-
-const websocketQueue = new Queue('updateNotificationsSocket', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    }
-  }
-})
+const deliveryCheckQueue = getQueue('checkPushNotificationDelivery')
+const websocketQueue = getQueue('updateNotificationsSocket')
 
 const expoClient = new Expo()
 

@@ -28,15 +28,15 @@ const markdownConverter = new showdown.Converter({
 });
 
 async function postToJSONLD(
-  postId: string
+  postId: string,
+  cachedPost?: any
 ): Promise<activityPubObject | undefined> {
   let resFromCacheString = await redisCache.get("postToJsonLD:" + postId);
   let askContent = "";
   if (resFromCacheString) {
     return JSON.parse(resFromCacheString) as activityPubObject;
   }
-  const cacheData = await getPostAndUserFromPostId(postId, true);
-  const post = cacheData.data;
+  const post = cachedPost || (await getPostAndUserFromPostId(postId, true)).data;
   if (!post) {
     return undefined;
   }

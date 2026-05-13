@@ -54,30 +54,14 @@ services:
       CACHE_HOST: "cache:9000"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
     volumes:
+      - "caddy:/data"
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - 127.0.0.1:8080:80
-      - 127.0.0.1:8443:443
-
-  caddy:
-    image: caddy:2
-    volumes:
-      - caddy:/data
-      - ./packages/backend/uploads:/var/www/html/uploads
-      - ./packages/caddy:/etc/caddy
-    ports:
       - 80:80
       - 443:443
-    env_file: .env
-    environment:
-      BACKEND_HOST: "wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000"
-      CACHE_HOST: "cache:9000"
-      WEBSOCKET_HOST: "wafrn-websocket-1:9000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   db:
     build:
@@ -106,7 +90,13 @@ services:
     profiles:
       - bluesky
     env_file: .env
+    ports:
+      - 127.0.0.1:3000:3000
     environment:
+      PDS_HOSTNAME: ${PDS_DOMAIN_NAME}
+      PDS_JWT_SECRET: ${PDS_JWT_SECRET}
+      PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
+      PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX}
       PDS_DATA_DIRECTORY: /pds
       PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
       PDS_BLOB_UPLOAD_LIMIT: 157286400
@@ -148,6 +138,19 @@ services:
     deploy:
       mode: replicated
       replicas: 3
+
+  bullboard:
+    container_name: bullboard
+    image: nauverse/bull-board
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis:6379
+      BULL_PREFIX: bull
+      AUTH_REQUIRE: true
+      USER_USERNAME: admin
+      USER_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - redis
 
 volumes:
   dbpg:

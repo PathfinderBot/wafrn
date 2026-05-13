@@ -1,20 +1,9 @@
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import { Media } from '../models/index.js'
 import { Op } from 'sequelize'
 import { completeEnvironment } from '../utils/backendOptions.js'
 
-const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
 async function loadMediaData() {
   const mediasToUpdate = await Media.findAll({

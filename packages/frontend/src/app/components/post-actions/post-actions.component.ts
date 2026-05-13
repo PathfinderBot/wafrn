@@ -89,7 +89,7 @@ export class PostActionsComponent implements OnChanges {
     this.bskyUrl() &&
     this.post()
       .remotePostId.replace(/^https?:\/\//, "")
-      .startsWith(new URL(EnvironmentService.environment.baseUrl).hostname)
+      .startsWith(window.location.hostname)
       ? this.bskyUrl()
       : this.post().displayUrl
       ? (this.post().displayUrl as string)
