@@ -344,6 +344,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     fullText: fullText,
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
+    via: `Wafrn${completeEnvironment.defaultSEOData.title.toLowerCase()!=='wafrn'?` (${completeEnvironment.defaultSEOData.title})`:''}`
   };
   let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {

@@ -77,6 +77,8 @@ function rehypeToMfm() {
           case 'b': return `**${schild}**`
           case 'em':
           case 'i': return `*${schild}*`
+          case 'style': return ''   // misskey seems to strip only the tags
+          case 'script': return ''  // and not strip the content????????
           case 'center': return `<center>${schild}</center>`
           case 'del': return `~~${schild}~~`
           case 'code': return (schild.includes('\n')) ? `\`\`\`\n${schild}\n\`\`\`` : `\`${schild}\``
