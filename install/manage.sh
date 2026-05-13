@@ -95,10 +95,8 @@ case $1 in
 
       #docker compose down
       docker compose pull
-      docker compose up --build -d
-      docker compose stop
-      docker system prune -f
       docker compose down
+      docker system prune -f
       docker volume rm wafrn_cache
       docker compose up -d
       docker compose logs -t -n 50 -f
