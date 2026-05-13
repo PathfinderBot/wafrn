@@ -116,7 +116,7 @@
     "contentWarningTooltip": "Alerta de Contenido",
     "insertEmojiTooltip": "Insertar emoji",
     "hiddenMentionsTooltip": "Otres usuaries mencionades",
-    "editorGuide": "¿Dudas sobre cómo formatear el texto o cómo empezar? Revisá <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">la guía</a> (en inglés)"
+    "editorGuide": "¿Dudas sobre cómo formatear el texto o cómo empezar? Revisá <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">la guía</a> (en inglés)"
   },
   "blog": {
     "tabWoots": "Woots",

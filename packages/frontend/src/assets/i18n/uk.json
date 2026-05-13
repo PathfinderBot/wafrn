@@ -122,7 +122,7 @@
     "contentWarningTooltip": "Попередження щодо вмісту (CW)",
     "insertEmojiTooltip": "Вставити емоджі",
     "hiddenMentionsTooltip": "Кого ще згадали",
-    "editorGuide": "Сумніваєтеся щодо форматування тексту чи не знаєте, з чого почати? Перегляньте <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">цей ґайд</a>"
+    "editorGuide": "Сумніваєтеся щодо форматування тексту чи не знаєте, з чого почати? Перегляньте <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">цей ґайд</a>"
   },
   "profile": {
     "security": {
