@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-COMPOSE_FILENAME="docker-compose.advanced.yml"
 
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${SCRIPT_DIR}/../.env"
 
+COMPOSE_FILENAME="docker-compose.default.yml"
+
+
 BACKUP_ROOT_DIR=${BACKUP_ROOT_DIR:-$HOME/backup}
 BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-10}
 BACKUP_POST_BACKUP_TOOL=${BACKUP_POST_BACKUP_TOOL:-$HOME/post_backup.sh}
 
-declare -a docker_compose_files=("docker-compose.no-caddy.yml" "docker-compose.advanced.yml" "docker-compose.advanced.metrics.yml")
+declare -a docker_compose_files=("docker-compose.default.yml")
 
 
 check_files_for_update () {
