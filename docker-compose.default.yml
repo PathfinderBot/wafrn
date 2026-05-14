@@ -27,6 +27,16 @@ services:
       - ./packages/backend/uploads:/app/packages/backend/uploads
       - cache:/app/packages/backend/cache
       - frontend:/app/packages/frontend:ro
+  workers:
+    <<: *default_backend
+    build:
+      <<: *default_backend_build
+    environment:
+      <<: *default_backend_env_vars
+      USE_WORKERS: true
+    deploy:
+      mode: replicated
+      replicas: ${WORKERS_REPLICAS:-3}
 
   migration:
     <<: *default_backend
@@ -55,15 +65,16 @@ services:
       BACKEND_HOST: "${BACKEND_HOST:-wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000}"
       CACHE_HOST: "cache:9000"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
+      AUTO_HTTPS_MODE: ${AUTO_HTTPS_MODE:-auto_https disable_redirects}
+
     volumes:
-      - "caddy:/data"
       - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - 80:80
-      - 443:443
+      - ${HTTP_PORT:-80}:80
+      - ${HTTPS_PORT:-443}:443
 
   db:
     build:
@@ -71,7 +82,7 @@ services:
       dockerfile: Dockerfile
     #command: -c 'max_connections=500'
     restart: unless-stopped
-    shm_size: '2gb'
+    shm_size: '${SHM_SIZE:-2gb}'
     env_file: .env
     volumes:
       - dbpg:/var/lib/postgresql/data
@@ -89,16 +100,12 @@ services:
   pds:
     image: ghcr.io/bluesky-social/pds:0.4
     restart: unless-stopped
+    ports:
+      - ${PDS_HTTP_PORT:-127.0.0.1:3000}:3000
     profiles:
       - bluesky
     env_file: .env
-    ports:
-      - 127.0.0.1:3000:3000
     environment:
-      PDS_HOSTNAME: ${PDS_DOMAIN_NAME}
-      PDS_JWT_SECRET: ${PDS_JWT_SECRET}
-      PDS_ADMIN_PASSWORD: ${PDS_ADMIN_PASSWORD}
-      PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX: ${PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX}
       PDS_DATA_DIRECTORY: /pds
       PDS_BLOBSTORE_DISK_LOCATION: /pds/blocks
       PDS_BLOB_UPLOAD_LIMIT: 157286400
@@ -130,16 +137,79 @@ services:
       replicas: 1
     command: "npm exec tsx websocket.ts"
 
-  workers:
-    <<: *default_backend
-    build:
-      <<: *default_backend_build
+  prometheus:
+    restart: unless-stopped
+    image: prom/prometheus:latest
+    profiles: [metrics]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  cadvisor:
+    restart: unless-stopped
+    image: gcr.io/cadvisor/cadvisor:latest
+    profiles: [metrics]
+    command:
+      - '-port=8081'
     environment:
-      <<: *default_backend_env_vars
-      USE_WORKERS: true
-    deploy:
-      mode: replicated
-      replicas: ${WORKERS_REPLICAS:-3}
+      CADVISOR_HEALTHCHECK_URL: http://localhost:8081/healthz
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  node-exporter:
+    restart: unless-stopped
+    image: prom/node-exporter:latest
+    profiles: [metrics]
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+
+  grafana:
+    build:
+      context: monitoring/grafana
+      dockerfile: Dockerfile
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    profiles: [metrics]
+    env_file: .env
+    environment:
+      GF_SERVER_HTTP_PORT: 2345
+      GF_USERS_ALLOW_SIGN_UP: false
+
+      GF_SMTP_ENABLED: false
+
+  pgwatch:
+    build:
+      context: monitoring/pgwatch
+      dockerfile: Dockerfile
+      args:
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DBNAME}
+    restart: unless-stopped
+    profiles: [metrics]
+    env_file: .env
+    command:
+      - "--web-disable=all"
+      - "--sources=/sources.yaml"
+      - "--sink=postgresql://${POSTGRES_METRICS_USER}:${POSTGRES_METRICS_PASSWORD}@db:5432/${POSTGRES_METRICS_DBNAME}"
+    depends_on:
+      db:
+        condition: service_healthy
 
   bullboard:
     container_name: bullboard
@@ -160,6 +230,8 @@ volumes:
   pds:
   frontend:
   redis:
+  prometheus_data:
+  grafana_data:
   cache:
 
 
