@@ -69,16 +69,13 @@ There is a convenience script that will generate secret values appropriately. To
 bash install/env_secret_setup.sh
 ```
 
-Next you'll need to choose between one of the `docker-compose.*.yml` files:
+If you want to run Wafrn on a low-memory system (not recommended), you can modify your environment variables instead of using a separate compose file:
+On the .env file, at the end:
+- Set `BACKEND_REPLICAS=1` to run only a single backend instance
+- Set `WORKERS_REPLICAS=0` to disable background workers
+- Set `BACKEND_HOST=wafrn-backend-1:9000` to point to the single backend instance
 
-1. ~~`simple`: Basic installation, this is the least resource heavy option.~~
-2. ~~`simple.metrics`: Basic installation with Grafana support. Uses more resources.~~
-3. `advanced`: Advanced installation with multiple separate workers running for better load distribution. Uses more resources.
-4. `advanced.metrics`: Advanced installation with Grafana suppport. The most complete, but also more resource intense option.
-5. `no-caddy`: Advanced installation without Caddy for those who want to place Wafrn behind an existing reverse proxy.
-6. `no-caddy.metrics`: Advanced installation without Caddy with Grafana support for those who want to place Wafrn behind an existing reverse proxy.
-
-<small>Note: as of version 2026.05.01, the simple configurations are no longer available.</small>
+These settings will significantly reduce resource usage, but will also limit performance and functionality. This approach is only recommended for testing or very small personal instances.
 
 Make sure to list the name of the docker-compose you've chosen in your env. For example, if you wanted to use the advanced file, you would specify the following:
 
@@ -193,45 +190,39 @@ The setup assumes that Wafrn and PDS will be the only things running on the serv
 
 ### Installing Wafrn Without Caddy / Running Wafrn Behind an Existing Reverse Proxy
 
-As of version 2026.05.01, the installer allows installation without Caddy if the option is selected. This allows you to place Wafrn behind an external reverse proxy rather than placing applications behind Wafrn's Caddy. If you are looking to use a version older than this or would prefer to use Wafrn's Caddy, please check the next section for how to host other applications behind Wafrn's Caddy.
+This used to be realy hard. Not anymore!
 
-After running the installer, set up your reverse proxy to point to `port 8080` for your Wafrn's `cdn` and `media` domains.
+In your .env file, add this at the end:
 
-### Using Wafrn's Caddy in Front of Other Applications
+```
+HTTP_PORT:127.0.0.1:8080
+HTTPS_PORT:127.0.0.1:8433
+PDS_HTTP_PORT:127.0.0.1:3000
+AUTO_HTTPS_MODE=auto_https disable_redirects
+```
 
-To help people who want to install both Wafrn and other web applications on the same server, Wafrn's `Caddyfile` is set up in a way for you to allow adding extra configuration. You can use this feature either to use Wafrn's Caddy to host your other apps directly, ot at least to reverse proxy to your existing web server (albeit with TLS/HTTPS already taken care of by Wafrn's Caddy), which will then serve your existing apps.
+This will make wafrn listen in the port 8080 without forcing https. And the pds on the port 3000.
 
-To facilitate this Wafrn's Caddy includes a couple hooks, where you can add extra configuration. The two most important are:
+We recommend caddy for HTTPS reasons. If you are going to use any other software, base yourself in this config and if you get it working, please add a PR expanding on this config!
 
-- If you create a file in `packages/caddy/main_domain_pre`, e.g. `packages/caddy/main_domain_pre/website.conf`, you can add extra configuration to your main Wafrn domain. Example:
+````
+{
+    on_demand_tls {
+        ask http://localhost:3000/tls-check
+    }
+}
 
-  ```bash
-  handle_path /website* {
-    reverse_proxy host.docker.internal:8888
-  }
-  ```
+YOURINSTANCENAME, media.YOURINSTANCENAME, cdn.YOURINSTANCENAME, bullboard.YOURINSTANCENAME, monitoring.YOURINSTANCENAME {
+    encode zstd gzip
+    reverse_proxy http://localhost:8080
+}
 
-  This setting will route anything on `https://<your_wafrn_domain>/website` to anything that's running on port `8888` on your `localhost`. Note: Caddy is secure-by-default, so accessing this through `http` will always redirect to `https` by default. There is currently no way to disable this for subdomains.
+at.YOURINSTANCENAME, *.at.YOURINSTANCENAME {
+   tls {
+        on_demand
+    }
+   reverse_proxy http://localhost:3000
+}
+```
 
-  **Note:** Make sure to also allow access to this host and port in your docker-compose file, by adding `extra_hosts: ["host.docker.internal:host-gateway"]` to your `frontend` configuration.
-
-- If you create a file in `packages/caddy/vhosts`, e.g. `packages/caddy/vhosts/website.example.com.conf`, you can add additional vhosts. Example:
-
-  ```bash
-  website.example.com {
-    reverse_proxy host.docker.internal:8888
-  }
-  ```
-
-  This setting will route anything on `https://website.example.com` to whatever's running on port `8888`. As above, `http` will be automatically redirected to `https`, and Caddy will take care of obtaining the TLS certificates for you through Let's Encrypt. If you want to disable this, you can specify `http://website.example.com` on the first line to force this setting for http only. Also see the caveats about networking as well.
-
-- There are other hooks if you need to update the global Caddy config, or want to add something to the other domains (cache, monitoring, pds) as well. The full list of hooks can be found in the [Caddyfile](https://codeberg.org/wafrn/wafrn/src/commit/main/packages/frontend/Caddyfile.example).
-
-Don't forget to rebuild your frontend container for the changes to be picked up.
-
-> **Note:** while it is possible to put Wafrn itself behind a reverse proxy of your existing web server, this is currently not a supported configuration, especially if you want to have Bluesky support enabled as well.
->
-> If you really-really-really want to go down this route you'll need to disable caddy's automatic https feature, by creating a file called `packages/caddy/global/disable_https.conf` with the single line content of `auto_https disable_redirects`, and then change your docker compose file to serve the frontend on a port different to `80`, like `8123`. Afterwards update your existing web server's setting to reverse proxy all of the the wafrn domains (main, cache, cdn, pds) to this port, and you should be done. Note that Bluesky support will likely fail, unless you set up your web server to do TLS termination either for the entire `*.<bluesky_domain>` domain you have set up, or at least for the usernames your Bluesky users will be using, like `admin.<bluesky_domain>`, etc.
-
-[magic_button]: https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg
-[magic_wafrn_basic_stack]: https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://codeberg.org/wafrn/wafrn-opentofu/releases/download/latest/wafrn-opentofu-latest.zip
+Then, you need to proxy it

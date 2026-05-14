@@ -172,6 +172,13 @@ case $1 in
     docker compose logs -t -n 50 -f
     popd
     ;;
+  build)
+    pushd "${SCRIPT_DIR}/.."
+    echo "Force building containers"
+    docker compose up --build -d
+    docker compose logs -t -n 50 -f
+    popd
+    ;;
   *)
     echo "Valid options:"
     echo "  update: Download latest wafrn from repository, update and restart"
@@ -179,6 +186,7 @@ case $1 in
     echo "  restore: Restore a specific backup"
     echo "  clean: Cleans the cache"
     echo "  logs: Starts tailing docker logs"
+    echo "  build: Force build containers"
     exit 1
     ;;
 esac
