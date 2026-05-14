@@ -42,7 +42,7 @@ wget https://codeberg.org/wafrn/wafrn/raw/branch/main/install/installer.sh
 bash installer.sh
 ```
 
-Once this has been run successfully you should be able to login to your website using the credentials displayed. If you lost the values you can find them in the `~/wafrn/.env` file.
+Once this has been run successfully you should be able to login to your website using the credentials displayed. If you lost the values or there were issues displaying them, you can find them in the `~/wafrn/.env` file.
 
 Note: due to the installer installing new user groups in the system and setting up some temporary environment variables it is **highly** advised to log out and log back in to avoid potential issues with your groups and environments.
 
@@ -71,10 +71,20 @@ bash install/env_secret_setup.sh
 
 Next you'll need to choose between one of the `docker-compose.*.yml` files:
 
-1. `simple`: Basic installation, this is the least resource heavy option.
-2. `simple.metrics`: Basic installation with Grafana support. Uses more resources.
-3. `advanced`: Advanced installation with multiple separate workers running for better load distribution. Uses more resources
+1. ~~`simple`: Basic installation, this is the least resource heavy option.~~
+2. ~~`simple.metrics`: Basic installation with Grafana support. Uses more resources.~~
+3. `advanced`: Advanced installation with multiple separate workers running for better load distribution. Uses more resources.
 4. `advanced.metrics`: Advanced installation with Grafana suppport. The most complete, but also more resource intense option.
+5. `no-caddy`: Advanced installation without Caddy for those who want to place Wafrn behind an existing reverse proxy.
+6. `no-caddy.metrics`: Advanced installation without Caddy with Grafana support for those who want to place Wafrn behind an existing reverse proxy.
+
+<small>Note: as of version 2026.05.01, the simple configurations are no longer available.</small>
+
+Make sure to list the name of the docker-compose you've chosen in your env. For example, if you wanted to use the advanced file, you would specify the following:
+
+```sh
+COMPOSE_FILENAME=docker-compose.advanced.yml
+```
 
 Next you'll need to fill in all of the details of your domain. For example if you're trying to run your website under `wafrn.example.com` (and your DNS is already pointing to the computer running docker) you'll need to update the following details:
 
@@ -104,33 +114,6 @@ docker compose up --build -d
 ```
 
 Once the scripts run and everything is okay you should be able to access your website at `https://wafrn.example.com`
-
-## Upgrading, Updating and Backups
-
-Before you update please check the [CHANGELOG.md](../CHANGELOG.md) for any breaking changes that you might need to be aware of
-
-Go to your `wafrn` directory and enter:
-
-```bash
-./install/manage.sh update
-```
-
-This will check if there are any known breaking changes with the files and if not will update your local setup to the latest version.
-
-This small management script can also backup and restore your instance. For example you can backup before an update:
-
-```bash
-./install/manage.sh backup
-./install/manage.sh update
-```
-
-By default the installation will create a backup every day and keep it for 10 days. You can also [add post-backup scripts](https://codeberg.org/wafrn/wafrn-opentofu/src/branch/main/scripts/post_backup.template.sh) that you can configure to copy the backups to an off-site location, like any S3 compatible bucket.
-
-You can also restore a backup if needed:
-
-```bash
-./install/manage.sh restore <backup_directory>
-```
 
 ## Bluesky integraton
 
@@ -174,7 +157,7 @@ FRONTEND_LONG_TITLE=Wafrn, the social media that respects you
 FRONTEND_DESCRIPTION=Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky
 ```
 
-Once updated you'll need to rebuild your containers to get these picked up
+Once updated you'll need to rebuild your containers to get these picked up.
 
 ### Frontend overrides
 
@@ -198,15 +181,23 @@ You can find an example override repository that replaces the logo files and hid
 
 Wafrn will create three posts for you for the following pages:
 
-- `https://wafrn.example.com/article/system.welcome` is the short welcome message on top that logged out users will see
-- `https://wafrn.example.com/article/system.about` is the contents of the About page, including site rules, and the list of banned server
-- `https://wafrn.example.com/article/system.privacy-policy` is the privacy policy
+- A short welcome message that logged out users will see on the `Explore WAFRN` page (which has the same URL scheme as a normal post)
+- `https://wafrn.example.com/about` is the contents of the About page, including site rules, and the list of banned and bubbled servers
+- `https://wafrn.example.com/privacy` is the privacy policy
 
-When logged in as the admin user you can update each of the above to customize it to your instance's need
+When logged in as the admin user you can customize these to your instance's needs.
 
 ## Running on servers with other web applications
 
 The setup assumes that Wafrn and PDS will be the only things running on the server you're on. The frontend image uses ports `80` and `443` and to operate properly needs access to both those ports for TLS management, especially for Bluesky support. This means that if you want to install Wafrn to a server that already runs other web based applications running on either ports, you're going to have a conflict. Wafrn uses Caddy as the web-server, which is a modern, fast, secure-by-default web server. While you can technically run Wafrn on other web servers (like apache or nginx), Bluesky's PDS specifically requires Caddy (especially it's `on_demand_tls` feature), and access to ports `80` and `443` for proper operation.
+
+### Installing Wafrn Without Caddy / Running Wafrn Behind an Existing Reverse Proxy
+
+As of version 2026.05.01, the installer allows installation without Caddy if the option is selected. This allows you to place Wafrn behind an external reverse proxy rather than placing applications behind Wafrn's Caddy. If you are looking to use a version older than this or would prefer to use Wafrn's Caddy, please check the next section for how to host other applications behind Wafrn's Caddy.
+
+After running the installer, set up your reverse proxy to point to `port 8080` for your Wafrn's `cdn` and `media` domains.
+
+### Using Wafrn's Caddy in Front of Other Applications
 
 To help people who want to install both Wafrn and other web applications on the same server, Wafrn's `Caddyfile` is set up in a way for you to allow adding extra configuration. You can use this feature either to use Wafrn's Caddy to host your other apps directly, ot at least to reverse proxy to your existing web server (albeit with TLS/HTTPS already taken care of by Wafrn's Caddy), which will then serve your existing apps.
 
