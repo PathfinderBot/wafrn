@@ -66,6 +66,7 @@ services:
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
       AUTO_HTTPS_MODE: ${AUTO_HTTPS_MODE:-auto_https off}
     volumes:
+      - ./packages/frontend/overrides:/overrides
       - frontend:/var/www/html/frontend
       - ./packages/backend/uploads:/var/www/html/uploads
     extra_hosts:
