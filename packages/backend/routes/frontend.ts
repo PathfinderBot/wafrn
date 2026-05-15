@@ -254,9 +254,6 @@ function frontend(app: Application) {
       res.send(getIndexFormatted(defaultSeoDataMetaTag))
     }
   )
-
-  // serve static angular files
-  app.get('*.*', express.static(completeEnvironment.frontedLocation, cacheOptions))
 }
 
 function sanitizeStringForSEO(unsanitized: string): string {
