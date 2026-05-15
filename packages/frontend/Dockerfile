@@ -43,7 +43,11 @@ COPY packages/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/pds-homepage.txt /pds-homepage/pds.txt
 COPY --from=builder /app/frontend/ /app/frontend
 COPY --from=builder /app/packages/frontend/docker-entrypoint.sh /docker-entrypoint.sh
-RUN mkdir -p /var/www/html
+
+# copy compiled frontend code to the exposed volume (container data is preserved)
+RUN mkdir -p /var/www/html && cp -a /app/frontend /var/www/html/
+VOLUME ["/var/www/html/frontend"]
+VOLUME ["/var/www/html/uploads"]
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 
