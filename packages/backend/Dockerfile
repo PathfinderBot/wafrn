@@ -32,11 +32,14 @@ COPY packages/backend/package.json .
 # set node_env as production for the npm install command
 ENV NODE_ENV=production
 
+# Copy from type-check stage - ensures type-check passed before continuing
+
+COPY --from=type-check /app/packages/backend .
+
+
 # install dependencies
 RUN npm install
 
-# Copy from type-check stage - ensures type-check passed before continuing
-COPY --from=type-check /app/packages/backend/environment.ts environment.ts
 
 # create log folder early to prevent node err: cannot open logs/*.log
 RUN mkdir -p logs
