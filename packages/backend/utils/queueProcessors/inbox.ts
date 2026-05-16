@@ -61,7 +61,7 @@ async function inboxWorker(job: Job) {
         return;
       }
     }
-    const remoteUser = await getRemoteActor(req.body.actor, user);
+    const remoteUser = await getRemoteActor(req.body.actor, user, false, true);
     const host = await FederatedHost.findOne({
       where: {
         displayName: new URL(req.body.actor).host,

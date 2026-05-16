@@ -32,7 +32,7 @@ import { getAdminUser } from '../getAdminAndDeletedUser.js'
 const mergeUsersQueue = getQueue('mergeUsers')
 
 // This function will return userid after processing it.
-async function getRemoteActorIdProcessor(job: Job) {
+async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
   const actorUrl: string = job.data.actorUrl
   const forceUpdate: boolean = job.data.forceUpdate
   let res: string | User | undefined | null = await getUserIdFromRemoteId(actorUrl)
@@ -74,7 +74,7 @@ async function getRemoteActorIdProcessor(job: Job) {
             message: 'Url is not valid wtf',
             trace: new Error().stack
           })
-          return await getDeletedUser()
+          return (await getDeletedUser()).id
         }
         const remoteMentionUrl = typeof userPetition.url === 'string' ? userPetition.url : ''
         let followers = 0
@@ -338,7 +338,9 @@ async function getRemoteActorIdProcessor(job: Job) {
                   }
 
                   // if bridgy user, to prevent more issues, return the existing bsky user instead
-                  if (mergeAcc === 2) return oldUser
+                  if (mergeAcc === 2) {
+                    return (oldUser as User).id
+                  }
                 }
               }
             }
@@ -393,7 +395,7 @@ async function getRemoteActorIdProcessor(job: Job) {
       }
     }
   }
-  return res
+  return typeof res === 'string' ? res : res?.id
 }
 
 export { getRemoteActorIdProcessor }
