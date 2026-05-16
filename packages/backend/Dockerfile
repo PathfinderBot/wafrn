@@ -18,6 +18,9 @@ RUN npm run type-check
 # Build stage - depends on successful type-check
 FROM node:24-alpine AS build
 
+# Copy from type-check stage - ensures type-check passed before continuing
+COPY --from=type-check /app/packages/backend .
+
 # include important binaries
 RUN apk add --no-cache perl curl tini bash ffmpeg exiv2
 
@@ -32,13 +35,10 @@ COPY packages/backend/package.json .
 # set node_env as production for the npm install command
 ENV NODE_ENV=production
 
-# Copy from type-check stage - ensures type-check passed before continuing
-
-COPY --from=type-check /app/packages/backend .
-
-
 # install dependencies
 RUN npm install
+
+COPY packages/backend/environment.example.ts environment.ts
 
 
 # create log folder early to prevent node err: cannot open logs/*.log
