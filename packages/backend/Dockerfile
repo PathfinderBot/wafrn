@@ -1,4 +1,21 @@
-# Build stage
+# Type-check stage - runs on native architecture for better performance
+FROM --platform=$BUILDPLATFORM node:24-alpine AS type-check
+
+WORKDIR /app/packages/backend
+
+COPY package.json /app
+COPY package-lock.json /app
+COPY packages/backend/package.json .
+
+ENV NODE_ENV=production
+RUN npm install
+
+COPY packages/backend .
+COPY packages/backend/environment.example.ts environment.ts
+
+RUN npm run type-check
+
+# Build stage - depends on successful type-check
 FROM node:24-alpine AS build
 
 # include important binaries
@@ -18,16 +35,11 @@ ENV NODE_ENV=production
 # install dependencies
 RUN npm install
 
-# copy the rest of the files
-COPY packages/backend .
-
+# Copy from type-check stage - ensures type-check passed before continuing
+COPY --from=type-check /app/packages/backend/environment.ts environment.ts
 
 # create log folder early to prevent node err: cannot open logs/*.log
 RUN mkdir -p logs
-
-COPY packages/backend/environment.example.ts environment.ts
-
-RUN npm run type-check
 
 # some default values
 ENV POSTGRES_HOST=db
