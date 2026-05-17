@@ -2,9 +2,15 @@ name: "TypeScript Type Check"
 
 on:
   push:
-    branches: '*'
+    branches:
+      - '*'
+    branches-ignore:
+      - main
+      - preproduction
+      - development
   pull_request:
-    branches: '*'
+    branches:
+      - '*'
 
 jobs:
   check:
