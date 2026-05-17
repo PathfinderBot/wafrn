@@ -121,7 +121,7 @@ export const baseEnvironment: Environment = {
   bskySlingshotUrl:
     process.env.SLINGSHOT_URL || "https://slingshot.microcosm.blue",
   bskyJetstreamUrl:
-    process.env.JETSTREAM_URL || "wss://jetstream.fire.hose.cam/subscribe",
+    process.env.JETSTREAM_URL || "wss://jetstream.blueat.network/subscribe",
   bskyConstellationUrl:
     process.env.CONSTELLATION_URL || "https://constellation.microcosm.blue",
   // to generate these keys use the following command: `npx web-push generate-vapid-keys`. Remember to do the environment one too!!

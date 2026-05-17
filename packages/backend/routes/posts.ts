@@ -17,7 +17,6 @@ import { sequelize } from '../models/index.js'
 import getStartScrollParam from '../utils/getStartScrollParam.js'
 import { logger } from '../utils/logger.js'
 import { createPostLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
-import { getQueue, getFlowProducer } from '../utils/queues.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
@@ -36,6 +35,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
+import { getFlowProducer, getQueue } from '../utils/queues.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -46,6 +46,9 @@ const markdownConverter = new showdown.Converter({
   emoji: true,
   encodeEmails: false
 })
+const prepareSendPostQueue = getQueue('prepareSendPost')
+const sendPostBskyQueue = getQueue('sendPostBsky')
+
 export default function postsRoutes(app: Application) {
   app.get(
     '/api/article/:user?/:slug',
@@ -768,9 +771,7 @@ export default function postsRoutes(app: Application) {
           })
         )
       }
-      const jobData = { postId: post.id, petitionBy: post.userId }
-
-      await triggerPostFederation(post, user)
+      triggerPostFederation(post, user)
       success = true
     }
     res.send({
@@ -869,37 +870,28 @@ async function triggerPostFederation(post: Post, user: User) {
   const flowProducer = getFlowProducer()
 
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    // Create a flow where sendPostBsky is the parent of prepareSendPost
-    await flowProducer.add({
-      name: 'sendPostBsky',
-      queueName: 'sendPostBsky',
-      data: jobData,
-      opts: {
-        delay: 500
-      },
-      children: [
-        {
-          name: 'prepareSendPost',
-          queueName: 'prepareSendPost',
-          data: jobData,
-          opts: {
-            jobId: post.id,
-            delay: 2000
-          }
-        }
-      ]
-    })
-  } else {
-    // Create prepareSendPost job independently
     await flowProducer.add({
       name: 'prepareSendPost',
       queueName: 'prepareSendPost',
       data: jobData,
       opts: {
-        jobId: post.id,
-        delay: 1500
-      }
+      },
+      children: [
+        {
+          name: 'sendPostBsky',
+          queueName: 'sendPostBsky',
+          data: jobData,
+          opts: {
+            jobId: post.id,
+            delay: 500
+          }
+        }
+      ]
+    })
+  } else {
+    await prepareSendPostQueue.add('prepareSendPost', jobData, {
+      jobId: post.id,
+      delay: 1500
     })
   }
 }
-

@@ -134,7 +134,7 @@
     "contentWarningTooltip": "Предупреждение о содержании",
     "insertEmojiTooltip": "Вставить эмоджи",
     "hiddenMentionsTooltip": "Другие упомянутые пользователи",
-    "editorGuide": "Сомневаетесь насчет форматирования текста или не знаете, с чего начать? Посмотрите <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">этот гайд</a>",
+    "editorGuide": "Сомневаетесь насчет форматирования текста или не знаете, с чего начать? Посмотрите <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">этот гайд</a>",
     "usernameLabel": "Вутить как",
     "noResults": "Нет результатов."
   },

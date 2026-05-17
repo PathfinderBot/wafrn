@@ -8,6 +8,7 @@ import { forcePopulateUsers } from "../../atproto/utils/getAtprotoUser.js";
 import { redisCache } from "../redis.js";
 import { completeEnvironment } from "../backendOptions.js";
 import { getQueue } from "../queues.js";
+import { getRemoteActorIdProcessor } from "../queueProcessors/getRemoteActorIdProcessor.js";
 
 const queue = getQueue("getRemoteActorId");
 const queueEvents = new QueueEvents("getRemoteActorId", {
@@ -16,7 +17,8 @@ const queueEvents = new QueueEvents("getRemoteActorId", {
 async function getRemoteActor(
   actorUrl: string | undefined,
   user: User | null,
-  forceUpdate = false
+  forceUpdate = false,
+  doNotUseQueue = false
 ): Promise<User | null> {
   if (!user) {
     logger.debug({
@@ -65,20 +67,36 @@ async function getRemoteActor(
       );
     }
     let userId = await getUserIdFromRemoteId(actorUrl);
+    let result = undefined;
     if (userId === "") {
-      const job = await queue.add("getRemoteActorId", {
-        actorUrl: actorUrl,
-        userId: user.id,
-        forceUpdate: forceUpdate,
-      });
-      const result = await job.waitUntilFinished(queueEvents).catch((error) => {
-        logger.debug({
-          message: `Error while geting user`,
-          user: actorUrl,
-          by: user.url,
-          error: error,
+      if (doNotUseQueue) {
+        const tmpUserId = await getRemoteActorIdProcessor({
+          data: {
+            actorUrl: actorUrl,
+            userId: user.id,
+            forceUpdate: false,
+          }
+        } as Job)
+        if (tmpUserId) {
+          userId = tmpUserId
+        }
+
+      }
+      else {
+        const job = await queue.add("getRemoteActorId", {
+          actorUrl: actorUrl,
+          userId: user.id,
+          forceUpdate: forceUpdate,
         });
-      });
+        result = await job.waitUntilFinished(queueEvents).catch((error) => {
+          logger.debug({
+            message: `Error while geting user`,
+            user: actorUrl,
+            by: user.url,
+            error: error,
+          });
+        });
+      }
       if (result && result.id) {
         userId = result.id;
       } else {

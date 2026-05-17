@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-COMPOSE_FILENAME="docker-compose.advanced.yml"
 
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${SCRIPT_DIR}/../.env"
 
+COMPOSE_FILENAME="docker-compose.default.yml"
+
+
 BACKUP_ROOT_DIR=${BACKUP_ROOT_DIR:-$HOME/backup}
 BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-10}
 BACKUP_POST_BACKUP_TOOL=${BACKUP_POST_BACKUP_TOOL:-$HOME/post_backup.sh}
 
-declare -a docker_compose_files=("docker-compose.no-caddy.yml" "docker-compose.advanced.yml" "docker-compose.advanced.metrics.yml")
+declare -a docker_compose_files=("docker-compose.default.yml")
 
 
 check_files_for_update () {
@@ -95,10 +97,8 @@ case $1 in
 
       #docker compose down
       docker compose pull
-      docker compose up --build -d
-      docker compose stop
-      docker system prune -f
       docker compose down
+      docker system prune -f
       docker volume rm wafrn_cache
       docker compose up -d
       docker compose logs -t -n 50 -f
@@ -160,11 +160,22 @@ case $1 in
     ;;
   clean)
     pushd "$SCRIPT_DIR/.."
-    rm -rf packages/backend/cache/ && mkdir packages/backend/cache/
+    echo "Stoping wafrn to clean cache"
+    docker compose down
+    docker volume rm wafrn_cache
+    docker compose up -d
+    echo "Wafrn restarted"
     popd
     ;;
   logs)
     pushd "${SCRIPT_DIR}/.."
+    docker compose logs -t -n 50 -f
+    popd
+    ;;
+  build)
+    pushd "${SCRIPT_DIR}/.."
+    echo "Force building containers"
+    docker compose up --build -d
     docker compose logs -t -n 50 -f
     popd
     ;;
@@ -175,6 +186,7 @@ case $1 in
     echo "  restore: Restore a specific backup"
     echo "  clean: Cleans the cache"
     echo "  logs: Starts tailing docker logs"
+    echo "  build: Force build containers"
     exit 1
     ;;
 esac

@@ -82,14 +82,6 @@ else
     echo Enter 'Y' for yes
     read SEND_ACTIVATION_MAIL
   fi
-
-  echo Please select from the following packages:
-  # workers dont work well on minimum install and ªªªª
-  echo "3: Advanced install (recommended); More advanced config, with separate workers to handle the load. Preferred options for larger instances."
-  echo "4: Advanced install with monitoring support; The full package: advanced install plus Grafana support"
-  echo "5: Installation without caddy. Useful if you have more stuff already installed on the machine"
-  read INSTALL_TYPE
-
   echo
   echo
   echo "--------------------------------------------"
@@ -97,20 +89,8 @@ else
   echo "--------------------------------------------"
 fi
 
-export DOCKER_COMPOSE_FILENAME=docker-compose.simple.yml
+export DOCKER_COMPOSE_FILENAME=docker-compose.default.yml
 
-
-if [[ $INSTALL_TYPE == "3" ]]; then
-  export DOCKER_COMPOSE_FILENAME=docker-compose.advanced.yml
-fi
-
-if [[ $INSTALL_TYPE == "4" ]]; then
-  export DOCKER_COMPOSE_FILENAME=docker-compose.advanced.metrics.yml
-fi
-
-if [[ $INSTALL_TYPE == "5" ]]; then
-  export DOCKER_COMPOSE_FILENAME=docker-compose.no-caddy.yml
-fi
 
 if [[ ! $BLUESKY_SUPPORT =~ ^[Yy]$ ]]; then
   export COMPOSE_PROFILES=default
@@ -181,7 +161,6 @@ echo
 echo "--------------------------"
 echo "Building and starting apps"
 echo "--------------------------"
-docker compose build
 docker compose up -d
 
 case $BLUESKY_SUPPORT in
