@@ -162,6 +162,14 @@ function getCheckFediverseSignatureFunction(force = false) {
               (adminUser) as User
             );
             const jsonld = new LdSignature();
+            const containsForbiddenDirectives = checkForForbiddenDirectives(req.body)
+            if (containsForbiddenDirectives) {
+              res.status(400);
+              res.send({
+                error: true,
+                message: `You have sent a post that contains a non valid directive`
+              })
+            }
             req.body = await jsonld.compactToWellKnown(req.body);
             req.body.signature = signature
             if (
@@ -261,6 +269,39 @@ function verifyDigest(
 // also from catodon lol sorry
 function toSingle<T>(x: T | T[] | undefined): T | undefined {
   return Array.isArray(x) ? x[0] : x;
+}
+
+
+function checkForForbiddenDirectives(value: any) {
+  const forbiddenDirectives = [
+    '@included',
+    '@graph',
+    '@reverse',
+  ]
+  if (typeof value === 'object' && value !== null) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const res = checkForForbiddenDirectives(item);
+        if (res) {
+          return true;
+        }
+      }
+    } else {
+      const object = value;
+      for (const [key, value] of Object.entries(object)) {
+        if (key in forbiddenDirectives) {
+          return true;
+        }
+
+        if (typeof value === 'object' && value !== null) {
+          const res = checkForForbiddenDirectives(value);
+          if (res) {
+            return true;
+          }
+        }
+      }
+    }
+  }
 }
 
 export { getCheckFediverseSignatureFunction };
