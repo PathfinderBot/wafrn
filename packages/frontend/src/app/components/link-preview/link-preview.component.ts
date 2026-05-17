@@ -29,7 +29,7 @@ export class LinkPreviewComponent implements OnChanges {
     this.forceTenorGif = false
     this.forceYoutube = false
     if (this.link) {
-      if (this.url.startsWith('https://media.tenor.com/')) {
+      if (this.url.startsWith('https://media.tenor.com/') || this.url.startsWith('static.klipy.com')) {
         this.loading = false
         this.forceTenorGif = true
         return
@@ -42,7 +42,7 @@ export class LinkPreviewComponent implements OnChanges {
       this.hostname = new URL(this.url).hostname
       this.mediaService.getLinkPreview(this.url).then((data) => {
         this.favicon = EnvironmentService.environment.externalCacheurl +
-            encodeURIComponent(data.favicons.at(0)) 
+          encodeURIComponent(data.favicons.at(0))
         this.loading = false
         if (data.images && data.images.length) {
           this.img = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.images[0])
