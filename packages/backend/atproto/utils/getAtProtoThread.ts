@@ -370,7 +370,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     const medias = getPostMedias(postPetitionPds.uri, post)
     let tags: string[] = []
     let mentions: string[] = []
-    let postText = post.text
+    let postText = post.text || ''
     let federatedWoot = false
     if (post.fullText || post.bridgyOriginalText) {
       federatedWoot = true
@@ -420,7 +420,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
 
     }
 
-    if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
+    if (!federatedWoot ) {
+      postText = postText ? postText.replaceAll('\n', '<br>') : ''
+    }
 
     const labels = getPostLabels(postPetitionPds.value as AppBskyFeedPost.Main)
     let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
@@ -456,9 +458,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       delete newData.parentId
     }
 
-    if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate) {
+    if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate && postCreator.bskyDid) {
 
-      const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
+      const userPds = await getServerFromDid(postCreator.bskyDid, true)
       if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
         // OH SHIT THIS USER IS NO LONGER IN WAFRN
         const oldDid = postCreator.bskyDid
@@ -466,7 +468,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         postCreator.enableBsky = false;
         postCreator.alternateUrl = undefined
         await postCreator.save();
-        postCreator = await getAtprotoUser(oldDid as string, { ignoreCache: true })
+        postCreator = await getAtprotoUser(oldDid, { ignoreCache: true })
       } else {
         // await wait(1500)
       }
