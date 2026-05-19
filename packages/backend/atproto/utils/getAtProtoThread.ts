@@ -1,21 +1,12 @@
 import {
-  EmojiReaction,
   Media,
   Notification,
   Post,
-  PostAncestor,
   PostMentionsUserRelation,
-  PostReport,
   PostTag,
-  QuestionPoll,
   Quotes,
-  RemoteUserPostView,
   sequelize,
-  SilencedPost,
-  User,
-  UserBitesPostRelation,
-  UserBookmarkedPosts,
-  UserLikesPostRelations
+  User
 } from '../../models/index.js'
 import { Op, QueryTypes } from 'sequelize'
 import { getAtprotoUser } from './getAtprotoUser.js'
@@ -50,6 +41,124 @@ import getUserAgent from '../../utils/getUserAgent.js'
 import { getQueue } from '../../utils/queues.js'
 
 const processSinglePostQueue = getQueue('processSinglePost')
+
+const mergeRemotePostRelatedRecordsSql = `
+  WITH
+  updated_emoji_reactions AS (
+    UPDATE "emojiReactions"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_notifications AS (
+    UPDATE "notifications"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_post_reports AS (
+    UPDATE "postReports"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_post_ancestors AS (
+    UPDATE "postsancestors" AS ancestors
+    SET "postsId" = :remotePostId
+    WHERE ancestors."postsId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "postsancestors" AS existing_ancestors
+        WHERE existing_ancestors."postsId" = :remotePostId
+          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
+      )
+    RETURNING 1
+  ),
+  updated_question_polls AS (
+    UPDATE "questionPolls"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_quoter_quotes AS (
+    UPDATE "quotes" AS quotes
+    SET "quoterPostId" = :remotePostId, "updatedAt" = NOW()
+    WHERE quotes."quoterPostId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "quotes" AS existing_quotes
+        WHERE existing_quotes."quoterPostId" = :remotePostId
+          AND existing_quotes."quotedPostId" = quotes."quotedPostId"
+      )
+    RETURNING 1
+  ),
+  updated_quoted_quotes AS (
+    UPDATE "quotes" AS quoted_quotes
+    SET "quotedPostId" = :remotePostId, "updatedAt" = NOW()
+    WHERE quoted_quotes."quotedPostId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "quotes" AS existing_quoted_quotes
+        WHERE existing_quoted_quotes."quotedPostId" = :remotePostId
+      )
+    RETURNING 1
+  ),
+  updated_remote_user_post_views AS (
+    UPDATE "remoteUserPostViews" AS views
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE views."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "remoteUserPostViews" AS existing_views
+        WHERE existing_views."postId" = :remotePostId
+          AND existing_views."userId" = views."userId"
+      )
+    RETURNING 1
+  ),
+  updated_silenced_posts AS (
+    UPDATE "silencedPosts"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_user_bites AS (
+    UPDATE "userBitesPostRelations"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_bookmarks AS (
+    UPDATE "userBookmarkedPosts" AS bookmarks
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE bookmarks."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "userBookmarkedPosts" AS existing_bookmarks
+        WHERE existing_bookmarks."postId" = :remotePostId
+          AND existing_bookmarks."userId" = bookmarks."userId"
+      )
+    RETURNING 1
+  ),
+  updated_likes AS (
+    UPDATE "userLikesPostRelations" AS likes
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE likes."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "userLikesPostRelations" AS existing_likes
+        WHERE existing_likes."postId" = :remotePostId
+          AND existing_likes."userId" = likes."userId"
+      )
+    RETURNING 1
+  ),
+  updated_child_posts AS (
+    UPDATE "posts"
+    SET "parentId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "parentId" = :existingPostId
+    RETURNING 1
+  )
+  SELECT 1
+`
 
 // returns the post id
 async function processSinglePost(uri: string, forceUpdate = false): Promise<string | undefined> {
@@ -121,8 +230,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
         completeEnvironment.bskySlingshotUrl +
-        '/xrpc/com.bad-example.identity.resolveMiniDoc' +
-        `?identifier=${extractUriComponents(uri).did}`
+          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+          `?identifier=${extractUriComponents(uri).did}`
       )
       if (res.ok) {
         const json = (await res.json()) as { pds: string }
@@ -182,175 +291,49 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         // and prob update the things
         const existingPost = await Post.findOne({
           where: {
-            bskyCid: bskyCid,
+            bskyUri: bskyUri,
             remotePostId: null
           }
         })
-        if (existingPost && !(await getAllLocalUserIdsSet()).has(existingPost.userId)) {
-          // very expensive updates! but only happens when user
-          // searches existing post that is alr on db
-          await EmojiReaction.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await Notification.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await PostReport.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          try {
-            await PostAncestor.update(
-              {
-                postsId: remotePost.id
-              },
-              {
-                where: {
-                  postsId: existingPost.id
-                }
-              }
-            )
-          } catch { }
-          await QuestionPoll.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await Quotes.update(
-            {
-              quoterPostId: remotePost.id
-            },
-            {
-              where: {
-                quoterPostId: existingPost.id
-              }
-            }
-          )
-          if (
-            !(await Quotes.findOne({
-              where: {
-                quotedPostId: remotePost.id
-              }
-            }))
-          ) {
-            await Quotes.update(
-              {
-                quotedPostId: remotePost.id
-              },
-              {
-                where: {
-                  quotedPostId: existingPost.id
-                }
-              }
-            )
-          }
-          await RemoteUserPostView.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await SilencedPost.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await SilencedPost.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await UserBitesPostRelation.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await UserBookmarkedPosts.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await UserLikesPostRelations.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await Post.update(
-            {
-              parentId: remotePost.id
-            },
-            {
-              where: {
-                parentId: existingPost.id
-              }
-            }
-          )
-
-          await Post.destroy({
+        if (existingPost) {
+          const localUserIds = await getAllLocalUserIds()
+          if (await User.scope('full').count({
             where: {
-              bskyCid: bskyCid,
-              remotePostId: null,
-              userId: {
-                [Op.notIn]: await getAllLocalUserIds()
+              id: existingPost.userId,
+              email: {
+                [Op.not]: null
               }
             }
-          })
+          })) {
+            await remotePost.save()
+          } else {
+            // Converted to a super single query
+            await sequelize.transaction(async (transaction) => {
+              await sequelize.query(mergeRemotePostRelatedRecordsSql, {
+                replacements: {
+                  existingPostId: existingPost.id,
+                  remotePostId: remotePost.id
+                },
+                transaction
+              })
+
+              await Post.destroy({
+                where: {
+                  bskyCid: bskyCid,
+                  remotePostId: null,
+                  userId: {
+                    [Op.notIn]: localUserIds
+                  }
+                },
+                transaction
+              })
+
+              await remotePost.save({ transaction })
+            })
+          }
+        } else {
+          await remotePost.save()
         }
-        await remotePost.save()
         if (forceUpdate) {
           await processReplies(remotePost.bskyUri as string)
         }
