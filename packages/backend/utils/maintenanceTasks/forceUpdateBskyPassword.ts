@@ -21,7 +21,7 @@ async function forceUpdateBskyPassword(user: User) {
     const randomString = generateRandomString()
     await updateBskyPassword(user, randomString)
     logger.debug(
-      `New password generated for bluesky user ${user.url}: ${randomString}. Copy this string because it will not be saved to the DB`
+      `New password generated for bluesky user ${user.url}: ${randomString} . Copy this string because it will not be saved to the DB`
     )
     await forceUpdateBskyEmail(user)
     const agent = new AtpAgent({

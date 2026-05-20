@@ -875,6 +875,7 @@ async function triggerPostFederation(post: Post, user: User) {
       queueName: 'prepareSendPost',
       data: jobData,
       opts: {
+        delay: 1000,
       },
       children: [
         {
