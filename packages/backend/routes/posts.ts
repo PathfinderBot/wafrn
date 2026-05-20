@@ -870,25 +870,7 @@ async function triggerPostFederation(post: Post, user: User) {
   const flowProducer = getFlowProducer()
 
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    await flowProducer.add({
-      name: 'prepareSendPost',
-      queueName: 'prepareSendPost',
-      data: jobData,
-      opts: {
-        delay: 1000,
-      },
-      children: [
-        {
-          name: 'sendPostBsky',
-          queueName: 'sendPostBsky',
-          data: jobData,
-          opts: {
-            jobId: post.id,
-            delay: 500
-          }
-        }
-      ]
-    })
+    await sendPostBskyQueue.add('sendPostBsky', jobData, {delay: 250})
   } else {
     await prepareSendPostQueue.add('prepareSendPost', jobData, {
       jobId: post.id,
