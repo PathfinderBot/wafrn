@@ -16,10 +16,10 @@ export const QUEUE_CONFIGS: any = {
   },
   "sendPostToInboxes": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 50,
+    attempts: 15,
     "backoff": {
       "type": "exponential",
-      "delay": 2500
+      "delay": 60000
     },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
@@ -52,19 +52,19 @@ export const QUEUE_CONFIGS: any = {
   },
   "inbox": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 3,
+    attempts: 15,
     "backoff": {
       "type": "exponential",
-      "delay": 1000
+      "delay": 60000
     },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
   "deletePostQueue": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 50,
+    attempts: 15,
     "backoff": {
       "type": "exponential",
-      "delay": 2500
+      "delay": 60000
     },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
@@ -87,12 +87,20 @@ export const QUEUE_CONFIGS: any = {
   },
   "firehoseQueue": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 2,
+    attempts: 3,
+    "backoff": {
+      "type": "exponential",
+      "delay": 60000
+    },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
   "lowPriorityFirehoseQueue": {
     removeOnComplete: { count: 100, age: 3600 },
-    attempts: 2,
+    attempts: 3,
+    "backoff": {
+      "type": "exponential",
+      "delay": 60000
+    },
     removeOnFail: { count: 1000, age: 24 * 3600 },
   },
   "mergeUsers": {

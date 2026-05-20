@@ -2,27 +2,62 @@ import { ComponentFixture, TestBed } from '@angular/core/testing'
 
 import { PostFragmentComponent } from './post-fragment.component'
 import { LoginService } from '../../services/login.service'
+import { EnvironmentService } from '../../services/environment.service'
 import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { WafrnMediaComponent } from '../wafrn-media/wafrn-media.component'
 import { MockComponent, MockModule } from 'ng-mocks'
 import { WafrnMediaModule } from '../wafrn-media/wafrn-media.module'
 import { signal } from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
+import { BehaviorSubject } from 'rxjs'
 
 describe('PostFragmentComponent', () => {
   let component: PostFragmentComponent
   let fixture: ComponentFixture<PostFragmentComponent>
 
+  const createMockProcessedPost = (): ProcessedPost => ({
+    ask: undefined,
+    createdAt: new Date(),
+    descendents: [],
+    emojiReactions: [],
+    emojis: [],
+    medias: [],
+    mentionPost: [],
+    notes: 0,
+    parentId: '',
+    privacy: 0,
+    questionPoll: undefined,
+    quotes: [],
+    remotePostId: '',
+    tags: [],
+    title: '',
+    updatedAt: new Date(),
+    user: undefined,
+    userId: '',
+    userLikesPostRelations: [],
+    id: '1',
+    content: 'No medias attached and ![media-1] string',
+    content_warning: ''
+  })
+
+  beforeAll(() => {
+    // Set the static environment property for EnvironmentService
+    EnvironmentService.environment = {
+      frontUrl: 'http://localhost'
+    }
+  })
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [],
-      declarations: [PostFragmentComponent],
+      imports: [PostFragmentComponent],
       providers: [
         provideHttpClientTesting(),
         {
           provide: LoginService,
           useValue: {
-            getLoggedUserUUID: () => ''
+            getLoggedUserUUID: () => '',
+            loggedIn: new BehaviorSubject(false),
+            userPrefersReducedMotion: () => false
           }
         }
       ]
@@ -30,6 +65,7 @@ describe('PostFragmentComponent', () => {
 
     fixture = TestBed.createComponent(PostFragmentComponent)
     component = fixture.componentInstance
+    fixture.componentRef.setInput('fragment', createMockProcessedPost())
     fixture.detectChanges()
   })
 
@@ -38,39 +74,41 @@ describe('PostFragmentComponent', () => {
   })
 
   it('should process fragment blocks appropiately', () => {
-    // Initial test, the simple one
-    component.fragment = signal<ProcessedPost>({
-      ask: undefined,
-      createdAt: new Date(),
-      descendents: [],
-      emojiReactions: [],
-      emojis: [],
-      medias: [],
-      mentionPost: [],
-      notes: 0,
-      parentId: '',
-      privacy: 0,
-      questionPoll: undefined,
-      quotes: [],
-      remotePostId: '',
-      tags: [],
-      title: '',
-      updatedAt: new Date(),
-      user: undefined,
-      userId: '',
-      userLikesPostRelations: [],
-      id: '1',
-      content: 'No medias attached and ![media-1] string',
-      content_warning: ''
-    })
-    component.initializeContent()
+    // Initial test with simple content
+    const testPost = createMockProcessedPost()
+    testPost.content = 'No medias attached and ![media-1] string'
+    fixture.componentRef.setInput('fragment', testPost)
     fixture.detectChanges()
-    expect(JSON.stringify(component.wafrnFormattedContent)).toBe(
+    expect(JSON.stringify(component.wafrnFormattedContent())).toBe(
       JSON.stringify(['No medias attached and ![media-1] string'])
     )
-    if (component.fragment) {
-      component.fragment().content = 'post with one media ![media-1] and a second line'
-      component.fragment().medias = [
+
+    // Second part of test with one media
+    const testPostWithMedia = createMockProcessedPost()
+    testPostWithMedia.content = 'post with one media ![media-1] and a second line'
+    testPostWithMedia.medias = [
+      {
+        id: '1',
+        NSFW: false,
+        description: '',
+        url: '',
+        external: false,
+        mediaOrder: 0
+      },
+      {
+        id: '2',
+        NSFW: false,
+        description: '',
+        url: '',
+        external: false,
+        mediaOrder: 0
+      }
+    ]
+    fixture.componentRef.setInput('fragment', testPostWithMedia)
+    fixture.detectChanges()
+    expect(JSON.stringify(component.wafrnFormattedContent())).toBe(
+      JSON.stringify([
+        'post with one media ',
         {
           id: '1',
           NSFW: false,
@@ -79,6 +117,45 @@ describe('PostFragmentComponent', () => {
           external: false,
           mediaOrder: 0
         },
+        ' and a second line'
+      ])
+    )
+
+    // Third part with two medias
+    const testPostWithTwoMedias = createMockProcessedPost()
+    testPostWithTwoMedias.content = 'start ![media-1] middle ![media-2] end'
+    testPostWithTwoMedias.medias = [
+      {
+        id: '1',
+        NSFW: false,
+        description: '',
+        url: '',
+        external: false,
+        mediaOrder: 0
+      },
+      {
+        id: '2',
+        NSFW: false,
+        description: '',
+        url: '',
+        external: false,
+        mediaOrder: 0
+      }
+    ]
+    fixture.componentRef.setInput('fragment', testPostWithTwoMedias)
+    fixture.detectChanges()
+    expect(JSON.stringify(component.wafrnFormattedContent())).toBe(
+      JSON.stringify([
+        'start ',
+        {
+          id: '1',
+          NSFW: false,
+          description: '',
+          url: '',
+          external: false,
+          mediaOrder: 0
+        },
+        ' middle ',
         {
           id: '2',
           NSFW: false,
@@ -86,56 +163,27 @@ describe('PostFragmentComponent', () => {
           url: '',
           external: false,
           mediaOrder: 0
-        }
-      ]
-      component.initializeContent()
-      fixture.detectChanges()
-      expect(JSON.stringify(component.wafrnFormattedContent)).toBe(
-        JSON.stringify([
-          'post with one media ',
-          {
-            id: '1',
-            NSFW: false,
-            description: '',
-            url: '',
-            external: false,
-            mediaOrder: 0
-          },
-          ' and a second line'
-        ])
-      )
-      component.fragment().content = 'start ![media-1] middle ![media-2] end'
-      expect(JSON.stringify(component.seenMedia)).toBe(JSON.stringify([0]))
-      component.initializeContent()
-      fixture.detectChanges()
-      expect(JSON.stringify(component.wafrnFormattedContent)).toBe(
-        JSON.stringify([
-          'start ',
-          {
-            id: '1',
-            NSFW: false,
-            description: '',
-            url: '',
-            external: false,
-            mediaOrder: 0
-          },
-          ' middle ',
-          {
-            id: '2',
-            NSFW: false,
-            description: '',
-            url: '',
-            external: false,
-            mediaOrder: 0
-          },
-          ' end'
-        ])
-      )
-      component.fragment().content = 'start ![media-249] end'
-      component.initializeContent()
-      fixture.detectChanges()
-      // acceptable compromise without more headaches. Your fault for making it like this lol
-      expect(JSON.stringify(component.wafrnFormattedContent)).toBe(JSON.stringify(['start ', '![media-249]', ' end']))
-    }
+        },
+        ' end'
+      ])
+    )
+
+    // Last part with non-existent media
+    const testPostWithNonExistentMedia = createMockProcessedPost()
+    testPostWithNonExistentMedia.content = 'start ![media-249] end'
+    testPostWithNonExistentMedia.medias = [
+      {
+        id: '1',
+        NSFW: false,
+        description: '',
+        url: '',
+        external: false,
+        mediaOrder: 0
+      }
+    ]
+    fixture.componentRef.setInput('fragment', testPostWithNonExistentMedia)
+    fixture.detectChanges()
+    // acceptable compromise without more headaches. Your fault for making it like this lol
+    expect(JSON.stringify(component.wafrnFormattedContent())).toBe(JSON.stringify(['start ', '![media-249]', ' end']))
   })
 })

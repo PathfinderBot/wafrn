@@ -14,10 +14,11 @@ describe('PostHtmlContentComponent', () => {
 
     fixture = TestBed.createComponent(PostHtmlContentComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
   });
 
   it('should create', () => {
+    fixture.componentRef.setInput('fragment', '<p>test content</p>');
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 });
