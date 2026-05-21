@@ -1,4 +1,4 @@
-import { Jetstream } from "@skyware/jetstream";
+import { Collection, Jetstream } from "@skyware/jetstream";
 import { Job, Worker } from "bullmq";
 import { checkCommitMentions } from "./atproto/utils/checkCommitMentions.js";
 import { logger } from "./utils/logger.js";
@@ -51,7 +51,7 @@ async function ensureCacheLoaded() {
 let reconnectTimeout: NodeJS.Timeout | null = null;
 let reconnectAttempts = 0;
 
-let jetstream: Jetstream | null = null;
+let jetstream: Jetstream<"app.bsky.feed.threadgate" | "app.bsky.feed.like" | "app.bsky.feed.post" | "app.bsky.feed.repost" | "app.bsky.graph.block" | "app.bsky.graph.follow" | "net.wafrn.feed.bite", Collection> | null = null
 
 async function startJetstream() {
   const cursor = await getCursor();
@@ -80,7 +80,7 @@ async function startJetstream() {
       const commit = event.commit;
       const shouldProcess = await checkCommitMentions(
         event.did,
-        commit,
+        commit as any,
       );
 
       if (!shouldProcess) {
