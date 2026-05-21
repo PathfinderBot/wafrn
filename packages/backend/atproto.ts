@@ -51,6 +51,8 @@ async function ensureCacheLoaded() {
 let reconnectTimeout: NodeJS.Timeout | null = null;
 let reconnectAttempts = 0;
 
+let jetstream: Jetstream | null = null;
+
 async function startJetstream() {
   const cursor = await getCursor();
 
@@ -59,7 +61,7 @@ async function startJetstream() {
     cursor,
   });
 
-  const jetstream = new Jetstream({
+  jetstream = new Jetstream({
     endpoint: completeEnvironment.bskyJetstreamUrl,
     wantedCollections: [
       "net.wafrn.feed.bite",
@@ -76,7 +78,6 @@ async function startJetstream() {
   jetstream.on("commit", async (event) => {
     try {
       const commit = event.commit;
-
       const shouldProcess = await checkCommitMentions(
         event.did,
         commit,
@@ -136,7 +137,7 @@ async function startJetstream() {
 
   jetstream.on("close", async () => {
     logger.debug("Jetstream closed");
-
+    jetstream = null;
     await redisCache.set(
       "jetstreamCursor",
       String(Date.now()),
