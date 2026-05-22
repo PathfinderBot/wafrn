@@ -15,7 +15,6 @@ async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
   if (post && !post.bskyUri) {
     const parent = post.parentId ? await Post.findByPk(post.parentId) : undefined
-    const parentPoster = parent ? await User.findByPk(parent.userId) : undefined
     const localUser = await User.findByPk(post.userId)
     try {
       if (
@@ -147,9 +146,9 @@ async function sendPostBsky(job: Job) {
   if (post) {
     const prepareSendPostQueue = getQueue('prepareSendPost')
     // we send the post to fedi once we get the bsky data
-    await prepareSendPostQueue.add('prepareSendPost', job.data, {
-      jobId: post.id,
-      delay: 1000
+    prepareSendPostQueue.add('prepareSendPost', job.data, {
+      // this may not be the best way but hey i want it to be sure
+      delay: 5000
     })
   }
 }
