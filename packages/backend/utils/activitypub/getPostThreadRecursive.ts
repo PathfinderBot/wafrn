@@ -32,7 +32,6 @@ import escapeHTML from 'escape-html'
 import { canInteract } from '../baseQueryNew.js'
 import { getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
 import { getQueue } from '../queues.js'
-import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
 import { filterLanguageCode } from '../languages.js'
 
 const updateMediaDataQueue = getQueue('processRemoteMediaData')
@@ -469,8 +468,6 @@ async function getPostThreadRecursive(
             replyControl.replyControl = InteractionControl.SameAsOp
           }
         }
-        let postTextContent = `${postPetition.content ? postPetition.content : ''}` // Fix for bridgy giving this as undefined
-        if (invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
 
         let { postTextContent, postLanguage } = processContentAndLanguage(postPetition)
 
