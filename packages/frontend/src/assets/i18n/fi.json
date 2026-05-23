@@ -1,6 +1,6 @@
 {
   "common": {
-    "commaSeparation": "Eroteltu pilkuilla",
+    "commaSeparation": "Erottele pilkuilla",
     "words": "sanat",
     "word": "sana",
     "characters": "merkit",
@@ -27,7 +27,7 @@
     "loginButton": "Kirjaudu sisään",
     "checkEmail": "Tarkistaisitko sähköpostisi",
     "checkEmailLine1": "Olemme lähettäneet sinulle sähköpostia. Tarkistaisitko sähköpostisi ja roskapostikansiosi",
-    "checkEmailLine2": "Jos kohtaat ongelmia, kirjoita instanssin ylläpitäjälle, jonka sähköpostin voi löytää <a href=\"/about\">here</a>",
+    "checkEmailLine2": "Jos kohtaat ongelmia, kirjoita instanssin ylläpitäjälle, jonka sähköpostin voi löytää <a href=\"/about\">täältä</a>",
     "alreadyLoggedIn": "Olet jo kirjautunut sisään tuolla tunnuksella"
   },
   "register": {
@@ -51,7 +51,7 @@
   "asks": {
     "title": "Kysymyksiä",
     "noAsks": "Ei enää kysymyksiä",
-    "nobodyAsked": "Kukaan ei kysynyt..."
+    "nobodyAsked": "Kukaan ei ole kysynyt..."
   },
   "menu": {
     "login": "Kirjaudu sisään",
@@ -81,8 +81,8 @@
     "viewBlog": "Näytä blogi",
     "switchToAlt": "Vaihda tunnusta",
     "faq": "UKK",
-    "more": "Enemmän",
-    "silencedPosts": "Hiljennetyt Wootit",
+    "more": "Lisää",
+    "silencedPosts": "Vaimennetut wootit",
     "bookmarkedPosts": "Kirjanmerkityt wootit",
     "settings": {
       "title": "Asetukset",
@@ -91,15 +91,15 @@
       "migrateBluesky": "Siirrä Bluesky tunnus wafrniin",
       "editProfile": "Valinnat ja Profiili",
       "themeEditor": "Teemaeditori",
-      "mutedUsers": "Hiljennetyt käyttäjät",
-      "mutedPosts": "Hiljennetyt wootit",
+      "mutedUsers": "Vaimennetut käyttäjät",
+      "mutedPosts": "Vaimennetut wootit",
       "bookmarkedPosts": "Kirjanmerkityt wootit",
       "followedHashtags": "Seuratut aihetunnisteet",
       "myBlockedUsers": "Estetyt käyttäjät",
       "myBlockedServers": "Estetyt palvelimet",
       "importFollows": "Tuo seuraajia",
       "superSecretMenu": "Ylisalainen Valikko",
-      "detachedNotifications": "Luvattomat Ilmoitukset"
+      "detachedNotifications": "Luvattomat ilmoitukset"
     },
     "admin": {
       "title": "Ylläpito",
@@ -118,8 +118,8 @@
     "templateNote": "Voit katsoa pohjamallin ja joitain neuvoja",
     "themeTextLabel": "Muokkaa CSS teemaasi",
     "themeTextPlaceholder": "Kirjoita oma css...",
-    "themeGuideName": "Teemaopas",
-    "updateButton": "Päivitä Teema"
+    "themeGuideName": "Teemaoppaasta",
+    "updateButton": "Päivitä teema"
   },
   "editor": {
     "interactionControl": {
@@ -132,13 +132,13 @@
       "noOneCanQuote": "Ei lainattavissa"
     },
     "replyControlWarning": "Kaikki fediverse instanssit eivät vielä tue tätä ominaisuutta. Luvattomat vastaukset menevät aiheelliseen osioon valikossa.",
-    "editingLabel": "Muokataan wootia",
+    "editingLabel": "Muokataan woottia",
     "askReplyLabel": "Vastataan kysymykseen",
     "inReplyTo": "Vastauksena:",
-    "quoteButton": "Lainaa wootia",
-    "publishWoot": "Julkaise tämä woot",
+    "quoteButton": "Lainaa woottia",
+    "publishWoot": "Julkaise tämä wootti",
     "directMessageWarning": "Ylläpitäjät sekä palvelimellasi että ulkoisella palvelimella voivat lukea näitä viestejä.",
-    "unlistedWarning": "Listaamattomat wootit jäävät huomiotta hauissa (SISÄLTÄEN TUNNISTEET), eikä niitä näytetä paikallisessa tutkailussa, mutta ne näyteteään seuraajillesi. Ja jos joku lähettää linkin, hän ovat näkyvissä, toisin kuin pelkät seuraajat. Periaatteessa silloin kun haluat wootata paljon, muttet halua täyttää paikallista tutkailua.",
+    "unlistedWarning": "Listaamattomat wootit jäävät huomiotta hauissa (SISÄLTÄEN TUNNISTEET), eikä niitä näytetä paikallisessa tutkailussa, mutta ne näyteteään seuraajillesi. Ja jos joku lähettää linkin, hän ovat näkyvissä, toisin kuin pelkät seuraajat. Periaatteessa silloin, kun haluat wootata paljon, muttet halua täyttää paikallistutkailua.",
     "directMessageWithQuoteWarning": "Lainatulle käyttäjälle ilmoitetaan tästä myös mainintana",
     "sensitivePlaceholder": "Mikä on arkaluonteista tässä wootissa?",
     "wootQuoteBoxLabel": "Liitä wootin URL lainataksesi sitä. Voi olla ulkoinen url tai wafrn url",
@@ -165,7 +165,7 @@
     "contentWarningTooltip": "Sisältövaroitus",
     "insertEmojiTooltip": "Syötä emoji",
     "hiddenMentionsTooltip": "Muut mainitut käyttäjät",
-    "editorGuide": "Heräsikö kysymyksiä, kuinka muotoilla teksti tai kuinka aloittaa? Tarkista <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">the guide!</a>",
+    "editorGuide": "Heräsikö kysymyksiä, kuinka muotoilla teksti tai kuinka aloittaa? Tarkista <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">ohje!</a>",
     "usernameLabel": "Julkaise tämä wootti muodossa",
     "noResults": "Ei tuloksia."
   },
@@ -209,15 +209,15 @@
       },
       "manuallyAcceptFollows": "Hyväksy manuaalisesti seurauspyynnöt",
       "disableForceAltText": "Salli median lähettäminen ilman kuvaavaa tekstiä (salli tämä vain jos olet pahis)",
-      "forceClassicLogo": "Pakota perinteinen logo",
-      "forceClassicVideoPlayer": "Pakota perinteinen videosoitin",
-      "forceClassicAudioPlayer": "Pakota perinteinen äänisoitin",
-      "forceClassicMediaView": "Pakota perinteinen mediakaruselli (pystysuuntainen)",
+      "forceClassicLogo": "Pakota klassinen logo",
+      "forceClassicVideoPlayer": "Pakota klassinen videosoitin",
+      "forceClassicAudioPlayer": "Pakota klassinen äänisoitin",
+      "forceClassicMediaView": "Pakota klassinen mediakaruselli (pystysuuntainen)",
       "dontCollapseQuotes": "Älä luhistuta lainauksia",
-      "disableCwExceptMuted": "Säädä CW pois päältä ellei wootti sisällä hiljennettyjä sanoja",
-      "disableConfetti": "Säädä konfetti-efektit pois päältä kun suoritetaan toimintoja",
-      "enableConfettiRecivingLike": "Salli konfetti-efekti kun saat tykkäyksen",
-      "disableUiSounds": "Säädä ääniefektit pois päältä kun suoritetaan toimintoja",
+      "disableCwExceptMuted": "Säädä CW pois päältä ellei wootti sisällä vaimennettuja sanoja",
+      "disableConfetti": "Säädä konfetti-efektit pois päältä, kun suoritetaan toimintoja",
+      "enableConfettiRecivingLike": "Salli konfetti-efekti, kun saat tykkäyksen",
+      "disableUiSounds": "Säädä ääniefektit pois päältä, kun suoritetaan toimintoja",
       "dashboardIsExploreLocal": "Oletustyöpöytä on paikallistutkimismoodissa seuraamisen sijaan",
       "cocAIne": "Korvaa sana tekoäly vapaavalintaisella sanalla (kokaiini?)",
       "customCocAIne": "Vapaavalintainen sana AI:n korvaamiseen",
@@ -285,7 +285,7 @@
       "psa2": "tässä"
     },
     "delete": {
-      "psa1": "Merkkaamme tunnuksesi deaktivoiduksi ja 30 päivän jälkeen se tullaan POISTAMAAN PERUUTTAMATTOMASTI.",
+      "psa1": "Merkkaamme tunnuksesi deaktivoiduksi ja 30 päivän jälkeen se tullaan PYSYVÄSTI POISTAMAAN.",
       "psa2": "Varmistaaksesi, että se olet sinä, syöttäisitkö salasanasi",
       "button": "POISTA TUNNUS"
     },
@@ -302,9 +302,9 @@
       "profile": "Profiili",
       "account": "Tunnus",
       "appearance": "Ilme ja käyttöliittymä",
-      "behavior": "Käyttäytyminen",
+      "behavior": "Toiminnot",
       "privacy": "Yksityisyys",
-      "mutesAndBlocks": "Hiljennykset ja estot",
+      "mutesAndBlocks": "Vaimennukset ja estot",
       "miscellaneous": "Sekalaiset"
     },
     "header": {
@@ -316,26 +316,26 @@
       "deleteAccount": "Poista tunnus",
       "appearance": "Ulkoasu",
       "userInterface": "Käyttöliittymä",
-      "classicOptions": "Perinteinen valikko",
+      "classicOptions": "Klassikkovalikko",
       "animationsAndSounds": "Animaatiot ja äänet",
-      "dashboardBehavior": "Työpöydän käyttäytyminen",
-      "cwBehavior": "Sisältövaroitusten käyttäytyminen",
+      "dashboardBehavior": "Työpöydän toiminta",
+      "cwBehavior": "Sisältövaroitusten toiminta",
       "profilePrivacy": "Profiilin yksityisyys",
       "editor": "Editori",
       "followers": "Seuraajat",
-      "mutedBlockedWords": "Hiljennetyt ja estetyt sanat",
+      "mutedBlockedWords": "Vaimennetut ja estetyt sanat",
       "blockBehavior": "Estotoiminta",
-      "mutedBlockedUsers": "Hiljennetyt ja estetyt käyttäjät",
+      "mutedBlockedUsers": "Vaimennetut ja estetyt käyttäjät",
       "fun": "Hupi",
       "wellbeing": "Hyvinvointi",
       "media": "Media",
-      "editorBehavior": "Editorin käyttäytyminen"
+      "editorBehavior": "Editorin toiminta"
     },
     "fediPropertyKey": "Ominaisuuden nimi",
     "fediPropertyValue": "Ominaisuuden arvo",
     "addFediAttachment": "Lisää liite",
     "botAccount": "Merkkaa käyttäjä bottitiliksi",
-    "changeAvatar": "Muuta Avatar",
+    "changeAvatar": "Muuta avatar",
     "changeHeaderImage": "Muuta banneri",
     "name": "Nimi",
     "description": "Kuvaus",
@@ -355,10 +355,10 @@
     "autoAddSpecifiedTags": "Lisää määritetyt tunnisteet",
     "autoAddSpecifiedTagsAsks": "Lisää määritetyt tunnisteet vastauspyyntöihin",
     "autoAddSpecifiedTagsAsksNoGeneral": "Älä lisää yleistunnisteita vastauspyyntöihin",
-    "autoAddSpecifiedTagsAsksNoGeneralDescription": "Salli tämä jos haluat tunnisteiden olevan erilaisia tavallisiin wootteihin ja vastauspyyntöihin verrattuna",
-    "autoAddSpecifiedTagsDescription": "Lisää allaolevat tunnisteet, jotta ne lisätään automaattisesti editoriin jokaisella wootillasi. Voit aina poistaa sen editorissa. On mahdollista lisätä useita tunnisteita laittamalla pilkku ja välilyönti.",
+    "autoAddSpecifiedTagsAsksNoGeneralDescription": "Salli tämä, jos haluat tunnisteiden olevan erilaisia tavallisiin wootteihin ja vastauspyyntöihin verrattuna",
+    "autoAddSpecifiedTagsDescription": "Lisää allaolevat tunnisteet, jotta ne lisätään automaattisesti editoriin jokaisella wootillasi. Voit aina poistaa tämän editorissa. On mahdollista lisätä useita tunnisteita laittamalla pilkku ja välilyönti.",
     "autoAddContentWarning": "Lisää tarkennettu sisältövaroitus", 
-    "autoAddContentWarningDescription": "Jos woottaat lähinnä asiaa, joka vaatii sisältövaroituksen, voit lisätä sen tähän jotta se lisätään automaattisesti kun woottaat. Voit aina poistaa sen poistamalla sisältövaroitustekstin editorista.",
+    "autoAddContentWarningDescription": "Jos woottaat lähinnä asiaa, joka vaatii sisältövaroituksen, voit lisätä sen tähän, jotta se lisätään automaattisesti, kun woottaat. Voit aina poistaa sen ottamalla sisältövaroitustekstin pois editorista.",
     "alsoKnownAs": "Edellinen alias",
     "requestAccountDeletion": "Pyydä tilin poistoa",
     "alsoKnownAsDescription": "Siirtyminen toiselta tililtä (Ilman @ merkkiä)",
@@ -369,24 +369,24 @@
     "additionalStyleModes": "Lisätyylit",
     "additionalStyleModesDescription": "Lisävaihtoehdot ulkoasuun ja perinteiset käyttöliittymäversiot.",
     "useOtherUserCustomThemes": "Käytä räätälöityjä tyylejä käyttäjäblogeista",
-    "useOtherUserCustomThemesDescription": "Käyttää muiden käyttäjien CSS:ää heidän blogeja katsellessaan. Käyttäjäteemat eivät ole moderoituja ja niissä voi olla välkkyviä elementtejä.",
+    "useOtherUserCustomThemesDescription": "Käyttää muiden käyttäjien CSS:ää katsellessasi heidän blogejaan. Käyttäjäteemat eivät ole moderoituja ja niissä voi olla välkkyviä elementtejä.",
     "askToUseOtherUserCustomThemes": "Pyydä käyttämään räätälöityjä tyylejä käyttäjien blogeista",
-    "askToUseOtherUserCustomThemesDescription": "Pyydä, mikäli haluaisit käyttää räätälöityjä tyylejä kun katsot käyttäjäblogia, joka on tyyliltään räätälöity.",
+    "askToUseOtherUserCustomThemesDescription": "Pyydä, mikäli haluaisit käyttää räätälöityjä tyylejä, kun katsot käyttäjäblogia, joka on tyyliltään räätälöity.",
     "uiLanguage": "Käyttöliittymän kieli",
-    "uiLanguageDescription": "Wafrn on käännetty usealle kielelle vapaaehtoisten toimesta. Katsothan <a href=\"https://codeberg.org/wafrn/wafrn\">Source</a> mikäli kaipaat apua!",
-    "forceClassicLogo": "Pakota perinteinen logo",
-    "forceClassicVideoPlayer": "Pakota perinteinen videosoitin",
-    "forceClassicAudioPlayer": "Pakota perinteinen äänisoitin",
-    "forceClassicMediaView": "Pakota perinteinen medianäkymä (pystysyyntainen)",
+    "uiLanguageDescription": "Wafrn on käännetty usealle kielelle vapaaehtoisten toimesta. Katsothan <a href=\"https://codeberg.org/wafrn/wafrn\">Lähdekoodia</a> mikäli kaipaat apua!",
+    "forceClassicLogo": "Pakota klassinen logo",
+    "forceClassicVideoPlayer": "Pakota klassinen videosoitin",
+    "forceClassicAudioPlayer": "Pakota klassinen äänisoitin",
+    "forceClassicMediaView": "Pakota klassinen medianäkymä (pystysyyntainen)",
     "disableConfetti": "Säädä konfettitehosteet pois päältä suorittaessa tiettyjä tehtäviä",
-    "disableConfettiDescription": "Oletuksena, emojikonfetti käynnistyy tykkäyksissä, reaktioissa, wooteissa, muokkauksissa ja uudelleenwooteissa.",
+    "disableConfettiDescription": "Oletuksena emojikonfetti käynnistyy tykkäyksissä, reaktioissa, wooteissa, muokkauksissa ja uudelleenwooteissa.",
     "enableConfettiReceivingLike": "Salli konfetti kun saat tykkäyksen (PvP)",
     "disableSounds": "Säädä ääniefektit pois päältä suorittaessa tiettyjä toimintoja",
-    "disableSoundsDescription": "Oletuksena, ääni soitetaan tykkäyksissä, reaktioissa, wooteissa, muokkauksissa ja uudelleenwooteissa.",
+    "disableSoundsDescription": "Oletuksena ääni soitetaan tykkäyksissä, reaktioissa, wooteissa, muokkauksissa ja uudelleenwooteissa.",
     "defaultDashboard": "Oletustyöpöytä",
     "defaultDashboardOptions": {
       "dashboard": "Työpöytä",
-      "exploreLocal": "Tutustu paikalliseen"
+      "exploreLocal": "Tutki paikallista"
     },
     "automaticallyExpandPosts": "Laajenna automaattisesti kaikki wootit",
     "expandQuotes": "Älä luhista lainauksia",
@@ -404,10 +404,10 @@
     "hideProfileNotLoggedInDescription": "Pätee vain profiiliisi tällä palvelimella ja Bluesky:ssa, ei wootteihisi, eikä muilla palvelimilla. Huomaa, että Bluesky/Atproto asiakkaat voivat jättää tämän huomiotta ja näkyä silti profiilissasi.",
     "hideFollows": "Piilota seuraamani ja seuraajani",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Näytä wootit, jotka sisältävät mainintoja estetyille käyttäjille",
-    "defaultPostEditorPrivacy": "Woot-editorin oletusyksityisasetukset",
+    "defaultPostEditorPrivacy": "Woottieditorin oletusyksityisasetukset",
     "defaultPostRewootPrivacy": "Uudelleenwootin oletusyksityisasetukset",
-    "defaultPostEditorCanReply":"Oletus, joka voi vastata",
-    "defaultPostEditorCanQuote":"Oletus-woot, jota voi lainata",
+    "defaultPostEditorCanReply":"Oletus, ketkä voivat vastata",
+    "defaultPostEditorCanQuote":"Oletus-wootti, jota voi lainata",
     "postEditorPrivacyOptions": {
       "public": "Julkinen",
       "followersOnly": "Vain seuraajile",
@@ -419,7 +419,7 @@
     "disableReplies": "Säädä vastaukset syötteissä pois päältä",
     "disableBsky": "Säädä bsky postaukset pois päältä syötteissä",
     "forceReducedMotion": "Vähennetty liike: epilepsiaturvallinen html postauksiin ja säädä räätälöidyt käyttäjäteemat pois päältä",
-    "mutedWords": "Hiljennetyt sanat",
+    "mutedWords": "Vaimennetut sanat",
     "mutedWordsDescription": "Yksi sana per rivi. Wootit näillä ilmauksilla asetetaan CW:n taakse.",
     "superMutedWords": "Estetyt sanat",
     "superMutedWordsDescription": "Yksi sana per rivi. Wootit näillä ilmauksilla piilotetaan täysin.",
@@ -427,11 +427,11 @@
     "hideQuotesOptions": {
       "cwDisabledQuotesUsers": "CW lainaa wootteja käyttäjiltä, joiden lainaamisen säädit pois päältä",
       "cwUnfollowedOrDisabledQuotesUsers": "CW lainaa wootteja keltä tahansa, jota et seuraa",
-      "hidePostsDisabledQuotesUsers": "Estä lainatut wootit käyttäjiltä joita et seuraa"
+      "hidePostsDisabledQuotesUsers": "Estä lainatut wootit käyttäjiltä, joita et seuraa"
     },
     "replaceAIWithCocaine": "Korvaa AI räätälöidyllä sanalla",
     "replaceAIWord": "Sana, jolla korvataan AI",
-    "postReplyBarOrder": "Woot vastauksen palkkikuvakejärjestys",
+    "postReplyBarOrder": "Woottivastauksen palkkikuvakejärjestys",
     "postReplyBarOrderDescription": "Joitain kohtia näytetään sen perusteella, oletko woottaaja",
     "postActionsButtonBarOrder": "Woot-toimintojen järjestys, mitä tulee valikon painikekuvakkeisiin",
     "postActionsButtonBarOrderDescription": "Kohdat, jotka näytetään woot-toimintavalikossa. Jotkin kohdat ovat näkyvissä riippuen siitä, oletko woottaaja.",
@@ -456,17 +456,17 @@
     "disableLinkPreviews": "Säädä linkkien esikatselu pois päältä",
     "disableLinkPreviewsDescription": "Piilottaa linkkien esikatselukortit linkkejä sisältävien viestien alta.",
     "disableReactCounts": "Säädä reaktiomäärät pois määltä",
-    "disableReactCountsDescription": "Älä näytä, kuinka monta kertaa woottiin on reagoitu",
+    "disableReactCountsDescription": "Lakkaa näyttämästä, kuinka monta kertaa woottiin on reagoitu",
     "disableFollowerCounts": "Säädä seuraajamäärät pois päältä",
-    "disableFollowerCountsDescription": "Älä näytä, kuinka monta seuraajaa kellään käyttäjällä on",
+    "disableFollowerCountsDescription": "Lakkaa näyttämästä, kuinka monta seuraajaa kellään käyttäjällä on",
     "disableFollowingCounts": "Aseta seuraajamäärät pois päältä",
-    "disableFollowingCountsDescription": "Älä näytä, kuinka montaa käyttäjää kukin käyttäjä seuraa",
-    "disablePostCounts": "Aseta woot määrät pois päältä",
-    "disablePostCountsDescription": "Älä näytä, kuinka monta woottia kukin annettu käyttäjä on wootannut",
+    "disableFollowingCountsDescription": "Lakkaa näyttämästä, kuinka montaa käyttäjää kukin käyttäjä seuraa",
+    "disablePostCounts": "Aseta woottien määrät pois päältä",
+    "disablePostCountsDescription": "Lakkaa näyttämästä, kuinka monta woottia kukin annettu käyttäjä on wootannut",
     "showMediaDescriptions": "Näytä mediakuvaukset",
     "showMediaDescriptionsDescription": "Näytä aina vaihtoehtoinen kuvaus oletuksena, huolimatta mediaformaatista.",
-    "markAllMediaAsNSFW": "Merkkaa kaikki media sopimattomaksi (NSFW)",
-    "markAllMediaAsNSFWDescription": "Älä näytä mitään mediaa oletuksena ennen kuin on oltu vuorovaikutuksessa."
+    "markAllMediaAsNSFW": "Merkitse kaikki media sopimattomaksi (NSFW)",
+    "markAllMediaAsNSFWDescription": "Oletuksena lakkaa näyttämästä mitään mediaa ennen kuin on viestitty."
   },
   "dialog": {
     "confirm": "Vahvista",
@@ -474,7 +474,7 @@
     "close": "Sulje",
     "bluesky": {
       "generateInviteCodeWarningTitle": "Huomio",
-      "generateInviteCodeWarning": "Kutsukoodin generointi tulee poistamaan PERUUTTAMATTOMASTI minkä tahansa liitetyn bsky tilin"
+      "generateInviteCodeWarning": "Kutsukoodin generointi tulee poistamaan PYSYVÄSTI minkä tahansa liitetyn bsky tilin"
     },
     "admin": {
       "requireExtraStepsTitle": "Vaatii lisäaskelia käyttäjältä",
@@ -489,30 +489,30 @@
       "confirmBanTitle": "Vahvista porttikielto",
       "confirmBanContentBluesky": "Bluesky-käyttäjiltä tullaan pysyvästi kieltämään pääsy.",
       "confirmBanContentFedi": "Käyttäjältä kielletään pääsy pysyvästi seuraavasta syystä:",
-      "confirmNSFWTitle": "Vahvista hiljennys",
+      "confirmNSFWTitle": "Vahvista vaimennus",
       "confirmNSFWContent": "Kaikki wootit tältä käyttäjältä tullaan sisältövaroittamaan.",
       "confirmIgnoreTitle": "Vahvista raportin ohitus taholta",
-      "confirmIgnoreContent": "Woot oli raportoitu syystä:",
+      "confirmIgnoreContent": "Wootti oli raportoitu syystä:",
       "confirmUnbanTitle": "Vahvista porttikiellon peruutus",
       "confirmUnbanContent": "Emme vielä varastoi porttikieltojen tietoja, mutta sekin tulee tänne ennen pitkää:",
       "confirmReopenTitle": "Vahvista raportin uudelleenavaus"
     },
     "post-header": {
       "followTitle": "Seuraa käyttäjää",
-      "silenceInteractionsTitle": "Mykistä woot",
+      "silenceInteractionsTitle": "Mykistä wootti",
       "silenceInteractionsDescription": "Mykistä ilmoitukset tykkäyksistä, uudelleenwooteista ja reaktioista tähän woottiin.",
-      "silenceReplyTitle": "Hiljennä wootit ja vastaukset",
-      "silenceReplyDescription": "Hiljennä ilmoitukset tykkäyksistä, uudelleenwooteista, reaktioista, ja vastauksista tähän woottiin.",
+      "silenceReplyTitle": "Vaimenna wootit ja vastaukset",
+      "silenceReplyDescription": "Vaimenna ilmoitukset tykkäyksistä, uudelleenwooteista, reaktioista, ja vastauksista tähän woottiin.",
       "muteAccountTitle": "Mykistä tunnus",
-      "muteAccountDescription": "Piilota wootit ja vastaukset tältä käyttäjältä. He pystyvät silti vuorovaikuttamaan wootteihisi.",
+      "muteAccountDescription": "Piilota wootit ja vastaukset tältä käyttäjältä. He pystyvät silti reagoimaan wootteihisi.",
       "blockAccountTitle": "Estä tili",
       "muteAccountLabel": "Syy (vapaaehtoinen)",
       "unmuteAccountTitle": "Poista tilin mykistys",
       "unmuteAccountDescription": "Wootit ja vastaukset tältä käyttäjältä tullaan taas näyttämään.",
-      "blockAccountDescription": "Piilota wootit ja vastaukset tältä käyttäjältä tai wootit ja vastaukset, jotka mainitsevat tämän käyttäjän. He eivät pysty olemaan vuorovaikutuksessa woottiesi kanssa.",
+      "blockAccountDescription": "Piilota wootit ja vastaukset tältä käyttäjältä tai wootit ja vastaukset, jotka mainitsevat tämän käyttäjän. He eivät pysty reagoimaan wootteihisi.",
       "blockAccountLabel": "Syy(vapaaehotinen)",
       "unblockAccountTitle": "Poista tilin esto",
-      "unblockAccountDescription": "Wootit, vastaukset tältä käyttäjältä, ja vastaukset, joissa mainitaan tämä käyttäjä, tullaan näyttämään uudelleen. He pystyvät vuorovaikuttamaan wootteihisi.",
+      "unblockAccountDescription": "Wootit, vastaukset tältä käyttäjältä, ja vastaukset, joissa mainitaan tämä käyttäjä, tullaan näyttämään uudelleen. He pystyvät reagoimaan wootteihisi.",
       "followLoggedOutTitle": "Seuraa {{name}}",
       "followLoggedOutDescription": "Seurataksesi, sinun tulee seurata Fediverse-tilisi kautta.",
       "followLoggedOutLabel": "Fediverse-tilisi käyttäjätunnus (esim. @example@example.com)",
@@ -523,7 +523,7 @@
     },
     "post-fragment": {
       "confirmOpenCwTitle": "Vahvista sisältövaroituksen avaaminen",
-      "confirmOpenCwContent": "Wootilla on sisältövaroituksia ja hiljennettyjä sanoja:",
+      "confirmOpenCwContent": "Wootilla on sisältövaroituksia ja vaimennettuja sanoja:",
       "annoyances": {
         "puzzleWarning": "Ratkaise tämä todistaaksesi, ettet ole tekemässä kehnoa päätöstä:"
       }
@@ -543,8 +543,8 @@
     },
     "report": {
       "reportUserTitle": "Raportoi käyttäjä",
-      "reportPostTitle": "Raportoi Woot",
-      "reportTypeLabel": "Raportoi Tyyppi",
+      "reportPostTitle": "Raportoi wootti",
+      "reportTypeLabel": "Raportoi tyyppi",
       "reportTypeOptions": {
         "spam": "Roskaposti"
       },
@@ -562,7 +562,7 @@
     "askButtonText": "Kysy"
   },
   "add-invite-code": {
-    "inviteCode": "Kutsukoodi (oletus on satunnainen)",
+    "inviteCode": "Kutsukoodi (oletus: satunnainen)",
     "expirationDate": "Eräpäivä",
     "addInviteText": "Luo kutsu"
   },
@@ -571,20 +571,20 @@
     "likePostSuccess": "Tykkäsit onnistuneesti tästä wootista.",
     "unlikePostSuccess": "Et tykkää enää tästä wootista.",
     "bookmarkPostSuccess": "Säästit tämän wootin onnistuneesti kirjanmerkkeihisi.",
-    "unbookmarkPostSuccess": "You successfully unbookmarked this woot.",
+    "unbookmarkPostSuccess": "Poistit tämän wootin onnistuneesti kirjanmerkeistäsi.",
     "rewootPostSuccess": "Uudelleenwoottasit wootin!",
     "followMessageSuccess": "Seuraat nyt tätä käyttäjää!",
     "cancelFollowMessageSuccess": "Seurauspyyntösi on peruttu.",
     "unfollowMessageSuccess": "Et enää seuraa tätä käyttäjää!",
     "copyLocalLinkSuccess": "Linkki kopioitu leikepöydälle.",
     "copyRemoteLinkSuccess": "Kaukolinkki kopioitu leikepöydälle.",
-    "silencePostSuccess": "Hiljensit onnistuneesti ilmoitukset tästä wootista.",
-    "unsilencePostSuccess": "Poistit hiljennyksen tämän wootin ilmoituksista.",
+    "silencePostSuccess": "Vaimensit onnistuneesti ilmoitukset tästä wootista.",
+    "unsilencePostSuccess": "Poistit vaimennuksen tämän wootin ilmoituksista.",
     "blockUserSuccess": "Estit tämän käyttäjän.",
     "unblockUserSuccess": "Poistit tämän käyttäjän eston.",
     "muteUserSuccess": "Mykistit tämän käyttäjän.",
     "unmuteUserSuccess": "Poistit tämän käyttäjän mykistyksen.",
-    "blockServerSuccess": "You blocked this server.",
+    "blockServerSuccess": "Estit tämän palvelimen.",
     "reportUserSuccess": "Käyttäjä raportoitiin onnistuneesti.",
     "reportPostSuccess": "Wootti raportoitiin onnistuneesti.",
     "genericError": "Jotain meni pieleen! Tarkista internet-yhteytesti ja yritä uudelleen.",
@@ -608,7 +608,7 @@
     "quotePost": "Lainaa woottia",
     "groupMisc": "Sekalaiset",
     "openEditor": "Avaa editori",
-    "viewKeyboardShortcuts": "näytä pikanäppäinkomennot",
+    "viewKeyboardShortcuts": "Näytä pikanäppäinkomennot",
     "unbound": "ei-sidottu",
     "additionalOptions": "Lisävalinnat",
     "smoothScroll": "Sulava vieritys"
@@ -631,9 +631,9 @@
     "reportPost": "Raportoi wootti",
     "editPost": "Muokkaa woottia",
     "deletePost": "Poista wootti",
-    "silenceInteractions": "Hiljennä wootti",
-    "silenceReplyNotifications": "Hiljennä wootti ja vastaukset",
-    "unsilenceReplyNotifications": "Poista wootin hiljennys",
+    "silenceInteractions": "Vaimenna wootti",
+    "silenceReplyNotifications": "Vaimenna wootti ja vastaukset",
+    "unsilenceReplyNotifications": "Poista wootin vaimennus",
     "muteUser": "Mykistä käyttäjä",
     "unmuteUser": "Poista käyttäjän mykistys",
     "blockUser": "Estä käyttäjä",
@@ -700,6 +700,6 @@
     }
   },
   "serverAnnouncements": {
-    "bsky_account_force_disabled": "Bluesky-tilisi yhteys on katkennyt wafrniin liittyvästä virheestä johtuen"
+    "bsky_account_force_disabled": "Bluesky-tilisi yhteys on katkennut wafrniin liittyvästä virheestä johtuen"
   }
 }
