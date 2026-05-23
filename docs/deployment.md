@@ -23,7 +23,7 @@ Use the below button to set up a fully working Wafrn instance on Oracle Cloud's 
 
 [![Deploy to Oracle Cloud][magic_button]][magic_wafrn_basic_stack]
 
-If it doesn't work then alternatively download the latest release from https://codeberg.org/wafrn/wafrn-opentofu/releases/download/latest/wafrn-opentofu-latest.zip and go to https://cloud.oracle.com/resourcemanager/stacks/create to upload the templates as zip file.
+If it doesn't work then alternatively download the latest release from <https://codeberg.org/wafrn/wafrn-opentofu/releases/download/latest/wafrn-opentofu-latest.zip> and go to <https://cloud.oracle.com/resourcemanager/stacks/create> to upload the templates as zip file.
 
 Documentation for the OCI integration [can be found in a separate repository](https://codeberg.org/wafrn/wafrn-opentofu).
 
@@ -71,6 +71,7 @@ bash install/env_secret_setup.sh
 
 If you want to run Wafrn on a low-memory system (not recommended), you can modify your environment variables instead of using a separate compose file:
 On the .env file, at the end:
+
 - Set `BACKEND_REPLICAS=1` to run only a single backend instance
 - Set `WORKERS_REPLICAS=0` to disable background workers
 - Set `BACKEND_HOST=wafrn-backend-1:9000` to point to the single backend instance
@@ -128,7 +129,7 @@ If you set up wafrn manually, then follow the steps below:
 
 5. Run `docker compose up` to make sure everything is running
 
-6. Run `./install/bsky/create-admin.sh`. This will create a user that the agent will use later and assign it to the admin account. If you use your admin account as your main (like on a single-user instance), then you can also provide a username to be generated (default is `wafrnadmin`), e.g. `./install/bsky/create-admin.sh myuser`. Make sure the username you chose is not one of the reserved names that cannot be used: https://github.com/bluesky-social/atproto/blob/main/packages/pds/src/handle/reserved.ts
+6. Run `./install/bsky/create-admin.sh`. This will create a user that the agent will use later and assign it to the admin account. If you use your admin account as your main (like on a single-user instance), then you can also provide a username to be generated (default is `wafrnadmin`), e.g. `./install/bsky/create-admin.sh myuser`. Make sure the username you chose is not one of the reserved names that cannot be used: <https://github.com/bluesky-social/atproto/blob/main/packages/pds/src/handle/reserved.ts>
 
 7. If the previous call was successful now you can enable `ENABLE_BSKY=true` in your config
 
@@ -138,7 +139,7 @@ If you set up wafrn manually, then follow the steps below:
 
 10. Use `./install/bsky/add-insert-code.sh` to add a new bluesky insert code to your system. You'll need to have one for any account you wish to enable bluesky for.
 
-11. Open up your selected account profile and click "Enable bluesky". If all goes well, this account will now be enabled and accessible on Bluesky. Do note that some names are reserved under Bluesky and you won't be able to create an account for them, even on a personal server. For the full list of reserved names please see https://github.com/bluesky-social/atproto/blob/main/packages/pds/src/handle/reserved.ts
+11. Open up your selected account profile and click "Enable bluesky". If all goes well, this account will now be enabled and accessible on Bluesky. Do note that some names are reserved under Bluesky and you won't be able to create an account for them, even on a personal server. For the full list of reserved names please see <https://github.com/bluesky-social/atproto/blob/main/packages/pds/src/handle/reserved.ts>
 
 ## Customizing your instance
 
@@ -172,7 +173,7 @@ Or as another example to override the registration page and change the list of g
 
 Do note these overrides will persist any update you do on Wafrn, and - especially if you change the source code files - you'll need to manually make sure your updated code doesn't break with the updated source material.
 
-You can find an example override repository that replaces the logo files and hides the registration functionality at https://codeberg.org/sztupy/wafrn-personal-overrides
+You can find an example override repository that replaces the logo files and hides the registration functionality at <https://codeberg.org/sztupy/wafrn-personal-overrides>
 
 ### Default articles
 
