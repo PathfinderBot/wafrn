@@ -316,6 +316,7 @@ export class RegisterComponent {
     birthDate: new UntypedFormControl("", [Validators.required]),
     captchaResponse: new UntypedFormControl("", []),
     avatar: new UntypedFormControl("", []),
+    confirmReadAbout: new FormControl(false, [Validators.requiredTrue]),
     ...(this.registrationLevel === "INVITE"
       ? {
           inviteCode: new UntypedFormControl(this.inviteCode ?? "", [
@@ -372,7 +373,7 @@ export class RegisterComponent {
           summary: "Email or url in use",
         });
         }
-        
+
         this.loginForm.enable();
       }
     } catch (exception) {
