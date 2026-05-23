@@ -284,14 +284,14 @@ async function getPostThreadRecursive(
             remotePostId: postPetition.id
           }
         })
-        if(postPetition.blueskyUri && checkBluesky){
+        if (postPetition.blueskyUri && checkBluesky) {
           try {
             const directPetition = await getPostThreadPDSDirect(postPetition.blueskyUri)
-            if(directPetition && directPetition.value.fediverseId === postPetition.id){
+            if (directPetition && directPetition.value.fediverseId === postPetition.id) {
               bskyUri = postPetition.blueskyUri
               bskyCid = postPetition.blueskyCid
             }
-          }catch(error){}
+          } catch (error) { }
         }
         if (remotePostInDatabase) {
           if (remotePostInDatabase.remotePostId) {
@@ -622,10 +622,7 @@ async function getPostThreadRecursive(
             }
           }
         }
-        if(checkBluesky && bskyUri && !existingBskyPost) {
-          const bskyPostDbId = await processSinglePost(bskyUri)
-          existingBskyPost = bskyPostDbId ? await Post.findByPk(bskyPostDbId) as Post : undefined
-        }
+
         const postToCreate: any = {
           content: '' + postTextContent,
           content_warning: postPetition.summary
@@ -846,7 +843,7 @@ async function getPostThreadRecursive(
             apObject: JSON.stringify(postPetition)
           })
         }
-        
+
         if (existingBskyPost) {
           newPost.bskyCid = existingBskyPost.bskyCid
           newPost.bskyUri = existingBskyPost.bskyUri

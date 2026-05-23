@@ -63,6 +63,7 @@ docker compose down
 docker volume rm wafrn_cache
 docker compose up -d
 ```
+
 The remote cache is also cleared when updating Wafrn.
 
 A script is also available for clearing the cache. This script is set up to run daily via a cronjob if you set up your instance using the installer.
@@ -95,21 +96,26 @@ If you need to move your Wafrn to a new server, here is an overview of the proce
 Wafrn automatically sends basic emails like password resets or email verification emails when configured. This section is for sending custom mass emails to users, such as announcements or security notices.
 
 1. Enter a backend container. For example, if you want to enter wafrn-backend-1:
+
 ```sh
 docker exec -it wafrn-backend-1 sh
 ```
-2. Edit the `utils/maintenanceTasks/mailCampaing.ts` file (if sending a campaign email) or the `utils/maintenanceTasks/emergenciEmail` (if sending an emergency email) file to match the content of the email you want to send.
-3. Run the command to send the email.
+
+1. Edit the `utils/maintenanceTasks/mailCampaing.ts` file (if sending a campaign email) or the `utils/maintenanceTasks/emergenciEmail` (if sending an emergency email) file to match the content of the email you want to send.
+2. Run the command to send the email.
 
 If sending a campaign email:
+
 ```sh
 npx tsx utils/maintenanceTasks/mailCampaing.ts
 ```
 
 If sending an emergency email:
+
 ```sh
 npx tsx utils/maintenanceTasks/emergenciEmail.ts
 ```
+
 If this fails, check to make sure modifications have been made.
 
 The emergency email script ignores user email preferences and should only be used for legitimate concerns such as a security notice. The mail campaign script respects user preferences and should be used for all other purposes.

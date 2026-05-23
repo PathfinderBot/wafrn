@@ -867,32 +867,11 @@ function getMaxPrivacy(privacies: PrivacyType[]) {
 
 async function triggerPostFederation(post: Post, user: User) {
   const jobData = { postId: post.id, petitionBy: post.userId }
-  const flowProducer = getFlowProducer()
-
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    await flowProducer.add({
-      name: 'prepareSendPost',
-      queueName: 'prepareSendPost',
-      data: jobData,
-      opts: {
-        delay: 1000,
-      },
-      children: [
-        {
-          name: 'sendPostBsky',
-          queueName: 'sendPostBsky',
-          data: jobData,
-          opts: {
-            jobId: post.id,
-            delay: 500
-          }
-        }
-      ]
-    })
+    sendPostBskyQueue.add('sendPostBsky', jobData)
   } else {
-    await prepareSendPostQueue.add('prepareSendPost', jobData, {
+    prepareSendPostQueue.add('prepareSendPost', jobData, {
       jobId: post.id,
-      delay: 1500
     })
   }
 }

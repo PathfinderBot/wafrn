@@ -9,12 +9,12 @@ import { logger } from '../logger.js'
 import { AtUri } from '@atproto/api'
 import { redisBloom } from '../redis.js'
 import { ROOT_REPLIED_POSTS } from '../../constants.js'
+import { getQueue } from '../queues.js'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
   if (post && !post.bskyUri) {
     const parent = post.parentId ? await Post.findByPk(post.parentId) : undefined
-    const parentPoster = parent ? await User.findByPk(parent.userId) : undefined
     const localUser = await User.findByPk(post.userId)
     try {
       if (
@@ -142,6 +142,15 @@ async function sendPostBsky(job: Job) {
     } catch (error) {
       logger.debug({ message: `Error sending post to bluesky`, error })
     }
+  }
+  if (post) {
+    await post.save()
+    const prepareSendPostQueue = getQueue('prepareSendPost')
+    // we send the post to fedi once we get the bsky data
+    prepareSendPostQueue.add('prepareSendPost', job.data, {
+      // this may not be the best way but hey i want it to be sure
+      delay: 2500
+    })
   }
 }
 
