@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select'
 import { TranslateModule } from '@ngx-translate/core'
 import { InfoCardComponent } from 'src/app/components/info-card/info-card.component'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatCheckbox } from '@angular/material/checkbox'
 const routes: Routes = [
   {
     path: '',
@@ -36,7 +37,8 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     InfoCardComponent,
     MatProgressSpinnerModule,
-    TranslateModule
+    TranslateModule,
+    MatCheckbox
   ]
 })
 export class RegisterModule {}
