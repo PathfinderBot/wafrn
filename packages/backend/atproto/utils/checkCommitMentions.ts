@@ -25,6 +25,7 @@ async function checkCommitMentions(
     return true;
   }
   let quotedPostUri: string | undefined = undefined
+  // first we check if there are any mentions to local users. if so we return true
   if (
     commit.operation === CommitType.Create &&
     commit.collection.startsWith('app.bsky.feed.post') &&
@@ -54,9 +55,16 @@ async function checkCommitMentions(
       return true
     }
   }
-  // first we check if there are any mentions to local users. if so we return true
+  // we check if announce is from local user
+  if (commit.operation === CommitType.Create && commit.collection.startsWith('app.bsky.feed.repost') && (commit as any).record?.subject) {
+    const userRecivingRewoot: string = (commit as any).record.subject.uri.split('/')[2];
+    const localUserRewoot = (await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, userRecivingRewoot));
+    if (localUserRewoot) {
+      return true;
+    }
 
-  // we check lik
+  }
+  // we check like
   if (
     commit.operation === CommitType.Create &&
     (commit.collection.startsWith('app.bsky.feed.like') || commit.collection.startsWith('app.bsky.graph.follow'))
