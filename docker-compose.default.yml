@@ -84,6 +84,8 @@ services:
     restart: unless-stopped
     shm_size: '${SHM_SIZE:-2gb}'
     env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DBNAME}
     volumes:
       - dbpg:/var/lib/postgresql/data
 
