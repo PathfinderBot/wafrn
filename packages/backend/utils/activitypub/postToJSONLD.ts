@@ -29,9 +29,14 @@ const markdownConverter = new showdown.Converter({
 
 async function postToJSONLD(
   postId: string,
-  cachedPost?: any
+  cachedPost?: any,
+  ignoreCache?: boolean
 ): Promise<activityPubObject | undefined> {
-  let resFromCacheString = await redisCache.get("postToJsonLD:" + postId);
+  if (ignoreCache) {
+    await redisCache.del('postAndUser:' + postId)
+    await redisCache.del('postToJsonLD:' + postId)
+  }
+  const resFromCacheString = await redisCache.get("postToJsonLD:" + postId);
   let askContent = "";
   if (resFromCacheString) {
     return JSON.parse(resFromCacheString) as activityPubObject;
@@ -242,9 +247,9 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
       !misskeyAskContent.includes(user.url)
     )
       misskeyMentions.push(url);
-      standardMentions.push(
-        `<span class="h-card" translate="no"><a href="${user.remoteMentionUrl}" class="u-url mention" rel="nofollow noopener" target="_blank">@<span>${url.substring(1)}</span></a></span>`
-      )
+    standardMentions.push(
+      `<span class="h-card" translate="no"><a href="${user.remoteMentionUrl}" class="u-url mention" rel="nofollow noopener" target="_blank">@<span>${url.substring(1)}</span></a></span>`
+    )
   }
   misskeyContent = await htmlToMfm(
     misskeyContent.replace(lineBreaksAtEndRegex, "")
@@ -256,7 +261,7 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
   }
   const misskeyMentionContent =
     misskeyMentions.length > 0 ? `${misskeyMentions.join(" ")}\n\n` : "";
-  const standardMentionsContent = standardMentions.length > 0 ? `<p>${standardMentions.join(" ")}</p>`: ""
+  const standardMentionsContent = standardMentions.length > 0 ? `<p>${standardMentions.join(" ")}</p>` : ""
   let contentWarning = false;
   postMedias.forEach((media: any) => {
     if (media.NSFW) {
@@ -294,66 +299,66 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
   let canReply: string[] = [];
   let canAnnounce: string[] = [];
   let canLike: string[] = [];
-  
+
   const canReplyValue: InteractionControlType = post.replyControl;
   const canAnnounceValue: InteractionControlType = post.reblogControl;
   const canLikeValue: InteractionControlType = post.likeControl;
   const publicString = "https://www.w3.org/ns/activitystreams#Public"
   // canreply:
-  if([InteractionControl.Anyone].includes(canReplyValue)) {
+  if ([InteractionControl.Anyone].includes(canReplyValue)) {
     canReply.push(publicString)
   }
-  if([InteractionControl.SameAsOp].includes(canReplyValue)) {
+  if ([InteractionControl.SameAsOp].includes(canReplyValue)) {
     canReply.push("sameAsInitialPost")
-  } 
-    // mentionedUsers will always bee able to reply
-    canReply = canReply.concat(mentionedUsers)
-    if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
-      canReply = canReply.concat(stringMyFollowers)
-    }
-    if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canReplyValue)) {
-      canReply = canReply.concat(stringMyFollowing)
-    }
+  }
+  // mentionedUsers will always bee able to reply
+  canReply = canReply.concat(mentionedUsers)
+  if ([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canReplyValue)) {
+    canReply = canReply.concat(stringMyFollowers)
+  }
+  if ([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canReplyValue)) {
+    canReply = canReply.concat(stringMyFollowing)
+  }
 
-  if(canAnnounceValue === InteractionControl.Anyone) {
+  if (canAnnounceValue === InteractionControl.Anyone) {
     canAnnounce.push(publicString)
   } else {
     // mentionedUsers
-    if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
+    if ([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
       canAnnounce = canAnnounce.concat(mentionedUsers)
     }
-    if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
+    if ([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canAnnounceValue)) {
       canAnnounce = canAnnounce.concat(stringMyFollowers)
     }
-    if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canAnnounceValue)) {
+    if ([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canAnnounceValue)) {
       canAnnounce = canAnnounce.concat(stringMyFollowing)
     }
   }
 
-  if(canLikeValue === InteractionControl.Anyone) {
+  if (canLikeValue === InteractionControl.Anyone) {
     canLike.push(publicString)
   } else {
     // mentionedUsers
-    if([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
+    if ([InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
       canLike = canLike.concat(mentionedUsers)
     }
-    if([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
+    if ([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(canLikeValue)) {
       canLike = canLike.concat(stringMyFollowers)
     }
-    if([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canLikeValue)) {
+    if ([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersFollowingAndMentioned, InteractionControl.FollowersAndFollowing].includes(canLikeValue)) {
       canLike = canLike.concat(stringMyFollowing)
     }
   }
 
 
   const initialMentionsToRemoveTag: fediverseTag[] = standardMentions.length > 0 ?
-  [
-    {
-      type: 'WafrnMentionsTextToHide',
-      name: standardMentionsContent
-    }
-  ]
-  : [] 
+    [
+      {
+        type: 'WafrnMentionsTextToHide',
+        name: standardMentionsContent
+      }
+    ]
+    : []
   let postAsJSONLD: activityPubObject = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
@@ -438,10 +443,10 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
           items: [],
         },
       },
-      forceDescendentsToUseSameInteractionControls: (post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone ) ? true : undefined,
+      forceDescendentsToUseSameInteractionControls: (post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone) ? true : undefined,
       interactionPolicy: {
         canQuote: {
-          automaticApproval:   post.quoteControl === InteractionControl.Anyone ? [ "https://www.w3.org/ns/activitystreams#Public"] : [],
+          automaticApproval: post.quoteControl === InteractionControl.Anyone ? ["https://www.w3.org/ns/activitystreams#Public"] : [],
         },
         canLike: {
           automaticApproval: canLike
