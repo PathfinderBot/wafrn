@@ -169,7 +169,13 @@
         <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>Bot </span>
         }
         @if (!isMe && blog && postService.myFollowers.includes(blog.id)) {
-        <span class="badge follower-badge"> <fa-icon class="mr-2" [icon]="followerIcon"></fa-icon>{{ 'blog.followsYou' | translate }} </span>
+          <span class="badge follower-badge"> <fa-icon class="mr-2" [icon]="followerIcon"></fa-icon>
+          @if (postService.followedUserIds.includes(blog.id)) {
+            {{ 'blog.mutuals' | translate }}
+          } @else {
+            {{ 'blog.followsYou' | translate }}
+          }
+          </span>
         }
       </div>
     </div>

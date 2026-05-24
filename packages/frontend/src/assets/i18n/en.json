@@ -173,7 +173,8 @@
   "blog": {
     "tabWoots": "Woots",
     "tabMedia": "Media",
-    "followsYou": "Follows you"
+    "followsYou": "Follows you",
+    "mutuals": "Mutuals"
   },
   "profile": {
     "profile": {
