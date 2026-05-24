@@ -24,6 +24,7 @@ import {
   faScrewdriverWrench,
   faRefresh,
   faLock,
+  faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import { BlocksService } from "src/app/services/blocks.service";
@@ -98,6 +99,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   userIcon = faUser;
   bskyIcon = faBluesky;
   botIcon = faRobot;
+  followerIcon = faUserGroup;
   adminIcon = faScrewdriverWrench;
   usersIcon = faUsers;
   blockUserIcon = faUserSlash;
@@ -137,7 +139,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     this.allowAsk = this.loginService.loggedIn.value
       ? [1, 2].includes(askLevel)
       : askLevel == 1;
-    this.allowAsk = 
+    this.allowAsk =
       this.allowAsk && !blog.blocked;
     this.allowAsk =
       this.allowAsk && this.loginService.getLoggedUserUUID() != blog.id;
