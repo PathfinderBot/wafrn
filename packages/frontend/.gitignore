@@ -10,6 +10,7 @@ src/environments/environment.prod.ts
 # settings
 # override directory
 /overrides
+/runtime-overrides
 
 # dependencies
 /node_modules

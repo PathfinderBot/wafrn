@@ -69,6 +69,7 @@ services:
 
     volumes:
       - "frontend:/var/www/html/frontend"
+      - ./packages/frontend/runtime-overrides:/var/www/html/frontend-overrides:ro
       - ./packages/backend/uploads:/var/www/html/uploads
     extra_hosts:
       - "host.docker.internal:host-gateway"
