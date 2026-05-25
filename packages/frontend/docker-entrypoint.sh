@@ -50,7 +50,7 @@ find "$FRONTEND_TARGET_PATH" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 cp -a /app/frontend/. "$FRONTEND_TARGET_PATH/"
 
 if [ -d "$FRONTEND_RUNTIME_OVERRIDES_PATH" ]; then
-  cp -a "$FRONTEND_RUNTIME_OVERRIDES_PATH"/. "$FRONTEND_TARGET_PATH/"
+  cp -a "$FRONTEND_RUNTIME_OVERRIDES_PATH"/ "$FRONTEND_TARGET_PATH/"
 fi
 
 apply_env_placeholders "$FRONTEND_TARGET_PATH/index.html"
