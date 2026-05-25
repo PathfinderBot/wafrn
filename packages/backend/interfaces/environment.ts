@@ -7,6 +7,7 @@ export interface Environment {
     medium: number
     high: number
   }
+  trustProxy: number,
   removeFolderNameFromFileUploads: boolean
   databaseConnectionString: string
   listenIp: string
