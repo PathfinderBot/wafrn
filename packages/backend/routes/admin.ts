@@ -12,6 +12,7 @@ import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { InviteCode } from '../models/inviteCode.js'
 import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
 import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
+import { BlockedIps } from '../models/blockedIp.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -243,7 +244,7 @@ export default function adminRoutes(app: Application) {
         user: elem.user,
         postId: elem.postId,
         post: elem.post,
-        reportedUserId: elem.reportedUserId ? elem.reportedUserId : (elem.post? elem.post.userId : '00000000-0000-0000-0000-000000000000' ),
+        reportedUserId: elem.reportedUserId ? elem.reportedUserId : (elem.post ? elem.post.userId : '00000000-0000-0000-0000-000000000000'),
         reportedUser: reporteduser,
         createdAt: elem.createdAt
       }
@@ -408,6 +409,25 @@ export default function adminRoutes(app: Application) {
     }
   )
 
+  app.post('/api/admin/blockIp', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    const ipToBlock = req.body.ipToBlock as string;
+    if (ipToBlock) {
+      await BlockedIps.create({
+        ip: ipToBlock
+      })
+      await redisCache.sadd('blockedIps', ipToBlock)
+      res.send({
+        success: true
+      })
+
+    } else {
+      res.status(400);
+      res.send({
+        message: 'Missing ipToBlock data, you doofus'
+      })
+    }
+  })
+
   app.post('/api/admin/activateUser', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
     if (req.body.id) {
       const userToActivate = await User.scope('full').findByPk(req.body.id)
@@ -481,20 +501,20 @@ We just need a confirmation. Sorry for this and thanks.</p>
     const content_warning = req.body.content_warning
 
     const post = await Post.findByPk(postId)
-    if(post) {
+    if (post) {
       post.content_warning = 'Mod team forced CW: ' + content_warning
       await post.save();
       await federatePostHasBeenEdited(post);
       await PostReport.update(
         {
-        resolved: true
-      },{
+          resolved: true
+        }, {
         where: {
           postId: post.id
         }
       }
-    )
-      res.send({success: true})
+      )
+      res.send({ success: true })
     } else {
       res.sendStatus(404)
     }

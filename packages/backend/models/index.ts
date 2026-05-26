@@ -38,7 +38,7 @@ import { UserFollowHashtags } from './userFollowHashtag.js'
 import { UserBitesPostRelation } from './userBitesPostRelation.js'
 import { Bites } from './bites.js'
 import { InviteCode } from './inviteCode.js'
-
+import { BlockedIps } from './blockedIp.js'
 sequelize.addModels([
   Ask,
   Blocks,
@@ -76,7 +76,8 @@ sequelize.addModels([
   UserBitesPostRelation,
   UserOptions,
   UnifiedPushData,
-  UserFollowHashtags
+  UserFollowHashtags,
+  BlockedIps
 ])
 
 Post.addHook('beforeCreate', 'hierarchyBeforeCreate', beforeCreate)
@@ -122,5 +123,6 @@ export {
   UserBitesPostRelation,
   UserOptions,
   UnifiedPushData,
-  UserFollowHashtags
+  UserFollowHashtags,
+  BlockedIps
 }
