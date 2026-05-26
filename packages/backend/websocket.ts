@@ -68,7 +68,9 @@ websocketRoutes(server);
 
 await redisCache.del('blockedIps');
 const blockedIps = await BlockedIps.findAll();
-await redisCache.sadd('blockedIps', blockedIps.map(elem => elem.ip))
+if (blockedIps.length) {
+  await redisCache.sadd('blockedIps', blockedIps.map(elem => elem.ip))
+}
 
 cron.schedule("0 */2 * * *", async () => {
   // maintenance tasks
