@@ -41,6 +41,6 @@ fi
 
 cp .env.example .env
 
-perl -pi -e 's/^([_A-Z0-9]+)=(.*)$/$1."='"'"'".($ENV{$1}||$2)."'"'"'"/ge' .env
+perl -pi -e 's/^([_A-Z0-9]+)=(.*)$/$1."=".($ENV{$1}||$2)/ge' .env
 
 echo "Done! All env variables saved to .env"

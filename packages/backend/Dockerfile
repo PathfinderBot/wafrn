@@ -27,8 +27,6 @@ RUN mkdir -p logs
 
 COPY packages/backend/environment.example.ts environment.ts
 
-RUN npm run type-check
-
 # some default values
 ENV POSTGRES_HOST=db
 ENV POSTGRES_PORT=5432

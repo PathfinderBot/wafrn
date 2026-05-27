@@ -90,6 +90,12 @@ http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
         reverse_proxy {$ADMINER_HOST:wafrn-adminer-1:8080}
     }
 
+    handle / {
+        reverse_proxy {$BACKEND_HOST:-backend:9000} {
+            lb_policy least_conn
+        }
+    }
+
     handle {
         root * /var/www/html/frontend/
         try_files {path} /index.html

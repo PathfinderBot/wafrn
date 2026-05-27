@@ -7,6 +7,7 @@ import {
   getPreloadedContexts,
   PRELOADED_CONTEXTS,
   wafrnContext,
+  WellKnownContext,
 } from "./contexts.js";
 import { JsonLd, RemoteDocument } from "jsonld/jsonld-spec.js";
 import getUserAgent from "../getUserAgent.js";
@@ -16,7 +17,7 @@ import getUserAgent from "../getUserAgent.js";
 // RsaSignature2017 based from https://github.com/transmute-industries/RsaSignature2017
 
 export class LdSignature {
-  constructor() {}
+  constructor() { }
 
   public async signRsaSignature2017(
     data: any,
@@ -108,6 +109,14 @@ export class LdSignature {
     hash.update(data);
     return hash.digest("hex");
   }
+
+  public async compactToWellKnown(data: any): Promise<any> {
+    const options = { documentLoader: this.getLoader() };
+    const context = WellKnownContext as any;
+    delete data["signature"];
+    return await jsonld.compact(data, context, options);
+  }
+
 
   private getLoader() {
     return async (url: string): Promise<RemoteDocument> => {

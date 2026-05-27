@@ -30,7 +30,21 @@ export default function mediaRoutes(app: Application) {
           const extension = originalNameArray[originalNameArray.length - 1].toLowerCase()
           const formatsToNotConvert = ['webp', 'aac', 'mp3', 'wav', 'ogg', 'oga', 'm4a', 'pdf']
           if (!formatsToNotConvert.includes(extension)) {
-            fileUrl = `/${await optimizeMedia(file.path)}`
+            try {
+              const optimizedMediaPath = await optimizeMedia(file.path)
+              fileUrl = `/${optimizedMediaPath}`
+            } catch (error) {
+              logger.debug({
+                message: `Error optimizing media`,
+                error: error
+              })
+              res.status(500)
+              return res.send({
+                error: true,
+                message: `Error optimizing mediaº`
+              })
+            }
+
           }
           if (completeEnvironment.removeFolderNameFromFileUploads) {
             fileUrl = fileUrl.slice('/uploads/'.length - 1)

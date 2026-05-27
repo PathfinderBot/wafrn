@@ -3,45 +3,42 @@
 </div>
 
 @if (loading()) {
-  <app-loader>users</app-loader>
+<app-loader>users</app-loader>
 }
 
 @if (pendingUsers.length === 0) {
-  <div class="mx-3 lg:mx-4 wafrn-container">
-    <p>No users pending approval!</p>
-  </div>
+<div class="mx-3 lg:mx-4 wafrn-container">
+  <p>No users pending approval!</p>
+</div>
 }
 
 @for (user of pendingUsers; track user) {
-  <mat-card class="p-3 mb-6 lg:mx-4 mat-card-higher wafrn-container">
-    <div class="mb-3 flex flex-wrap align-items-center gap-3">
-      <img loading="lazy" [src]="user.avatar" alt="user avatar" class="mx-auto lg:mx-0 user-image" />
-      <div>
-        <p
-          ><strong>{{ 'admin.pendingUsers.url' | translate }}:</strong> {{ user.url }}</p
-        >
-        <p
-          ><strong>{{ 'admin.pendingUsers.email' | translate }}:</strong> {{ user.email }}</p
-        >
-        <p>
-          <strong>{{ 'admin.pendingUsers.registerIp' | translate }}:</strong> {{ user.registerIp }}
-          <a target="_blank" [href]="'https://ipinfo.io/' + user.registerIp">Check on ipinfo</a>
-        </p>
-        <p
-          ><strong>{{ 'admin.pendingUsers.description' | translate }}:</strong> {{ user.description }}</p
-        >
-      </div>
+<mat-card class="p-3 mb-6 lg:mx-4 mat-card-higher wafrn-container">
+  <div class="mb-3 flex flex-wrap align-items-center gap-3">
+    <img loading="lazy" [src]="user.avatar" alt="user avatar" class="mx-auto lg:mx-0 user-image" />
+    <div>
+      <p><strong>{{ 'admin.pendingUsers.url' | translate }}:</strong> {{ user.url }}</p>
+      <p><strong>{{ 'admin.pendingUsers.email' | translate }}:</strong> {{ user.email }}</p>
+      <p>
+        <strong>{{ 'admin.pendingUsers.registerIp' | translate }}:</strong> {{ user.registerIp }}
+        <a target="_blank" [href]="'https://ipinfo.io/' + user.registerIp">Check on ipinfo</a>
+      </p>
+      <p><strong>{{ 'admin.pendingUsers.description' | translate }}:</strong> {{ user.description }}</p>
     </div>
-    <div class="flex flex-wrap gap-2">
-      <button (click)="activateUser(user)" mat-flat-button class="w-full lg:w-auto primary mr-auto">
-        {{ 'admin.pendingUsers.activateUser' | translate }}
-      </button>
-      <button (click)="requireExtra(user)" mat-flat-button class="w-full lg:w-auto warn">
-        {{ 'admin.pendingUsers.requireExtraSteps' | translate }}
-      </button>
-      <button (click)="userUsedVPN(user)" mat-flat-button class="w-full lg:w-auto warn">{{
-        'admin.pendingUsers.userUsedVPN' | translate
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <button (click)="activateUser(user)" mat-flat-button class="w-full lg:w-auto primary mr-auto">
+      {{ 'admin.pendingUsers.activateUser' | translate }}
+    </button>
+    <button (click)="requireExtra(user)" mat-flat-button class="w-full lg:w-auto warn">
+      {{ 'admin.pendingUsers.requireExtraSteps' | translate }}
+    </button>
+    <button (click)="userUsedVPN(user)" mat-flat-button class="w-full lg:w-auto warn">{{
+      'admin.pendingUsers.userUsedVPN' | translate
       }}</button>
-    </div>
-  </mat-card>
+    <button (click)="blockIp(user)" mat-flat-button class="w-full lg:w-auto warn">{{
+      'admin.pendingUsers.blockIp' | translate
+      }}</button>
+  </div>
+</mat-card>
 }

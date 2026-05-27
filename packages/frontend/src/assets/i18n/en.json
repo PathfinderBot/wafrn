@@ -41,7 +41,8 @@
     "registerOnOtherInstance": "But because Wafrn is decentralized, you can join to another server and interact with people from this server!",
     "selfHostInstance": "Or, you can self-host your own Wafrn instance!",
     "findServers": "Find one on join.wafrn.net",
-    "selfHostInstructions": "Self-hosting Instructions"
+    "selfHostInstructions": "Self-hosting Instructions",
+    "confirmReadAbout": "I confirm that I have read the <a href=\"/about\" target=\"_blank\">\"About\"</a> section."
   },
   "notifications": {
     "title": "Notifications",
@@ -171,7 +172,9 @@
   },
   "blog": {
     "tabWoots": "Woots",
-    "tabMedia": "Media"
+    "tabMedia": "Media",
+    "followsYou": "Follows you",
+    "mutuals": "Mutuals"
   },
   "profile": {
     "profile": {
@@ -357,7 +360,7 @@
     "autoAddSpecifiedTagsAsksNoGeneral": "Don't add the general tags on ask replies",
     "autoAddSpecifiedTagsAsksNoGeneralDescription": "Enable this if you want the tags different between normal woots and ask replies",
     "autoAddSpecifiedTagsDescription": "Add tags below to automatically add them on the editor on your every single woot. You can always remove it on the editor. Multiple tags can be added by adding a comma and a space.",
-    "autoAddContentWarning": "Add specified content warning", 
+    "autoAddContentWarning": "Add specified content warning",
     "autoAddContentWarningDescription": "If you woot mostly stuff that requires a content warning, you can add it here to automatically add it when you woot. You can always remove it by removing the content warning text on the editor.",
     "alsoKnownAs": "Previous alias",
     "requestAccountDeletion": "Request Account Deletion",
@@ -406,8 +409,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
-    "defaultPostEditorCanReply":"Default who can reply",
-    "defaultPostEditorCanQuote":"Default woot can be quoted",
+    "defaultPostEditorCanReply": "Default who can reply",
+    "defaultPostEditorCanQuote": "Default woot can be quoted",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
@@ -477,6 +480,8 @@
       "generateInviteCodeWarning": "Generating an invite code will delete IRREVERSIBLY any associated bsky account"
     },
     "admin": {
+      "blockIpTitle": "Block this ip?",
+      "blockIpDescription": "Do you want to block this ip?",
       "requireExtraStepsTitle": "Require extra steps from user",
       "requireExtraStepsDescription": "User will be sent an email with additional steps.",
       "userUsedVPNTitle": "Mark user as using a VPN",
@@ -669,7 +674,8 @@
       "checkIpInfo": "Check on IPinfo",
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
-      "userUsedVPN": "User used VPN"
+      "userUsedVPN": "User used VPN",
+      "blockIp": "Block IP"
     },
     "reportList": {
       "ignoreReport": "Ignore report",

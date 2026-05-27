@@ -15,48 +15,56 @@ async function checkCommitMentions(
   let record = (commit as any).record
 
 
-  if(commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete'){
+  if (commit.collection === 'app.bsky.feed.post' && commit.operation === 'delete') {
     logger.debug('Delete post automatic accept')
     return true;
   }
 
-  if(await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, did)) {
+  if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, did)) {
     logger.debug('Post by followed user')
     return true;
   }
   let quotedPostUri: string | undefined = undefined
+  // first we check if there are any mentions to local users. if so we return true
   if (
-      commit.operation === CommitType.Create &&
-      commit.collection.startsWith('app.bsky.feed.post') &&
-      (commit.record as any)?.facets
-    ) {
-      const mentions: string[] = record?.facets
-        .flatMap((elem: any) => elem.features)
-        .map((elem: any) => elem.did)
-        .filter((elem: any) => elem)
-      try {
-        quotedPostUri = getQuotedPostUri({ record } as PostView)
+    commit.operation === CommitType.Create &&
+    commit.collection.startsWith('app.bsky.feed.post') &&
+    (commit.record as any)?.facets
+  ) {
+    const mentions: string[] = record?.facets
+      .flatMap((elem: any) => elem.features)
+      .map((elem: any) => elem.did)
+      .filter((elem: any) => elem)
+    try {
+      quotedPostUri = getQuotedPostUri({ record } as PostView)
 
-      } catch(error: any) {}
-      if (record.text) {
-        const rt = new RichText({
-          text: record.text,
-          facets: record.facets
-        })
-        const tags = Array.from(rt.segments().filter((elem) => elem.isTag() && elem.text).map(elem => elem.text.toLowerCase().toString().trim()))
-        if(tags && tags.length && (await redisCache.smismember(FOLLOWED_HASHTAGS_CACHE_KEY, tags )).some(elem => elem != 0)) {
-          logger.debug('Post contains followed hashtag')
-          return true;
-        }
-      }
-      if(mentions && mentions.length && (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, mentions)).some(elem => elem != 0)) {
-        logger.debug('Post contains a mention of a local user')
-        return true
+    } catch (error: any) { }
+    if (record.text) {
+      const rt = new RichText({
+        text: record.text,
+        facets: record.facets
+      })
+      const tags = Array.from(rt.segments().filter((elem) => elem.isTag() && elem.text).map(elem => elem.text.toLowerCase().toString().trim()))
+      if (tags && tags.length && (await redisCache.smismember(FOLLOWED_HASHTAGS_CACHE_KEY, tags)).some(elem => elem != 0)) {
+        logger.debug('Post contains followed hashtag')
+        return true;
       }
     }
-  // first we check if there are any mentions to local users. if so we return true
+    if (mentions && mentions.length && (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, mentions)).some(elem => elem != 0)) {
+      logger.debug('Post contains a mention of a local user')
+      return true
+    }
+  }
+  // we check if announce is from local user
+  if (commit.operation === CommitType.Create && commit.collection.startsWith('app.bsky.feed.repost') && (commit as any).record?.subject) {
+    const userRecivingRewoot: string = (commit as any).record.subject.uri.split('/')[2];
+    const localUserRewoot = (await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, userRecivingRewoot));
+    if (localUserRewoot) {
+      return true;
+    }
 
-  // we check lik
+  }
+  // we check like
   if (
     commit.operation === CommitType.Create &&
     (commit.collection.startsWith('app.bsky.feed.like') || commit.collection.startsWith('app.bsky.graph.follow'))
@@ -68,8 +76,8 @@ async function checkCommitMentions(
     }
     const followedUser = commit.collection.startsWith('app.bsky.graph.follow') ? record?.subject : ''
     const toCheck = [likedPostUri, followedUser].filter(elem => !!elem)
-    if ( toCheck.length && 
-      (await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, toCheck)).some((elem: any) => elem != 0)
+    if (toCheck.length &&
+      (await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, toCheck[0]))
     ) {
       logger.debug('Saving follow or like')
       return true
@@ -81,11 +89,11 @@ async function checkCommitMentions(
     logger.debug('Post in reply to post that we know has been replied (bloom filter)')
     return true
   }
-  if(record && record.reply) {
+  if (record && record.reply) {
     const rootDid = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
     const parentDid = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
     // we check if root or parent are local users
-    if((await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [rootDid, parentDid] )).some((elem: any) => elem != 0)){
+    if ((await redisCache.smismember(LOCAL_USER_DIDS_CACHE_KEY, [rootDid, parentDid])).some((elem: any) => elem != 0)) {
       logger.debug(`Post is in reply to a post of a local user`)
       return true;
     }
@@ -94,12 +102,13 @@ async function checkCommitMentions(
   if (quotedPostUri) {
     const quotedUserDid = quotedPostUri.replace('at://', '').split('/app.bsky.feed')[0] ?? ''
     res =
-      await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, quotedUserDid ) != 0
+      await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, quotedUserDid) != 0
 
     if (res) {
       logger.debug('Post quotes local user')
 
-      return res};
+      return res
+    };
   }
 
   return res

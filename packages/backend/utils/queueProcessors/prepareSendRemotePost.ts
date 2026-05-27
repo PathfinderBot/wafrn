@@ -79,7 +79,7 @@ async function prepareSendRemotePostWorker(job: Job) {
         id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${post.id}`,
         type: "QuoteRequest",
         object: await getPostUrlForQuote(quote.dataValues.quotedPost),
-        instrument: await postToJSONLD(post.id),
+        instrument: await postToJSONLD(post.id, undefined, true),
       };
       await RemoteUserPostView.findOrCreate({
         where: {
@@ -199,7 +199,7 @@ async function prepareSendRemotePostWorker(job: Job) {
       ignoreDuplicates: true,
     });
 
-    const objectToSend = await postToJSONLD(post.id);
+    const objectToSend = await postToJSONLD(post.id, undefined, true);
     if (!objectToSend) {
       return;
     }
