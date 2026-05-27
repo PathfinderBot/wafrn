@@ -6,12 +6,17 @@ RUN apk add --no-cache perl curl tini bash git
 RUN mkdir -p /app/packages/frontend
 WORKDIR /app/packages/frontend
 
-# install dependencies
+# install dependencies before setting NODE_ENV=production (needed for angular-devkit in devDependencies)
+COPY package.json /app
+COPY package-lock.json /app
 COPY packages/frontend/package.json .
 RUN npm install
 
 # copy the rest of the files
 COPY packages/frontend .
+
+# copy git info too so the prebuild script can read it
+COPY .git /app
 
 # Override frontend files with files put here. Allows easy overriding of assets, and potentially actual code as well
 RUN cp -af /app/packages/frontend/overrides/* /app/packages/frontend/src || true
