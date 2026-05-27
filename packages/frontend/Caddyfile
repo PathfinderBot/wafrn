@@ -17,9 +17,9 @@
     servers {
         trusted_proxies static 172.0.0.1/8
     }
-    
-    
-    
+
+
+
     on_demand_tls {
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
@@ -59,9 +59,9 @@ http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
 # MAIN FRONTEND
 # -----------------------
 http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
-    
-    
-    
+
+
+
     encode zstd gzip
 
     header * {
@@ -106,11 +106,11 @@ http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
 # -----------------------
 # MONITORING
 # -----------------------
-http://monitoring.{$DOMAIN_NAME}, monitoring.{$DOMAIN_NAME} {
+http://{$MONITORING_DOMAIN}, {$MONITORING_DOMAIN} {
     reverse_proxy {$GRAFANA_HOST:wafrn-grafana-1:2345}
 }
 
-http://bullboard.{$DOMAIN_NAME}, bullboard.{$DOMAIN_NAME} {
+http://{$BULLBOARD_DOMAIN}, {$BULLBOARD_DOMAIN} {
     reverse_proxy {$BULLBOARD_HOST:bullboard:3000}
 }
 
