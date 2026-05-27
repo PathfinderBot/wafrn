@@ -17,9 +17,9 @@ COPY packages/frontend .
 RUN cp -af /app/packages/frontend/overrides/* /app/packages/frontend/src || true
 
 # copy default ngsw config and use the frontend environment file for docker
-RUN cp /app/packages/frontend/ngsw-config.json.example /app/packages/frontend/ngsw-config.json
-  && rm -rf src/environments/environment.prod.ts
-  && mv src/environments/environment.docker.ts src/environments/environment.prod.ts
+RUN cp /app/packages/frontend/ngsw-config.json.example /app/packages/frontend/ngsw-config.json && \
+  rm -rf src/environments/environment.prod.ts && \
+  mv src/environments/environment.docker.ts src/environments/environment.prod.ts
 
 ENV NODE_ENV=production
 
