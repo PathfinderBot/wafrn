@@ -103,8 +103,7 @@ services:
     restart: unless-stopped
     ports:
       - ${PDS_HTTP_PORT:-127.0.0.1:3000}:3000
-    profiles:
-      - bluesky
+    profiles: [bluesky]
     env_file: .env
     environment:
       PDS_HOSTNAME: ${PDS_DOMAIN_NAME}
@@ -114,8 +113,7 @@ services:
 
   pds_worker:
     <<: *default_backend
-    profiles:
-      - bluesky
+    profiles: [bluesky]
     deploy:
       mode: replicated
       replicas: 1
@@ -201,6 +199,7 @@ services:
     container_name: bullboard
     image: nauverse/bull-board
     restart: unless-stopped
+    profiles: [metrics]
     environment:
       REDIS_URL: redis:6379
       BULL_PREFIX: bull
