@@ -36,9 +36,9 @@ export const baseEnvironment: Environment = {
   // app.wafrn.net
   instanceUrl: process.env.DOMAIN_NAME || "",
   // https://media.wafrn.net
-  mediaUrl: process.env.FRONTEND_MEDIA_URL || "",
+  mediaUrl: process.env.FRONTEND_MEDIA_URL || process.env.MEDIA_DOMAIN,
   // You should run also this project github.com/gabboman/fediversemediacacher. In my case, https://cache.wafrn.net/?media= The cache is there because at some point in the past I configured it to precache images. No need for it to be honest
-  externalCacheurl: process.env.FRONTEND_CACHE_URL || "",
+  externalCacheurl: process.env.FRONTEND_CACHE_URL || `${process.env.CACHE_DOMAIN}/api/cache?media=`,
   // after the first run, create the admin user. and a deleted user. You will have to edit the user url in db so it starts with an @
   adminUser: process.env.ADMIN_USER || "",
   // admin email wich you will recive things like "someone registred and you need to review this"
