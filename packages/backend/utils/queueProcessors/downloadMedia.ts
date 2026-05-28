@@ -97,9 +97,14 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
 
   let readStream: fs.ReadStream
   const localPrefix = `${completeEnvironment.mediaUrl}/`
-  const localFile = `uploads/${mediaUrl.replace(localPrefix, '')}`
-  if (mediaUrl.startsWith(localPrefix) && fs.existsSync(localFile)) {
-    readStream = fs.createReadStream(localFile)
+  const localUploadFile = `uploads/${mediaUrl.replace(localPrefix, '')}`
+
+  if (mediaUrl.startsWith(localPrefix)) {
+    if (fs.existsSync(localUploadFile)) {
+      readStream = fs.createReadStream(localUploadFile)
+    } else {
+      throw new Error(`Aborting cache process. Local file for wafrn media does not exist: ${localUploadFile}`)
+    }
   } else {
     const response = await axios.get(mediaUrl, {
       responseType: 'stream' as const,
