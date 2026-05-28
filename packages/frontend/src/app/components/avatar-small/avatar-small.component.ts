@@ -26,7 +26,7 @@ export class AvatarSmallComponent {
       return "/assets/img/anon.webp";
     }
     return (
-      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) +
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
       "/api/v2/cache/avatar/" +
       user.id
     );
