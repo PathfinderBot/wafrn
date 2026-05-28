@@ -9,6 +9,7 @@ import { getMimeType } from 'stream-mime-type'
 import { spawn } from 'child_process'
 import sequelize from 'sequelize/lib/sequelize'
 import { Media } from '../../models/media.js'
+import { completeEnvironment } from '../backendOptions.js'
 
 export type DownloadJobPayload = {
   mediaUrl: string
@@ -94,13 +95,21 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
     }
   }
 
-  const response = await axios.get(mediaUrl, {
-    responseType: 'stream',
-    headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') },
-    timeout: 25000
-  })
+  let readStream: fs.ReadStream
+  const localPrefix = `${completeEnvironment.mediaUrl}/`
+  const localFile = `uploads/${mediaUrl.replace(localPrefix, '')}`
+  if (mediaUrl.startsWith(localPrefix) && fs.existsSync(localFile)) {
+    readStream = fs.createReadStream(localFile)
+  } else {
+    const response = await axios.get(mediaUrl, {
+      responseType: 'stream' as const,
+      headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') },
+      timeout: 25000
+    })
+    readStream = response.data
+  }
 
-  const { stream, mime } = await getMimeType(response.data)
+  const { stream, mime } = await getMimeType(readStream)
   fs.writeFileSync(localFileName + '.mime', mime)
 
   const writeStream = fs.createWriteStream(localFileName)
