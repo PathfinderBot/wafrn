@@ -11,6 +11,7 @@ perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /var/www/html/frontend
 perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/manifest.webmanifest
 
 # this command performs the runtime overrides for people using the pre-compiled images
-cp -af /overrides/* /var/www/html/frontend || true
+# cp -af /overrides/* /var/www/html/frontend || true
 
 exec "$@"
+
