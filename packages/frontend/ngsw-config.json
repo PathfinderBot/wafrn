@@ -39,7 +39,8 @@
       "updateMode": "prefetch",
       "resources": {
         "files": [
-          "/assets/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+          "/assets/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2|ogg)",
+          "/assets/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2|ogg|json|css)"
         ]
       }
     }
