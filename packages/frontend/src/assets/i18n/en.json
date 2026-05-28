@@ -409,8 +409,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
-    "defaultPostEditorCanReply":"Default who can reply",
-    "defaultPostEditorCanQuote":"Default woot can be quoted",
+    "defaultPostEditorCanReply": "Default who can reply",
+    "defaultPostEditorCanQuote": "Default woot can be quoted",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
@@ -480,6 +480,8 @@
       "generateInviteCodeWarning": "Generating an invite code will delete IRREVERSIBLY any associated bsky account"
     },
     "admin": {
+      "blockIpTitle": "Block this ip?",
+      "blockIpDescription": "Do you want to block this ip?",
       "requireExtraStepsTitle": "Require extra steps from user",
       "requireExtraStepsDescription": "User will be sent an email with additional steps.",
       "userUsedVPNTitle": "Mark user as using a VPN",
@@ -672,7 +674,8 @@
       "checkIpInfo": "Check on IPinfo",
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
-      "userUsedVPN": "User used VPN"
+      "userUsedVPN": "User used VPN",
+      "blockIp": "Block IP"
     },
     "reportList": {
       "ignoreReport": "Ignore report",
