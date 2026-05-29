@@ -1,7 +1,7 @@
 # Build stage
 FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
 
-RUN apk add --no-cache perl curl tini bash git
+RUN apk add --no-cache perl curl tini bash git jq
 
 RUN mkdir -p /app/packages/frontend
 WORKDIR /app/packages/frontend
