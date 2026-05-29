@@ -1,7 +1,7 @@
 # Build stage
 FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
 
-RUN apk add --no-cache perl curl tini bash git jq
+RUN apk add --no-cache perl curl tini bash git
 
 RUN mkdir -p /app/packages/frontend
 WORKDIR /app/packages/frontend
@@ -32,7 +32,7 @@ RUN npm run build && mv dist/wafrn/browser /app/frontend
 
 FROM caddy:2
 
-RUN apk add perl
+RUN apk add perl jq bash
 
 COPY packages/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/packages/frontend/src/assets/pds-homepage.txt /pds-homepage/pds.txt
