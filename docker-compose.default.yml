@@ -14,6 +14,8 @@ services:
       BACKEND_HOST: "${BACKEND_HOST:-wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000}"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
       AUTO_HTTPS_MODE: ${AUTO_HTTPS_MODE:-auto_https disable_redirects}
+      MONITORING_DOMAIN: ${MONITORING_DOMAIN:-monitoring.${DOMAIN_NAME}}
+      BULLBOARD_DOMAIN: ${BULLBOARD_DOMAIN:-bullboard.${DOMAIN_NAME}}
     volumes:
       - ./packages/frontend/runtime-overrides:/overrides
       - "frontend:/var/www/html/frontend"
