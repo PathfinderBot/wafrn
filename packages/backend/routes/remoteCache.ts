@@ -321,7 +321,7 @@ async function getMediaFromUrl(
     }
 
     // Try to acquire lock in Redis
-    const lockAcquired = await redisCache.set(lockKey, lockValue, 'EX', 30)
+    const lockAcquired = await redisCache.get(lockKey) ? false : await redisCache.set(lockKey, lockValue, 'EX', 30)
 
     if (lockAcquired) {
       // We have the lock, proceed with download

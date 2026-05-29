@@ -29,6 +29,12 @@ const cacheLoaded = await redisCache.exists(LOCAL_USER_DIDS_CACHE_KEY)
 if (!cacheLoaded) {
   await forcePopulateCache()
 }
+const cacheLastForceUpdate = await redisCache.get('bskyCacheDate') ?? '0'
+if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 1000) {
+  forcePopulateCache().then(() => {
+    logger.info('forceUpdatedCache')
+  })
+}
 const jetstream = new Jetstream({
   endpoint: completeEnvironment.bskyJetstreamUrl,
   wantedCollections: [
