@@ -1,17 +1,15 @@
 #!/bin/sh
 set -e
 
-perl -pi -e 's/NGSW_([_A-Z]+)/$ENV{$1}/g' /app/frontend/ngsw.json
+# replace all environment variables in the files in the frontend volume before starting caddy
+perl -pi -e 's/NGSW_([_A-Z]+)/$ENV{$1}/g' /var/www/html/frontend/ngsw.json
 
-perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /app/frontend/index.html
-perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /app/frontend/index.html
+perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /var/www/html/frontend/index.html
+perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/index.html
 
-perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /app/frontend/manifest.webmanifest
-perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /app/frontend/manifest.webmanifest
+perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /var/www/html/frontend/manifest.webmanifest
+perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/manifest.webmanifest
 
-rm -rf /var/www/html/frontend/*
-rm -rf /var/www/html/frontend/.* 2>/dev/null || true
-
-cp -a /app/frontend /var/www/html/
+/overrides.sh /overrides /var/www/html/frontend/ngsw.json
 
 exec "$@"

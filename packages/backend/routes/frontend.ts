@@ -37,7 +37,7 @@ function frontend(app: Application) {
       status: 'ok',
       checks: {
         database: 'unknown',
-        redis: 'unknown',
+        redis: 'unknown'
       }
     }
 
@@ -229,7 +229,11 @@ function frontend(app: Application) {
         if (req.params?.id) {
           const cachedResponse = await redisCache.get(`postHttpResponse:${req.params.id}`)
           const possibleObjectToSend = cachedResponse ? JSON.parse(cachedResponse) : undefined
-          if (possibleObjectToSend && (possibleObjectToSend.to?.includes("https://www.w3.org/ns/activitystreams#Public") || possibleObjectToSend.cc?.includes("https://www.w3.org/ns/activitystreams#Public"))) {
+          if (
+            possibleObjectToSend &&
+            (possibleObjectToSend.to?.includes('https://www.w3.org/ns/activitystreams#Public') ||
+              possibleObjectToSend.cc?.includes('https://www.w3.org/ns/activitystreams#Public'))
+          ) {
             res.set({
               'content-type': 'application/activity+json',
               'cache-control': 'public, max-age=300'
@@ -254,9 +258,6 @@ function frontend(app: Application) {
       res.send(getIndexFormatted(defaultSeoDataMetaTag))
     }
   )
-
-  // serve static angular files
-  app.get('*.*', express.static(completeEnvironment.frontedLocation, cacheOptions))
 }
 
 function sanitizeStringForSEO(unsanitized: string): string {
@@ -275,33 +276,38 @@ function getPostMicroformat(post: Post, includeBlog: boolean = false, mainImage?
     if (post.medias?.[p1 - 1]) {
       skipImage[p1 - 1] = true
       const media = post.medias[p1 - 1]
-      return `<img class="${mainImage == media.fullUrl ? 'u-photo' : ''
-        }" style="max-width:100%" title="${sanitizeStringForSEO(media.description)}" src="${media.fullUrl}">`
+      return `<img class="${
+        mainImage == media.fullUrl ? 'u-photo' : ''
+      }" style="max-width:100%" title="${sanitizeStringForSEO(media.description)}" src="${media.fullUrl}">`
     } else return ''
   })
 
   return `<div style="max-width:100%" class="h-entry">
-        ${includeBlog
-      ? `<div class="p-author">
+        ${
+          includeBlog
+            ? `<div class="p-author">
           ${getBlogMicroformat(post.user)}
         </div>`
-      : ''
-    }
-        <a class="u-url u-uid" href="${post.fullUrl
-    }"><time class="dt-published" datetime="${post.createdAt.toISOString()}">${post.createdAt.toLocaleString()}</time></a>
+            : ''
+        }
+        <a class="u-url u-uid" href="${
+          post.fullUrl
+        }"><time class="dt-published" datetime="${post.createdAt.toISOString()}">${post.createdAt.toLocaleString()}</time></a>
         ${post.parent ? `<a class="u-in-reply-to" href="${post.parent.fullUrl}">In Reply To</a>` : ''}
         ${post.content_warning ? `<div class="p-summary">${sanitizeStringForSEO(post.content_warning)}</div>` : ''}
         <div class="e-content">
         ${sanitizedHtml}
-        ${post.medias
-      ?.filter((_, idx) => !skipImage[idx])
-      ?.map(
-        (elem) =>
-          `<img class="${mainImage == elem.fullUrl ? 'u-photo' : ''
-          }" style="max-width:100%" title="${sanitizeStringForSEO(elem.description)}" src="${elem.fullUrl}">`
-      )
-      .join('\n') || ''
-    }
+        ${
+          post.medias
+            ?.filter((_, idx) => !skipImage[idx])
+            ?.map(
+              (elem) =>
+                `<img class="${
+                  mainImage == elem.fullUrl ? 'u-photo' : ''
+                }" style="max-width:100%" title="${sanitizeStringForSEO(elem.description)}" src="${elem.fullUrl}">`
+            )
+            .join('\n') || ''
+        }
         </div>
       </div>`
 }
@@ -310,10 +316,11 @@ function getBlogMicroformat(user: User): string {
   return `<div style="max-width:100%" class="h-card">
             <a class="p-name u-url" rel="me" href="${user.fullUrl}">${sanitizeStringForSEO(user.name)}</a>
             ${user.avatar ? `<img style="max-width:100%" class="u-photo" src="${user.avatarFullUrl}" />` : ''}
-            ${user.headerImage
-      ? `<img style="max-width:100%" class="u-featured" src="${user.headerImageFullUrl}" />`
-      : ''
-    }
+            ${
+              user.headerImage
+                ? `<img style="max-width:100%" class="u-featured" src="${user.headerImageFullUrl}" />`
+                : ''
+            }
           </div>`
 }
 
