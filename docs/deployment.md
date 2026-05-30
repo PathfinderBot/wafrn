@@ -157,7 +157,17 @@ FRONTEND_DESCRIPTION=Wafrn is a federated social media inspired by tumblr that c
 
 Once updated you'll need to rebuild your containers to get these picked up.
 
-### Frontend overrides
+### Frontend overrides  (NEW, BETTER, FASTER)
+
+There is a folder called `packages/frontend/runtime-overrides`. Any file you put here will override anything in the wafrn frontend files.
+
+For example to override the site logo put your own logo into `packages/frontend/runtime-overrides/assets/logo.png` (and you'll also likely want to override `favicon.ico`, `logo_w.png`, `logo_mascot.png` the `icons` directory and others as well).
+
+Do note these overrides will persist any update you do on Wafrn. Its important to understand, this method does not work for the source code, only for static files.
+
+### Frontend overrides - LEGACY
+
+#### If your instance is not going to edit code, use the previous override method, not the legacy one
 
 There is also a way to override any of the files in the `frontend` package without needing to fork or rebase the source code. For this to work create a folder called `packages/frontend/overrides`. Any file you put here will override anything in `packages/frontend/src` during build time. This directory is ignored by wafrn's update process, but you can and should init it as a separate git subrepository that you manage on your own:
 
