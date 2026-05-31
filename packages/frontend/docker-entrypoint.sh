@@ -9,7 +9,7 @@ perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/index.html
 
 perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /var/www/html/frontend/manifest.webmanifest
 perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/manifest.webmanifest
-
+cp -r /var/lib/html /var/www/html/frontend_output
 if [ -d /overrides ] && [ "$(find /overrides -mindepth 1 -maxdepth 1 | head -n 1)" ]; then
   /overrides.sh /overrides /var/www/html/frontend/ngsw.json
 else
