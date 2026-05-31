@@ -111,7 +111,8 @@
       "blocklist": "Blocked users",
       "stats": "Stats",
       "awaitingAproval": "Awaiting approval",
-      "inviteCodes": "Invite codes"
+      "inviteCodes": "Invite codes",
+      "emailCampaign": "Email campaign"
     }
   },
   "theme-editor": {

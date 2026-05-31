@@ -30,7 +30,8 @@ if (!cacheLoaded) {
   await forcePopulateCache()
 }
 const cacheLastForceUpdate = await redisCache.get('bskyCacheDate') ?? '0'
-if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 1000) {
+// every two weeks force update dids
+if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 28 * 1000) {
   forcePopulateCache().then(() => {
     logger.info('forceUpdatedCache')
   })

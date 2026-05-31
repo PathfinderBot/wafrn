@@ -13,6 +13,8 @@ import { InviteCode } from '../models/inviteCode.js'
 import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
 import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
 import { BlockedIps } from '../models/blockedIp.js'
+import { getQueue } from '../utils/queues.js'
+import type { SendEmailCampaignJobData } from '../utils/queueProcessors/sendEmailCampaign.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -518,5 +520,40 @@ We just need a confirmation. Sorry for this and thanks.</p>
     } else {
       res.sendStatus(404)
     }
+  })
+
+  app.post('/api/admin/sendEmailCampaign', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    const petitionBody: SendEmailCampaignJobData = req.body
+    const subject = typeof petitionBody?.subject === 'string' ? petitionBody.subject.trim() : ''
+    const body = typeof petitionBody?.body === 'string' ? petitionBody.body.trim() : ''
+    const test = req.body.test
+    if (!subject || !body) {
+      res.status(400)
+      return res.send({
+        message: 'Missing subject or body'
+      })
+    }
+    if (test) {
+      const user = (await User.scope('full').findByPk(req.jwtData?.userId)) as User
+      await sendEmail({ email: user.email as string, subject, body })
+      res.send({
+        success: true,
+        jobId: undefined
+      })
+    } else {
+      const queue = getQueue<SendEmailCampaignJobData>('sendEmailCampaign')
+      const job = await queue.add('sendEmailCampaign', {
+        subject,
+        body,
+        createdByUserId: req.jwtData?.userId
+      })
+
+      res.status(202)
+      res.send({
+        success: true,
+        jobId: job.id
+      })
+    }
+
   })
 }
