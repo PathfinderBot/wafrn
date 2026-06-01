@@ -197,6 +197,10 @@
   @include gradient-text(#7d9d6c, #5f5f5f, #681a09, #5f5f5f, #7d9d6c);
 }
 
+[data-tag='heterosexual' i] {
+  @include gradient-text(rgba(1,1,1,0.5), rgba(1,1,1,0.75), rgba(1,1,1,0.5));
+}
+
 [data-tag='wafrn' i] {
   &.tag {
     display: flex;
