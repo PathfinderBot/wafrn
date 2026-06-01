@@ -36,9 +36,11 @@ RUN apk add perl jq bash
 
 COPY packages/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/packages/frontend/src/assets/pds-homepage.txt /pds-homepage/pds.txt
-COPY --from=builder /app/frontend/ /var/www/html/frontend
+COPY --from=builder /app/frontend/ /usr/share/wafrn/frontend
 COPY --from=builder /app/packages/frontend/overrides.sh /overrides.sh
 COPY --from=builder /app/packages/frontend/docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN mkdir -p /var/www/html/frontend
 
 # overrides volume for run-time overrides (useful if you use the pre-compiled wafrn images)
 VOLUME ["/overrides"]

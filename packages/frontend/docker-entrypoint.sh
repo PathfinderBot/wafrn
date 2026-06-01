@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Copy built frontend files to the volume
+# This ensures we always serve the latest built version, even if the volume persists from a previous container run
+cp -a /usr/share/wafrn/frontend/* /var/www/html/frontend/
+
 # replace all environment variables in the files in the frontend volume before starting caddy
 perl -pi -e 's/NGSW_([_A-Z]+)/$ENV{$1}/g' /var/www/html/frontend/ngsw.json
 
