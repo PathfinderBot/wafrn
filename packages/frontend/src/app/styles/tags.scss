@@ -1,6 +1,6 @@
 @use 'sass:color';
 @use 'sass:list';
-@use '../../../../../node_modules/@oddbird/blend';
+@use '../../../../../node_modules/@wafrn/blend';
 
 @function clamp-colors($colors, $dark-mode: false) {
   $darker: 34%;
@@ -186,6 +186,10 @@
 // Silly
 [data-tag='italian' i] {
   @include gradient-text(#009344, #fff, #cf2734);
+}
+
+[data-tag='lebanese' i] {
+  @include gradient-text(#ce1126, #fff, #ce1126);
 }
 
 [data-tag='tax fraud' i],

@@ -11,7 +11,7 @@
 @use './app/styles/vlite.css';
 @use './app/styles/vlite-overrides.scss';
 // BUG
-// @use './app/styles/tags.scss';
+@use './app/styles/tags.scss';
 
 // Color scheme default
 @import './assets/themes/default.css';
