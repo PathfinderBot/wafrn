@@ -18,8 +18,7 @@ services:
       BULLBOARD_DOMAIN: ${BULLBOARD_DOMAIN:-bullboard.${DOMAIN_NAME}}
     volumes:
       - ./packages/frontend/runtime-overrides:/overrides
-      # TEMPORARY OFF
-      # - "frontend:/var/www/html/frontend_output"
+      - "frontend:/var/www/html/frontend_output"
       - ./packages/backend/uploads:/var/www/html/uploads
     extra_hosts:
       - "host.docker.internal:host-gateway"
