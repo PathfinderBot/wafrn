@@ -1,37 +1,4 @@
 # Build stage
-FROM --platform=$BUILDPLATFORM node:24-alpine AS builder
-
-RUN apk add --no-cache perl curl tini bash git
-
-RUN mkdir -p /app/packages/frontend
-WORKDIR /app/packages/frontend
-
-# install dependencies before setting NODE_ENV=production (needed for angular-devkit in devDependencies)
-COPY package.json /app
-COPY package-lock.json /app
-COPY packages/frontend/package.json .
-RUN npm install
-
-# copy the rest of the files
-COPY packages/frontend .
-
-# copy git info too so the prebuild script can read it
-COPY .git /app
-
-# Override frontend files with files put here. Allows easy overriding of assets, and potentially actual code as well
-RUN cp -af /app/packages/frontend/overrides/* /app/packages/frontend/src || true
-
-# copy default ngsw config and use the frontend environment file for docker
-RUN cp /app/packages/frontend/ngsw-config.json.example /app/packages/frontend/ngsw-config.json && \
-  rm -rf src/environments/environment.prod.ts && \
-  mv src/environments/environment.docker.ts src/environments/environment.prod.ts
-
-ENV NODE_ENV=production
-
-RUN npm run build && mv dist/wafrn/browser /app/frontend
-
-
-# Build stage
 FROM node:24-alpine AS build
 
 # include important binaries
@@ -57,7 +24,6 @@ COPY packages/backend .
 
 # create log folder early to prevent node err: cannot open logs/*.log
 RUN mkdir -p logs
-COPY --from=builder /app/frontend/ /app/packages/frontend
 
 COPY packages/backend/environment.example.ts environment.ts
 
