@@ -18,7 +18,7 @@ services:
       BULLBOARD_DOMAIN: ${BULLBOARD_DOMAIN:-bullboard.${DOMAIN_NAME}}
     volumes:
       - ./packages/frontend/runtime-overrides:/overrides
-      # - "frontend:/var/www/html/frontend_output"
+      - "frontend:/var/www/html/frontend"
       - ./packages/backend/uploads:/var/www/html/uploads
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -55,7 +55,7 @@ services:
     volumes:
       - ./packages/backend/uploads:/app/packages/backend/uploads
       - cache:/app/packages/backend/cache
-      # - frontend:/app/packages/frontend:ro
+      - frontend:/app/packages/frontend:ro
   workers:
     <<: *default_backend
     build:
