@@ -541,8 +541,8 @@ We just need a confirmation. Sorry for this and thanks.</p>
         jobId: undefined
       })
     } else {
-      const queue = getQueue<SendEmailCampaignJobData>('sendEmailCampaign')
-      const job = await queue.add('sendEmailCampaign', {
+      const queue = getQueue<SendEmailCampaignJobData>('prepareSendCampaign')
+      const job = await queue.add('prepareSendCampaign', {
         subject,
         body,
         createdByUserId: req.jwtData?.userId

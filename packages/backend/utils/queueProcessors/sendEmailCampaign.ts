@@ -5,9 +5,17 @@ import { User } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
 import { logger } from '../logger.js'
 import sendEmail from '../sendEmail.js'
+import { getQueue } from '../queues.js'
 import { wait } from '../wait.js'
 
 export type SendEmailCampaignJobData = {
+  subject: string
+  body: string
+  createdByUserId?: string
+}
+
+export type SendEmailCampaignUserJobData = {
+  userId: string
   subject: string
   body: string
   createdByUserId?: string
@@ -27,7 +35,7 @@ export async function sendEmailCampaign(job: Job<SendEmailCampaignJobData>) {
     where: {
       banned: { [Op.ne]: true },
       activated: true,
-      disableEmailNotifications: false,
+      disableEmailNotifications: {[Op.ne]: true},
       email: {
         [Op.ne]: null
       }
@@ -35,53 +43,92 @@ export async function sendEmailCampaign(job: Job<SendEmailCampaignJobData>) {
     order: [['createdAt', 'ASC']]
   })
 
-  let sent = 0
-  let failed = 0
+  const queue = getQueue<SendEmailCampaignUserJobData>('sendEmail')
+  let queued = 0
 
   for (const user of users) {
     if (!user.email) {
       continue
     }
 
-    const unsubscribeUrl = `${completeEnvironment.frontendUrl}/api/disableEmailNotifications/${user.id}/${encodeURIComponent(user.activationCode)}`
-    const subject = applyCampaignTemplate(job.data.subject, user, unsubscribeUrl)
-    const body = `${applyCampaignTemplate(job.data.body, user, unsubscribeUrl)}
-<br />
-<p>If you no longer desire to get these emails, you can <a href="${unsubscribeUrl}">unsubscribe</a>.</p>`
-
-    const result = await sendEmail({
-      email: user.email,
-      subject,
-      body
+    await queue.add('sendEmail', {
+      userId: user.id,
+      subject: job.data.subject,
+      body: job.data.body,
+      createdByUserId: job.data.createdByUserId
     })
 
-    if (result) {
-      sent++
-    } else {
-      failed++
-    }
-
+    queued++
     await job.updateProgress({
-      sent,
-      failed,
+      queued,
       total: users.length
     })
-    // wait 2.5 seconds fper email
-    await wait(2500)
   }
 
   logger.info({
-    message: 'Email campaign finished',
+    message: 'Email campaign queued',
     jobId: job.id,
     createdByUserId: job.data.createdByUserId,
-    sent,
-    failed,
+    queued,
     total: users.length
   })
 
   return {
-    sent,
-    failed,
+    queued,
     total: users.length
+  }
+}
+
+export async function sendEmailCampaignUser(job: Job<SendEmailCampaignUserJobData>) {
+  const user = await User.scope('full').findByPk(job.data.userId, {
+    attributes: ['id', 'url', 'email', 'activationCode']
+  })
+
+  if (!user || !user.email) {
+    logger.warn({
+      message: 'Email campaign user job skipped because user is missing or has no email',
+      jobId: job.id,
+      userId: job.data.userId
+    })
+    return {
+      skipped: true,
+      userId: job.data.userId
+    }
+  }
+
+  const unsubscribeUrl = `${completeEnvironment.frontendUrl}/api/disableEmailNotifications/${user.id}/${encodeURIComponent(user.activationCode)}`
+  const subject = applyCampaignTemplate(job.data.subject, user, unsubscribeUrl)
+  const body = `${applyCampaignTemplate(job.data.body, user, unsubscribeUrl)}
+<br />
+<p>If you no longer desire to get these emails, you can <a href="${unsubscribeUrl}">unsubscribe</a>.</p>`
+
+  const result = await sendEmail({
+    email: user.email,
+    subject,
+    body
+  })
+
+  if (!result) {
+    logger.warn({
+      message: 'Email campaign delivery failed for user',
+      jobId: job.id,
+      userId: user.id,
+      email: user.email
+    })
+    throw new Error(`Failed to send campaign email to user ${user.id}`)
+  }
+
+  await wait(2500)
+
+  logger.info({
+    message: 'Email campaign delivered',
+    jobId: job.id,
+    userId: user.id,
+    email: user.email
+  })
+
+  return {
+    sent: true,
+    userId: user.id
   }
 }
