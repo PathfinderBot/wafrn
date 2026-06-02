@@ -216,7 +216,7 @@
 }
 
 [data-tag='bottom' i] {
-  @include gradient-text(#DC143C, #fff);
+  @include gradient-text(#fff, #DC143C);
 }
 
 [data-tag='top' i] {
