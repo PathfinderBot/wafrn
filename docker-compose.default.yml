@@ -141,6 +141,7 @@ services:
       LOG_LEVEL: "debug"
       LOG_ENABLED: true
       PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
+      PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
     volumes:
       - pds:/pds
 
