@@ -231,6 +231,14 @@
   @include gradient-text(red, red, red, yellow, red, red, red);
 }
 
+[data-tag='neptunic' i] {
+  @include gradient-text(#2596be, #3ad5c8, #74e9d4, #a1e6ef, #99b0ea, #8083e2);
+}
+
+[data-tag='lunaric' i] {
+  @include gradient-text(#854faa, #aa7ec8, #cdb5de, #f9f0ff, #fffbe3, #fff5bc);
+}
+
 
 
 
