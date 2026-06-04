@@ -809,7 +809,8 @@
   "post-header": {
     "follow": "Follow",
     "awaitingApproval": "Awaiting approval",
-    "viewPost": "View woot"
+    "viewPost": "View woot",
+    "edited": "Edited {{date}}"
   },
   "post": {
     "expandWoot": "Expand woot",

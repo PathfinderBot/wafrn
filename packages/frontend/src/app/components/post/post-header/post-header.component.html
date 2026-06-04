@@ -18,7 +18,7 @@
         <a [postLink]="fragment" style="color: var(--mat-sys-outline)">{{ this.timeAgo }}</a>
       </span>
       @if (edited) {
-      <span matTooltip="Edited {{ fragment.updatedAt | date: 'short' }}" class="text-xs">
+      <span [matTooltip]="'post-header.edited' | translate:{ date: (fragment.updatedAt | date: 'short') }" class="text-xs">
         <fa-icon [icon]="editedIcon"></fa-icon>
       </span>
       }
