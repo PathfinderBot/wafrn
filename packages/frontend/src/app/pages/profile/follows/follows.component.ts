@@ -22,6 +22,8 @@ import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
 import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
+import { TranslatePipe } from '@ngx-translate/core'
+import { MatTooltipModule } from '@angular/material/tooltip'
 
 @Component({
   selector: 'app-follows',
@@ -38,7 +40,9 @@ import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
     RouterModule,
     AvatarSmallComponent,
     FontAwesomeModule,
-    BlogLinkModule
+    MatTooltipModule,
+    BlogLinkModule,
+    TranslatePipe
   ],
   templateUrl: './follows.component.html',
   styleUrl: './follows.component.scss'

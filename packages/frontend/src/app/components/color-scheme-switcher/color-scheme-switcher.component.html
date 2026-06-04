@@ -1,5 +1,5 @@
-<button mat-button [matMenuTriggerFor]="themeMenu" class="theme-toggle" title="Change color scheme"
-  aria-label="Change color scheme" [ngClass]="iconClass" matTooltip="{{ lightDarkModeData[theme()] }} mode">
+<button mat-button [matMenuTriggerFor]="themeMenu" class="theme-toggle" title="{{ 'theme.changeColorScheme' | translate }}"
+  attr.aria-label="{{ 'theme.changeColorScheme' | translate }}" [ngClass]="iconClass" matTooltip="{{ 'theme.modeTooltip' | translate:{ mode: lightDarkModeData[theme()] } }}">
   <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="theme-toggle__within" height="1.5em" width="1.5em"
     viewBox="0 0 32 32" fill="currentColor">
     <clipPath id="theme-toggle__within__clip">
@@ -24,8 +24,8 @@
   }
 </mat-menu>
 
-<button mat-button [matMenuTriggerFor]="colorSchemeMenu" class="theme-toggle" title="Toggle theme"
-  aria-label="Toggle theme" matTooltip="{{ themeData[colorScheme()].name }} theme">
+<button mat-button [matMenuTriggerFor]="colorSchemeMenu" class="theme-toggle" title="{{ 'theme.toggleTheme' | translate }}"
+  attr.aria-label="{{ 'theme.toggleTheme' | translate }}" matTooltip="{{ 'theme.themeTooltip' | translate:{ theme: themeData[colorScheme()].name } }}">
   <fa-icon [icon]="paletteIcon"></fa-icon>
 </button>
 <mat-menu #colorSchemeMenu="matMenu">
@@ -35,7 +35,7 @@
   </button>
   }
   <hr class="my-0" />
-  <button mat-menu-item [matMenuTriggerFor]="additionalOptionsMenu">Additional Options</button>
+  <button mat-menu-item [matMenuTriggerFor]="additionalOptionsMenu">{{ 'keyboard-shortcuts.additionalOptions' | translate }}</button>
 </mat-menu>
 
 <mat-menu #secondaryThemesMenu="matMenu">

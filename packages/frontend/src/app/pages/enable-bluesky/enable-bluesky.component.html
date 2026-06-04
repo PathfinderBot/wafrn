@@ -1,46 +1,36 @@
 @if (environment().enableBsky) {
   <mat-card class="wafrn-container post-card">
-    <h1>Enable bluesky</h1>
-    <p>Read this!</p>
+    <h1>{{ 'enableBluesky.title' | translate }}</h1>
+    <p>{{ 'enableBluesky.readThis' | translate }}</p>
     <ul>
-      <li>Only posts marked as <b>public</b> will go to bluesky</li>
-      <li>By default, <b>all bluesky posts are public</b> wich means there is no unlisted post</li>
-      <li><b>Bluesky automaticaly accepts all follows by default</b>. Its different from fedi</li>
-      <li>
-        Its owned by a corporation and they may not be your jam. We will do the best to protect you from possible stupid
-        things they might do in the future
-      </li>
-      <li>
-        Bluesky blocks are public by default. We are still not federating them, but we will add the option to make your
-        blocks on bluesky public in the future
-      </li>
-      <li>
-        Some posts may be marked as "only people i follow can reply" and stuff like that. We are still working on this
-      </li>
-      <li>Like on fedi, not every post of every account gets saved in wafrn. We only save as much as we need</li>
-      <li>At the moment of writing this, your header image does not federate with bluesky still :(</li>
+      <li [innerHTML]="'enableBluesky.publicPostsOnly' | translate"></li>
+      <li [innerHTML]="'enableBluesky.allPostsPublic' | translate"></li>
+      <li [innerHTML]="'enableBluesky.acceptsFollows' | translate"></li>
+      <li>{{ 'enableBluesky.corporationWarning' | translate }}</li>
+      <li>{{ 'enableBluesky.blocksPublic' | translate }}</li>
+      <li>{{ 'enableBluesky.replyControls' | translate }}</li>
+      <li>{{ 'enableBluesky.partialStorage' | translate }}</li>
+      <li>{{ 'enableBluesky.headerImageWarning' | translate }}</li>
     </ul>
-    <p>You can now enable bluesky login too!</p>
+    <p>{{ 'enableBluesky.loginIntro' | translate }}</p>
     <ul>
-      <li>this is JANKY. We do not officialy recommend it</li>
+      <li>{{ 'enableBluesky.jankyWarning' | translate }}</li>
       @if (environment().bskyPDSUrl) {
-        <li>When loging in to bluesky, your server is {{ environment().bskyPDSUrl }}</li>
+        <li>{{ 'enableBluesky.loginServer' | translate:{ server: environment().bskyPDSUrl } }}</li>
       }
-      <li>
-        Your email is YOURUSERNAME&#64;{{ environment().instanceName }} and your password is your current wafrn password
-      </li>
-      <li>No, this password DOES NOT GET SYNCHRONIZED. You have total control over the account</li>
+      <li>{{ 'enableBluesky.emailPasswordInfo' | translate:{ instanceName: environment().instanceName } }}</li>
+      <li>{{ 'enableBluesky.passwordNotSynchronized' | translate }}</li>
     </ul>
     <mat-form-field class="w-full">
-      <mat-label>Your current wafrn password</mat-label>
+      <mat-label>{{ 'enableBluesky.currentPassword' | translate }}</mat-label>
       <input [(ngModel)]="password" type="password" matInput />
     </mat-form-field>
     <button [disabled]="loading || password.length == 0" (click)="enableBluesky()" mat-flat-button class="w-full">
-      Enable bluesky
+      {{ 'enableBluesky.enableButton' | translate }}
     </button>
   </mat-card>
 } @else {
     <mat-card class="wafrn-container post-card">
-      <h1>This instance does not have bluesky enabled</h1>
+      <h1>{{ 'enableBluesky.instanceDisabled' | translate }}</h1>
       </mat-card>
 }

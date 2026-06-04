@@ -12,11 +12,8 @@
 
 @if (noMorePosts) {
   <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-    <h2>You dont seem to be following anyone yet!</h2>
-    <p>
-      Consider taking a look at the <a [routerLink]="'/dashboard/exploreLocal'">local dashboard</a> or
-      <a [routerLink]="'/dashboard/explore'">explore the fediverse</a>
-    </p>
+    <h2>{{ 'dashboard.notFollowingAnyone' | translate }}</h2>
+    <p [innerHTML]="'dashboard.exploreLinks' | translate"></p>
   </mat-card>
 }
 

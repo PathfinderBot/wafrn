@@ -3,15 +3,15 @@
     <app-loader></app-loader>
   }
   <div [hidden]="loading">
-    <h1>Migrate out</h1>
-    <p>You need to first create an alias on the new fedi account you are moving to</p>
+    <h1>{{ 'profile.migrateOut.title' | translate }}</h1>
+    <p>{{ 'profile.migrateOut.instructions' | translate }}</p>
     <app-user-selector
       (optionSelected)="userSelectedEvent($event.remoteId)"
-      [controlText]="'New account (without the @)'"
+      [controlText]="'profile.migrateOut.newAccount' | translate"
     ></app-user-selector>
 
     <button [disabled]="selectedUser == '' && loading == false" mat-button class="w-full" (click)="pressButton()">
-      Migrate
+      {{ 'profile.migrateOut.migrate' | translate }}
     </button>
     <p [innerText]="message"></p>
   </div>

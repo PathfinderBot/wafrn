@@ -10,11 +10,11 @@
       (!post()[post().length - 1].remotePostId.startsWith(localUrl) || post()[post().length - 1].bskyUri)
     ) {
       <button (click)="loadRepliesFromFediverse()" color="primary" mat-stroked-button class="w-full">
-        Fetch more external replies
+        {{ 'forum.fetchMoreExternalReplies' | translate }}
       </button>
     }
     @if (post().length != 1) {
-      <p class="m-0"><a [postLink]="post()[0]">View initial post</a></p>
+      <p class="m-0"><a [postLink]="post()[0]">{{ 'forum.viewInitialPost' | translate }}</a></p>
     }
   </div>
   <div id="scroll-here-on-page-change"></div>
@@ -41,7 +41,7 @@
         } @else {
           <app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
             <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
-            <span class="text-sm post-action"> rewooted </span>
+            <span class="text-sm post-action"> {{ 'forum.rewooted' | translate }} </span>
             <a
               [postLink]="content"
               [postLinkId]="content.parentId"

@@ -7,18 +7,18 @@ bubbleHostsShowType === 'PUBLIC' ||
 <mat-card class="p-3 mb-3 lg:mx-4 wafrn-container">
   @if (!bubbleLoaded && !bubbleLoading) {
   <button (click)="loadBubbleServers()" color="primary" mat-stroked-button class="w-full">
-    Show list of bubbled servers
+    {{ 'about.showBubbledServers' | translate }}
   </button>
   }
 
   @if (bubbleLoading) {
-  <app-loader>bubbled servers</app-loader>
+  <app-loader>{{ 'about.bubbledServersLoader' | translate }}</app-loader>
   }
 
   @if (bubbleLoaded) {
   <div>
-    <h2>Bubble servers</h2>
-    <p class="mb-3">The instances shown below are the instances part of the "WAFRN & Friends" feed</p>
+    <h2>{{ 'about.bubbleServers' | translate }}</h2>
+    <p class="mb-3">{{ 'about.bubbleServersDescription' | translate }}</p>
     <ul>
       @for (server of bubbledServers; track $index) {
       <li class="mb-3">{{ server }}</li>
@@ -36,26 +36,26 @@ blockedHostsShowType === 'PUBLIC' ||
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   @if (!blockedLoaded && !blockedLoading) {
   <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
-    Show list of blocked servers
+    {{ 'about.showBlockedServers' | translate }}
   </button>
   }
 
   @if (blockedLoading) {
-  <app-loader>blocked servers</app-loader>
+  <app-loader>{{ 'about.blockedServersLoader' | translate }}</app-loader>
   }
 
   @if (blockedLoaded) {
   <div>
-    <h2>Blocked servers</h2>
+    <h2>{{ 'about.blockedServers' | translate }}</h2>
     @if (!disableShowingBlockedServers) {
-    <p class="mb-3">In case of possible error, please contact the admin team by email</p>
+    <p class="mb-3">{{ 'about.blockedServersDescription' | translate }}</p>
     <ul>
       @for (server of blockedServers; track $index) {
       <li class="mb-3">{{ server }}</li>
       }
     </ul>
     } @else {
-    <p class="mb-0">Blocked servers has not been made available on this server.</p>
+    <p class="mb-0">{{ 'about.blockedServersUnavailable' | translate }}</p>
     }
   </div>
   }

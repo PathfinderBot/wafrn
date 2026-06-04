@@ -10,6 +10,7 @@ import { Dialog } from "@angular/cdk/dialog";
 import { EmojiPickerComponent } from "../emoji-picker/emoji-picker.component";
 import { ParticleService } from "src/app/services/particle.service";
 import { EnvironmentService } from "src/app/services/environment.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-emoji-react",
@@ -18,6 +19,7 @@ import { EnvironmentService } from "src/app/services/environment.service";
     FontAwesomeModule,
     OverlayModule,
     MatTooltipModule,
+    TranslatePipe,
   ],
   templateUrl: "./emoji-react.component.html",
   styleUrl: "./emoji-react.component.scss",

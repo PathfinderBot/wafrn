@@ -16,6 +16,7 @@ import { PostHeaderComponent } from './post-header/post-header.component'
 import { BottomReplyBarComponent } from '../bottom-reply-bar/bottom-reply-bar.component'
 import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
 import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
+import { TranslateModule } from '@ngx-translate/core'
 
 @NgModule({
   declarations: [PostComponent],
@@ -34,7 +35,8 @@ import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
     PostHeaderComponent,
     BottomReplyBarComponent,
     PostRibbonComponent,
-    BlogLinkModule
+    BlogLinkModule,
+    TranslateModule
   ],
   exports: [PostComponent],
   providers: [ReportService]

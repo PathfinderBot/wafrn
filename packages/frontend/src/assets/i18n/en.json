@@ -7,7 +7,12 @@
     "character": "character",
     "default": "Default",
     "commit": "commit",
-    "buildDate": "Build time"
+    "buildDate": "Build time",
+    "logoAlt": "Logo",
+    "actions": "Actions",
+    "none": "None",
+    "search": "Search",
+    "date": "Date"
   },
   "login": {
     "title": "Log in",
@@ -25,6 +30,15 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "loginButton": "Log in",
+    "recoverPasswordTitle": "Don't worry, we also forget a lot of things",
+    "recoverPasswordManager": "But you should try a password manager!",
+    "rememberedPassword": "Did you just remember your password?",
+    "loginNow": "That's great! Log in now!",
+    "requestPasswordReset": "Request a password reset",
+    "setNewPassword": "Set a new password",
+    "loginAfterReset": "And just log in after that!",
+    "newPassword": "New password",
+    "resetPassword": "Reset password",
     "checkEmail": "Please check your email",
     "checkEmailLine1": "We have sent you an email. Please do check your email and the spam folder",
     "checkEmailLine2": "If you have any problem, write to the instance admin, whose email can be found <a href=\"/about\">here</a>",
@@ -42,7 +56,21 @@
     "selfHostInstance": "Or, you can self-host your own Wafrn instance!",
     "findServers": "Find one on join.wafrn.net",
     "selfHostInstructions": "Self-hosting Instructions",
-    "confirmReadAbout": "I confirm that I have read the <a href=\"/about\" target=\"_blank\">\"About\"</a> section."
+    "confirmReadAbout": "I confirm that I have read the <a href=\"/about\" target=\"_blank\">\"About\"</a> section.",
+    "passwordRequired": "Password is required",
+    "inviteCode": "Invite code",
+    "inviteCodeRequired": "Invite code is required",
+    "username": "Username",
+    "usernameHint": "Right now we do not allow special characters or spaces",
+    "usernameInvalid": "Username contains invalid characters",
+    "describeYourself": "Describe yourself",
+    "describeYourselfHint": "A short description of yourself so other people can know who you are",
+    "birthDateLabel": "Your birth date <b>(There is a minimum registration age!)</b>",
+    "birthDateHint": "MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not shared with anyone. Minimum registration age varies depending on the instance",
+    "gender": "Gender",
+    "genderHint": "This actually does not do anything at all",
+    "uploadAvatar": "Upload your avatar",
+    "chooseFile": "Choose File"
   },
   "notifications": {
     "title": "Notifications",
@@ -53,6 +81,85 @@
     "title": "Asks",
     "noAsks": "No more asks found",
     "nobodyAsked": "Nobody asked..."
+  },
+  "search": {
+    "howSearchWorksTitle": "How search works",
+    "howSearchWorksFederation": "Wafrn connects with the fediverse and bluesky. You can search tags \"tumblr style\" but for better results we recommend using \"twitter style\" for fandoms.",
+    "howSearchWorksPosts": "You can search <b>public</b> posts that wafrn has already seen. You can get more posts of these types by following a tag!",
+    "howSearchWorksUsers": "You can search for users. Search will return users by url. You can search for fedi users but you need to use the full @: as example, @foone@digipres.club",
+    "howSearchWorksRemotePosts": "You can also search for remote posts by the URL of the fedi or bluesky post, as example [EXAMPLE URL]",
+    "searchTerm": "Search term",
+    "submit": "Search",
+    "advancedSearchOptions": "Advanced search options",
+    "filterByUser": "Filter by user",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "postsTab": "Posts",
+    "usersTab": "Users",
+    "loadingMore": "Loading more...",
+    "noNewResults": "No new results"
+  },
+  "migrateBluesky": {
+    "title": "Migrate from bluesky",
+    "next": "Next",
+    "prerequisites": {
+      "label": "Prerequisites",
+      "intro": "Migrating from Bluesky is relatively easy, but requires your attention!",
+      "outOfTheWay": "Let's get some prerequisites out of the way:",
+      "hostedAccountWarning": "If you're currently using a wafrn-hosted bsky account, <b>it will be nuked.</b>",
+      "supportWarning": "This doesn't always go smoothly! If any issues occur, reach out to the wafrn team!",
+      "handleMove": "If you are using a <code>.bsky.social</code> handle, it will be moved to <code>.{{pdsUrl}}</code>",
+      "pdsWarning": "You cannot use your own PDS. You will be using the Wafrn-hosted one.",
+      "continue": "When you're ready, continue here:"
+    },
+    "unlinking": {
+      "label": "Unlinking and deleting the old account",
+      "intro": "First off, we must unlink (and delete) your previous linked bluesky account. This is the Wafrn-hosted one, if you have one.",
+      "inviteCodeInfo": "This will also give you an \"invite code\", that we'll use in the next steps to move over your existing account. Please write it down!",
+      "deleteAndGetCode": "Delete bsky associated account and get invite code",
+      "inviteCodeIs": "Your invite code is",
+      "gotCode": "Got the code? Alright, on to the next step."
+    },
+    "pdsMoover": {
+      "label": "PDSMoover - Actually moving the account",
+      "intro": "Now we'll use an external migration tool, called <a href=\"https://pdsmoover.com\">PDS Moover</a> to do the actual migration part.",
+      "providerUrl": "For the provider, give them this URL:",
+      "followInstructions": "Follow their instructions <i>closely.</i> If something goes wrong, reach out to the Wafrn team and your site admin!",
+      "useInviteCode": "And of course, give PDS Moover the invite code that you wrote down",
+      "wroteItDown": "You wrote it down, right? If not, go back."
+    },
+    "linking": {
+      "label": "Linking the account to Wafrn",
+      "intro": "If the \"MOOVE\" went alright, we'll now need to link up the migrated account to Wafrn.",
+      "createAppPassword": "To do this, we log in to the newly migrated account as if it was any other Bluesky account on <a href=\"https://bsky.app\">bsky.app</a>, and create an \"App Password\"",
+      "appPasswordLocation": "You'll find the relevant options in Settings > Privacy and Security > App Passwords",
+      "formIntro": "Once you've grabbed a new app password, put it in together with the new username here:",
+      "accountLabel": "New name of account (@accountName.{{pdsUrl}})",
+      "appPasswordLabel": "App Password (NOT YOUR PASSWORD, A BLUESKY APP PASSWORD)",
+      "passwordRequired": "Password is required",
+      "linkAccount": "Link account"
+    },
+    "profit": {
+      "label": "Profit?",
+      "done": "Hooray! All should be done! Please verify on your profile that the bluesky handle is visible. Your old Bluesky posts should also start appearing on your profile.",
+      "support": "If there was any issues, <i><b>please reach out!</b></i>The Wafrn team and admins of your site are happy to help :)"
+    },
+    "messages": {
+      "accountNotFound": "Account not found, try wihout the @",
+      "checkPassword": "Account found, but please do check password",
+      "accountSynchronized": "Account sincronized succesfuly"
+    }
+  },
+  "manageFollowedHashtags": {
+    "title": "Manage followed hashtags",
+    "unfollowTag": "Unfollow #{{tag}}",
+    "tagToSubscribe": "Tag to subscribe",
+    "subscribeToTag": "Subscribe to tag",
+    "messages": {
+      "followed": "You now follow #{{tag}}",
+      "unfollowed": "You no longer follow #{{tag}}",
+      "error": "Something went wrong!"
+    }
   },
   "menu": {
     "login": "Log in",
@@ -175,7 +282,55 @@
     "tabWoots": "Woots",
     "tabMedia": "Media",
     "followsYou": "Follows you",
-    "mutuals": "Mutuals"
+    "mutuals": "Mutuals",
+    "userAvatarAlt": "User avatar",
+    "requestFollow": "Request follow",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "moreOptions": "More options",
+    "blockServer": "Block server",
+    "unblockServer": "Unblock server",
+    "blueskyBadge": "Bluesky",
+    "adminBadge": "Admin",
+    "adminTooltip": "{{url}} is an admin of {{instanceHostname}}",
+    "botBadge": "Bot",
+    "fediverseAttachments": "Fediverse Attachments",
+    "askQuestion": "Ask a question",
+    "remoteAskSummary": "Send ask from outside Wafrn",
+    "remoteAskDescription": "You can send this user a non-anonymous ask from your fedi instance with the following structure: \"!ask @{{url}} YOUR QUESTION HERE\". The media and emojis you attach will be ignored, and you can only send one mention on the post. If it goes wrong, the user will receive it as a regular DM. Also, the content of the DM will be published as the AP object to verify the ask as genuine.",
+    "movedAccount": "This user has moved to a new account:",
+    "remoteProfileLoggedInWarning": "As this user is from a remote instance, the shown information may be incomplete.",
+    "remoteProfileLoggedOutWarning": "To see external users you need to be logged in. You can view their profile on their actual instance.",
+    "viewOnRemoteInstance": "View on remote instance",
+    "postCount": "Post Count",
+    "following": "Following",
+    "followers": "Followers",
+    "noMorePosts": "No more posts...",
+    "searchUser": "Search user",
+    "user": "User",
+    "since": "Since",
+    "followUser": "Follow user",
+    "acceptFollower": "Accept this follower",
+    "removeFollower": "Remove this follower",
+    "selectFollowsPage": "Select page of follows",
+    "selectServerBlocksPage": "Select page of server blocks"
+  },
+  "about": {
+    "showBubbledServers": "Show list of bubbled servers",
+    "bubbledServersLoader": "bubbled servers",
+    "bubbleServers": "Bubble servers",
+    "bubbleServersDescription": "The instances shown below are the instances part of the \"WAFRN & Friends\" feed",
+    "showBlockedServers": "Show list of blocked servers",
+    "blockedServersLoader": "blocked servers",
+    "blockedServers": "Blocked servers",
+    "blockedServersDescription": "In case of possible error, please contact the admin team by email",
+    "blockedServersUnavailable": "Blocked servers has not been made available on this server."
+  },
+  "theme": {
+    "changeColorScheme": "Change color scheme",
+    "toggleTheme": "Toggle theme",
+    "modeTooltip": "{{mode}} mode",
+    "themeTooltip": "{{theme}} theme"
   },
   "profile": {
     "profile": {
@@ -621,6 +776,7 @@
     "smoothScroll": "Smooth scroll"
   },
   "post-actions": {
+    "postActions": "Post actions",
     "shareUrl": "Copy link",
     "shareExternalUrl": "Copy remote link",
     "viewOnAtproto": "View on Atproto",
@@ -647,12 +803,22 @@
     "unblockUser": "Unblock user",
     "reportUser": "Report user",
     "bitePost": "Bite woot",
-    "biteUser": "Bite user"
+    "biteUser": "Bite user",
+    "reactWithEmoji": "React with an emoji"
   },
   "post-header": {
     "follow": "Follow",
     "awaitingApproval": "Awaiting approval",
     "viewPost": "View woot"
+  },
+  "post": {
+    "expandWoot": "Expand woot",
+    "collapsedPosts": "{{count}} posts",
+    "threadCollapsed": "Thread collapsed because it's very long but we show you the end of the thread"
+  },
+  "bottomReplyBar": {
+    "notes": "notes",
+    "viewThread": "View thread"
   },
   "post-fragment": {
     "mutedWords": "Woot contains muted words:",
@@ -665,9 +831,73 @@
   "media": {
     "noAltText": "Media does not have alt text",
     "sensitiveContent": "This media contains sensitive content",
-    "manuallyHidden": "Media manually hidden"
+    "manuallyHidden": "Media manually hidden",
+    "showAltText": "Show alt text",
+    "showMedia": "Show media",
+    "openPdf": "Click here to see the PDF file that is embedded in this post",
+    "hideImage": "Hide image"
+  },
+  "poll": {
+    "vote": "Vote"
+  },
+  "deletePost": {
+    "title": "This is a SLOW PROCESS. It will take some time to be deleted off the fediverse.",
+    "description": "Your post will be deleted. If the post has no rewoots, it will be totally deleted. If it has rewoots, the content will be changed to \"This post has been deleted.\""
   },
   "admin": {
+    "common": {
+      "secondStepNotice": "This is a lot of data, so use the buttons below to show it."
+    },
+    "stats": {
+      "atProtoWaiting": "ATProto waiting",
+      "atProtoSendPostAwaiting": "ATProto send post awaiting",
+      "inboxStillWaiting": "Inbox still waiting",
+      "preparationSendAwaiting": "Preparation send awaiting",
+      "sendPostAwaiting": "Send post awaiting",
+      "deletePostAwaiting": "Delete post awaiting",
+      "websocketAwaiting": "Websocket awaiting",
+      "getUserFediverseWaiting": "Get user fediverse waiting",
+      "mergeUsersAwaiting": "Merge users awaiting",
+      "mergePostsAwaiting": "Merge posts awaiting",
+      "generateKeysWaiting": "Generate private and public key for new user"
+    },
+    "inviteCodes": {
+      "createInvite": "Create invite",
+      "filterInviteCodes": "Filter invite codes",
+      "copyLink": "Copy link",
+      "copyCode": "Copy code",
+      "code": "Code",
+      "createdBy": "Created by",
+      "expiresIn": "Expires in",
+      "usedBy": "Used by",
+      "selectInviteCodesPage": "Select invite codes page"
+    },
+    "bans": {
+      "showBannedUsers": "Show banned users",
+      "unban": "Unban",
+      "selectBanListPage": "Select ban list page"
+    },
+    "blocks": {
+      "showUsersBlockedByUsers": "Show users blocked by users",
+      "showServersBlockedByUsers": "Show servers blocked by users",
+      "perUserUserBlocks": "Per user user blocks",
+      "perUserServerBlocks": "Per user server blocks",
+      "blocker": "Blocker",
+      "blocked": "Blocked",
+      "reason": "Reason",
+      "userBlocker": "User blocker",
+      "selectUserBlockListPage": "Select user block list page",
+      "selectServerBlockListPage": "Select server block list page"
+    },
+    "serverList": {
+      "serverFilter": "Server Filter",
+      "server": "Server",
+      "extendedFederation": "Extended federation",
+      "bubbleTimeline": "Bubble timeline",
+      "comment": "Comment",
+      "selectServerListPage": "Select server list page",
+      "saveChanges": "Save changes"
+    },
     "pendingUsers": {
       "url": "URL",
       "email": "Email",
@@ -677,14 +907,56 @@
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
       "userUsedVPN": "User used VPN",
-      "blockIp": "Block IP"
+      "blockIp": "Block IP",
+      "usersLoader": "users",
+      "noUsersPending": "No users pending approval!"
+    },
+    "emailCampaign": {
+      "title": "Email campaign",
+      "subject": "Subject",
+      "emailHtml": "Email HTML",
+      "sendTest": "Send test",
+      "sendCampaign": "Send campaign",
+      "messages": {
+        "success": "Campaign successfully sent",
+        "error": "Campaign failed"
+      }
+    },
+    "emojiUploader": {
+      "description": "For internal use. Upload single or collections of emoji here.",
+      "uploadEmojis": "Upload emojis",
+      "uploadButtonHint": "<- button that uploads emojis",
+      "collectionsPreview": "Collections preview:"
     },
     "reportList": {
       "ignoreReport": "Ignore report",
       "forceNSFW": "Mark user as NSFW",
       "banUser": "Ban user",
       "reopenReport": "Reopen report",
-      "forceCw": "Force CW on woot"
+      "forceDelete": "Delete woot",
+      "forceCw": "Force CW on woot",
+      "reportsFilter": "Reports Filter",
+      "advancedLabel": "(Advanced)",
+      "report": "Report",
+      "and": "and",
+      "advancedSearchHelp": "Advanced Search Help",
+      "advancedHelpIntro": "You can add advanced filters by prefixing filter keywords in the following list with plus sign <code>+</code> as an additive filter or minus sign <code>-</code> as a subtractive filter. Select filters are separated from their value by either a colon <code>:</code> or equal sign <code>=</code>, for example <code>+target:EvilUser</code>. Select filters can be used implicitly as additive filters without a plus sign <code>+</code>.",
+      "advancedHelpLogic": "Additive filters are OR within their category but AND with different keywords. Subtractive filters are AND with themselves and other keywords.",
+      "existingKeywords": "Here are the existing keywords:",
+      "keywordReporter": "<code>r</code> or <code>reporter</code> (Select) URL of the user who reported the target",
+      "keywordTarget": "<code>t</code> or <code>target</code> (Select) URL of the user who was reported",
+      "keywordResolved": "<code>d</code> or <code>resolved</code> (Flag) whether a report was resolved",
+      "examples": "Examples:",
+      "exampleResolved": "<code>+resolved</code> filters to only resolved reports",
+      "exampleUnresolved": "<code>-r=ReportSpammer -d</code> filters to unresolved reports not sent by <code>ReportSpammer</code>",
+      "exampleReporter": "<code>+reporter=Vigilante r:VigilanteAlt -target=EvilUser</code> filters to only reports of user <code>EvilUser</code> that were sent by <code>Vigilante</code> or <code>VigilanteAlt</code>",
+      "reporter": "Reporter",
+      "targetUser": "Target User",
+      "postType": "(post)",
+      "accountType": "(account)",
+      "type": "Type",
+      "resolved": "Resolved",
+      "selectReportListPage": "Select report list page"
     }
   },
   "page-not-found": {

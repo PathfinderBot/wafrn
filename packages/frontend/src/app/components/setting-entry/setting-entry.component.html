@@ -35,7 +35,7 @@
         <div class="setting-description">{{ settingTranslationDescription | translate }}</div>
       }
     } @else {
-      No variants set
+      {{ 'settings.noVariantsSet' | translate }}
     }
   }
   @case ('input') {
@@ -81,6 +81,6 @@
     ></app-user-selector>
   }
   @default {
-    <p>Something went very wrong</p>
+    <p>{{ 'settings.invalidSetting' | translate }}</p>
   }
 }

@@ -11,7 +11,6 @@ import { ServiceWorkerModule } from '@angular/service-worker'
 import { MAT_RIPPLE_GLOBAL_OPTIONS, MatNativeDateModule, RippleGlobalOptions } from '@angular/material/core'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { MatSnackBarModule } from '@angular/material/snack-bar'
-import { TranslateHttpLoader } from '@ngx-translate/http-loader'
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core'
 import { HttpClient } from '@angular/common/http'
 import { HotkeyManagerComponent } from './components/hotkey-manager/hotkey-manager.component'
@@ -20,6 +19,7 @@ import { ThemeManagerComponent } from './components/theme-manager/theme-manager.
 import { catchError, of, switchMap, tap } from 'rxjs'
 import { EnvironmentService } from './services/environment.service'
 import { supportedLanguages, type SupportedLanguage } from './lists/languages'
+import { FallbackTranslateLoader } from './loaders/fallback-translate.loader'
 
 const globalRippleConfig: RippleGlobalOptions = {
   disabled: true,
@@ -51,7 +51,7 @@ const globalRippleConfig: RippleGlobalOptions = {
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
+        useFactory: FallbackLoaderFactory,
         deps: [HttpClient]
       }
     }),
@@ -94,6 +94,6 @@ const globalRippleConfig: RippleGlobalOptions = {
 })
 export class AppModule {}
 
-export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
-  return new TranslateHttpLoader(http, '/assets/i18n/', `.json?v=${buildData.git.fullHash}`)
+export function FallbackLoaderFactory(http: HttpClient): FallbackTranslateLoader {
+  return new FallbackTranslateLoader(http)
 }

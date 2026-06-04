@@ -3,47 +3,47 @@
 </div>
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   <div class="data-pair">
-    <p>ATProto waiting</p>
+    <p>{{ 'admin.stats.atProtoWaiting' | translate }}</p>
     <p class="value">{{ backendReply?.atProtoAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>ATProto send post awaiting</p>
+    <p>{{ 'admin.stats.atProtoSendPostAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.sendPostBskyAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Inbox still waiting</p>
+    <p>{{ 'admin.stats.inboxStillWaiting' | translate }}</p>
     <p class="value">{{ backendReply?.inboxAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Preparation send awaiting</p>
+    <p>{{ 'admin.stats.preparationSendAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.prepareSendPostAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Send post awaiting</p>
+    <p>{{ 'admin.stats.sendPostAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.sendPostAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Delete post awaiting</p>
+    <p>{{ 'admin.stats.deletePostAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.deletePostAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Websocket awaiting</p>
+    <p>{{ 'admin.stats.websocketAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.socketPending ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Get user fediverse waiting</p>
+    <p>{{ 'admin.stats.getUserFediverseWaiting' | translate }}</p>
     <p class="value">{{ backendReply?.getRemoteActorWaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Merge users awaiting</p>
+    <p>{{ 'admin.stats.mergeUsersAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.mergeUsersAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Merge posts awaiting</p>
+    <p>{{ 'admin.stats.mergePostsAwaiting' | translate }}</p>
     <p class="value">{{ backendReply?.mergePostsAwaiting ?? '-' }}</p>
   </div>
   <div class="data-pair">
-    <p>Generate Private and public key for new user</p>
+    <p>{{ 'admin.stats.generateKeysWaiting' | translate }}</p>
     <p class="value">{{ backendReply?.createKeyPairWaiting ?? '-' }}</p>
   </div>
 </mat-card>

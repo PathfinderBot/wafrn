@@ -40,23 +40,23 @@
 
   @if (postCanExpand()) {
   <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
-    Expand woot
+    {{ 'post.expandWoot' | translate }}
     @if (post.length - postsExpanded > 4) {
-    <span>({{ post.length - postsExpanded }} posts)</span>
+    <span>({{ 'post.collapsedPosts' | translate:{count: post.length - postsExpanded} }})</span>
     }
   </button>
   }
   @if (post.length - postsExpanded > 50 && finalPosts()) {
     @if(!postCanExpand()) {
       <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
-    Expand woot
+    {{ 'post.expandWoot' | translate }}
     @if (post.length - postsExpanded > 4) {
-    <span>({{ post.length - postsExpanded }} posts)</span>
+    <span>({{ 'post.collapsedPosts' | translate:{count: post.length - postsExpanded} }})</span>
     }
   </button>
     }
   <!--We show the 2 final posts if the post is VERY long and there are A LOT of posts to still see-->
-  <marquee>Thread collapsed because it's very long but we show you the end of the thread</marquee>
+  <marquee>{{ 'post.threadCollapsed' | translate }}</marquee>
   <hr style="margin-top: 10vh" />
   @for (content of finalPosts(); track $index; let index = $index) {
   @if (

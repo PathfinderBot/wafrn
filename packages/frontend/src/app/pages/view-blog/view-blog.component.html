@@ -36,13 +36,13 @@
 @if (noMorePosts) {
   <footer class="p-4 text-center wafrn-container">
     <div>
-      <p class="mb-4 text-lg">No more posts...</p>
+      <p class="mb-4 text-lg">{{ 'blog.noMorePosts' | translate }}</p>
       @if (blogDetails()?.url?.startsWith('@')) {
         <app-info-card [type]="loggedIn ? 'info' : 'caution'">
           {{
             loggedIn
-              ? 'As this user is from a remote instance, the shown information may be incomplete.'
-              : 'To see external users you need to be logged in. You can check the user in their original instance'
+              ? ('blog.remoteProfileLoggedInWarning' | translate)
+              : ('blog.remoteProfileLoggedOutWarning' | translate)
           }}
           <a
             [href]="
@@ -51,7 +51,7 @@
                 : 'https://bsky.app/profile/' + blogDetails()!.url.split('@')[1]
             "
             target="_blank"
-            >View on remote instance</a
+            >{{ 'blog.viewOnRemoteInstance' | translate }}</a
           >
         </app-info-card>
       }

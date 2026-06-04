@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { TranslateModule } from '@ngx-translate/core'
 @NgModule({
   declarations: [ImportFollowersComponent],
   imports: [
@@ -17,6 +18,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
     MatProgressSpinnerModule,
     MatButtonModule,
     MatProgressBarModule,
+    TranslateModule,
     RouterModule.forChild([
       {
         path: '',

@@ -32,7 +32,7 @@
   @if (data().description) {
   @if (!alwaysShowAlt() && !mimeType().startsWith('text/html')) {
   <button class="m-2 toggle-button toggle-description" mat-raised-button
-    (click)="descriptionVisible = !descriptionVisible" title="Show alt text" [ariaDescription]="'Show alt text'">
+    (click)="descriptionVisible = !descriptionVisible" title="{{ 'media.showAltText' | translate }}" [ariaDescription]="'media.showAltText' | translate">
     ALT
   </button>
   }
@@ -51,7 +51,7 @@
     } @else {
     <p>{{ 'media.manuallyHidden' | translate }}</p>
     }
-    <button mat-raised-button (click)="showPicture()">Show media</button>
+    <button mat-raised-button (click)="showPicture()">{{ 'media.showMedia' | translate }}</button>
   </div>
   } @else {
   @if (mimeType().includes('pdf')) {
@@ -62,12 +62,12 @@
   style="height: 75vh"
 >
 </object>
-  <a [href]="displayUrl()" target="_blank">Click here to see the PDF file that is embedded in this post</a>
+  <a [href]="displayUrl()" target="_blank">{{ 'media.openPdf' | translate }}</a>
   }
 
   @if (!hideSensitiveButton()) {
-  <button class="m-2 toggle-button toggle-nsfw" mat-raised-button (click)="toggleNsfw()" title="Hide image"
-    [ariaDescription]="'Hide image'">
+  <button class="m-2 toggle-button toggle-nsfw" mat-raised-button (click)="toggleNsfw()" title="{{ 'media.hideImage' | translate }}"
+    [ariaDescription]="'media.hideImage' | translate">
     <fa-icon [icon]="hideIcon"></fa-icon>
   </button>
   }

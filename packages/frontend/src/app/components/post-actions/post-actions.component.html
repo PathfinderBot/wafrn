@@ -3,7 +3,7 @@
 @let isBskyPost = !!post.bskyUri;
 @let isExternalPost = post.user.url.startsWith('@') && post.privacy !== 1 && post.privacy !== 10;
 @let isMyPost = myId == post.userId && post.privacy != 2;
-<button aria-label="Post actions" mat-button class="mat-circle-button split-button-right" matTooltip="Post actions"
+<button [attr.aria-label]="'post-actions.postActions' | translate" mat-button class="mat-circle-button split-button-right" [matTooltip]="'post-actions.postActions' | translate"
   [matMenuTriggerFor]="menu">
   <fa-icon [icon]="expandDownIcon"></fa-icon>
 </button>

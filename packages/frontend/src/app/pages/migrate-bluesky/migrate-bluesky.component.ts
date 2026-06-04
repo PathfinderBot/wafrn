@@ -11,6 +11,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
 import { MessageService } from 'src/app/services/message.service'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-migrate-bluesky',
@@ -23,7 +24,8 @@ import { MessageService } from 'src/app/services/message.service'
     MatFormFieldModule,
     MatStepperModule,
     FontAwesomeModule,
-    MatIconModule
+    MatIconModule,
+    TranslateModule
   ],
   templateUrl: './migrate-bluesky.component.html',
   styleUrl: './migrate-bluesky.component.scss'
@@ -32,6 +34,7 @@ export class MigrateBlueskyComponent {
   private environmentService = inject(EnvironmentService)
   private loginService = inject(LoginService)
   private messageService = inject(MessageService)
+  private translateService = inject(TranslateService)
 
   environment = signal<any>(EnvironmentService.environment)
 
@@ -64,12 +67,12 @@ export class MigrateBlueskyComponent {
       if (error.status == 404) {
         this.messageService.add({
           severity: 'error',
-          summary: 'Account not found, try wihout the @'
+          summary: this.translateService.instant('migrateBluesky.messages.accountNotFound')
         })
       } else {
         this.messageService.add({
           severity: 'error',
-          summary: 'Account found, but please do check password'
+          summary: this.translateService.instant('migrateBluesky.messages.checkPassword')
         })
       }
       this.loading = false
@@ -79,7 +82,7 @@ export class MigrateBlueskyComponent {
 
     this.messageService.add({
       severity: 'success',
-      summary: 'Account sincronized succesfuly'
+      summary: this.translateService.instant('migrateBluesky.messages.accountSynchronized')
     })
   }
 }
