@@ -576,6 +576,15 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
             }
           },
           {
+            label: 'menu.admin.emailCampaign',
+            icon: faEnvelope,
+            visible: () => true,
+            routerLink: '/admin/email-campaign',
+            command: () => {
+              this.hideMenu()
+            }
+          },
+          {
             label: 'menu.admin.serverList',
             icon: faServer,
             visible: () => true,

@@ -172,6 +172,20 @@ export const QUEUE_CONFIGS: any = {
       "type": "exponential",
       "delay": 1000
     }
+  },
+  "prepareSendCampaign": {
+    removeOnComplete: { count: 25, age: 7 * 24 * 3600 },
+    attempts: 1,
+    removeOnFail: { count: 100, age: 30 * 24 * 3600 },
+  },
+  "sendEmail": {
+    removeOnComplete: { count: 25, age: 7 * 24 * 3600 },
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+    removeOnFail: { count: 100, age: 30 * 24 * 3600 },
   }
 }
 

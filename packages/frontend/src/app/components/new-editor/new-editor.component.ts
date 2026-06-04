@@ -126,7 +126,7 @@ type EmojiSuggestion = {
     MatChipsModule,
     MatProgressBarModule,
     MatSelectModule
-],
+  ],
   templateUrl: "./new-editor.component.html",
   styleUrl: "./new-editor.component.scss",
 })
@@ -142,7 +142,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   private location = inject(Location);
   private particle = inject(ParticleService);
   private translateService = inject(TranslateService);
-  
+
 
   privacyOptions = [
     { level: 0, name: "Public", icon: faGlobe },
@@ -174,7 +174,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   suggestionLoading = signal(false);
   suggestionMatches = signal(false);
-  suggestions: { img: string; text: string }[] = [];
+  suggestions: { img: string; text: string, id?: string }[] = [];
   emojiSuggestions: EmojiSuggestion[] = [];
   cursorPosition = {
     x: 0,
@@ -260,9 +260,9 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       value: InteractionControl.MentionedUsersOnly, viewValue: this.translateService.instant('editor.interactionControl.MentionedUsersOnly')
     }
   ]
-  
+
   emojiCacherUrl =
-    (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '' ) + "/api/v2/cache/emoji/";
+    (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') + "/api/v2/cache/emoji/";
 
   parser = new DOMParser();
 
@@ -344,7 +344,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       } else {
         this.tags = this.settings.autoAddSpecifiedTagsAsks as string
       }
-    } 
+    }
 
     if (this.settings.autoAddContentWarning) {
       this.showContentWarning = true
@@ -390,7 +390,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     );
 
     // If parent is bsky, we set canreply same as parent
-    if(this.data?.post && this.data.post.replyControl != InteractionControl.Anyone ) {
+    if (this.data?.post && this.data.post.replyControl != InteractionControl.Anyone) {
       this.canReply = InteractionControl.SameAsOp;
       this.canEditCanReply = false;
     }
@@ -460,6 +460,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
           return {
             img: elem.avatar,
             text: elem.url,
+            id: elem.id
           };
         });
         this.httpMentionPetitionSubscription?.unsubscribe();

@@ -17,9 +17,9 @@
     servers {
         trusted_proxies static 172.0.0.1/8
     }
-    
-    
-    
+
+
+
     on_demand_tls {
         ask http://{$PDS_HOST:wafrn-pds-1:3000}/tls-check
     }
@@ -59,15 +59,15 @@ http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
 # MAIN FRONTEND
 # -----------------------
 http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
-    
-    
-    
+
+
+
     encode zstd gzip
 
     header * {
         X-Clacks-Overhead "GNU Terry Pratchett"
         Service-Worker-Allowed: "/",
-        # Cache-Control: no-cache, no-store, must-revalidate
+        Cache-Control: no-cache, must-revalidate
         Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN} ; script-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval'; script-src-attr 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' data: 'unsafe-inline'; style-src-elem 'self' data: 'unsafe-inline'; style-src-attr 'self' data: 'unsafe-inline'; object-src 'self' https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN} ; frame-src 'self' https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; worker-src 'self'; frame-ancestors 'self'; upgrade-insecure-requests; block-all-mixed-content; manifest-src 'self'"
     }
 
@@ -106,11 +106,11 @@ http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
 # -----------------------
 # MONITORING
 # -----------------------
-http://monitoring.{$DOMAIN_NAME}, monitoring.{$DOMAIN_NAME} {
+http://{$MONITORING_DOMAIN}, {$MONITORING_DOMAIN} {
     reverse_proxy {$GRAFANA_HOST:wafrn-grafana-1:2345}
 }
 
-http://bullboard.{$DOMAIN_NAME}, bullboard.{$DOMAIN_NAME} {
+http://{$BULLBOARD_DOMAIN}, {$BULLBOARD_DOMAIN} {
     reverse_proxy {$BULLBOARD_HOST:bullboard:3000}
 }
 

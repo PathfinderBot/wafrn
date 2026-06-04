@@ -36,6 +36,9 @@ ENV LISTEN_IP=0.0.0.0
 ENV PORT=9000
 ENV LOG_DESTINATION=1
 
+VOLUME ["/app/packages/backend/uploads"]
+VOLUME ["/app/packages/backend/cache"]
+
 # expose port from environment.ts
 EXPOSE ${PORT}
 

@@ -85,7 +85,7 @@ app.use(
   })
 );
 app.use(cors());
-app.set("trust proxy", 1);
+app.set("trust proxy", completeEnvironment.trustProxy);
 
 app.use("/api/apidocs", swagger.serve, swagger.setup(swaggerJSON));
 
@@ -193,7 +193,7 @@ server.listen(PORT, completeEnvironment.listenIp, () => {
   // Graceful shutdown handler
   async function gracefulShutdown(signal: string) {
     logger.info(`Received ${signal}, starting graceful shutdown...`);
-    
+
     try {
       logger.info(`Closing ${workers.length} workers...`);
       await Promise.all(

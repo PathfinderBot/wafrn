@@ -8,6 +8,10 @@ const routes: Route[] = [
     loadChildren: () => import('./server-list/server-list.module').then((m) => m.ServerListModule)
   },
   {
+    path: 'email-campaign',
+    loadComponent: () => import('./email-campaign/email-campaign.component').then((m) => m.EmailCampaignComponent)
+  },
+  {
     path: 'invite-codes',
     loadChildren: () => import('./invite-codes/invite-codes.module').then((m) => m.InviteCodesModule)
   },

@@ -138,5 +138,6 @@ export const baseEnvironment: Environment = {
     minimumAgeToRegister: 18,
     donationUrl: 'http://localhost/about',
     disableShowingBlockedServers: true
-  }
+  },
+  trustProxy: 1, // this one is for caddy and stuff
 }

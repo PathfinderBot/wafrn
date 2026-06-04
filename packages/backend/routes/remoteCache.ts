@@ -44,7 +44,7 @@ function cacheRoutes(app: Application) {
   app.get('/api/v2/cache/media/:id', async (req: Request, res: Response) => {
     const mediaId = req.params.id
     const force = req.query.force === 'true'
-    const mediaUrl = mediaId ? await getMediaUrlCache(mediaId) : undefined
+    const mediaUrl = mediaId ? await getMediaUrlCache(mediaId, force) : undefined
     if (mediaUrl) {
       try {
         return await getMediaFromUrl(mediaUrl, res, force)
@@ -60,12 +60,15 @@ function cacheRoutes(app: Application) {
     }
   })
 
-  async function getMediaUrlCache(id: string): Promise<string> {
+  async function getMediaUrlCache(id: string, ignoreCache: boolean): Promise<string> {
     let res = ''
+    if (ignoreCache) {
+      await redisCache.del('media:' + id)
+    }
     const redisData = await redisCache.get('media:' + id)
     const media = redisData ? JSON.parse(redisData) : (await Media.findByPk(id))?.dataValues
     if (!redisData && media) {
-      await redisCache.set('media:' + id, JSON.stringify(media), 'EX', 3600 * 24)
+      await redisCache.set('media:' + id, JSON.stringify(media), 'EX', 300)
     }
     if (media) {
       res = media.external ? media.url : completeEnvironment.mediaUrl + media.url
@@ -76,9 +79,9 @@ function cacheRoutes(app: Application) {
 
   app.get('/api/v2/cache/avatar/:id', async (req: Request, res: Response) => {
     try {
-      let userId = req.params.id
-      let force = req.query.force === 'true'
-      let avatarUrl = await getAvatarUrlCache(userId)
+      const userId = req.params.id
+      const force = req.query.force === 'true'
+      const avatarUrl = await getAvatarUrlCache(userId, force)
       if (avatarUrl) {
         await getMediaFromUrl(avatarUrl, res, force)
       } else {
@@ -93,30 +96,36 @@ function cacheRoutes(app: Application) {
     }
   })
 
-  async function getAvatarUrlCache(id: string): Promise<string> {
+  async function getAvatarUrlCache(id: string, ignoreCache: boolean) {
     let res = ''
+    if (ignoreCache) {
+      await redisCache.del('avatar:' + id)
+    }
     const avatarCache = await redisCache.get('avatar:' + id)
     const user = avatarCache
-      ? JSON.parse(avatarCache)
+      ? (JSON.parse(avatarCache) as User)
       : await User.scope('full').findOne({
-        attributes: ['email', 'avatar'],
-        where: {
-          banned: false,
-          [Op.or]: [
-            {
-              id: id
-            },
-            {
-              url: id
-            }
-          ]
-        }
-      })
+          attributes: ['email', 'avatar'],
+          where: {
+            banned: false,
+            [Op.or]: [
+              {
+                id: id
+              },
+              {
+                url: id
+              }
+            ]
+          }
+        })
     if (user) {
+      if (!user.avatar) {
+        return null
+      }
       res = user.email ? `${completeEnvironment.mediaUrl}${user.avatar}` : user.avatar
     }
     if (user && !avatarCache) {
-      await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 3600 * 24)
+      await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 300)
     }
     return res
   }
@@ -125,7 +134,7 @@ function cacheRoutes(app: Application) {
     try {
       const userId = req.params.id
       const force = req.query.force === 'true'
-      const url = await getHeaderUrlCache(userId)
+      const url = await getHeaderUrlCache(userId, force)
       if (url) {
         await getMediaFromUrl(url, res, force)
       } else {
@@ -140,30 +149,37 @@ function cacheRoutes(app: Application) {
     }
   })
 
-  async function getHeaderUrlCache(id: string): Promise<string> {
+  async function getHeaderUrlCache(id: string, ignoreCache: boolean) {
     let res = ''
+    if (ignoreCache) {
+      await redisCache.del('header:' + id)
+    }
     const headerCache = await redisCache.get('header:' + id)
     const user = headerCache
-      ? JSON.parse(headerCache)
+      ? (JSON.parse(headerCache) as User)
       : await User.scope('full').findOne({
-        attributes: ['email', 'headerImage'],
-        where: {
-          banned: false,
-          [Op.or]: [
-            {
-              id: id
-            },
-            {
-              url: id
-            }
-          ]
-        }
-      })
+          attributes: ['email', 'headerImage'],
+          where: {
+            banned: false,
+            [Op.or]: [
+              {
+                id: id
+              },
+              {
+                url: id
+              }
+            ]
+          }
+        })
+
     if (user) {
+      if (!user.headerImage) {
+        return null
+      }
       res = user.email ? `${completeEnvironment.mediaUrl}${user.headerImage}` : user.headerImage
     }
     if (user && !headerCache) {
-      await redisCache.set('header:' + id, JSON.stringify(user.dataValues), 'EX', 3600 * 24)
+      await redisCache.set('header:' + id, JSON.stringify(user.dataValues), 'EX', 300)
     }
     return res
   }
@@ -192,15 +208,15 @@ function cacheRoutes(app: Application) {
     const emoji = cacheData
       ? JSON.parse(cacheData)
       : await Emoji.findOne({
-        where: {
-          uuid: id
-        }
-      })
+          where: {
+            uuid: id
+          }
+        })
     if (emoji) {
       res = emoji.external ? emoji.url : completeEnvironment.mediaUrl + emoji.url
     }
     if (emoji && !cacheData) {
-      await redisCache.set('emoji:' + id, JSON.stringify(emoji.dataValues), 'EX', 600)
+      await redisCache.set('emoji:' + id, JSON.stringify(emoji.dataValues), 'EX', 300)
     }
     return res
   }
@@ -268,17 +284,29 @@ function cacheRoutes(app: Application) {
           followRedirects: 'follow',
           headers: { 'User-Agent': getUserAgent('LinkPreview') }
         })
-      } catch (error) { }
+      } catch (error) {}
       // we cache the url 24 hours if success, 5 minutes if not
-      await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(result), 'EX', result ? 3600 * 24 : 300)
+      await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(result), 'EX', 300)
       res.send(result)
     }
   })
 }
 
-
-async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, extraJobData?: { parentData?: ParentOptions, priority: number }) {
+async function getMediaFromUrl(
+  mediaUrl: string,
+  res?: Response,
+  force = false,
+  extraJobData?: { parentData?: ParentOptions; priority: number }
+) {
   try {
+    // In case any empty or null image got joined to the completeEnvironment.mediaUrl, we catch it here
+    if (mediaUrl === completeEnvironment.mediaUrl) {
+      if (res) {
+        res.sendStatus(404)
+      }
+      return
+    }
+
     const mediaLinkHash = crypto.createHash('sha256').update(mediaUrl).digest('hex')
     const localFileName = `cache/${mediaLinkHash}`
     const lockKey = `download:lock:${mediaUrl}`
@@ -289,11 +317,11 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, 
       if (res) {
         return sendWithCache(res, localFileName)
       }
-      return;
+      return
     }
 
     // Try to acquire lock in Redis
-    const lockAcquired = await redisCache.set(lockKey, lockValue, 'EX', 30)
+    const lockAcquired = await redisCache.get(lockKey) ? false : await redisCache.set(lockKey, lockValue, 'EX', 30)
 
     if (lockAcquired) {
       // We have the lock, proceed with download
@@ -321,10 +349,10 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, 
           if (res) {
             return sendWithCache(res, localFileName)
           }
-          return;
+          return
         }
         // Wait a bit before checking again
-        await new Promise(resolve => setTimeout(resolve, 200))
+        await new Promise((resolve) => setTimeout(resolve, 200))
         attempts++
       }
 
@@ -344,7 +372,5 @@ async function getMediaFromUrl(mediaUrl: string, res?: Response, force = false, 
     }
   }
 }
-
-
 
 export { cacheRoutes, getMediaFromUrl }

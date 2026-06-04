@@ -8,10 +8,46 @@ import { Job, Queue, Worker } from "bullmq";
 import { completeEnvironment } from "../utils/backendOptions.js";
 import EventEmitter from "events";
 import { User } from "../models/index.js";
+import {
+  sendEmailCampaign,
+  sendEmailCampaignUser,
+} from "../utils/queueProcessors/sendEmailCampaign.js";
 
 export default function websocketRoutes(app: Application) {
   const notificationEmitter: EventEmitter = new EventEmitter();
   notificationEmitter.setMaxListeners(1000);
+  const prepareSendCampaignWorker = new Worker(
+    "prepareSendCampaign",
+    async (job: Job) => await sendEmailCampaign(job),
+    {
+      connection: completeEnvironment.bullmqConnection,
+      concurrency: 1,
+      lockDuration: 120000,
+    }
+  );
+  prepareSendCampaignWorker.on("failed", (job, err) => {
+    logger.warn({
+      message: `prepare send campaign job failed`,
+      jobId: job?.id,
+      error: err,
+    });
+  });
+  const sendEmailWorker = new Worker(
+    "sendEmail",
+    async (job: Job) => await sendEmailCampaignUser(job),
+    {
+      connection: completeEnvironment.bullmqConnection,
+      concurrency: 1,
+      lockDuration: 120000,
+    }
+  );
+  sendEmailWorker.on("failed", (job, err) => {
+    logger.warn({
+      message: `send email job failed`,
+      jobId: job?.id,
+      error: err,
+    });
+  });
   new Worker(
     "updateNotificationsSocket",
     async (job: Job) => {

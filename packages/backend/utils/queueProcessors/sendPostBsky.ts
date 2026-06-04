@@ -45,7 +45,7 @@ async function sendPostBsky(job: Job) {
             if (mediaCount + quotesCount + tagsCount === 0) {
               isReblog = true
               if (parent?.bskyUri) {
-                let agent = await getAtProtoSession(localUser)
+                const agent = await getAtProtoSession(localUser)
                 const { uri } = await agent.repost(parent.bskyUri, parent.bskyCid as string)
                 post.bskyUri = uri
                 await post.save()
@@ -53,7 +53,7 @@ async function sendPostBsky(job: Job) {
             }
           }
           if (!isReblog) {
-            let agent = await getAtProtoSession(localUser)
+            const agent = await getAtProtoSession(localUser)
             const atProtoObject = await postToAtproto(post, agent)
             if (atProtoObject.reply?.root) {
               await redisBloom.add(ROOT_REPLIED_POSTS, atProtoObject.reply.root)

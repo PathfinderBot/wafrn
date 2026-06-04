@@ -29,6 +29,17 @@ const cacheLoaded = await redisCache.exists(LOCAL_USER_DIDS_CACHE_KEY)
 if (!cacheLoaded) {
   await forcePopulateCache()
 }
+const cacheLastForceUpdate = await redisCache.get('bskyCacheDate') ?? '0'
+// every two weeks force update dids
+if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 28 * 1000) {
+  logger.info({
+    message: `UPDATING LOCAL CACHE OF USERS. This may take a few minutes depending on your isntance`
+  })
+  await forcePopulateCache()
+  logger.info({
+    message: `Updated local users cache`
+  })
+}
 const jetstream = new Jetstream({
   endpoint: completeEnvironment.bskyJetstreamUrl,
   wantedCollections: [

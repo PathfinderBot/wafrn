@@ -301,15 +301,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                  email,
-                  subject: `Welcome to ${instanceHost}, please verify your email!`,
-                  body: `\
+                email,
+                subject: `Welcome to ${instanceHost}, please verify your email!`,
+                body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `
-                })
+              })
             await Promise.all([userWithEmail, emailSent])
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
@@ -558,9 +558,10 @@ function userRoutes(app: Application) {
           subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`
           body = '<p>;D</p>'
         } else {
-          subject = `The email account for your ${completeEnvironment.instanceUrl} account ${user.url} has been verified`
+          subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewd by an admin!`
           body = `\
 <p>Thanks for verifying your email, Our admin team will review your registration request soon!</p>
+<p>We do check registrations to avoid spam and harrasment campaigns, your safety is important<p>
 `
         }
         try {
@@ -1050,19 +1051,19 @@ function userRoutes(app: Application) {
       let followed = blog.isRemoteUser
         ? blog.followingCount
         : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true
-            }
-          })
+          where: {
+            followerId: blog.id,
+            accepted: true
+          }
+        })
       let followers = blog.isRemoteUser
         ? blog.followerCount
         : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true
-            }
-          })
+          where: {
+            followedId: blog.id,
+            accepted: true
+          }
+        })
       const publicOptions = UserOptions.findAll({
         where: {
           userId: blog.id,
@@ -1101,10 +1102,10 @@ function userRoutes(app: Application) {
 
       const postCount = blog
         ? await Post.count({
-            where: {
-              userId: blog.id
-            }
-          })
+          where: {
+            userId: blog.id
+          }
+        })
         : 0
 
       followed = await followed
@@ -1308,7 +1309,7 @@ function userRoutes(app: Application) {
             identifier: user.bskyDid,
             password: password
           })
-          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
+          await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
         } catch (error) {
           logger.error({
             message: `Failed to update bsky account password for user ${user.url}`,
@@ -1525,7 +1526,7 @@ function userRoutes(app: Application) {
               error: 'Failed to connect bluesky account. Please try again.'
             })
           }
-          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
+          await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
           await forceUpdateCacheDidsAtThread({
             addLocalUserDid: newDid
           })
