@@ -165,6 +165,12 @@ For example to override the site logo put your own logo into `packages/frontend/
 
 Do note these overrides will persist any update you do on Wafrn. Its important to understand, this method does not work for the source code, only for static files.
 
+#### Add a default theme to your instance
+
+Create the file `packages/frontend/runtime-overrides/assets/instanceTheme.css` and put your css in there.
+
+Restart your instance. You can experiment with your own custom theme and paste the contents in there.
+
 ### Frontend overrides - LEGACY
 
 #### If your instance is not going to edit code, use the previous override method, not the legacy one
