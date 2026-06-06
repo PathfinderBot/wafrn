@@ -80,7 +80,9 @@
   "asks": {
     "title": "Asks",
     "noAsks": "No more asks found",
-    "nobodyAsked": "Nobody asked..."
+    "nobodyAsked": "Nobody asked...",
+    "answer": "Answer",
+    "ignore": "Ignore"
   },
   "search": {
     "howSearchWorksTitle": "How search works",
@@ -145,10 +147,30 @@
       "support": "If there was any issues, <i><b>please reach out!</b></i>The Wafrn team and admins of your site are happy to help :)"
     },
     "messages": {
-      "accountNotFound": "Account not found, try wihout the @",
+      "accountNotFound": "Account not found, try without the @",
       "checkPassword": "Account found, but please do check password",
-      "accountSynchronized": "Account sincronized succesfuly"
+      "accountSynchronized": "Account synchronized successfully"
     }
+  },
+  "enableBluesky": {
+    "title": "Enable Bluesky",
+    "readThis": "Please read the following before enabling Bluesky for your account.",
+    "publicPostsOnly": "Only posts marked public on Wafrn will also be published to Bluesky.",
+    "allPostsPublic": "Public posts on Bluesky are visible to everyone, even outside of your followers.",
+    "acceptsFollows": "Anyone can follow your Bluesky account unless you manually approve follow requests.",
+    "corporationWarning": "Bluesky is operated by a private company, so their policies and features may change.",
+    "blocksPublic": "Blocking someone on Wafrn does not guarantee they are blocked on Bluesky or vice versa.",
+    "replyControls": "Reply permissions and controls are handled by Bluesky and may differ from Wafrn settings.",
+    "partialStorage": "Only some content is stored on this Wafrn instance, and Bluesky may keep its own copies.",
+    "headerImageWarning": "Your header image may not be carried over exactly to Bluesky.",
+    "loginIntro": "To enable Bluesky, you will log in through the Bluesky flow and authorize your account.",
+    "jankyWarning": "This feature is still experimental; the login flow may be unstable.",
+    "loginServer": "You will log in through the Bluesky server at {{server}}.",
+    "emailPasswordInfo": "If you already have a Bluesky account with the same email, it may be linked to your Wafrn account on {{instanceName}}.",
+    "passwordNotSynchronized": "Your Wafrn and Bluesky passwords are not synchronized. Use the password from your existing account or create one on Bluesky if needed.",
+    "currentPassword": "Current password",
+    "enableButton": "Enable Bluesky",
+    "instanceDisabled": "Bluesky is disabled on this instance"
   },
   "manageFollowedHashtags": {
     "title": "Manage followed hashtags",
