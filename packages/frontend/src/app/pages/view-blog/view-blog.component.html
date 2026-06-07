@@ -1,60 +1,43 @@
 @let loggedIn = this.loginService.loggedIn.value;
 @if (!loading() && !found) {
-  <app-pagenotfound />
+<app-pagenotfound />
 } @else {
-  <app-blog-header class="block" [blogDetails]="blogDetails()"></app-blog-header>
-  <mat-tab-group
-    [dynamicHeight]="true"
-    [preserveContent]="true"
-    [mat-stretch-tabs]="true"
-    (selectedTabChange)="handleTabChange($event)"
-  >
-    <mat-tab [label]="'blog.tabWoots' | translate">
-      <ng-template matTabContent>
-        <app-post-list
-          [posts]="posts"
-          [visible]="postsVisible"
-          [loading]="loading() && !noMorePosts"
-          (loadPosts)="rateLimitLoadPosts()"
-        >
-        </app-post-list>
-      </ng-template>
-    </mat-tab>
-    <mat-tab [label]="'blog.tabMedia' | translate">
-      <ng-template matTabContent>
-        <app-post-list
-          displayMode="grid"
-          [posts]="mediaFilteredPosts()"
-          [visible]="mediaVisible"
-          [loading]="loading() && !noMorePosts"
-          (loadPosts)="rateLimitLoadPosts()"
-        ></app-post-list>
-      </ng-template>
-    </mat-tab>
-  </mat-tab-group>
+<app-blog-header class="block" [blogDetails]="blogDetails()"></app-blog-header>
+<mat-tab-group [dynamicHeight]="true" [preserveContent]="true" [mat-stretch-tabs]="true"
+  (selectedTabChange)="handleTabChange($event)">
+  <mat-tab [label]="'blog.tabWoots' | translate">
+    <ng-template matTabContent>
+      <app-post-list [posts]="posts" [visible]="postsVisible" [loading]="loading() && !noMorePosts"
+        (loadPosts)="rateLimitLoadPosts()">
+      </app-post-list>
+    </ng-template>
+  </mat-tab>
+  <mat-tab [label]="'blog.tabMedia' | translate">
+    <ng-template matTabContent>
+      <app-post-list displayMode="grid" [posts]="posts" [visible]="mediaVisible" [loading]="loading() && !noMorePosts"
+        (loadPosts)="rateLimitLoadPosts()"></app-post-list>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>
 }
 @if (noMorePosts) {
-  <footer class="p-4 text-center wafrn-container">
-    <div>
-      <p class="mb-4 text-lg">{{ 'blog.noMorePosts' | translate }}</p>
-      @if (blogDetails()?.url?.startsWith('@')) {
-        <app-info-card [type]="loggedIn ? 'info' : 'caution'">
-          {{
-            loggedIn
-              ? ('blog.remoteProfileLoggedInWarning' | translate)
-              : ('blog.remoteProfileLoggedOutWarning' | translate)
-          }}
-          <a
-            [href]="
+<footer class="p-4 text-center wafrn-container">
+  <div>
+    <p class="mb-4 text-lg">{{ 'blog.noMorePosts' | translate }}</p>
+    @if (blogDetails()?.url?.startsWith('@')) {
+    <app-info-card [type]="loggedIn ? 'info' : 'caution'">
+      {{
+      loggedIn
+      ? ('blog.remoteProfileLoggedInWarning' | translate)
+      : ('blog.remoteProfileLoggedOutWarning' | translate)
+      }}
+      <a [href]="
               blogDetails()!.url.split('@').length === 3
                 ? blogDetails()!.remoteId
                 : 'https://bsky.app/profile/' + blogDetails()!.url.split('@')[1]
-            "
-            target="_blank"
-            >{{ 'blog.viewOnRemoteInstance' | translate }}</a
-          >
-        </app-info-card>
-      }
-    </div>
-  </footer>
+            " target="_blank">{{ 'blog.viewOnRemoteInstance' | translate }}</a>
+    </app-info-card>
+    }
+  </div>
+</footer>
 }
