@@ -229,7 +229,8 @@
       "myBlockedServers": "Blocked servers",
       "importFollows": "Import followers",
       "superSecretMenu": "Super Secret Menu",
-      "detachedNotifications": "Unauthorized Notifications"
+      "detachedNotifications": "Unauthorized Notifications",
+      "updateEmail": "Update Email"
     },
     "admin": {
       "title": "Admin",
@@ -523,6 +524,11 @@
     "description": "Description",
     "changePasswordTitle": "Request a password change",
     "changePassword": "Change password",
+    "changeEmailTitle": "Change your email",
+    "changeEmailDescription": "Enter your new email and your password to update your email address.",
+    "changeEmail": "Update Email",
+    "changeEmailSuccess": "Your email has been updated successfully!",
+    "changeEmailError": "Failed to update your email. Please try again.",
     "autoAcceptFollowsFromFollowing": "Automatically accept follow requests from followed users",
     "autoRejectFollowsFromUsersYouDoNotFollow": "Automatically reject follow requests from users you don't follow",
     "changePasswordDescription": "A link change your password has been sent to your email.",

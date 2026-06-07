@@ -922,7 +922,7 @@ export class SettingsService {
       type: 'generic',
       values: [
         { type: 'header', value: 'settings.header.emailAndPassword' },
-        // { type: 'description', value: '[Email Change] (not currently available, sorry!)' },
+        { type: 'link', value: 'menu.settings.updateEmail', route: '/settings/updateEmail' },
         { type: 'key', value: 'disableEmailNotifications' },
         { type: 'component', value: new ComponentPortal(SettingChangePasswordComponent) },
         { type: 'link', value: 'profile.security.mfa.setup', route: '/mfaSetup' }, // FIXME: make this on the page itself?

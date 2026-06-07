@@ -633,6 +633,92 @@ function userRoutes(app: Application) {
     })
   })
 
+  app.post('/api/changeEmail', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    try {
+      const userId = req.jwtData?.userId as string
+      const user = (await User.scope('full').findByPk(userId)) as User
+      const password = req.body.password
+      const newEmail = req.body.email
+
+      if (!user) {
+        return res.status(404).send({
+          success: false,
+          message: 'User not found'
+        })
+      }
+
+      if (!password) {
+        return res.status(400).send({
+          success: false,
+          message: '"password" is required in body'
+        })
+      }
+
+      if (!newEmail) {
+        return res.status(400).send({
+          success: false,
+          message: '"email" is required in body'
+        })
+      }
+
+      if (!validateEmail(newEmail)) {
+        return res.status(400).send({
+          success: false,
+          message: 'Invalid email format'
+        })
+      }
+
+      const passwordMatches = await bcrypt.compare(password, user.password)
+      if (!passwordMatches) {
+        return res.status(403).send({
+          success: false,
+          message: 'Incorrect password'
+        })
+      }
+
+      // Check if email already exists (excluding current user)
+      const emailExists = await User.findOne({
+        where: {
+          email: newEmail.toLowerCase(),
+          id: { [Op.ne]: userId }
+        }
+      })
+
+      if (emailExists) {
+        return res.status(400).send({
+          success: false,
+          message: 'Email already in use'
+        })
+      }
+
+      // Update email
+      user.email = newEmail.toLowerCase()
+      await user.save()
+
+      // Force update bluesky email if bluesky is enabled
+      if (user.enableBsky && user.bskyDid) {
+        try {
+          await forceUpdateBskyEmail(user)
+          await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
+        } catch (error) {
+          logger.error({
+            message: `Error updating bluesky email for user ${user.url}`,
+            error: error
+          })
+          // Don't fail the entire request if bluesky sync fails
+        }
+      }
+
+      res.send({ success: true })
+    } catch (error) {
+      logger.error(error)
+      res.status(500).send({
+        success: false,
+        message: 'Error changing email'
+      })
+    }
+  })
+
   app.post('/api/login', loginRateLimiter, onePerSecondLimiter, async (req, res) => {
     let success = false
     try {
