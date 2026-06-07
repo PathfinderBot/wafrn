@@ -832,7 +832,8 @@
     "reportUser": "Report user",
     "bitePost": "Bite woot",
     "biteUser": "Bite user",
-    "reactWithEmoji": "React with an emoji"
+    "reactWithEmoji": "React with an emoji",
+    "fetchMoreExternalReplies": "Try fetching more external replies"
   },
   "post-header": {
     "follow": "Follow",
