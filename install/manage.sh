@@ -97,6 +97,18 @@ case $1 in
         fi
       done
 
+      # Ensure data/caddy exists 
+      if [ ! -d "data/caddy" ]; then
+        echo "Creating data/caddy directory"
+        mkdir -p "data/caddy" || {
+          echo "Failed to create data/caddy"
+        }
+        # Ensure current user owns the created directory
+        sudo chown --recursive "$USER":"$USER" "data/caddy" || {
+          echo "Failed to chown data/caddy to $USER"
+        }
+      fi
+
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
       #docker compose down

@@ -23,6 +23,7 @@ services:
       - ./packages/frontend/runtime-overrides:/overrides
       - ./data/frontend:/var/www/html/frontend
       - ./packages/backend/uploads:/var/www/html/uploads
+      - ./data/caddy:/data/caddy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
