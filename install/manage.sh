@@ -71,16 +71,11 @@ case $1 in
         if [ ! -d "data/$vol" ]; then
           # Try to copy existing docker volume data if available
           SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
-          if [ -d "$SRC" ]; then
             echo "Copying existing volume data from $SRC to data/$vol (using sudo)"
             mkdir -p "data/$vol"
             sudo cp -a "$SRC/." "data/$vol/" || {
               echo "Failed to copy from $SRC with sudo; leaving empty directory"
             }
-          else
-            mkdir -p "data/$vol"
-            echo "Created data/$vol"
-          fi
         fi
       done
 
