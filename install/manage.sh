@@ -23,33 +23,6 @@ check_files_for_update () {
   SHOULD_EXIT=0
 
 
-  # check if that docker compose file will change
-  if git diff --name-only '@' '@{u}' | grep -q $COMPOSE_FILENAME; then
-    echo "-------------------------------------------"
-    echo " WARNING"
-    echo
-    echo " Docker compose files have changed!"
-    echo "-------------------------------------------"
-    echo
-
-    # if we're using a nonstandard compose file we'll just throw an error
-    if [ $COMPOSE_FILENAME == "docker-compose." ]; then
-      echo "Please check the release notes, and review the changes,"
-      echo "making sure to update your local config accordingly"
-      echo
-      echo "If you're happy with the changes please re-run the script with"
-      echo "  ./install/manage.sh update -f"
-      SHOULD_EXIT=1
-    else
-      echo "The following updates will be applied automatically after pulling:"
-      echo
-      git diff '@' '@{u}' -- $COMPOSE_FILENAME
-      echo
-    fi
-  else
-    COMPOSE_FILENAME=
-  fi
-
   # check if the environment config will change
   if git diff --name-only '@' '@{u}' | grep -q '.env.example'; then
     echo "-------------------------------------------"
@@ -90,9 +63,27 @@ case $1 in
 
       git pull
 
-      if [ ! -z "$COMPOSE_FILENAME" ]; then
-        cp $COMPOSE_FILENAME docker-compose.yml
-      fi
+      cp docker-compose.default.yml docker-compose.yml
+
+      # Ensure required data volume directories exist
+      VOLUMES=(dbpg pds frontend redis prometheus_data grafana_data)
+      for vol in "${VOLUMES[@]}"; do
+        if [ ! -d "data/$vol" ]; then
+          # Try to copy existing docker volume data if available
+          SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
+          if [ -d "$SRC" ]; then
+            echo "Copying existing volume data from $SRC to data/$vol (sudo may be required)"
+            sudo cp -rp "$SRC" "./data/$vol" || {
+              echo "Failed to copy from $SRC; creating empty directory instead"
+              mkdir -p "data/$vol"
+            }
+          else
+            mkdir -p "data/$vol"
+            echo "Created data/$vol"
+          fi
+        fi
+      done
+
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
       #docker compose down
