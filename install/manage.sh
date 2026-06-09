@@ -72,7 +72,7 @@ case $1 in
           # Try to copy existing docker volume data if available
           SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
             echo "Transferring existing volume data from $SRC to data/$vol (using sudo)"
-            docker compose down
+            docker compose --profile "*" down
             mkdir -p "data/$vol"
             if sudo mv "$SRC/." "data/$vol/" 2>/dev/null; then
               echo "Moved data from $SRC to data/$vol"
