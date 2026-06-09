@@ -71,12 +71,26 @@ case $1 in
         if [ ! -d "data/$vol" ]; then
           # Try to copy existing docker volume data if available
           SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
-            echo "Moving existing volume data from $SRC to data/$vol (using sudo)"
+            echo "Transferring existing volume data from $SRC to data/$vol (using sudo)"
+            docker compose down
             mkdir -p "data/$vol"
-            sudo mv "$SRC/." "data/$vol/" || {
-              echo "Failed to move from $SRC with sudo; leaving empty directory"
-            }
-            # Ensure the current user owns the moved data
+            if sudo mv "$SRC/." "data/$vol/" 2>/dev/null; then
+              echo "Moved data from $SRC to data/$vol"
+            else
+              echo "mv failed (possibly busy). Falling back to rsync copy + delete"
+              if command -v rsync >/dev/null 2>&1; then
+                sudo rsync -aHAX --numeric-ids --delete "$SRC/" "data/$vol/" || {
+                  echo "rsync failed copying from $SRC to data/$vol"
+                }
+                # attempt to remove source files (best-effort)
+                sudo rm -rf "$SRC/"* || {
+                  echo "Failed to remove files from $SRC after rsync; leaving originals in place"
+                }
+              else
+                echo "rsync not available; leaving empty directory. Install rsync, run the update again, and the old data will be transferred on the next attempt."
+              fi
+            fi
+            # Ensure the current user owns the transferred data
             sudo chown --recursive "$USER":"$USER" "data/$vol" || {
               echo "Failed to chown data/$vol to $USER"
             }
