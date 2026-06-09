@@ -71,10 +71,14 @@ case $1 in
         if [ ! -d "data/$vol" ]; then
           # Try to copy existing docker volume data if available
           SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
-            echo "Copying existing volume data from $SRC to data/$vol (using sudo)"
+            echo "Moving existing volume data from $SRC to data/$vol (using sudo)"
             mkdir -p "data/$vol"
-            sudo cp -a "$SRC/." "data/$vol/" || {
-              echo "Failed to copy from $SRC with sudo; leaving empty directory"
+            sudo mv "$SRC/." "data/$vol/" || {
+              echo "Failed to move from $SRC with sudo; leaving empty directory"
+            }
+            # Ensure the current user owns the moved data
+            sudo chown --recursive "$USER":"$USER" "data/$vol" || {
+              echo "Failed to chown data/$vol to $USER"
             }
         fi
       done
