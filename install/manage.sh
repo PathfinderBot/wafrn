@@ -79,7 +79,7 @@ case $1 in
             else
               echo "mv failed (possibly busy). Falling back to rsync copy + delete"
               if command -v rsync >/dev/null 2>&1; then
-                sudo rsync -aHAX --numeric-ids --delete "$SRC/" "data/$vol/" || {
+                sudo rsync -aHAX --numeric-ids --delete-during "$SRC/" "data/$vol/" || {
                   echo "rsync failed copying from $SRC to data/$vol"
                 }
                 # attempt to remove source files (best-effort)
