@@ -20,7 +20,11 @@ async function checkCommitMentions(
     return true;
   }
 
-  if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, did)) {
+  // we only accept automaticaly POSTs and reposts from followed
+  if (
+    commit.operation === CommitType.Create &&
+    (commit.collection.startsWith('app.bsky.feed.post') || commit.collection.startsWith('app.bsky.feed.repost')) &&
+    await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, did)) {
     logger.debug('Post by followed user')
     return true;
   }
