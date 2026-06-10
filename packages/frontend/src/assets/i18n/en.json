@@ -254,6 +254,7 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "contentWarningLabel": "Content Warning",
     "interactionControl": {
       "anyone": "Anyone",
       "FollowingAndMentioned": "People I follow and mentioned users",
@@ -833,7 +834,8 @@
     "bitePost": "Bite woot",
     "biteUser": "Bite user",
     "reactWithEmoji": "React with an emoji",
-    "fetchMoreExternalReplies": "Try fetching more external replies"
+    "fetchMoreExternalReplies": "Try fetching more external replies",
+    "viewInitialPost": "View initial post"
   },
   "post-header": {
     "follow": "Follow",
