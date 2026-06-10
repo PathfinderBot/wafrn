@@ -450,7 +450,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     // If we have more than 4 media and they are all images (no videos/pdf),
     // post as a gallery embed (new app.bsky.embed.gallery). Otherwise fallback to external link.
     const onlyImages = bskyMedias.length > 0 && !bskyMedias.some((m) => (m.media.mediaType || '').startsWith('video/') || (m.media.mediaType || '').includes('pdf'));
-    if (bskyMedias.length > 4 && onlyImages) {
+    if (bskyMedias.length > 4 && onlyImages && bskyMedias.length <= 10) {
       res.embed = {
         $type: 'app.bsky.embed.gallery',
         items: bskyMedias.map((m, index) => ({
