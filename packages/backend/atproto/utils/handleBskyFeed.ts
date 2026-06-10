@@ -17,7 +17,7 @@ async function handleBskyFeed(user: User, cursor: Date) {
         const session = await getAtProtoSession(user)
         const bskyFeed = await session.getTimeline({
             limit: completeEnvironment.postsPerPage,
-            cursor: cursor.toISOString(),  
+            cursor: cursor.toISOString(),
         })
         const postsFound = (await Post.findAll({
             where: {
@@ -29,17 +29,17 @@ async function handleBskyFeed(user: User, cursor: Date) {
         const filteredFeed = bskyFeed.data.feed.filter(elem => !postsFound.includes(elem.post.uri))
         await Promise.allSettled(filteredFeed.map(elem => processSinglePost(elem.post.uri)))
         for await (const elem of filteredFeed) {
-            if(elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
-                let parentPost = await processSinglePost(elem.post.uri)
+            if (elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
+                const parentPost = await processSinglePost(elem.post.uri)
                 const rewooterDid = (elem.reason as any).by?.did
-                if(parentPost && rewooterDid) {
+                if (parentPost && rewooterDid) {
                     const rewooter = await User.findOne({
                         where: {
                             bskyDid: rewooterDid
                         }
                     })
-                    if(rewooter){
-                        let creation = await Post.findOrCreate({
+                    if (rewooter) {
+                        const creation = await Post.findOrCreate({
                             where: {
                                 userId: rewooter.id,
                                 isReblog: true,
@@ -54,14 +54,11 @@ async function handleBskyFeed(user: User, cursor: Date) {
                                 content_warning: '',
                                 privacy: 0
                             }
-                    })
+                        })
                     }
-                    
-                    
-                    
                 }
             }
-            
+
         }
     } catch (error) {
         logger.info({
@@ -71,9 +68,9 @@ async function handleBskyFeed(user: User, cursor: Date) {
         })
     }
 
-    
+
 
 }
 
 
-export {handleBskyFeed}
+export { handleBskyFeed }
