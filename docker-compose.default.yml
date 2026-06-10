@@ -5,6 +5,16 @@
 
 # ATTENTION: NEXT VERSIONS OF THIS FILE WILL BE ON GIT.
 # RIGHT NOW, NEXT UPDATE WILL DESTROY YOUR DOCKERCOMPOSE.
+
+
+
+# Shared logging configuration for all services (max log size 100mb)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "100m"
+    max-file: "3"
+
 services:
   frontend:
     restart: unless-stopped
@@ -13,6 +23,7 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
     env_file: .env
+    logging: *default-logging
     environment:
       BACKEND_HOST: "${BACKEND_HOST:-wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000}"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
@@ -47,6 +58,7 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     env_file: .env
+    logging: *default-logging
     environment: &default_backend_env_vars
       FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
       FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-https://${MEDIA_DOMAIN}}
@@ -104,6 +116,7 @@ services:
     restart: unless-stopped
     shm_size: '${SHM_SIZE:-2gb}'
     env_file: .env
+    logging: *default-logging
     environment:
       PGUSER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DBNAME}
@@ -113,16 +126,19 @@ services:
   adminer:
     image: adminer
     restart: unless-stopped
+    logging: *default-logging
 
   redis:
     image: redis:8.4
     restart: unless-stopped
+    logging: *default-logging
     volumes:
       - ./data/redis:/data
 
   pds:
     image: ghcr.io/bluesky-social/pds:0.4
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - ${PDS_HTTP_PORT:-127.0.0.1:3000}:3000
     profiles:
@@ -207,6 +223,7 @@ services:
     restart: unless-stopped
     profiles: [metrics]
     env_file: .env
+    logging: *default-logging
     environment:
       GF_SERVER_HTTP_PORT: 2345
       GF_USERS_ALLOW_SIGN_UP: false
@@ -222,6 +239,7 @@ services:
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         POSTGRES_DB: ${POSTGRES_DBNAME}
     restart: unless-stopped
+    logging: *default-logging
     profiles: [metrics]
     env_file: .env
     command:
@@ -236,6 +254,7 @@ services:
     container_name: bullboard
     image: nauverse/bull-board
     restart: unless-stopped
+    logging: *default-logging
     environment:
       REDIS_URL: redis:6379
       BULL_PREFIX: bull
