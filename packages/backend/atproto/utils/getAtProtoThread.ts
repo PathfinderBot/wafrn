@@ -659,6 +659,25 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
     })
     return toConcat
   }
+  // gallery embed (multiple images, new style for 5-10 images)
+  if ((embed as any)['$type'] === 'app.bsky.embed.gallery' || (embed as any).items) {
+    const items = (embed as any).items as Array<any>
+    const toConcat = items.map((item, index) => {
+      // item is of type app.bsky.embed.gallery#image
+      const image = item.image
+      const cid = image.ref['$link'] ? image.ref['$link'] : image.ref.toString()
+      return {
+        mediaType: image.mimeType,
+        description: item.alt,
+        height: item.aspectRatio?.height,
+        width: item.aspectRatio?.width,
+        url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
+        mediaOrder: index,
+        external: true
+      }
+    })
+    return toConcat
+  }
   if ((embed as AppBskyEmbedVideo.Main).video) {
     const { video, aspectRatio, alt } = embed as AppBskyEmbedVideo.Main
     const cid = video.ref['$link'] ? video.ref['$link'] : video.ref.toString()

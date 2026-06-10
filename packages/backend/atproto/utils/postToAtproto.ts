@@ -447,14 +447,32 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
     // Shortening when media is present is handled earlier
   } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
-    res.embed = {
-      $type: "app.bsky.embed.external",
-      external: {
-        uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
-        title: `See complete post at ${completeEnvironment.instanceUrl}`,
-        description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`,
-      },
-    };
+    // If we have more than 4 media and they are all images (no videos/pdf),
+    // post as a gallery embed (new app.bsky.embed.gallery). Otherwise fallback to external link.
+    const onlyImages = bskyMedias.length > 0 && !bskyMedias.some((m) => (m.media.mediaType || '').startsWith('video/') || (m.media.mediaType || '').includes('pdf'));
+    if (bskyMedias.length > 4 && onlyImages) {
+      res.embed = {
+        $type: 'app.bsky.embed.gallery',
+        items: bskyMedias.map((m, index) => ({
+          $type: 'app.bsky.embed.gallery#image',
+          image: m.blob,
+          alt: (m.media.description || '').slice(0, 999),
+          aspectRatio: {
+            width: m.media.width,
+            height: m.media.height,
+          },
+        })),
+      };
+    } else {
+      res.embed = {
+        $type: "app.bsky.embed.external",
+        external: {
+          uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
+          title: `See complete post at ${completeEnvironment.instanceUrl}`,
+          description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`,
+        },
+      };
+    }
   }
 
   if (post.parentId) {
