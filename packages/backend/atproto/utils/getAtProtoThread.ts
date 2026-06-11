@@ -419,9 +419,11 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
 
     let isReply = false;
+    let rootId: string | null = null;
     if (parentId) {
       const parentPost = (await Post.findByPk(parentId)) as Post
-      isReply = parentPost.isReply || parentPost.userId != postCreator.id
+      isReply = parentPost.isReply || parentPost.userId != postCreator.id;
+      rootId = parentPost.rootId
     }
 
     const newData = {
@@ -435,7 +437,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       content_warning: cw,
       ...(await getPostInteractionLevels(uri, parentId)),
       isBskyExclusive: true, // TODO hmmm
-      isReply: isReply
+      isReply: isReply,
+      rootId: rootId
     }
     if (!parentId) {
       delete newData.parentId

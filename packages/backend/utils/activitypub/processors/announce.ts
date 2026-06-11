@@ -56,7 +56,8 @@ async function AnnounceActivity(body: activityPubObject, remoteUser: User, user:
         userId: remoteUser.id,
         remotePostId: body.id,
         privacy: privacy,
-        parentId: retooted_content.id
+        parentId: retooted_content.id,
+        rootId: retooted_content.rootId,
       }
       const newToot = await Post.create(postToCreate)
       await newToot.save()
@@ -112,7 +113,8 @@ async function AnnounceActivity(body: activityPubObject, remoteUser: User, user:
             userId: remoteUser.id,
             remotePostId: body.id,
             privacy: 0,
-            parentId: remotePost.id
+            parentId: remotePost.id,
+            rootId: remotePost.rootId
           })
         }
       }

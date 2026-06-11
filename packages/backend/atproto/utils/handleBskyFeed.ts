@@ -48,11 +48,18 @@ async function handleBskyFeed(user: User, cursor: Date) {
                                 bskyUri: (elem.reason as any).uri
                             },
                             defaults: {
+                                userId: rewooter.id,
+                                isReblog: true,
+                                parentId: parentPost,
+                                bskyCid: (elem.reason as any).cid,
+                                bskyUri: (elem.reason as any).uri,
                                 createdAt: (elem.reason as any).indexedAt,
                                 updatedAt: new Date(),
                                 content: '',
                                 content_warning: '',
-                                privacy: 0
+                                privacy: 0,
+                                rootId: (await Post.findByPk(parentPost))?.rootId,
+
                             }
                         })
                     }

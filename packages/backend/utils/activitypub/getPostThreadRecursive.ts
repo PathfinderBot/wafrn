@@ -243,7 +243,8 @@ async function getPostThreadRecursive(
             // OK TIME TO UPDATE WHO IS PARENT OF DESCENDENTS
             await Post.update(
               {
-                parentId: bskyVersion.id
+                parentId: bskyVersion.id,
+                rootId: bskyVersion.rootId
               },
               {
                 where: {
@@ -545,7 +546,8 @@ async function getPostThreadRecursive(
                   existingFedi.remotePostId = null
                   await Post.update(
                     {
-                      parentId: postBskyVersion.id
+                      parentId: postBskyVersion.id,
+                      rootId: postBskyVersion.rootId
                     },
                     {
                       where: {
@@ -576,7 +578,8 @@ async function getPostThreadRecursive(
                     existingFedi.isDeleted = true
                     await Post.update(
                       {
-                        parentId: postBskyVersion.id
+                        parentId: postBskyVersion.id,
+                        rootId: postBskyVersion.rootId
                       },
                       {
                         where: {
@@ -598,7 +601,8 @@ async function getPostThreadRecursive(
                     await postBskyVersion.save()
                     await Post.update(
                       {
-                        parentId: existingFedi.id
+                        parentId: existingFedi.id,
+                        rootId: existingFedi.rootId
                       },
                       {
                         where: {
@@ -688,6 +692,7 @@ async function getPostThreadRecursive(
           postToCreate.isReply = parent ? parent.isReply || parent.userId != postToCreate.userId : false
           postToCreate.isBskyExclusive = false
           postToCreate.parentId = parent?.id
+          postToCreate.rootId = parent?.rootId;
         }
 
         const existingPost = localPostToForceUpdate ? await Post.findByPk(localPostToForceUpdate) : undefined
