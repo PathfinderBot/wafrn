@@ -284,10 +284,10 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     @BeforeSave
     static async ensureRootId(instance: Post) {
       try {
-        if (instance.hierarchyLevel === 0) {
+        if (instance.hierarchyLevel === 1) {
           instance.rootId = instance.id
         }
-        if(instance.hierarchyLevel === 1) {
+        if(instance.hierarchyLevel === 2) {
           instance.rootId = instance.parentId
         }
       } catch (e) {
