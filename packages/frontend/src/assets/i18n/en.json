@@ -255,6 +255,8 @@
   },
   "editor": {
     "contentWarningLabel": "Content Warning",
+    "quotable": "Quotable",
+    "whoCanReply": "Who can reply",
     "interactionControl": {
       "anyone": "Anyone",
       "FollowingAndMentioned": "People I follow and mentioned users",
@@ -835,7 +837,8 @@
     "biteUser": "Bite user",
     "reactWithEmoji": "React with an emoji",
     "fetchMoreExternalReplies": "Try fetching more external replies",
-    "viewInitialPost": "View initial post"
+    "viewInitialPost": "View initial post",
+    "rewooted": "rewooted"
   },
   "post-header": {
     "follow": "Follow",

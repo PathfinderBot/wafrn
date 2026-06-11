@@ -41,7 +41,7 @@ content.questionPoll?.questionPollQuestions ||
 } @else {
 <app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
   <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
-  <span class="text-sm post-action"> {{ 'forum.rewooted' | translate }} </span>
+  <span class="text-sm post-action"> {{ 'post-actions.rewooted' | translate }} </span>
   <a [postLink]="content" [postLinkId]="content.parentId" class="user-link user-name"
     [innerHTML]="findReply(content.parentId)?.user?.name ?? 'Unknown User'"></a>
 </app-post-ribbon>
