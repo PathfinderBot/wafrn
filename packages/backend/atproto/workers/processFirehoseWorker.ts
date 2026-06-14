@@ -160,7 +160,6 @@ async function processFirehose(job: Job) {
                     isReblog: true,
                     userId: remoteUser.id,
                     parentId: postToBeRewooted,
-                    rootId: parent?.rootId,
                     bskyUri: `at://${job.data.repo}/${operation.path}`,
                     bskyCid: operation.cid,
                     privacy: Privacy.Public

@@ -58,8 +58,6 @@ async function handleBskyFeed(user: User, cursor: Date) {
                                 content: '',
                                 content_warning: '',
                                 privacy: 0,
-                                rootId: (await Post.findByPk(parentPost))?.rootId,
-
                             }
                         })
                     }

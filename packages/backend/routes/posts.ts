@@ -586,7 +586,6 @@ export default function postsRoutes(app: Application) {
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,
-            rootId: parent?.rootId,
             markdownContent: req.body.content.substring(0, 2 * 1024 * 1024),
             isReblog: isReblog,
             replyControl: canReply || InteractionControl.Anyone,

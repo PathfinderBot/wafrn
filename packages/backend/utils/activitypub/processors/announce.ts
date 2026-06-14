@@ -57,7 +57,6 @@ async function AnnounceActivity(body: activityPubObject, remoteUser: User, user:
         remotePostId: body.id,
         privacy: privacy,
         parentId: retooted_content.id,
-        rootId: retooted_content.rootId,
       }
       const newToot = await Post.create(postToCreate)
       await newToot.save()
@@ -92,12 +91,12 @@ async function AnnounceActivity(body: activityPubObject, remoteUser: User, user:
       const alreadyExisting = await Post.findOne({ where: { remotePostId: urlToGet } })
       const reblogCount = alreadyExisting
         ? await Post.count({
-            where: {
-              parentId: alreadyExisting.id,
-              isReblog: true,
-              userId: remoteUser.id
-            }
-          })
+          where: {
+            parentId: alreadyExisting.id,
+            isReblog: true,
+            userId: remoteUser.id
+          }
+        })
         : 0
       if (!(alreadyExisting && reblogCount > 0)) {
         // well we got an existing post already. We check if there is at least one reblog of the post.
@@ -114,7 +113,6 @@ async function AnnounceActivity(body: activityPubObject, remoteUser: User, user:
             remotePostId: body.id,
             privacy: 0,
             parentId: remotePost.id,
-            rootId: remotePost.rootId
           })
         }
       }

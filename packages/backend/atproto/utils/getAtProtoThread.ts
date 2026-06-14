@@ -224,8 +224,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
         completeEnvironment.bskySlingshotUrl +
-          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
-          `?identifier=${extractUriComponents(uri).did}`
+        '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+        `?identifier=${extractUriComponents(uri).did}`
       )
       if (res.ok) {
         const json = (await res.json()) as { pds: string }
@@ -406,7 +406,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
 
     }
 
-    if (!federatedWoot ) {
+    if (!federatedWoot) {
       postText = postText ? postText.replaceAll('\n', '<br>') : ''
     }
 
@@ -422,11 +422,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
 
     let isReply = false;
-    let rootId: string | null = null;
     if (parentId) {
       const parentPost = (await Post.findByPk(parentId)) as Post
       isReply = parentPost.isReply || parentPost.userId != postCreator.id;
-      rootId = parentPost.rootId
     }
 
     const newData = {
@@ -441,7 +439,6 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       ...(await getPostInteractionLevels(uri, parentId)),
       isBskyExclusive: true, // TODO hmmm
       isReply: isReply,
-      rootId: rootId
     }
     if (!parentId) {
       delete newData.parentId

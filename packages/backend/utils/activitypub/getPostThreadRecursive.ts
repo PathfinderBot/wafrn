@@ -238,7 +238,6 @@ async function getPostThreadRecursive(
             await Post.update(
               {
                 parentId: bskyVersion.id,
-                rootId: bskyVersion.rootId
               },
               {
                 where: {
@@ -541,7 +540,6 @@ async function getPostThreadRecursive(
                   await Post.update(
                     {
                       parentId: postBskyVersion.id,
-                      rootId: postBskyVersion.rootId
                     },
                     {
                       where: {
@@ -573,7 +571,6 @@ async function getPostThreadRecursive(
                     await Post.update(
                       {
                         parentId: postBskyVersion.id,
-                        rootId: postBskyVersion.rootId
                       },
                       {
                         where: {
@@ -596,7 +593,6 @@ async function getPostThreadRecursive(
                     await Post.update(
                       {
                         parentId: existingFedi.id,
-                        rootId: existingFedi.rootId
                       },
                       {
                         where: {
@@ -857,6 +853,11 @@ async function getPostThreadRecursive(
             })
             await Post.update({
               parentId: newPost.id,
+            }, {
+              where: {
+                parentId: existingBskyPost.id
+              },
+              transaction
             })
 
             await existingBskyPost.destroy({ transaction })
