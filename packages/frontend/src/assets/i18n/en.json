@@ -300,7 +300,9 @@
     "hiddenMentionsTooltip": "Other mentioned users",
     "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">the guide!</a>",
     "usernameLabel": "Wooting as",
-    "noResults": "No results."
+    "noResults": "No results.",
+    "quotable": "Who can quote",
+    "whoCanReply": "Who can reply"
   },
   "blog": {
     "tabWoots": "Woots",
@@ -1013,5 +1015,9 @@
   },
   "serverAnnouncements": {
     "bsky_account_force_disabled": "Your bluesky account was disconnected due an error in wafrn"
+  },
+  "emoji": {
+    "searchAvailable": "Search available emojis",
+    "recentEmojis": "Recently used emojis"
   }
 }
