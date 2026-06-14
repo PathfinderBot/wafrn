@@ -6,7 +6,7 @@ import { completeEnvironment } from "./utils/backendOptions.js";
 import cron from "node-cron";
 import { nukeBannedUsers } from "./utils/maintenanceTasks/nukeBannedUsers.js";
 import { sequelize } from "./models/sequelize.js";
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 import { Post, User } from "./models/index.js";
 import { follow } from "./utils/follow.js";
 import { getAdminUser } from "./utils/getAdminAndDeletedUser.js";
@@ -93,7 +93,7 @@ HAVING COUNT(*) > 1))`
 
 
 async function backfillRootId(
-  batchSize: number = 1000
+  batchSize: number = 100
 ) {
   let processed = 0;
   let skipped = 0;
@@ -107,6 +107,7 @@ async function backfillRootId(
       attributes: ['id', 'parentId'],
       limit: batchSize,
       raw: true,
+      order: [["hierarchyLevel", "DESC"]]
     });
 
     if (batch.length === 0) {
@@ -137,10 +138,19 @@ async function backfillRootId(
     if (updates.length > 0) {
       await sequelize.transaction(async (transaction) => {
         for (const update of updates) {
+          const postsToUpdate = (
+            await sequelize.query(
+              `SELECT DISTINCT "postsId" FROM "postsancestors" where "ancestorId" = '${update.rootId}'`,
+              {
+                type: QueryTypes.SELECT,
+                transaction
+              }
+            )
+          ).map((elem: any) => elem.postsId)
           await Post.update(
             { rootId: update.rootId },
             {
-              where: { id: update.id },
+              where: { id: postsToUpdate },
               transaction,
               logging: false
             }
@@ -154,7 +164,7 @@ async function backfillRootId(
     }
 
     // Wait before next batch
-    await wait(500)
+    // await wait(500)
   }
 }
 
@@ -181,7 +191,7 @@ async function findRoot(Post: any, postId: string, parentId: string | null): Pro
     const post = await Post.findByPk(current, {
       attributes: ['parentId', 'rootId'],
       raw: true,
-      logging: false
+      logging: false,
     });
 
     if (!post) {
