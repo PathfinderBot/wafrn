@@ -143,12 +143,6 @@ const mergeBskyPostRelatedRecordsSql = `
           AND existing_likes."userId" = likes."userId"
       )
     RETURNING 1
-  ),
-  updated_child_posts AS (
-    UPDATE "posts"
-    SET "parentId" = :remotePostId, "updatedAt" = NOW()
-    WHERE "parentId" = :existingPostId
-    RETURNING 1
   )
   SELECT 1
 `
@@ -243,7 +237,7 @@ async function getPostThreadRecursive(
             // OK TIME TO UPDATE WHO IS PARENT OF DESCENDENTS
             await Post.update(
               {
-                parentId: bskyVersion.id
+                parentId: bskyVersion.id,
               },
               {
                 where: {
@@ -545,7 +539,7 @@ async function getPostThreadRecursive(
                   existingFedi.remotePostId = null
                   await Post.update(
                     {
-                      parentId: postBskyVersion.id
+                      parentId: postBskyVersion.id,
                     },
                     {
                       where: {
@@ -576,7 +570,7 @@ async function getPostThreadRecursive(
                     existingFedi.isDeleted = true
                     await Post.update(
                       {
-                        parentId: postBskyVersion.id
+                        parentId: postBskyVersion.id,
                       },
                       {
                         where: {
@@ -598,7 +592,7 @@ async function getPostThreadRecursive(
                     await postBskyVersion.save()
                     await Post.update(
                       {
-                        parentId: existingFedi.id
+                        parentId: existingFedi.id,
                       },
                       {
                         where: {
@@ -688,6 +682,7 @@ async function getPostThreadRecursive(
           postToCreate.isReply = parent ? parent.isReply || parent.userId != postToCreate.userId : false
           postToCreate.isBskyExclusive = false
           postToCreate.parentId = parent?.id
+          postToCreate.rootId = parent?.rootId;
         }
 
         const existingPost = localPostToForceUpdate ? await Post.findByPk(localPostToForceUpdate) : undefined
@@ -853,6 +848,14 @@ async function getPostThreadRecursive(
               replacements: {
                 existingPostId: existingBskyPost.id,
                 remotePostId: newPost.id
+              },
+              transaction
+            })
+            await Post.update({
+              parentId: newPost.id,
+            }, {
+              where: {
+                parentId: existingBskyPost.id
               },
               transaction
             })
