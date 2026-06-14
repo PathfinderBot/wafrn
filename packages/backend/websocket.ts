@@ -103,7 +103,11 @@ async function backfillRootId(
   while (true) {
     // Get batch of posts without rootId
     const batch = await Post.findAll({
-      where: { rootId: null },
+      where: {
+        rootId: {
+          [Op.eq]: null
+        }
+      },
       attributes: ['id', 'parentId'],
       limit: batchSize,
       raw: true,
@@ -147,18 +151,19 @@ async function backfillRootId(
               }
             )
           ).map((elem: any) => elem.postsId)
-          await Post.update(
+          const updatedPosts = await Post.update(
             { rootId: update.rootId },
             {
-              where: { id: postsToUpdate },
+              where: {
+                id: { [Op.in]: postsToUpdate.concat([update.id]) },
+              },
               transaction,
               logging: false
             }
           );
         }
       });
-
-      processed += updates.length;
+      processed += updates.length
       const totalProcessed = processed + skipped;
       logger.debug(`Processed: ${processed} Skipped: ${skipped} Total: ${totalProcessed}`);
     }
