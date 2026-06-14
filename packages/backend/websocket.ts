@@ -7,11 +7,12 @@ import cron from "node-cron";
 import { nukeBannedUsers } from "./utils/maintenanceTasks/nukeBannedUsers.js";
 import { sequelize } from "./models/sequelize.js";
 import { Op } from "sequelize";
-import { User } from "./models/index.js";
+import { Post, User } from "./models/index.js";
 import { follow } from "./utils/follow.js";
 import { getAdminUser } from "./utils/getAdminAndDeletedUser.js";
 import { redisCache } from "./utils/redis.js";
 import { BlockedIps } from "./models/blockedIp.js";
+import { wait } from "./utils/wait.js";
 
 const PORT = completeEnvironment.port;
 const app = express();
@@ -87,3 +88,126 @@ HAVING COUNT(*) > 1))`
   );
   return true;
 }
+
+
+
+
+async function backfillRootId(
+  batchSize: number = 1000
+) {
+  let processed = 0;
+  let skipped = 0;
+
+  logger.debug('rootId backfill starting');
+
+  while (true) {
+    // Get batch of posts without rootId
+    const batch = await Post.findAll({
+      where: { rootId: null },
+      attributes: ['id', 'parentId'],
+      limit: batchSize,
+      raw: true,
+    });
+
+    if (batch.length === 0) {
+      logger.debug(`Backfill complete. Processed: ${processed}. Skipped: ${skipped}`);
+      break;
+    }
+
+    // Calculate rootId for each post
+    const updates: { id: string; rootId: string; }[] = [];
+    for (const post of batch) {
+      try {
+        const rootId = await findRoot(Post, post.id, post.parentId);
+        if (rootId) {
+          updates.push({ id: post.id, rootId });
+        } else {
+          skipped++;
+        }
+      } catch (error) {
+        logger.error({
+          message: 'Error processing postId',
+          error: error
+        });
+        skipped++;
+      }
+    }
+
+    // Batch update in transaction
+    if (updates.length > 0) {
+      await sequelize.transaction(async (transaction) => {
+        for (const update of updates) {
+          await Post.update(
+            { rootId: update.rootId },
+            {
+              where: { id: update.id },
+              transaction,
+              logging: false
+            }
+          );
+        }
+      });
+
+      processed += updates.length;
+      const totalProcessed = processed + skipped;
+      logger.debug(`Processed: ${processed} Skipped: ${skipped} Total: ${totalProcessed}`);
+    }
+
+    // Wait before next batch
+    await wait(500)
+  }
+}
+
+const rootCache = new Map<string, string>();
+
+async function findRoot(Post: any, postId: string, parentId: string | null): Promise<string | null> {
+  // Check cache first
+  if (rootCache.has(postId)) {
+    return rootCache.get(postId)!;
+  }
+
+  let current = postId;
+  const visited = new Set<string>();
+
+  while (true) {
+    // Prevent infinite loops (circular references)
+    if (visited.has(current)) {
+      logger.warn(`Circular reference detected at post ${postId} wtf`);
+      return null;
+    }
+    visited.add(current);
+
+    // Get post
+    const post = await Post.findByPk(current, {
+      attributes: ['parentId', 'rootId'],
+      raw: true,
+      logging: false
+    });
+
+    if (!post) {
+      logger.warn(`Post ${current} not found (orphaned post ${postId})`);
+      return null;
+    }
+
+    // If already has rootId, use it
+    if (post.rootId) {
+      rootCache.set(postId, post.rootId);
+      return post.rootId;
+    }
+
+    // If no parent, this is the root
+    if (!post.parentId) {
+      rootCache.set(postId, current);
+      return current;
+    }
+
+    // Continue up chain
+    current = post.parentId;
+  }
+}
+
+
+backfillRootId()
+
+
+
