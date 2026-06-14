@@ -143,26 +143,6 @@ const mergeBskyPostRelatedRecordsSql = `
           AND existing_likes."userId" = likes."userId"
       )
     RETURNING 1
-  ),
-  updated_immediate_children AS (
-    UPDATE "posts"
-    SET "parentId" = :remotePostId,
-        "updatedAt" = NOW()
-    WHERE "parentId" = :existingPostId
-    RETURNING 1
-  ),
-  updated_descendant_roots AS (
-    UPDATE "posts"
-    SET "rootId" = (
-          SELECT COALESCE("rootId", :remotePostId)
-          FROM "posts"
-          WHERE id = :remotePostId
-        ),
-        "updatedAt" = NOW()
-    WHERE id IN (
-      SELECT "postsId" FROM "postsancestors" WHERE "ancestorId" = :existingPostId
-    )
-    RETURNING 1
   )
   SELECT 1
 `
@@ -874,6 +854,9 @@ async function getPostThreadRecursive(
                 remotePostId: newPost.id
               },
               transaction
+            })
+            await Post.update({
+              parentId: newPost.id,
             })
 
             await existingBskyPost.destroy({ transaction })

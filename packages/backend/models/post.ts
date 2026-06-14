@@ -284,63 +284,6 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   declare getRoot: BelongsToGetAssociationMixin<Post>;
   declare setRoot: BelongsToSetAssociationMixin<Post, string>;
 
-  @BeforeSave
-  @BeforeCreate
-  static async ensureRootId(instance: Post) {
-    try {
-      if (!instance.parentId) {
-        instance.rootId = instance.id
-        return
-      }
-
-      // For deeper levels on create/update, try to infer rootId from parent
-      if (instance.parentId && !instance.rootId) {
-        try {
-          const parent = await Post.findByPk(instance.parentId)
-          if (parent) {
-            if (parent.hierarchyLevel === 1) {
-              instance.rootId = parent.id
-            } else if (parent.rootId) {
-              instance.rootId = parent.rootId
-            } else {
-              // we need to update ALL parents.
-              const ancestorsRows: any[] = await sequelize.query(
-                `SELECT "ancestorId" FROM "postsancestors" WHERE "postsId" = :parentId`,
-                {
-                  type: QueryTypes.SELECT,
-                  replacements: { parentId: instance.parentId }
-                }
-              )
-              const ancestorsIds: string[] = ancestorsRows.map((elem: any) => elem.ancestorId)
-
-              const rootPost = await Post.findOne({
-                where:
-                {
-                  hierarchyLevel: 1,
-                  id: ancestorsIds
-                }
-              }) as Post
-              if (rootPost && ancestorsIds && ancestorsIds.length) {
-                await sequelize.query(
-                  `UPDATE "posts" SET "rootId" = :rootId WHERE "id" IN (:ids)`,
-                  {
-                    type: QueryTypes.UPDATE,
-                    replacements: { rootId: rootPost.id, ids: ancestorsIds }
-                  }
-                )
-              }
-            }
-          }
-        } catch (e) {
-          // ignore lookup failures
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
-
-
   @HasMany(() => Post, 'parentId')
   declare children: Post[]
 
@@ -466,6 +409,7 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
       primaryKey: 'id',
       foreignKey: 'parentId',
       levelFieldName: 'hierarchyLevel',
+      rootIdFieldName: 'rootId',
       through: PostAncestor,
       throughKey: 'postsId',
       throughForeignKey: 'ancestorId',

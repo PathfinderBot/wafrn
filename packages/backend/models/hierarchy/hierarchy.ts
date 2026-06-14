@@ -1,6 +1,4 @@
-// This file is a copy of the hooksModel.js,hooksUniversal.js and utils.js files from sequelize-hierarchy
-// Files are converted as much as possible to TypeScript, but there are some changes made so they'll likely won't work on other projects just this one
-
+/* eslint-disable @typescript-eslint/no-this-alias */
 import { BaseError, Model } from "sequelize";
 
 class HierarchyError extends BaseError {
@@ -183,10 +181,6 @@ function deleteValue(item: any, key: any) {
   if (item instanceof Model) delete item.dataValues[key];
 }
 
-function removeSpacing(sql: any) {
-  return sql.replace(/[ \t\r\n]+/g, ' ').trim();
-}
-
 // Replace field names in SQL marked with * with the identifier text quoted.
 // e.g. SELECT *field FROM `Tasks` with identifiers {field: 'name'}
 // -> SELECT `name` FROM `Tasks`
@@ -256,21 +250,22 @@ function valueFilteredByFields(fieldName: any, item: any, options: any) {
 // NB Clones `options.fields` before adding to it, to avoid options being mutated externally.
 function addToFields(fieldName: any, options: any) {
   if (inFields(fieldName, options)) return;
-  options.fields = options.fields.concat([fieldName]);
+  options.fields = options.fields ? options.fields.concat([fieldName]) : [fieldName];
 }
 
 // Constants
 const PARENT = Symbol('PARENT');
 
 async function beforeCreate(this: any, item: any, options: any) {
-  const model = this, // eslint-disable-line no-invalid-this
-    { primaryKey, foreignKey, levelFieldName } = model.hierarchy,
+  const model = this,
+    { primaryKey, foreignKey, levelFieldName, rootIdFieldName } = model.hierarchy,
     values = item.dataValues,
     parentId = valueFilteredByFields(foreignKey, item, options);
 
-  // If no parent, set level and exit - no ancestor records to create
+  // If no parent, set level and exit
   if (!parentId) {
     values[levelFieldName] = 1;
+    addToFields(levelFieldName, options);
     return;
   }
 
@@ -280,25 +275,39 @@ async function beforeCreate(this: any, item: any, options: any) {
 
   // Set level based on parent
   const parent = await model.findOne(
-    addOptions({ where: { [primaryKey]: parentId }, attributes: [levelFieldName] }, options)
+    addOptions({ where: { [primaryKey]: parentId }, attributes: [levelFieldName, rootIdFieldName] }, options)
   );
   if (!parent) throw new HierarchyError('Parent does not exist');
 
   // Set hierarchy level
   values[levelFieldName] = parent[levelFieldName] + 1;
   addToFields(levelFieldName, options);
+
+  // Set rootId from parent if parent has it
+  if (parent[rootIdFieldName]) {
+    values[rootIdFieldName] = parent[rootIdFieldName];
+    addToFields(rootIdFieldName, options);
+  }
 }
 
 async function afterCreate(this: any, item: any, options: any) {
   const model = this,
     {
-      primaryKey, foreignKey, levelFieldName, through, throughKey, throughForeignKey
+      primaryKey, foreignKey, levelFieldName, rootIdFieldName, through, throughKey, throughForeignKey
     } = model.hierarchy,
     values = item.dataValues,
     parentId = valueFilteredByFields(foreignKey, item, options);
 
-  // If no parent, exit - no hierarchy to create
-  if (!parentId) return;
+  // If no parent, set rootId for root post
+  if (!parentId) {
+    const itemId = values[primaryKey];
+    values[rootIdFieldName] = itemId;
+    await model.update(
+      { [rootIdFieldName]: itemId },
+      addOptions({ where: { [primaryKey]: itemId } }, options)
+    );
+    return;
+  }
 
   // Create row in hierarchy table for parent
   const itemId = values[primaryKey];
@@ -328,24 +337,21 @@ async function afterCreate(this: any, item: any, options: any) {
 }
 
 async function beforeUpdate(this: any, item: any, options: any) {
-  const model = this, // eslint-disable-line no-invalid-this
+  const model = this,
     { sequelize } = model,
     {
-      primaryKey, foreignKey, levelFieldName, through, throughKey, throughForeignKey
+      primaryKey, foreignKey, levelFieldName, rootIdFieldName, through, throughKey, throughForeignKey
     } = model.hierarchy,
     values = item.dataValues;
 
-  // NB This presumes item has not been updated since it was originally retrieved
+  // If parent not being updated, exit
+  if (!inFields(foreignKey, options)) return;
+
   const itemId = values[primaryKey],
     parentId = values[foreignKey];
   let oldParentId = item._previousDataValues[foreignKey],
-    oldLevel = item._previousDataValues[levelFieldName];
-
-  // If parent not being updated, exit - no change to make
-  if (
-    (oldParentId !== undefined && parentId === oldParentId)
-    || !inFields(foreignKey, options)
-  ) return;
+    oldLevel = item._previousDataValues[levelFieldName],
+    oldRootId = item._previousDataValues[rootIdFieldName];
 
   if (oldParentId === undefined || oldLevel === undefined) {
     const itemRecord = await model.findOne(addOptions({
@@ -353,31 +359,34 @@ async function beforeUpdate(this: any, item: any, options: any) {
     }, options));
     oldParentId = itemRecord[foreignKey];
     oldLevel = itemRecord[levelFieldName];
+    oldRootId = itemRecord[rootIdFieldName];
   }
 
-  // If parent not changing, exit - no change to make
+  // If parent not changing, exit
   if (parentId === oldParentId) return;
 
   // Get level (1 more than parent)
   let level;
+  let newRootId = itemId;
+
   if (parentId === null) {
     level = 1;
   } else {
     // Check that not trying to make item a child of itself
     if (parentId === itemId) throw new HierarchyError('Parent cannot be a child of itself');
 
-    // Use parent already fetched by `beforeBulkUpdate` hook, if present
     let parent = options[PARENT];
     if (!parent) {
       parent = await model.findOne(
         addOptions({
-          where: { [primaryKey]: parentId }, attributes: [levelFieldName, foreignKey]
+          where: { [primaryKey]: parentId }, attributes: [levelFieldName, foreignKey, rootIdFieldName]
         }, options)
       );
       if (!parent) throw new HierarchyError('Parent does not exist');
     }
 
     level = parent[levelFieldName] + 1;
+    newRootId = parent[rootIdFieldName] || parent[primaryKey];
 
     // Check that not trying to make item a child of one of its own descendents
     let illegal;
@@ -397,107 +406,95 @@ async function beforeUpdate(this: any, item: any, options: any) {
     addToFields(levelFieldName, options);
 
     // Update hierarchy level for all descendents
-    let sql = removeSpacing(`
-				UPDATE *item
-				SET *level = *level + :levelChange
-				WHERE *id IN (
-					SELECT *itemId
-					FROM *through AS ancestors
-					WHERE ancestors.*ancestorId = :id
-				)
-			`);
-    sql = replaceTableNames(sql, { item: model, through }, sequelize);
-    sql = replaceFieldNames(sql, { level: levelFieldName, id: primaryKey }, model);
-    sql = replaceFieldNames(sql, { itemId: throughKey, ancestorId: throughForeignKey }, through);
+    const levelDiff = level - oldLevel;
+    const sql = `
+      UPDATE ${model.getTableName()}
+      SET "${levelFieldName}" = "${levelFieldName}" + $1
+      WHERE id IN (
+        SELECT "${throughKey}"
+        FROM ${through.getTableName()} AS ancestors
+        WHERE ancestors."${throughForeignKey}" = $2
+      )
+    `;
 
     await sequelize.query(
       sql,
-      addOptions({ replacements: { id: itemId, levelChange: level - oldLevel } }, options)
+      addOptions({ replacements: [levelDiff, itemId] }, options)
     );
   }
 
   // Delete ancestors from hierarchy table for item and all descendents
   if (oldParentId !== null) {
-    const { dialect } = sequelize.options;
-    // eslint-disable-next-line no-nested-ternary
-    let sql = dialect === 'postgres' ? `
-					DELETE FROM *through
-					USING *through AS descendents, *through AS ancestors
-					WHERE descendents.*itemId = *through.*itemId
-						AND ancestors.*ancestorId = *through.*ancestorId
-						AND ancestors.*itemId = :id
-						AND (
-							descendents.*ancestorId = :id
-							OR descendents.*itemId = :id
-						)`
-      : dialect === 'sqlite' ? `
-					DELETE FROM *through
-					WHERE EXISTS (
-						SELECT *
-						FROM *through AS deleters
-							INNER JOIN *through AS descendents
-								ON descendents.*itemId = deleters.*itemId
-							INNER JOIN *through AS ancestors
-								ON ancestors.*ancestorId = deleters.*ancestorId
-						WHERE deleters.*itemId = *through.*itemId
-							AND deleters.*ancestorId = *through.*ancestorId
-							AND ancestors.*ancestorId = *through.*ancestorId
-							AND ancestors.*itemId = :id
-							AND (
-								descendents.*ancestorId = :id
-								OR descendents.*itemId = :id
-							)
-					)`
-        // eslint-disable-next-line indent
-        : /* MySQL */ `
-					DELETE deleters
-					FROM *through AS deleters
-						INNER JOIN *through AS descendents ON descendents.*itemId = deleters.*itemId
-						INNER JOIN *through AS ancestors
-							ON ancestors.*ancestorId = deleters.*ancestorId
-					WHERE ancestors.*itemId = :id
-						AND (
-							descendents.*ancestorId = :id
-							OR descendents.*itemId = :id
-						)
-				`;
-
-    sql = removeSpacing(sql);
-    sql = replaceTableNames(sql, { through }, sequelize);
-    sql = replaceFieldNames(sql, { itemId: throughKey, ancestorId: throughForeignKey }, through);
+    const sql = `
+      DELETE FROM ${through.getTableName()}
+      USING ${through.getTableName()} AS descendents,
+            ${through.getTableName()} AS ancestors
+      WHERE descendents."${throughKey}" = ${through.getTableName()}."${throughKey}"
+        AND ancestors."${throughForeignKey}" = ${through.getTableName()}."${throughForeignKey}"
+        AND ancestors."${throughKey}" = $1
+        AND (
+          descendents."${throughForeignKey}" = $1
+          OR descendents."${throughKey}" = $1
+        )
+    `;
 
     await sequelize.query(
       sql,
-      addOptions({ replacements: { id: itemId } }, options)
+      addOptions({ replacements: [itemId] }, options)
     );
   }
 
   // Insert ancestors into hierarchy table for item and all descendents
   if (parentId !== null) {
-    let sql = removeSpacing(`
-				INSERT INTO *through (*itemId, *ancestorId)
-				SELECT descendents.*itemId, ancestors.*ancestorId
-				FROM (
-						SELECT *itemId
-						FROM *through
-						WHERE *ancestorId = :id
-						UNION ALL
-						SELECT :id
-					) AS descendents,
-					(
-						SELECT *ancestorId
-						FROM *through
-						WHERE *itemId = :parentId
-						UNION ALL
-						SELECT :parentId
-					) AS ancestors
-			`);
-    sql = replaceTableNames(sql, { through }, sequelize);
-    sql = replaceFieldNames(sql, { itemId: throughKey, ancestorId: throughForeignKey }, through);
+    const sql = `
+      INSERT INTO ${through.getTableName()} ("${throughKey}", "${throughForeignKey}")
+      SELECT descendents."${throughKey}", ancestors."${throughForeignKey}"
+      FROM (
+        SELECT "${throughKey}"
+        FROM ${through.getTableName()}
+        WHERE "${throughForeignKey}" = $1
+        UNION ALL
+        SELECT $1
+      ) AS descendents,
+      (
+        SELECT "${throughForeignKey}"
+        FROM ${through.getTableName()}
+        WHERE "${throughKey}" = $2
+        UNION ALL
+        SELECT $2
+      ) AS ancestors
+      ON CONFLICT DO NOTHING
+    `;
 
     await sequelize.query(
       sql,
-      addOptions({ replacements: { id: itemId, parentId } }, options)
+      addOptions({ replacements: [itemId, parentId] }, options)
+    );
+  }
+
+  // Update rootId if changed
+  if (newRootId !== oldRootId && oldRootId) {
+    values[rootIdFieldName] = newRootId;
+    addToFields(rootIdFieldName, options);
+
+    const sql = `
+      WITH RECURSIVE descendants AS (
+        SELECT id FROM ${model.getTableName()}
+        WHERE id = $1
+        UNION ALL
+        SELECT p.id
+        FROM ${model.getTableName()} p
+        INNER JOIN descendants d ON p."${foreignKey}" = d.id
+      )
+      UPDATE ${model.getTableName()}
+      SET "${rootIdFieldName}" = $2
+      WHERE id IN (SELECT id FROM descendants)
+        AND "${rootIdFieldName}" IS NOT NULL
+    `;
+
+    await sequelize.query(
+      sql,
+      addOptions({ replacements: [itemId, newRootId] }, options)
     );
   }
 }
@@ -508,7 +505,7 @@ function beforeBulkCreate(daos: any, options: any) {
 }
 
 async function beforeBulkUpdate(this: any, options: any) {
-  const model = this, // eslint-disable-line no-invalid-this
+  const model = this,
     { primaryKey, foreignKey, levelFieldName } = model.hierarchy;
 
   // If not updating `parentId`, exit
@@ -529,7 +526,6 @@ async function beforeBulkUpdate(this: any, options: any) {
   } else {
     const parent = await model.findOne(
       addOptions({
-        // NB `foreignKey` is used in `beforeUpdate`
         where: { [primaryKey]: parentId }, attributes: [levelFieldName, foreignKey]
       }, options)
     );
