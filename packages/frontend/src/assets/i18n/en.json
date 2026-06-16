@@ -1017,7 +1017,7 @@
     }
   },
   "serverAnnouncements": {
-    "bsky_account_force_disabled": "Your bluesky account was disconnected due an error in wafrn"
+    "bsky_account_force_disabled": "Your bluesky account was disconnected due to an error in wafrn"
   },
   "emoji": {
     "searchAvailable": "Search available emojis",
