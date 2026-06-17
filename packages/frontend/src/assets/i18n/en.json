@@ -255,8 +255,6 @@
   },
   "editor": {
     "contentWarningLabel": "Content Warning",
-    "quotable": "Quotable",
-    "whoCanReply": "Who can reply",
     "interactionControl": {
       "anyone": "Anyone",
       "FollowingAndMentioned": "People I follow and mentioned users",
@@ -1022,5 +1020,9 @@
   "emoji": {
     "searchAvailable": "Search available emojis",
     "recentEmojis": "Recently used emojis"
+  },
+  "dashboard": {
+    "notFollowingAnyone": "You dont seem to be following anyone!",
+    "exploreLinks": "<a href=\"/dashboard/exploreLocal\">Click here to go to the explore page</a>"
   }
 }
