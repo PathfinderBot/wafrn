@@ -93,136 +93,96 @@ HAVING COUNT(*) > 1))`
 
 
 async function backfillRootId(
-  batchSize: number = 100
+  batchSize: number = 250
 ) {
   let processed = 0;
-  let skipped = 0;
+  let iteration = 0;
 
   logger.debug('rootId backfill starting');
 
   while (true) {
     // Get batch of posts without rootId
-    const batch = await Post.findAll({
-      where: {
-        rootId: {
-          [Op.eq]: null
-        }
-      },
-      attributes: ['id', 'parentId'],
-      limit: batchSize,
-      raw: true,
-      order: [["hierarchyLevel", "DESC"]]
-    });
-
-    if (batch.length === 0) {
-      logger.debug(`Backfill complete. Processed: ${processed}. Skipped: ${skipped}`);
+    const updateQuery = await sequelize.query(`WITH RECURSIVE
+batch AS (
+    SELECT id, "parentId"
+    FROM posts
+    WHERE "rootId" IS NULL
+    ORDER BY "hierarchyLevel" ASC
+    LIMIT ${batchSize}
+),
+chain AS (
+    SELECT
+        b.id            AS start_id,
+        p.id            AS current_id,
+        p."parentId"    AS current_parent_id,
+        p."rootId"      AS current_root_id,
+        ARRAY[p.id]     AS visited,
+        false           AS orphaned
+    FROM batch b
+    JOIN posts p ON p.id = b.id
+    UNION ALL
+    SELECT
+        c.start_id,
+        p.id,
+        p."parentId",
+        p."rootId",
+        c.visited || p.id,
+        (p.id IS NULL)
+    FROM chain c
+    LEFT JOIN posts p ON p.id = c.current_parent_id
+    WHERE
+        c.current_root_id IS NULL
+        AND c.current_parent_id IS NOT NULL
+        AND NOT (c.current_parent_id = ANY(c.visited))
+),
+resolved AS (
+    SELECT DISTINCT ON (start_id)
+        start_id,
+        CASE
+            WHEN current_root_id IS NOT NULL THEN current_root_id
+            WHEN current_parent_id IS NULL AND NOT orphaned THEN current_id
+            ELSE NULL
+        END AS resolved_root_id
+    FROM chain
+    ORDER BY start_id, array_length(visited, 1) DESC
+),
+to_update AS (
+    SELECT start_id, resolved_root_id
+    FROM resolved
+    WHERE resolved_root_id IS NOT NULL
+),
+expanded AS (
+    -- descendants via closure table
+    SELECT DISTINCT pa."postsId" AS id, t.resolved_root_id AS "rootId"
+    FROM to_update t
+    JOIN postsancestors pa ON pa."ancestorId" = t.resolved_root_id
+    UNION
+    -- the batch post itself, in case postsancestors has no self-row
+    SELECT t.start_id AS id, t.resolved_root_id AS "rootId"
+    FROM to_update t
+)
+UPDATE posts
+SET "rootId" = expanded."rootId"
+FROM expanded
+WHERE posts.id = expanded.id;`, {
+      type: QueryTypes.UPDATE
+    })
+    const updated = updateQuery[1]
+    processed += updated;
+    if (updated === 0) {
+      logger.info(`update complete`)
       break;
     }
-
-    // Calculate rootId for each post
-    const updates: { id: string; rootId: string; }[] = [];
-    for (const post of batch) {
-      try {
-        const rootId = await findRoot(Post, post.id, post.parentId);
-        if (rootId) {
-          updates.push({ id: post.id, rootId });
-        } else {
-          skipped++;
-        }
-      } catch (error) {
-        logger.error({
-          message: 'Error processing postId',
-          error: error
-        });
-        skipped++;
-      }
+    else {
+      logger.info(`Updating rootId: processed ${processed} (${updated}), iteration ${iteration}`)
     }
 
-    // Batch update in transaction
-    if (updates.length > 0) {
-      await sequelize.transaction(async (transaction) => {
-        for (const update of updates) {
-          const postsToUpdate = (
-            await sequelize.query(
-              `SELECT DISTINCT "postsId" FROM "postsancestors" where "ancestorId" = '${update.rootId}'`,
-              {
-                type: QueryTypes.SELECT,
-                transaction
-              }
-            )
-          ).map((elem: any) => elem.postsId)
-          const updatedPosts = await Post.update(
-            { rootId: update.rootId },
-            {
-              where: {
-                id: { [Op.in]: postsToUpdate.concat([update.id]) },
-              },
-              transaction,
-              logging: false
-            }
-          );
-        }
-      });
-      processed += updates.length
-      const totalProcessed = processed + skipped;
-      logger.debug(`Processed: ${processed} Skipped: ${skipped} Total: ${totalProcessed}`);
-    }
 
     // Wait before next batch
     // await wait(500)
   }
 }
 
-const rootCache = new Map<string, string>();
-
-async function findRoot(Post: any, postId: string, parentId: string | null): Promise<string | null> {
-  // Check cache first
-  if (rootCache.has(postId)) {
-    return rootCache.get(postId)!;
-  }
-
-  let current = postId;
-  const visited = new Set<string>();
-
-  while (true) {
-    // Prevent infinite loops (circular references)
-    if (visited.has(current)) {
-      logger.warn(`Circular reference detected at post ${postId} wtf`);
-      return null;
-    }
-    visited.add(current);
-
-    // Get post
-    const post = await Post.findByPk(current, {
-      attributes: ['parentId', 'rootId'],
-      raw: true,
-      logging: false,
-    });
-
-    if (!post) {
-      logger.warn(`Post ${current} not found (orphaned post ${postId})`);
-      return null;
-    }
-
-    // If already has rootId, use it
-    if (post.rootId) {
-      rootCache.set(postId, post.rootId);
-      return post.rootId;
-    }
-
-    // If no parent, this is the root
-    if (!post.parentId) {
-      rootCache.set(postId, current);
-      return current;
-    }
-
-    // Continue up chain
-    current = post.parentId;
-  }
-}
 
 
 backfillRootId()
-
-
-
