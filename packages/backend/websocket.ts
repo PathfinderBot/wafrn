@@ -169,6 +169,7 @@ WHERE posts.id = expanded.id;`, {
     })
     const updated = updateQuery[1]
     processed += updated;
+    iteration++;
     if (updated === 0) {
       logger.info(`update complete`)
       break;
