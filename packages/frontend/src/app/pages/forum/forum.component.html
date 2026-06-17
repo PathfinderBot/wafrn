@@ -1,68 +1,58 @@
 @if (loading && !hasPost) {
-  <app-loader></app-loader>
+<app-loader></app-loader>
 }
 @if (!loading || hasPost) {
-  <app-post [post]="post()" [startExpanded]="true" [scrollToPost]="true" class="initial-post"></app-post>
-  <div class="px-3 mt-3 mb-3 lg:mx-4 wafrn-container flex flex-column gap-2 reply-loader">
-    @if (
-      loginService.loggedIn.value &&
-      post()[post().length - 1] &&
-      (!post()[post().length - 1].remotePostId.startsWith(localUrl) || post()[post().length - 1].bskyUri)
-    ) {
-      <button (click)="loadRepliesFromFediverse()" color="primary" mat-stroked-button class="w-full">
-        Fetch more external replies
-      </button>
-    }
-    @if (post().length != 1) {
-      <p class="m-0"><a [postLink]="post()[0]">View initial post</a></p>
-    }
-  </div>
-  <div id="scroll-here-on-page-change"></div>
-  @if (loading && this.hasPost) {
-    <app-loader></app-loader>
-  } @else {
-      @for (
-        content of forumPosts() | slice: currentPage * itemsPerPage : currentPage * itemsPerPage + itemsPerPage;
-        track content
-      ) {
-        @if (
-          content.content !== '' ||
-          content.tags.length > 0 ||
-          content.quotes.length > 0 ||
-          content.questionPoll?.questionPollQuestions ||
-          (content.medias && content.medias.length > 0)
-        ) {
-          <mat-card appearance="outlined" [id]="'post-' + content.id" class="wafrn-container post-card">
-            <app-post-header [fragment]="content" [simplified]="false"></app-post-header>
-            <app-post-fragment [fragment]="content"></app-post-fragment>
-            <hr />
-            <app-bottom-reply-bar [fragment]="content"></app-bottom-reply-bar>
-          </mat-card>
-        } @else {
-          <app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
-            <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
-            <span class="text-sm post-action"> rewooted </span>
-            <a
-              [postLink]="content"
-              [postLinkId]="content.parentId"
-              class="user-link user-name"
-              [innerHTML]="findReply(content.parentId)?.user?.name ?? 'Unknown User'"
-            ></a>
-          </app-post-ribbon>
-        }
-      }
+<app-post [post]="post()" [startExpanded]="true" [scrollToPost]="true" class="initial-post"></app-post>
+<div class="px-3 mt-3 mb-3 lg:mx-4 wafrn-container flex flex-column gap-2 reply-loader">
+  @if (
+  loginService.loggedIn.value &&
+  post()[post().length - 1] &&
+  (!post()[post().length - 1].remotePostId.startsWith(localUrl) || post()[post().length - 1].bskyUri)
+  ) {
+  <button (click)="loadRepliesFromFediverse()" color="primary" mat-stroked-button class="w-full">
+    {{ 'post-actions.fetchMoreExternalReplies' | translate }}
+  </button>
   }
+  @if (post().length != 1) {
+  <p class="m-0"><a [postLink]="post()[0]">{{ 'post-actions.viewInitialPost' | translate }}</a></p>
+  }
+</div>
+<div id="scroll-here-on-page-change"></div>
+@if (loading && this.hasPost) {
+<app-loader></app-loader>
+} @else {
+@for (
+content of forumPosts() | slice: currentPage * itemsPerPage : currentPage * itemsPerPage + itemsPerPage;
+track content
+) {
+@if (
+content.content !== '' ||
+content.tags.length > 0 ||
+content.quotes.length > 0 ||
+content.questionPoll?.questionPollQuestions ||
+(content.medias && content.medias.length > 0)
+) {
+<mat-card appearance="outlined" [id]="'post-' + content.id" class="wafrn-container post-card">
+  <app-post-header [fragment]="content" [simplified]="false"></app-post-header>
+  <app-post-fragment [fragment]="content"></app-post-fragment>
+  <hr />
+  <app-bottom-reply-bar [fragment]="content"></app-bottom-reply-bar>
+</mat-card>
+} @else {
+<app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
+  <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
+  <span class="text-sm post-action"> {{ 'post-actions.rewooted' | translate }} </span>
+  <a [postLink]="content" [postLinkId]="content.parentId" class="user-link user-name"
+    [innerHTML]="findReply(content.parentId)?.user?.name ?? 'Unknown User'"></a>
+</app-post-ribbon>
+}
+}
+}
 }
 
 @if (forumPosts().length > 0) {
-  <footer class="p-3 py-2 mb-4 lg:mx-4 wafrn-container">
-    <mat-paginator
-      (page)="changePage($event)"
-      [pageSizeOptions]="[10, 25, 50, 100, 250]"
-      showFirstLastButtons
-      [length]="forumPosts().length"
-      [pageIndex]="currentPage"
-      [pageSize]="itemsPerPage"
-    ></mat-paginator>
-  </footer>
+<footer class="p-3 py-2 mb-4 lg:mx-4 wafrn-container">
+  <mat-paginator (page)="changePage($event)" [pageSizeOptions]="[10, 25, 50, 100, 250]" showFirstLastButtons
+    [length]="forumPosts().length" [pageIndex]="currentPage" [pageSize]="itemsPerPage"></mat-paginator>
+</footer>
 }

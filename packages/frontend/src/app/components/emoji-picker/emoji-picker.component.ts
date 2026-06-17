@@ -6,10 +6,11 @@ import { Emoji } from 'src/app/interfaces/emoji'
 import { MatButtonModule } from '@angular/material/button'
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { TranslatePipe } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-emoji-picker',
-  imports: [EmojiCollectionsComponent, MatButtonModule, FontAwesomeModule],
+  imports: [EmojiCollectionsComponent, MatButtonModule, FontAwesomeModule, TranslatePipe],
   styleUrl: './emoji-picker.component.scss',
   templateUrl: './emoji-picker.component.html'
 })

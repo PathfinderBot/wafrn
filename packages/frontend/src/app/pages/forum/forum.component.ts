@@ -44,6 +44,7 @@ import { SnappyPostData } from "src/app/directives/post-link/post-link.directive
 import { Title } from "@angular/platform-browser";
 import { GlobalData } from "src/app/services/global-data.service";
 import { SimpleTitleService } from "src/app/services/simple-title.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-forum-component",
@@ -62,6 +63,7 @@ import { SimpleTitleService } from "src/app/services/simple-title.service";
     PostRibbonComponent,
     PostLinkModule,
     BlogLinkModule,
+    TranslatePipe,
   ],
   templateUrl: "./forum.component.html",
   styleUrl: "./forum.component.scss",

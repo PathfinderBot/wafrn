@@ -12,6 +12,7 @@ import { EmojiCollection } from "../../interfaces/emoji-collection";
 import { EnvironmentService } from "../../services/environment.service";
 import { PostsService } from "../../services/posts.service";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import { TranslatePipe } from "@ngx-translate/core";
 
 enum EmojiRenderType {
   Header,
@@ -28,6 +29,7 @@ enum EmojiRenderType {
     MatTooltipModule,
     MatExpansionModule,
     ScrollingModule,
+    TranslatePipe,
   ],
   templateUrl: "./emoji-collections.component.html",
   styleUrl: "./emoji-collections.component.scss",

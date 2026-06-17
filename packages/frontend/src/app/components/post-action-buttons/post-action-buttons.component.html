@@ -129,7 +129,6 @@
           @case ('delete') {
             @if (fragment.userId === myId) {
               <button
-                matTooltip="Delete woot"
                 [matTooltip]="'post-actions.deletePost' | translate"
                 mat-button
                 (click)="deletePost(fragment.id)"

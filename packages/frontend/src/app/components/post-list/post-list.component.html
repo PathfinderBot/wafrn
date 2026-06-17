@@ -1,76 +1,70 @@
 @if (displayMode() === 'card') {
-  @for (post of posts(); track $index) {
-    <app-post
-      [post]="post"
-      [active]="postIsActive() && $index === selectedPost"
-      [actionSubscription]="postActionSubject"
-    ></app-post>
-  }
+@for (post of posts(); track $index) {
+<app-post [post]="post" [active]="postIsActive() && $index === selectedPost"
+  [actionSubscription]="postActionSubject"></app-post>
+}
 } @else if (displayMode() === 'grid') {
-  <div class="p-0 media-grid wafrn-container post-card">
-    @for (thread of posts(); track $index) {
-      @let post = thread[thread.length - 1];
-      @let media = post.medias.at(0);
-      @let mediaType = media?.mediaType?.split('/')?.at(0);
-      @if (media && mediaType && ['image', 'video'].includes(mediaType)) {
-        <div class="media-grid-tile">
-          <a class="h-full w-full no-underline" [postLink]="post">
-            <div class="media-grid-header">
-              <span>{{ post.createdAt | date: 'mediumDate' }}</span>
-            </div>
-            @if (post.content_warning || post.muted_words_cw || media.NSFW) {
-              <div class="p-2 h-full w-full flex align-items-center justify-content-center grid-alt-text">
-                @if (post.muted_words_cw) {
-                  <div class="muted-words content-warning-text">
-                    {{ 'post-fragment.mutedWords' | translate }} {{ post.muted_words_cw }}
-                  </div>
-                }
-                @if (post.content_warning) {
-                  <div class="content-warning-text"
-                    >{{ 'post-fragment.mediaContentWarning' | translate }}
-                    <span [innerHTML]="post.content_warning"></span
-                  ></div>
-                }
-                @if (media.NSFW) {
-                  <div class="content-warning-text">
-                    {{ 'post-fragment.mediaNsfw' | translate }}
-                  </div>
-                }
-              </div>
-            } @else {
-              @if (mediaType === 'image') {
-                <app-wafrn-media fitMode="cover" [data]="media" [altTextButtons]="false"></app-wafrn-media>
-              } @else if (mediaType === 'video') {
-                <div class="h-full w-full flex align-items-center justify-content-center"
-                  ><fa-icon [icon]="videoIcon" size="3x" [fixedWidth]="true" class="video-icon"></fa-icon
-                ></div>
-              }
-              @if (post.markdownContent || post.tags.length > 0) {
-                @let tags = mapTags(post.tags);
-                <div class="media-grid-footer">
-                  <div class="relative w-full h-full">
-                    @if (post.markdownContent) {
-                      <span class="absolute top-0 left-0 right-0 bottom-0 line-height-2 footer-content">
-                        @if (tags) {
-                          {{ tags }}<br /><br />
-                        }
-                        {{ post.markdownContent.slice(0, 128) }}</span
-                      >
-                    }
-                    @if (tags) {
-                      <span class="absolute top-0 left-0 right-0 bottom-0 line-height-2 footer-tags">{{ tags }}</span>
-                    }
-                  </div>
-                </div>
-              }
-            }
-          </a>
+<div class="p-0 media-grid wafrn-container post-card">
+  @for (thread of posts(); track $index) {
+  @let post = thread[thread.length - 1];
+  @let media = post.medias.at(0);
+  @let mediaType = media?.mediaType?.split('/')?.at(0);
+  @if (media && mediaType && ['image', 'video'].includes(mediaType)) {
+  <div class="media-grid-tile">
+    <a class="h-full w-full no-underline" [postLink]="post">
+      <div class="media-grid-header">
+        <span>{{ post.createdAt | date: 'mediumDate' }}</span>
+      </div>
+      @if (post.content_warning || post.muted_words_cw || media.NSFW) {
+      <div class="p-2 h-full w-full flex align-items-center justify-content-center grid-alt-text">
+        @if (post.muted_words_cw) {
+        <div class="muted-words content-warning-text">
+          {{ 'post-fragment.mutedWords' | translate }} {{ post.muted_words_cw }}
         </div>
+        }
+        @if (post.content_warning) {
+        <div class="content-warning-text">{{ 'post-fragment.mediaContentWarning' | translate }}
+          <span [innerHTML]="post.content_warning"></span>
+        </div>
+        }
+        @if (media.NSFW) {
+        <div class="content-warning-text">
+          {{ 'post-fragment.mediaNsfw' | translate }}
+        </div>
+        }
+      </div>
+      } @else {
+      @if (mediaType === 'image') {
+      <app-wafrn-media fitMode="cover" [data]="media" [altTextButtons]="false"></app-wafrn-media>
+      } @else if (mediaType === 'video') {
+      <div class="h-full w-full flex align-items-center justify-content-center"><fa-icon [icon]="videoIcon" size="3x"
+          [fixedWidth]="true" class="video-icon"></fa-icon></div>
       }
-    }
+      @if (post.markdownContent || post.tags.length > 0) {
+      @let tags = mapTags(post.tags);
+      <div class="media-grid-footer">
+        <div class="relative w-full h-full">
+          @if (post.markdownContent) {
+          <span class="absolute top-0 left-0 right-0 bottom-0 line-height-2 footer-content">
+            @if (tags) {
+            {{ tags }}<br /><br />
+            }
+            {{ post.markdownContent.slice(0, 128) }}</span>
+          }
+          @if (tags) {
+          <span class="absolute top-0 left-0 right-0 bottom-0 line-height-2 footer-tags">{{ tags }}</span>
+          }
+        </div>
+      </div>
+      }
+      }
+    </a>
   </div>
+  }
+  }
+</div>
 }
 @if (loading()) {
-  <app-loader>posts</app-loader>
+<app-loader></app-loader>
 }
 <div #bottom class="visibility-hidden"></div>

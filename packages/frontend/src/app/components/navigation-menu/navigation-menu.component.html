@@ -4,11 +4,11 @@
     [disableClose]="!horizontalMenuMode() && !mobile()" (closed)="hideMenu()">
     <header class="mb-4">
       <a [href]="'/'" class="block" (click)="hideMenu()">
-        <img [src]="logo" class="instance-logo block mx-auto" alt="instance logo" width="200" height="150"
+        <img [src]="logo" class="instance-logo block mx-auto" alt="{{ 'common.logoAlt' | translate }}" width="200" height="150"
           style="object-fit: contain" />
       </a>
     </header>
-    <nav aria-label="Navigation menu">
+    <nav [attr.aria-label]="'menu.navigationMenu' | translate">
       <mat-nav-list class="side-menu-nav-list">
         @for (link of menuItems; track $index) {
           @if (link.visible()) {
@@ -83,12 +83,12 @@
       </mat-toolbar>
     }
     @if (mobile() && pwaPage) {
-      <button (click)="historyBack()" mat-mini-fab color="default" aria-label="Previous page"
+      <button (click)="historyBack()" mat-mini-fab color="default" [attr.aria-label]="'menu.previousPage' | translate"
         class="floating-button previous-page-button" [class.offset-for-toolbar]="offsetTopArea()">
         <fa-icon [icon]="backIcon" />
       </button>
     }
-    <button (click)="refresh()" mat-mini-fab color="default" aria-label="Refresh" class="floating-button refresh-button"
+    <button (click)="refresh()" mat-mini-fab color="default" [attr.aria-label]="'notifications.refresh' | translate" class="floating-button refresh-button"
       [class.offset-for-toolbar]="offsetTopArea()">
       <fa-icon [icon]="reloadIcon" />
     </button>

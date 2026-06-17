@@ -2,13 +2,13 @@
   <h2 class="m-0 text-2xl asks-text">{{ 'asks.title' | translate }}</h2>
 </div>
 @if (loading) {
-  <app-loader>asks</app-loader>
+  <app-loader>{{ 'asks.loader' | translate }}</app-loader>
 } @else {
   @for (ask of asks; track $index) {
     <mat-card class="p-3 m-2 mb-6 lg:mx-4 wafrn-container">
       <app-single-ask [ask]="ask"></app-single-ask>
-      <button (click)="replyAsk(ask)" mat-flat-button class="w-full mt-2">Answer</button>
-      <button (click)="ignoreAsk(ask)" mat-stroked-button class="w-full mt-2">Ignore</button>
+      <button (click)="replyAsk(ask)" mat-flat-button class="w-full mt-2">{{ 'asks.answer' | translate }}</button>
+      <button (click)="ignoreAsk(ask)" mat-stroked-button class="w-full mt-2">{{ 'asks.ignore' | translate }}</button>
     </mat-card>
   }
   @if (!loading && asks.length === 0) {

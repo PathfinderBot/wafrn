@@ -43,13 +43,13 @@ export default function searchRoutes(app: Application) {
         where: {
           [Op.or]: [
             sequelize.where(
-                          sequelize.fn("lower", sequelize.col("url")),
-                          searchTerm
-                        ),
+              sequelize.fn("lower", sequelize.col("url")),
+              forceSearchUser
+            ),
             sequelize.where(
-                          sequelize.fn("lower", sequelize.col("alternateUrl")),
-                          searchTerm
-                        )
+              sequelize.fn("lower", sequelize.col("alternateUrl")),
+              forceSearchUser
+            )
           ]
         }
       })
@@ -65,7 +65,7 @@ export default function searchRoutes(app: Application) {
 
       urlString = url.href;
     } catch (error) { }
-    if ((urlString || searchTerm.startsWith('at://')) && !page ) {
+    if ((urlString || searchTerm.startsWith('at://')) && !page) {
       // we force fetch said remote post. Nothing eslse!
       const userPoster = await User.findByPk(posterId)
       if (userPoster) {
@@ -74,14 +74,14 @@ export default function searchRoutes(app: Application) {
           userPoster.enableBsky &&
           userPoster.bskyDid &&
           ((urlString.toLowerCase().includes('/profile/') &&
-          urlString.toLowerCase().includes('/post/')) ||
-          searchTerm.startsWith('at://')  
-        )
+            urlString.toLowerCase().includes('/post/')) ||
+            searchTerm.startsWith('at://')
+          )
         ) {
           // try resolving as bsky post
           try {
             let uri = searchTerm
-            if(!searchTerm.startsWith('at://')){
+            if (!searchTerm.startsWith('at://')) {
               urlString = decodeURIComponent(urlString); // done this due to red dwarf
               const profileAndPost = urlString.includes('app.bsky.feed.post') ?
                 urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
@@ -91,9 +91,9 @@ export default function searchRoutes(app: Application) {
               if (!bskyProfile.startsWith('did:')) {
                 const profileToGet = await getAtprotoUser(`${bskyProfile}`)
                 if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
+              }
+              uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
             }
-            uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
-          } 
             const bskyPostId = await processSinglePost(uri, true)
             if (bskyPostId) {
               postsIds = [bskyPostId]
@@ -167,16 +167,16 @@ export default function searchRoutes(app: Application) {
             [Op.ne]: true
           },
           [Op.or]: [
-          sequelize.where(
-                          sequelize.fn("lower", sequelize.col("url")),
-                          searchTerm
-                        ),
-          sequelize.where(
-                          sequelize.fn("lower", sequelize.col("alternateUrl")),
-                          searchTerm
-                        )
+            sequelize.where(
+              sequelize.fn("lower", sequelize.col("url")),
+              searchTerm
+            ),
+            sequelize.where(
+              sequelize.fn("lower", sequelize.col("alternateUrl")),
+              searchTerm
+            )
           ]
-          
+
         }
       })
     if (page == 0) {

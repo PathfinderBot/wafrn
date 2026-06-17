@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card'
 import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatTableModule } from '@angular/material/table'
 import { MatButtonModule } from '@angular/material/button'
+import { TranslateModule } from '@ngx-translate/core'
 
 @NgModule({
   declarations: [MyServerBlocksComponent],
@@ -22,7 +23,8 @@ import { MatButtonModule } from '@angular/material/button'
     MatTableModule,
     MatCardModule,
     MatPaginatorModule,
-    MatButtonModule
+    MatButtonModule,
+    TranslateModule
   ]
 })
 export class MyServerBlocksModule {}

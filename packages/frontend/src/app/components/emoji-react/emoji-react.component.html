@@ -1,4 +1,4 @@
-<button mat-button (click)="openDialog()" type="button" matTooltip="React with an emoji" class="line-height-1">
+<button mat-button (click)="openDialog()" type="button" [matTooltip]="'post-actions.reactWithEmoji' | translate" class="line-height-1">
   <!-- <fa-icon [icon]="isOpen ? minusIcon : plusIcon"></fa-icon> -->
   <svg width="20px" height="20px" viewBox="0 0 1000 1000" fill="currentColor" class="vertical-align-middle">
     <path

@@ -6,9 +6,10 @@ import { MatCardModule } from '@angular/material/card'
 import { MatInputModule } from '@angular/material/input'
 import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
+import { TranslateModule } from '@ngx-translate/core'
 @Component({
   selector: 'app-enable-bluesky',
-  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatButtonModule, MatInputModule],
+  imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatButtonModule, MatInputModule, TranslateModule],
   templateUrl: './enable-bluesky.component.html',
   styleUrl: './enable-bluesky.component.scss'
 })

@@ -3,22 +3,22 @@
 </div>
 
 <mat-card class="p-3 m-2 mb-6 lg:mx-4 wafrn-container">
-  <p>For internal use. Upload single or collections of emoji here.</p>
+  <p>{{ 'admin.emojiUploader.description' | translate }}</p>
   <div class="flex align-items-center">
     <div class="w-min">
       <app-file-upload
         [config]="{
           url: '/admin/addEmoji',
           formats: 'application/zip',
-          buttonText: 'Upload emojis',
+          buttonText: ('admin.emojiUploader.uploadEmojis' | translate),
           formdataName: 'emoji'
         }"
         (fileUpload)="onEmojiUpload($event)"
       ></app-file-upload>
     </div>
-    &lt;- button that uploads emojis
+    {{ 'admin.emojiUploader.uploadButtonHint' | translate }}
   </div>
   <hr />
-  <p>Collections preview:</p>
+  <p>{{ 'admin.emojiUploader.collectionsPreview' | translate }}</p>
   <app-emoji-collections></app-emoji-collections>
 </mat-card>

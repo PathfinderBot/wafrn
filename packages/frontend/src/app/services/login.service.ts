@@ -243,6 +243,24 @@ export class LoginService {
     return res
   }
 
+  async updateEmail(password: string, newEmail: string) {
+    let res = false
+    const payload = {
+      password: password,
+      email: newEmail
+    }
+    try {
+      const response: any = await firstValueFrom(this.http
+      .post(`${EnvironmentService.environment.baseUrl}/changeEmail`, payload))
+      if(response && response.success) {
+        res = true
+      }
+    } catch (error) {
+      console.error(error)
+    }
+    return res
+  }
+
   async activateAccount(email: string, code: string) {
     const res = false
     const payload = {

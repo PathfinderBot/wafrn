@@ -116,9 +116,8 @@ export class DashboardService {
     tag: string,
     subscribe = true
   ): Promise<boolean> {
-    const url = `${EnvironmentService.environment.baseUrl}/${
-      subscribe ? "followHashtag" : "unfollowHashtag"
-    }`;
+    const url = `${EnvironmentService.environment.baseUrl}/${subscribe ? "followHashtag" : "unfollowHashtag"
+      }`;
     let success = false;
     try {
       const petition = await firstValueFrom(
@@ -139,7 +138,8 @@ export class DashboardService {
     page: number,
     blogId: string,
     startScrollDate?: number,
-    featured?: boolean
+    featured?: boolean,
+    mediaOnly?: boolean
   ): Promise<ProcessedPost[][]> {
     try {
       let result: ProcessedPost[][] = [];
@@ -153,12 +153,13 @@ export class DashboardService {
       }
       let petitionData: HttpParams = new HttpParams();
       petitionData = petitionData.set("page", page.toString());
+      petitionData = petitionData.set("mediaOnly", mediaOnly == true)
       petitionData = petitionData.set(
         "startScroll",
         this.startScrollDate.getTime().toString()
       );
       petitionData = petitionData.set("id", blogId);
-      if(featured) {
+      if (featured) {
         petitionData = petitionData.set('featured', true)
       }
       const dashboardPetition: unlinkedPosts = await firstValueFrom(

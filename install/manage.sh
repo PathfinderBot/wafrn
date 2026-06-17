@@ -23,33 +23,6 @@ check_files_for_update () {
   SHOULD_EXIT=0
 
 
-  # check if that docker compose file will change
-  if git diff --name-only '@' '@{u}' | grep -q $COMPOSE_FILENAME; then
-    echo "-------------------------------------------"
-    echo " WARNING"
-    echo
-    echo " Docker compose files have changed!"
-    echo "-------------------------------------------"
-    echo
-
-    # if we're using a nonstandard compose file we'll just throw an error
-    if [ $COMPOSE_FILENAME == "docker-compose." ]; then
-      echo "Please check the release notes, and review the changes,"
-      echo "making sure to update your local config accordingly"
-      echo
-      echo "If you're happy with the changes please re-run the script with"
-      echo "  ./install/manage.sh update -f"
-      SHOULD_EXIT=1
-    else
-      echo "The following updates will be applied automatically after pulling:"
-      echo
-      git diff '@' '@{u}' -- $COMPOSE_FILENAME
-      echo
-    fi
-  else
-    COMPOSE_FILENAME=
-  fi
-
   # check if the environment config will change
   if git diff --name-only '@' '@{u}' | grep -q '.env.example'; then
     echo "-------------------------------------------"
@@ -90,9 +63,52 @@ case $1 in
 
       git pull
 
-      if [ ! -z "$COMPOSE_FILENAME" ]; then
-        cp $COMPOSE_FILENAME docker-compose.yml
+      cp docker-compose.default.yml docker-compose.yml
+
+      # Ensure required data volume directories exist
+      VOLUMES=(dbpg pds frontend redis prometheus_data grafana_data)
+      for vol in "${VOLUMES[@]}"; do
+        if [ ! -d "data/$vol" ]; then
+          # Try to copy existing docker volume data if available
+          SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
+            echo "Transferring existing volume data from $SRC to data/$vol (using sudo)"
+            docker compose --profile "*" down
+            mkdir -p "data/$vol"
+            if sudo mv "$SRC/." "data/$vol/" 2>/dev/null; then
+              echo "Moved data from $SRC to data/$vol"
+            else
+              echo "mv failed (possibly busy). Falling back to rsync copy + delete"
+              if command -v rsync >/dev/null 2>&1; then
+                sudo rsync -aHAX --numeric-ids --delete "$SRC/" "data/$vol/" || {
+                  echo "rsync failed copying from $SRC to data/$vol"
+                }
+                # attempt to remove source files (best-effort)
+                sudo rm -rf "$SRC/"* || {
+                  echo "Failed to remove files from $SRC after rsync; leaving originals in place"
+                }
+              else
+                echo "rsync not available; leaving empty directory. Install rsync, run the update again, and the old data will be transferred on the next attempt."
+              fi
+            fi
+            # Ensure the current user owns the transferred data
+            sudo chown --recursive "$USER":"$USER" "data/$vol" || {
+              echo "Failed to chown data/$vol to $USER"
+            }
+        fi
+      done
+
+      # Ensure data/caddy exists 
+      if [ ! -d "data/caddy" ]; then
+        echo "Creating data/caddy directory"
+        mkdir -p "data/caddy" || {
+          echo "Failed to create data/caddy"
+        }
+        # Ensure current user owns the created directory
+        sudo chown --recursive "$USER":"$USER" "data/caddy" || {
+          echo "Failed to chown data/caddy to $USER"
+        }
       fi
+
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
       #docker compose down

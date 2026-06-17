@@ -161,6 +161,13 @@ echo
 echo "--------------------------"
 echo "Building and starting apps"
 echo "--------------------------"
+
+
+VOLUMES=(dbpg pds frontend redis prometheus_data grafana_data caddy)
+for vol in "${VOLUMES[@]}"; do
+  mkdir -p "$ROOT_DIR/data/$vol"
+done
+
 docker compose up -d
 
 case $BLUESKY_SUPPORT in

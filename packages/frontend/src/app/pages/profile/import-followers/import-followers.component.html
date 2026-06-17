@@ -2,8 +2,8 @@
   <mat-card-content>
     @switch (step) {
       @case (0) {
-        <h2>Import your follows from another instance</h2>
-        <span>Let's upload a CSV</span>
+        <h2>{{ 'profile.importFollows.title' | translate }}</h2>
+        <span>{{ 'profile.importFollows.uploadCsvIntro' | translate }}</span>
         <input
           [hidden]="true"
           type="file"
@@ -16,7 +16,7 @@
         @if (!uploading) {
           <div class="file-upload">
             <button mat-flat-button color="accent" class="upload-btn w-full" (click)="fileUpload.click()">
-              Upload CSV
+              {{ 'profile.importFollows.uploadCsv' | translate }}
             </button>
           </div>
         }
@@ -24,14 +24,14 @@
         @if (uploading) {
           <div class="w-full flex flex-column align-items-center gap-3">
             <mat-spinner color="accent" diameter="32"></mat-spinner>
-            <p class="m-0 text-lg text-600">Uploading... This might take some time</p>
+            <p class="m-0 text-lg text-600">{{ 'profile.importFollows.uploading' | translate }}</p>
           </div>
         }
       }
       @case (1) {
-        <button (click)="followEveryone()" mat-flat-button class="w-full" color="primary">Follow all users</button>
+        <button (click)="followEveryone()" mat-flat-button class="w-full" color="primary">{{ 'profile.importFollows.followAllUsers' | translate }}</button>
         @if (response.notFoundUsers.length > 0) {
-          <span>We had problems finding these {{ response.notFoundUsers.length }} users users:</span>
+          <span>{{ 'profile.importFollows.notFoundUsers' | translate:{ count: response.notFoundUsers.length } }}</span>
           @for (user of response.notFoundUsers; track $index) {
             <p [innerText]="user"></p>
           }
@@ -39,11 +39,11 @@
       }
       @case (2) {
         <mat-spinner color="accent" diameter="42"></mat-spinner>
-        <p class="m-0 text-lg">Following people... This might take some time</p>
+        <p class="m-0 text-lg">{{ 'profile.importFollows.followingPeople' | translate }}</p>
         <mat-progress-bar mode="determinate" [value]="(progress * 100) / response.foundUsers.length"></mat-progress-bar>
       }
       @case (3) {
-        <span>We had problems following these {{ failedFollows.length }} users users:</span>
+        <span>{{ 'profile.importFollows.failedFollows' | translate:{ count: failedFollows.length } }}</span>
         @for (user of failedFollows; track $index) {
           <a [routerLink]="['blog', user]"><p [innerText]="user"></p></a>
         }

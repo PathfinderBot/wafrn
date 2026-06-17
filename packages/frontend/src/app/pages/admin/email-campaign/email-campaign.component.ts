@@ -8,10 +8,11 @@ import { AdminService } from 'src/app/services/admin.service'
 import { MessageService } from 'src/app/services/message.service'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
 import { InjectHtmlModule } from "src/app/directives/inject-html/inject-html.module";
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-email-campaign',
-  imports: [FormsModule, MatButtonModule, MatCardModule, MatInputModule, MatProgressBarModule, InjectHtmlModule],
+  imports: [FormsModule, MatButtonModule, MatCardModule, MatInputModule, MatProgressBarModule, InjectHtmlModule, TranslateModule],
   templateUrl: './email-campaign.component.html',
   styleUrl: './email-campaign.component.scss'
 })
@@ -28,7 +29,7 @@ export class EmailCampaignComponent {
   constructor() {
     const simpleTitle = inject(SimpleTitleService)
 
-    simpleTitle.set('Email campaign')
+    simpleTitle.set('admin.emailCampaign.title')
   }
 
   get canSubmit() {
@@ -52,13 +53,15 @@ export class EmailCampaignComponent {
       })
       this.messages.add({
         severity: response.success ? 'success' : 'error',
-        summary: response.success ? 'Campaign succesfuly sent' : 'error',
+        summary: response.success ? 'admin.emailCampaign.messages.success' : 'admin.emailCampaign.messages.error',
+        translate: true
       })
     } catch (error) {
       console.error(error)
       this.messages.add({
         severity: 'error',
-        summary: 'Something went wrong'
+        summary: 'messages.genericError',
+        translate: true
       })
     } finally {
       this.ready = true

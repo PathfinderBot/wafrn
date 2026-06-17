@@ -150,12 +150,6 @@ const mergeRemotePostRelatedRecordsSql = `
           AND existing_likes."userId" = likes."userId"
       )
     RETURNING 1
-  ),
-  updated_child_posts AS (
-    UPDATE "posts"
-    SET "parentId" = :remotePostId, "updatedAt" = NOW()
-    WHERE "parentId" = :existingPostId
-    RETURNING 1
   )
   SELECT 1
 `
@@ -230,8 +224,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
         completeEnvironment.bskySlingshotUrl +
-          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
-          `?identifier=${extractUriComponents(uri).did}`
+        '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+        `?identifier=${extractUriComponents(uri).did}`
       )
       if (res.ok) {
         const json = (await res.json()) as { pds: string }
@@ -313,6 +307,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
                 replacements: {
                   existingPostId: existingPost.id,
                   remotePostId: remotePost.id
+                },
+                transaction
+              })
+
+              await Post.update({
+                parentId: remotePost.id,
+              }, {
+                where: {
+                  parentId: existingPost.id,
                 },
                 transaction
               })
@@ -403,7 +406,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
 
     }
 
-    if (!federatedWoot ) {
+    if (!federatedWoot) {
       postText = postText ? postText.replaceAll('\n', '<br>') : ''
     }
 
@@ -421,7 +424,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     let isReply = false;
     if (parentId) {
       const parentPost = (await Post.findByPk(parentId)) as Post
-      isReply = parentPost.isReply || parentPost.userId != postCreator.id
+      isReply = parentPost.isReply || parentPost.userId != postCreator.id;
     }
 
     const newData = {
@@ -435,7 +438,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       content_warning: cw,
       ...(await getPostInteractionLevels(uri, parentId)),
       isBskyExclusive: true, // TODO hmmm
-      isReply: isReply
+      isReply: isReply,
     }
     if (!parentId) {
       delete newData.parentId
@@ -636,7 +639,7 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   if ((embed as AppBskyEmbedExternal.Main).external) {
     const external = (embed as AppBskyEmbedExternal.Main).external
     return {
-      mediaType: external.uri.startsWith('https://media.ternor.com/') ? 'image/gif' : 'text/html',
+      mediaType: (external.uri.startsWith('https://media.ternor.com/') || external.uri.startsWith('https://static.klipy.com/')) ? 'image/gif' : 'text/html',
       description: external.title,
       url: external.uri,
       mediaOrder: 0,
@@ -652,6 +655,25 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
         description: media.alt,
         height: media.aspectRatio?.height,
         width: media.aspectRatio?.width,
+        url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
+        mediaOrder: index,
+        external: true
+      }
+    })
+    return toConcat
+  }
+  // gallery embed (multiple images, new style for 5-10 images)
+  if ((embed as any)['$type'] === 'app.bsky.embed.gallery' || (embed as any).items) {
+    const items = (embed as any).items as Array<any>
+    const toConcat = items.map((item, index) => {
+      // item is of type app.bsky.embed.gallery#image
+      const image = item.image
+      const cid = image.ref['$link'] ? image.ref['$link'] : image.ref.toString()
+      return {
+        mediaType: image.mimeType,
+        description: item.alt,
+        height: item.aspectRatio?.height,
+        width: item.aspectRatio?.width,
         url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
         mediaOrder: index,
         external: true

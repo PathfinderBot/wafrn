@@ -1,5 +1,5 @@
 <div class="mx-3 lg:mx-4 wafrn-container">
-  <h2 class="my-3 text-3xl">Email campaign</h2>
+  <h2 class="my-3 text-3xl">{{ 'admin.emailCampaign.title' | translate }}</h2>
 </div>
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
@@ -8,22 +8,22 @@
   }
 
   <mat-form-field class="w-full">
-    <mat-label>Subject</mat-label>
+    <mat-label>{{ 'admin.emailCampaign.subject' | translate }}</mat-label>
     <input matInput [(ngModel)]="subject" [disabled]="!ready" />
   </mat-form-field>
 
   <mat-form-field class="w-full">
-    <mat-label>Email HTML</mat-label>
+    <mat-label>{{ 'admin.emailCampaign.emailHtml' | translate }}</mat-label>
     <textarea matInput class="campaign-body" [(ngModel)]="body" [disabled]="!ready"></textarea>
   </mat-form-field>
 
 
   <button mat-flat-button color="primary" class="w-full" (click)="submit(true)" [disabled]="!canSubmit">
-    Send test
+    {{ 'admin.emailCampaign.sendTest' | translate }}
   </button>
 
   <button mat-flat-button color="primary" class="w-full" (click)="submit(false)" [disabled]="!canSubmit">
-    Send campaign
+    {{ 'admin.emailCampaign.sendCampaign' | translate }}
   </button>
 
 

@@ -4,18 +4,18 @@
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container-wide">
   <mat-form-field class="pb-1 mat-form-field-no-padding w-full">
-    <mat-label>Reports Filter
+    <mat-label>{{ 'admin.reportList.reportsFilter' | translate }}
       @if (advancedSearch()) {
-        <strong>(Advanced)</strong>
+        <strong>{{ 'admin.reportList.advancedLabel' | translate }}</strong>
       }
     </mat-label>
     <input matInput class="w-full" [(ngModel)]="reportDataSource.filter" (input)="updateMode($event)" />
   </mat-form-field>
   @if (advancedSearch()) {
-    <div>Report
+    <div>{{ 'admin.reportList.report' | translate }}
       @for (filter of mapFilters(searchFilters()); track $index) {
         @if ($index !== 0) {
-          and
+          {{ 'admin.reportList.and' | translate }}
         }
         <span class="filter-entry">{{ filter }}</span>
       }
@@ -23,38 +23,32 @@
   }
   <div class="pb-3 pt-3"><mat-expansion-panel>
     <mat-expansion-panel-header>
-      <mat-panel-title> Advanced Search Help </mat-panel-title>
+      <mat-panel-title>{{ 'admin.reportList.advancedSearchHelp' | translate }}</mat-panel-title>
     </mat-expansion-panel-header>
     <p>
-      You can add advanced filters by prefixing filter keywords in the following list with plus sign <code>+</code> as
-      an additive filter or minus sign <code>-</code> as a subtractive filter. Select filters are separated from their
-      value by either a colon <code>:</code> or equal sign <code>=</code>, for example <code>+target:EvilUser</code>.
-      Select filters can be used implicitly as additive filters without a plus sign <code>+</code>.
+      <span [innerHTML]="'admin.reportList.advancedHelpIntro' | translate"></span>
     </p>
     <p>
-      Additive filters are OR within their category but AND with different keywords. Subtractive filters are AND with
-      themselves and other keywords.
+      {{ 'admin.reportList.advancedHelpLogic' | translate }}
     </p>
-    <p class="mb-1">Here are the existing keywords:</p>
+    <p class="mb-1">{{ 'admin.reportList.existingKeywords' | translate }}</p>
     <ul>
-      <li><code>r</code> or <code>reporter</code> (Select) URL of the user who reported the target</li>
-      <li><code>t</code> or <code>target</code> (Select) URL of the user who was reported</li>
-      <li><code>d</code> or <code>resolved</code> (Flag) whether a report was resolved</li>
+      <li><span [innerHTML]="'admin.reportList.keywordReporter' | translate"></span></li>
+      <li><span [innerHTML]="'admin.reportList.keywordTarget' | translate"></span></li>
+      <li><span [innerHTML]="'admin.reportList.keywordResolved' | translate"></span></li>
     </ul>
-    <p class="mb-1">Examples:</p>
+    <p class="mb-1">{{ 'admin.reportList.examples' | translate }}</p>
     <ul>
-      <li><code>+resolved</code> filters to only resolved reports</li>
-      <li><code>-r=ReportSpammer -d</code> filters to unresolved reports not sent by <code>ReportSpammer</code></li>
-      <li><code>+reporter=Vigilante r:VigilanteAlt -target=EvilUser</code> filters to only reports of user
-      <code>EvilUser</code> that were sent by <code>Vigilante</code> or <code>VigilanteAlt</code>
-    </li>
+      <li><span [innerHTML]="'admin.reportList.exampleResolved' | translate"></span></li>
+      <li><span [innerHTML]="'admin.reportList.exampleUnresolved' | translate"></span></li>
+      <li><span [innerHTML]="'admin.reportList.exampleReporter' | translate"></span></li>
   </ul>
 </mat-expansion-panel></div>
 
 <div class="w-full overflow-x-auto">
   <table mat-table [dataSource]="reportDataSource" class="w-max">
     <ng-container matColumnDef="user">
-      <th mat-header-cell *matHeaderCellDef>Reporter</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'admin.reportList.reporter' | translate }}</th>
       <td mat-cell *matCellDef="let row">
         <a [routerLink]="'/blog/' + row.user.url">
           <div class="flex gap-2 align-items-start">
@@ -65,7 +59,7 @@
       </td>
     </ng-container>
     <ng-container matColumnDef="reportedUser">
-      <th mat-header-cell *matHeaderCellDef>Target User</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'admin.reportList.targetUser' | translate }}</th>
       <td mat-cell *matCellDef="let row">
         <a [routerLink]="row.post ? ['/fediverse/post/' + row.post.id] : ['/blog/' + row.reportedUser.url]"
           class="subtle-link">
@@ -74,9 +68,9 @@
             <div class="flex flex-column">
               {{ row.reportedUser.url }}
               @if (row.post) {
-                <span class="report-type">(post)</span>
+                <span class="report-type">{{ 'admin.reportList.postType' | translate }}</span>
               } @else {
-                <span class="report-type">(account)</span>
+                <span class="report-type">{{ 'admin.reportList.accountType' | translate }}</span>
               }
             </div>
           </div>
@@ -84,11 +78,11 @@
       </td>
     </ng-container>
     <ng-container matColumnDef="type">
-      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'admin.reportList.type' | translate }}</th>
       <td mat-cell *matCellDef="let row">{{ row.severity }} ({{ mapReport(row.severity) }})</td>
     </ng-container>
     <ng-container matColumnDef="report">
-      <th mat-header-cell *matHeaderCellDef>Report</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'admin.reportList.report' | translate }}</th>
       <td mat-cell *matCellDef="let row">
         <div class="report-description">
           @if (mapReport(row.severity).length + row.description.length < 90) { <span class="report-severity"
@@ -110,7 +104,7 @@
   </td>
 </ng-container>
 <ng-container matColumnDef="solved">
-  <th mat-header-cell *matHeaderCellDef>Resolved</th>
+  <th mat-header-cell *matHeaderCellDef>{{ 'admin.reportList.resolved' | translate }}</th>
   <td mat-cell *matCellDef="let row">
     <div class="flex justify-content-center">
       @if (row.resolved) {
@@ -122,13 +116,13 @@
   </td>
 </ng-container>
 <ng-container matColumnDef="date">
-  <th mat-header-cell *matHeaderCellDef>Date</th>
+  <th mat-header-cell *matHeaderCellDef>{{ 'common.date' | translate }}</th>
   <td mat-cell *matCellDef="let row">
     {{ row.createdAt | date: 'M/d/yy, h:mm:ss a' }}
   </td>
 </ng-container>
 <ng-container matColumnDef="actions">
-  <th mat-header-cell *matHeaderCellDef>Actions</th>
+  <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
   <td mat-cell *matCellDef="let element">
     @if (!element.resolved) {
       <div class="flex gap-2">
@@ -165,6 +159,6 @@
 </div>
 
 <mat-paginator #reportPaginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons
-  aria-label="Select report list page">
+  [attr.aria-label]="'admin.reportList.selectReportListPage' | translate">
 </mat-paginator>
 </mat-card>

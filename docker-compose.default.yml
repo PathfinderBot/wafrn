@@ -2,6 +2,19 @@
 # ANY CHANGE YOU DO MIGHT BE REVERTED DURING AN UPDATE
 # Edit values on the .env file
 # If the value you need to edit is hardcoded, please create a PR fixing it
+
+# ATTENTION: NEXT VERSIONS OF THIS FILE WILL BE ON GIT.
+# RIGHT NOW, NEXT UPDATE WILL DESTROY YOUR DOCKERCOMPOSE.
+
+
+
+# Shared logging configuration for all services (max log size 100mb)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "100m"
+    max-file: "3"
+
 services:
   frontend:
     restart: unless-stopped
@@ -10,6 +23,7 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
     env_file: .env
+    logging: *default-logging
     environment:
       BACKEND_HOST: "${BACKEND_HOST:-wafrn-backend-1:9000 wafrn-backend-2:9000 wafrn-backend-3:9000}"
       WEBSOCKET_HOST: "wafrn-websocket-1:9000"
@@ -18,8 +32,9 @@ services:
       BULLBOARD_DOMAIN: ${BULLBOARD_DOMAIN:-bullboard.${DOMAIN_NAME}}
     volumes:
       - ./packages/frontend/runtime-overrides:/overrides
-      - "frontend:/var/www/html/frontend"
+      - ./data/frontend:/var/www/html/frontend
       - ./packages/backend/uploads:/var/www/html/uploads
+      - ./data/caddy:/data/caddy
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -43,6 +58,7 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     env_file: .env
+    logging: *default-logging
     environment: &default_backend_env_vars
       FRONTEND_FQDN_URL: https://${DOMAIN_NAME}
       FRONTEND_MEDIA_URL: ${FRONTEND_MEDIA_URL:-https://${MEDIA_DOMAIN}}
@@ -55,7 +71,7 @@ services:
     volumes:
       - ./packages/backend/uploads:/app/packages/backend/uploads
       - cache:/app/packages/backend/cache
-      - frontend:/app/packages/frontend:ro
+      - ./data/frontend:/app/packages/frontend:ro
   workers:
     <<: *default_backend
     build:
@@ -100,25 +116,29 @@ services:
     restart: unless-stopped
     shm_size: '${SHM_SIZE:-2gb}'
     env_file: .env
+    logging: *default-logging
     environment:
       PGUSER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DBNAME}
     volumes:
-      - dbpg:/var/lib/postgresql/data
+      - ./data/dbpg:/var/lib/postgresql/data
 
   adminer:
     image: adminer
     restart: unless-stopped
+    logging: *default-logging
 
   redis:
     image: redis:8.4
     restart: unless-stopped
+    logging: *default-logging
     volumes:
-      - redis:/data
+      - ./data/redis:/data
 
   pds:
     image: ghcr.io/bluesky-social/pds:0.4
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - ${PDS_HTTP_PORT:-127.0.0.1:3000}:3000
     profiles:
@@ -143,7 +163,7 @@ services:
       PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
       PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
     volumes:
-      - pds:/pds
+      - ./data/pds:/pds
 
   pds_worker:
     <<: *default_backend
@@ -160,7 +180,7 @@ services:
     profiles: [metrics]
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ./data/prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -199,10 +219,11 @@ services:
       context: monitoring/grafana
       dockerfile: Dockerfile
     volumes:
-      - grafana_data:/var/lib/grafana
+      - ./data/grafana_data:/var/lib/grafana
     restart: unless-stopped
     profiles: [metrics]
     env_file: .env
+    logging: *default-logging
     environment:
       GF_SERVER_HTTP_PORT: 2345
       GF_USERS_ALLOW_SIGN_UP: false
@@ -218,6 +239,7 @@ services:
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         POSTGRES_DB: ${POSTGRES_DBNAME}
     restart: unless-stopped
+    logging: *default-logging
     profiles: [metrics]
     env_file: .env
     command:
@@ -232,6 +254,7 @@ services:
     container_name: bullboard
     image: nauverse/bull-board
     restart: unless-stopped
+    logging: *default-logging
     environment:
       REDIS_URL: redis:6379
       BULL_PREFIX: bull
@@ -242,12 +265,6 @@ services:
       - redis
 
 volumes:
-  dbpg:
-  pds:
-  frontend:
-  redis:
-  prometheus_data:
-  grafana_data:
   cache:
 
 

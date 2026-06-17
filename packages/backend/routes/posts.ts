@@ -124,6 +124,7 @@ export default function postsRoutes(app: Application) {
     let success = false
     const id = req.query.id as string
     const featured = req.query.featured == 'true'
+    const mediaOnly = req.query.mediaOnly == 'true'
 
     if (id) {
       const blog = await User.findOne({
@@ -157,11 +158,10 @@ export default function postsRoutes(app: Application) {
         ) {
           privacyArray.push(Privacy.FollowersOnly)
         }
-        const queryObject = null
-        const postIds = await Post.findAll({
+        let queryObject: any = {
           order: [['createdAt', 'DESC']],
           limit: featured ? undefined : completeEnvironment.postsPerPage,
-          attributes: ['id'],
+          attributes: ['id', 'createdAt', 'featured'],
           where: {
             createdAt: { [Op.lt]: getStartScrollParam(req) },
             featured: featured
@@ -181,7 +181,16 @@ export default function postsRoutes(app: Application) {
               [Op.in]: privacyArray
             }
           }
-        })
+        }
+        if (mediaOnly) {
+          queryObject = {
+            include: [
+              { model: Media, required: true }
+            ],
+            ...queryObject,
+          }
+        }
+        const postIds = await Post.findAll(queryObject)
         const postsByBlog = await getUnjointedPosts(
           postIds.map((post: any) => post.id),
           req.jwtData?.userId ? req.jwtData.userId : '00000000-0000-0000-0000-000000000000',

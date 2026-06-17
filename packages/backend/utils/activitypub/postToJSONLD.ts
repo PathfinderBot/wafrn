@@ -245,11 +245,12 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
     if (
       !misskeyContent.includes(user.url) &&
       !misskeyAskContent.includes(user.url)
-    )
+    ) {
       misskeyMentions.push(url);
-    standardMentions.push(
-      `<span class="h-card" translate="no"><a href="${user.remoteMentionUrl}" class="u-url mention" rel="nofollow noopener" target="_blank">@<span>${url.substring(1)}</span></a></span>`
-    )
+      standardMentions.push(
+        `<span class="h-card" translate="no"><a href="${user.remoteMentionUrl}" class="u-url mention" rel="nofollow noopener" target="_blank">@<span>${url.substring(1)}</span></a></span>`
+      )
+    }
   }
   misskeyContent = await htmlToMfm(
     misskeyContent.replace(lineBreaksAtEndRegex, "")
