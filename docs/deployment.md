@@ -212,9 +212,9 @@ This used to be realy hard. Not anymore!
 In your .env file, add this at the end:
 
 ```
-HTTP_PORT:127.0.0.1:8080
-HTTPS_PORT:127.0.0.1:8433
-PDS_HTTP_PORT:127.0.0.1:3000
+HTTP_PORT=127.0.0.1:8080
+HTTPS_PORT=127.0.0.1:8433
+PDS_HTTP_PORT=127.0.0.1:3000
 AUTO_HTTPS_MODE=auto_https disable_redirects
 ```
 
