@@ -465,6 +465,12 @@
       "psa2_3": "to find out what does/doesn't work generally speaking.",
       "psa3": "In the future, we aim to have Bluesky-Specific settings in here, like the ability to change the Bluesky username."
     },
+    "migrateOut": {
+      "title": "Migrate out",
+      "instructions": "You need to first create an alias on the new fedi account you are moving to",
+      "newAccount": "New account (without the @)",
+      "migrate": "Migrate"
+    },
     "migrate": {
       "psa1": "To migrate to another server please create an alias and click",
       "psa2": "here"
