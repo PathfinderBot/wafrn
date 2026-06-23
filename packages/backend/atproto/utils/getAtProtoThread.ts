@@ -264,9 +264,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   if (verifiedFedi) {
     try {
-      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
-        forceNotBsky: true
+      const remotePostV0 = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
+        forceNotBsky: true,
+        forceUpdate: true
       })
+      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, remotePostV0?.id, {
+        forceNotBsky: true,
+        forceUpdate: true
+      })
+
       const bskyCid = postPetitionPds!.cid as string
       const bskyUri = postPetitionPds!.uri
       if (remotePost && remotePost.remotePostId) {
@@ -278,6 +284,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         await remotePost.save()
         return remotePost.id
       } else if (remotePost) {
+        // HERE?
         remotePost.bskyCid = bskyCid
         remotePost.bskyUri = bskyUri
         // if there's already a bsky post about
