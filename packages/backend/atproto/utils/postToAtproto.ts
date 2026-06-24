@@ -149,7 +149,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       // Local users
       if (!user.isBlueskyUser) {
-        if (user.bskyDid && user.enableBsky ) {
+        if (user.bskyDid && user.enableBsky) {
           // TODO instead of calling bsky appview we should check the pds document ourselves?
           const response = await agent.getProfile({ actor: user.bskyDid });
           if (response.data)
@@ -196,6 +196,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const encoder = new TextEncoder();
 
   const postMax = 300;
+  let current = 0;
   // A bit more to account for unicode and such
   const shortenerWithMediaLength = 31;
   const textOnlyShortenerLength = 15;
@@ -209,24 +210,18 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     if (token.type === "link") text += token.text;
     else text += token.raw;
 
-    const length = encoder.encode(text).byteLength;
+    current = current + encoder.encode(token.raw).byteLength;
     // well a bit dirty but yeah taking the case out is worse and ughh
-    if (length > postMax && medias.length && medias.length <= 4 || encoder.encode(postText).length > postMax) {
-      const lengthLeft =
-        postMax - builder.text.length - shortenerWithMediaLength;
-      if (token.type === "link")
-        builder.addLink(token.text.slice(0, lengthLeft), token.url);
-      else builder.addText(token.raw.slice(0, lengthLeft));
+    if (current > postMax && medias.length && medias.length <= 4) {
 
-      builder.addText("... ");
       builder.addLink(
-        "see complete post",
+        "[...]",
         `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`
       );
 
       postShortened = true;
       break;
-    } else if (length > postMax) {
+    } else if (current > postMax) {
       const lengthLeft =
         postMax - builder.text.length - textOnlyShortenerLength;
       if (token.type === "link")
@@ -343,24 +338,25 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     fullText: fullText,
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
+    via: `Wafrn${completeEnvironment.defaultSEOData.title.toLowerCase() !== 'wafrn' ? ` (${completeEnvironment.defaultSEOData.title})` : ''}`
   };
   let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {
     let file = await fs.readFile("uploads/" + media.url);
     let isVideo = media.mediaType?.startsWith("video/");
     let fileToDelete: string | undefined;
-    let type : string | undefined
+    let type: string | undefined
     // FIRST check
-    if(!isVideo) {
+    if (!isVideo) {
       const metadata = await sharp("uploads/" + media.url).metadata()
-      if(metadata.pages && metadata.pages > 1) {
+      if (metadata.pages && metadata.pages > 1) {
         isVideo = true;
         await optimizeMedia("uploads/" + media.url, {
           forceImageExtension: 'gif',
           keep: true,
           outPath: 'uploads/' + media.id + '_tmp'
         })
-        await optimizeMedia("uploads/" + media.id + "_tmp.gif",  {
+        await optimizeMedia("uploads/" + media.id + "_tmp.gif", {
           forceImageExtension: 'mp4',
           keep: false,
           outPath: 'uploads/' + media.id + '_tmp'
@@ -371,10 +367,10 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         presentation = 'image/gif'
         // I like to play dangerously
         media.mediaType = type
-        media.url = '/' +media.id + '_tmp_processed.mp4'
+        media.url = '/' + media.id + '_tmp_processed.mp4'
         fileToDelete = 'uploads/' + media.id + '_tmp_processed.mp4'
       }
-      
+
     }
     if (!isVideo) {
       // yeah, 1 millon bytes is officially the limit:
@@ -406,23 +402,23 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     const { data } = await agent.uploadBlob(Buffer.from(file), {
       encoding: type || media.mediaType || undefined,
     });
-    if(fileToDelete){
+    if (fileToDelete) {
       try {
         setTimeout(async () => {
           await fs.unlink(fileToDelete)
         }, (60000));
-      } catch(error) {
+      } catch (error) {
         logger.debug(`Error deleting non existing file ${fileToDelete}`)
       }
     }
     return { media, blob: data.blob };
   });
   const bskyMedias = await Promise.all(bskyMediaPromises);
-  const isNotValidMedia = bskyMedias.some((media) => 
-      media.media.mediaType?.includes('pdf')
-    )
+  const isNotValidMedia = bskyMedias.some((media) =>
+    media.media.mediaType?.includes('pdf')
+  )
   if (bskyMediaPromises.length && bskyMediaPromises.length <= 4 && !isNotValidMedia) {
-    
+
     const video = bskyMedias.find((media) =>
       media.media.mediaType?.startsWith("video/")
     );
@@ -451,14 +447,32 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
     // Shortening when media is present is handled earlier
   } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
-    res.embed = {
-      $type: "app.bsky.embed.external",
-      external: {
-        uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
-        title: `See complete post at ${completeEnvironment.instanceUrl}`,
-        description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`,
-      },
-    };
+    // If we have more than 4 media and they are all images (no videos/pdf),
+    // post as a gallery embed (new app.bsky.embed.gallery). Otherwise fallback to external link.
+    const onlyImages = bskyMedias.length > 0 && !bskyMedias.some((m) => (m.media.mediaType || '').startsWith('video/') || (m.media.mediaType || '').includes('pdf'));
+    if (bskyMedias.length > 4 && onlyImages && bskyMedias.length <= 10) {
+      res.embed = {
+        $type: 'app.bsky.embed.gallery',
+        items: bskyMedias.map((m, index) => ({
+          $type: 'app.bsky.embed.gallery#image',
+          image: m.blob,
+          alt: (m.media.description || '').slice(0, 999),
+          aspectRatio: {
+            width: m.media.width,
+            height: m.media.height,
+          },
+        })),
+      };
+    } else {
+      res.embed = {
+        $type: "app.bsky.embed.external",
+        external: {
+          uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
+          title: `See complete post at ${completeEnvironment.instanceUrl}`,
+          description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`,
+        },
+      };
+    }
   }
 
   if (post.parentId) {

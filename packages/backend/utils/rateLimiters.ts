@@ -60,7 +60,7 @@ const linkPreviewRateLimiter = rateLimit({
 
 const biteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 20, // Limit each IP to bites per minute. should move lower to a "acceptable" point
+  max: 5, // Limit each IP to bites per minute. should move lower to a "acceptable" point
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   message: "Too many bites, you ate the server",

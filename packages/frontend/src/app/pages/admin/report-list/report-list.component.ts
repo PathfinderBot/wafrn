@@ -114,7 +114,7 @@ export class ReportListComponent implements OnInit {
       const confirmRes = await this.simpleDialog.createConfirmDialog({
         title: "dialog.admin.confirmBanTitle",
         titleSuffix: report.reportedUser.url,
-        content: "confirmBanContentBluesky",
+        content: "admin.confirmBanContentBluesky",
       });
       confirm = confirmRes ?? false;
     } else {
@@ -147,17 +147,17 @@ export class ReportListComponent implements OnInit {
     let confirm = false;
     let reason = "";
     const dialogRes = await this.simpleDialog.createPromptDialog({
-        title: "dialog.admin.promptForceCwPostTitle",
-        titleSuffix: '',
-        content: "dialog.admin.promptForceCwPostDescription",
-        label: "",
-      });
-    if(!dialogRes?.confirmed) {
+      title: "dialog.admin.promptForceCwPostTitle",
+      titleSuffix: '',
+      content: "dialog.admin.promptForceCwPostDescription",
+      label: "",
+    });
+    if (!dialogRes?.confirmed) {
       return
     }
     reason = dialogRes.value;
     this.adminService.forceCWPost(postId, reason)
-    
+
   }
 
   async forceNSFW(report: UserReport) {
@@ -208,14 +208,12 @@ export class ReportListComponent implements OnInit {
 
       // Flags are the only entry of a group
       if (groupType === "flag") {
-        return `${group[0].mode === "+" ? "is" : "is not"} ${
-          this.filterMap[group[0].value]
-        }`;
+        return `${group[0].mode === "+" ? "is" : "is not"} ${this.filterMap[group[0].value]
+          }`;
       }
 
-      return `${this.filterMap[group[0].key]} ${
-        group[0].mode === "+" ? "is" : "is not"
-      } \
+      return `${this.filterMap[group[0].key]} ${group[0].mode === "+" ? "is" : "is not"
+        } \
 ${group.length !== 1 ? "(" : ""}\
 ${group.map((filter) => filter.value).join(" or ")}\
 ${group.length !== 1 ? ")" : ""}`;

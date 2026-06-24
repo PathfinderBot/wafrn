@@ -6,10 +6,11 @@ import { MatInputModule } from '@angular/material/input'
 import { UserSelectorComponent } from '../user-selector/user-selector.component'
 import { LoginService } from 'src/app/services/login.service'
 import { LoaderComponent } from '../loader/loader.component'
+import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-migrate-out',
-  imports: [MatCardModule, FormsModule, MatButtonModule, MatInputModule, UserSelectorComponent, LoaderComponent],
+  imports: [MatCardModule, FormsModule, MatButtonModule, MatInputModule, UserSelectorComponent, LoaderComponent, TranslateModule],
   templateUrl: './migrate-out.component.html',
   styleUrl: './migrate-out.component.scss'
 })
@@ -33,7 +34,7 @@ export class MigrateOutComponent {
       }
     } catch (error) {
       console.error(error)
-      this.message = 'Something went wrong!'
+      this.message = 'messages.genericError'
     }
     this.loading = false
     this.cdr.detectChanges()

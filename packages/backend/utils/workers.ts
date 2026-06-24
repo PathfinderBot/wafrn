@@ -27,7 +27,7 @@ const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.low
+  concurrency: completeEnvironment.workers.high
 })
 
 const workerPrepareSendPost = new Worker('prepareSendPost', (job: Job) => prepareSendRemotePostWorker(job), {
@@ -129,26 +129,35 @@ const workerProcessRemoteMediaData = new Worker(
 
 const workerProcessFirehose = completeEnvironment.enableBsky
   ? new Worker('firehoseQueue', async (job: Job) => await processFirehose(job), {
-      connection: completeEnvironment.bullmqConnection,
-      metrics: {
-        maxDataPoints: MetricsTime.ONE_WEEK * 2
-      },
-      concurrency: completeEnvironment.workers.high,
-      // up to one minute
-      lockDuration: 60000
-    })
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2
+    },
+    concurrency: completeEnvironment.workers.high,
+  })
+  : null
+
+
+const lowPriorityFirehoseQueue = completeEnvironment.enableBsky
+  ? new Worker('lowPriorityFirehoseQueue', async (job: Job) => await processFirehose(job), {
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2
+    },
+    concurrency: completeEnvironment.workers.medium,
+  })
   : null
 
 const workerProcessSinglePost = completeEnvironment.enableBsky
   ? new Worker('processSinglePost', async (job: Job) => await processSinglePostJob(job), {
-      connection: completeEnvironment.bullmqConnection,
-      metrics: {
-        maxDataPoints: MetricsTime.ONE_WEEK * 2
-      },
-      concurrency: completeEnvironment.workers.high,
-      // up to one minute
-      lockDuration: 60000
-    })
+    connection: completeEnvironment.bullmqConnection,
+    metrics: {
+      maxDataPoints: MetricsTime.ONE_WEEK * 2
+    },
+    concurrency: completeEnvironment.workers.high,
+    // up to one minute
+    lockDuration: 60000
+  })
   : null
 
 const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) => await fetchFediThread(job), {
@@ -157,8 +166,6 @@ const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) =
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
   concurrency: completeEnvironment.workers.high,
-  // up to one minute
-  lockDuration: 60000
 })
 
 const workerSendPushNotification = new Worker(
@@ -247,6 +254,7 @@ if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
   workers.push(workerProcessSinglePost as Worker)
   workers.push(workerSendPostBsky as Worker)
+  workers.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workers.forEach((worker) => {
@@ -283,6 +291,7 @@ if (completeEnvironment.enableBsky) {
   workersToLogFail.push(workerProcessFirehose as Worker)
   workersToLogFail.push(workerProcessSinglePost as Worker)
   workersToLogFail.push(workerSendPostBsky as Worker)
+  workersToLogFail.push(lowPriorityFirehoseQueue as Worker)
 }
 
 workersToLogFail.forEach((worker) =>
@@ -313,5 +322,42 @@ export {
   workerFetchFediTrhead,
   workerDownloadMedia,
   workerSyncBskyFollows,
-  workerSyncBskyPosts
+  workerSyncBskyPosts,
+  lowPriorityFirehoseQueue
 }
+
+
+// Graceful shutdown handler
+async function gracefulShutdown(signal: string) {
+  logger.info(`Received ${signal}, starting graceful shutdown...`);
+
+  try {
+    logger.info(`Closing ${workers.length} workers...`);
+    await Promise.all(
+      workers.map(async (worker) => {
+        try {
+          logger.debug(`Closing worker: ${worker.name}`);
+          await worker.close();
+          logger.debug(`Worker closed: ${worker.name}`);
+        } catch (error) {
+          logger.warn({
+            message: `Error closing worker ${worker.name}`,
+            error,
+          });
+        }
+      })
+    );
+    logger.info("All workers closed successfully");
+    process.exit(0);
+  } catch (error) {
+    logger.error({
+      message: "Error during graceful shutdown",
+      error,
+    });
+    process.exit(1);
+  }
+}
+
+// Register signal handlers for graceful shutdown
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));

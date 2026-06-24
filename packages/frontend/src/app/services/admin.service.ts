@@ -80,6 +80,17 @@ export type UserBlockMute = {
   createdAt: string
 }
 
+export type EmailCampaign = {
+  subject: string
+  body: string,
+  test: boolean
+}
+
+export type EmailCampaignResponse = {
+  success: boolean
+  jobId: string
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -141,7 +152,7 @@ export class AdminService {
     )
   }
 
-  async forceCWPost(id: string, message: string ) {
+  async forceCWPost(id: string, message: string) {
     return firstValueFrom(
       this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceCWPost`, { id: id, content_warning: message })
     )
@@ -198,5 +209,15 @@ export class AdminService {
 
   async getStats(): Promise<statsReply> {
     return firstValueFrom(this.http.get<statsReply>(`${EnvironmentService.environment.baseUrl}/status/workerStats`))
+  }
+
+  async blockIp(ip: string) {
+    return firstValueFrom(this.http.post(`${EnvironmentService.environment.baseUrl}/admin/blockIp`, { ipToBlock: ip }))
+  }
+
+  async sendEmailCampaign(campaign: EmailCampaign): Promise<EmailCampaignResponse> {
+    return firstValueFrom(
+      this.http.post<EmailCampaignResponse>(`${EnvironmentService.environment.baseUrl}/admin/sendEmailCampaign`, campaign)
+    )
   }
 }

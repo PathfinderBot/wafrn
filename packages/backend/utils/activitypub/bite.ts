@@ -1,4 +1,4 @@
-import { Queue } from "bullmq";
+import { getQueue } from "../queues.js";
 import { completeEnvironment } from "../backendOptions.js";
 import { UserBitesPostRelation } from "../../models/userBitesPostRelation.js";
 import { User } from "../../models/user.js";
@@ -90,18 +90,7 @@ async function bitePostRemote(biteRelation: UserBitesPostRelation) {
       )
     );
 
-    const sendPostQueue = new Queue("sendPostToInboxes", {
-      connection: completeEnvironment.bullmqConnection,
-      defaultJobOptions: {
-        removeOnComplete: true,
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 1000,
-        },
-        removeOnFail: true,
-      },
-    });
+    const sendPostQueue = getQueue("sendPostToInboxes");
 
     for await (const inboxChunk of inboxes.filter((elem) => !!elem)) {
       await sendPostQueue.add(
@@ -166,18 +155,7 @@ async function biteUserRemote(biter: User, bittenUser: User) {
       )
     );
 
-    const sendPostQueue = new Queue("sendPostToInboxes", {
-      connection: completeEnvironment.bullmqConnection,
-      defaultJobOptions: {
-        removeOnComplete: true,
-        attempts: 3,
-        backoff: {
-          type: "exponential",
-          delay: 1000,
-        },
-        removeOnFail: true,
-      },
-    });
+    const sendPostQueue = getQueue("sendPostToInboxes");
 
     for await (const inboxChunk of inboxes.filter((elem) => !!elem)) {
       await sendPostQueue.add(

@@ -16,6 +16,7 @@ import { ReuseableRouteType } from 'src/app/services/routing.service'
 import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { UserSelectorComponent } from 'src/app/components/user-selector/user-selector.component'
+import { TranslateModule } from '@ngx-translate/core'
 const routes: Routes = [
   {
     path: '',
@@ -47,7 +48,8 @@ const routes: Routes = [
     MatTabsModule,
     BlogLinkModule,
     MatExpansionModule,
-    UserSelectorComponent
+    UserSelectorComponent,
+    TranslateModule
   ]
 })
 export class SearchModule {}

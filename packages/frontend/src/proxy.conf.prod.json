@@ -1,6 +1,12 @@
 {
   "/api": {
-    "target": "https://app.wafrn.net/",
-    "secure": false
+    "target": {
+      "host": "app.wafrn.net",
+      "protocol": "https:"
+    },
+    "secure": false,
+    "ws": true,
+    "changeOrigin": true,
+    "logLevel": "info"
   }
 }

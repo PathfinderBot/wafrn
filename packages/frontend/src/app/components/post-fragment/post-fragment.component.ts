@@ -28,6 +28,7 @@ import Viewer from "viewerjs";
 import { ParticleService } from "src/app/services/particle.service";
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { SettingsService } from "src/app/services/settings.service";
+import { PostHtmlContentComponent } from "../post/post-html-content/post-html-content.component";
 
 type FragmentType = "post" | "quote";
 
@@ -57,7 +58,8 @@ type EmojiReaction = {
     SingleAskComponent,
     PostLinkModule,
     TranslateModule,
-  ],
+    PostHtmlContentComponent
+],
   templateUrl: "./post-fragment.component.html",
   styleUrl: "./post-fragment.component.scss",
 })
@@ -83,7 +85,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
   userId: string;
   mentionPosts: string[] = [];
   availableEmojiNames: Set<string> = new Set();
-
+  userPrefersReducedMotion = this.loginService.userPrefersReducedMotion()
   userCannotReact = computed<boolean>(() => {
     const ownPost = this.fragment().userId === this.userId;
     return this.reactionLoading() || ownPost;
@@ -292,7 +294,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
           external: reaction.emoji?.external == true,
           name: reaction.content,
           img: image
-            ? `${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${reaction.emoji?.uuid}`
+            ? `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${reaction.emoji?.uuid}`
             : undefined,
           users: [], // this will be filled below,
           tooltip: "",

@@ -8,10 +8,9 @@ src/environments/environment.prod.ts
 # Only exists if Bazel was run
 /bazel-out
 # settings
-Caddyfile
-
 # override directory
 /overrides
+/runtime-overrides
 
 # dependencies
 /node_modules

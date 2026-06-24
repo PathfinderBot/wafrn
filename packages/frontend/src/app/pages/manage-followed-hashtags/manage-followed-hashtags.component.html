@@ -1,5 +1,5 @@
 <mat-card class="p-3 mb-6 lg:mx-4 scalein wafrn-container" style="text-align: center">
-  <h2>Manage followed hashtags</h2>
+  <h2>{{ 'manageFollowedHashtags.title' | translate }}</h2>
   @if (!loading) {
     @for (hashtag of postsService.followedHashtags; track $index) {
       <div>
@@ -11,13 +11,13 @@
           extended
           class="border-round-md search-button ml-2"
         >
-          Unfollow #{{ hashtag }}
+          {{ 'manageFollowedHashtags.unfollowTag' | translate:{tag: hashtag} }}
         </button>
       </div>
     }
     <div class="p-3 flex gap-2">
       <mat-form-field class="flex-1">
-        <mat-label>Tag to subscribe</mat-label>
+        <mat-label>{{ 'manageFollowedHashtags.tagToSubscribe' | translate }}</mat-label>
         <input matInput [(ngModel)]="tag" id="float-input" type="text" />
       </mat-form-field>
       <button
@@ -27,7 +27,7 @@
         extended
         class="border-round-md follow-tag-button"
       >
-        Subscribe to tag
+        {{ 'manageFollowedHashtags.subscribeToTag' | translate }}
       </button>
     </div>
   } @else {

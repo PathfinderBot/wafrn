@@ -3,46 +3,46 @@
 </div>
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container-wide">
-  <button mat-flat-button color="primary" class="w-full mb-4" (click)="createInvite()">Create invite</button>
+  <button mat-flat-button color="primary" class="w-full mb-4" (click)="createInvite()">{{ 'admin.inviteCodes.createInvite' | translate }}</button>
 
   <mat-form-field class="w-full">
-    <mat-label>Filter invite codes</mat-label>
+    <mat-label>{{ 'admin.inviteCodes.filterInviteCodes' | translate }}</mat-label>
     <input matInput class="w-full" [(ngModel)]="dataSource.filter" />
   </mat-form-field>
 
   <div class="w-full overflow-x-auto">
     <table mat-table [dataSource]="dataSource" class="w-max">
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
         <td mat-cell *matCellDef="let element">
           <div class="flex gap-2">
-            <button mat-flat-button (click)="copy(element.code, 'LINK')">Copy link</button>
-            <button mat-flat-button (click)="copy(element.code)">Copy code</button>
+            <button mat-flat-button (click)="copy(element.code, 'LINK')">{{ 'admin.inviteCodes.copyLink' | translate }}</button>
+            <button mat-flat-button (click)="copy(element.code)">{{ 'admin.inviteCodes.copyCode' | translate }}</button>
           </div>
         </td>
       </ng-container>
       <ng-container matColumnDef="code">
-        <th mat-header-cell *matHeaderCellDef>Code</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'admin.inviteCodes.code' | translate }}</th>
         <td mat-cell *matCellDef="let element">
           {{ element.code }}
         </td>
       </ng-container>
       <ng-container matColumnDef="createdBy">
-        <th mat-header-cell *matHeaderCellDef>Created by</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'admin.inviteCodes.createdBy' | translate }}</th>
         <td mat-cell *matCellDef="let element">
           @{{ element.createdBy.url }}
         </td>
       </ng-container>
       <ng-container matColumnDef="expiresIn">
-        <th mat-header-cell *matHeaderCellDef>Expires in</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'admin.inviteCodes.expiresIn' | translate }}</th>
         <td mat-cell *matCellDef="let element">
           {{ element.expiresIn }}
         </td>
       </ng-container>
       <ng-container matColumnDef="usedBy">
-        <th mat-header-cell *matHeaderCellDef>Used by</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'admin.inviteCodes.usedBy' | translate }}</th>
         <td mat-cell *matCellDef="let element">
-          {{ element.usedBy ? '@' + element.usedBy.url : 'NONE' }}
+          {{ element.usedBy ? '@' + element.usedBy.url : ('common.none' | translate) }}
         </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -51,6 +51,6 @@
   </div>
 
   <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons
-    aria-label="Select page of periodic elements">
+    [attr.aria-label]="'admin.inviteCodes.selectInviteCodesPage' | translate">
   </mat-paginator>
 </mat-card>

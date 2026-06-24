@@ -21,53 +21,51 @@
 
   <form class="px-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
     <mat-form-field class="w-full">
-      <mat-label>Email</mat-label>
+      <mat-label>{{ 'login.email' | translate }}</mat-label>
       <input formControlName="email" type="email" matInput />
     </mat-form-field>
 
     <mat-form-field class="w-full">
-      <mat-label>Password</mat-label>
+      <mat-label>{{ 'login.password' | translate }}</mat-label>
       <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
       <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
         <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
       </button>
-      <mat-error> Password is required </mat-error>
+      <mat-error>{{ 'register.passwordRequired' | translate }}</mat-error>
     </mat-form-field>
     @if (registrationLevel === 'INVITE') {
     <mat-form-field class="w-full" [ngClass]="{'opacity-80': !!inviteCode}">
-      <mat-label>Invite code</mat-label>
+      <mat-label>{{ 'register.inviteCode' | translate }}</mat-label>
       <input type="text" formControlName="inviteCode" matInput required [value]="inviteCode"
         [readonly]="!!inviteCode" />
-      <mat-error> Invite code is required </mat-error>
+      <mat-error>{{ 'register.inviteCodeRequired' | translate }}</mat-error>
     </mat-form-field>
     }
 
     <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>Username</mat-label>
+      <mat-label>{{ 'register.username' | translate }}</mat-label>
       <input formControlName="url" type="text" matInput />
-      <mat-hint>Right now we do not allow special characters or spaces</mat-hint>
-      <mat-error>Username contains invalid characters</mat-error>
+      <mat-hint>{{ 'register.usernameHint' | translate }}</mat-hint>
+      <mat-error>{{ 'register.usernameInvalid' | translate }}</mat-error>
     </mat-form-field>
 
     <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>Describe yourself</mat-label>
+      <mat-label>{{ 'register.describeYourself' | translate }}</mat-label>
       <input formControlName="description" type="text" matInput />
-      <mat-hint>A short description of yourself so other people can know who you are</mat-hint>
+      <mat-hint>{{ 'register.describeYourselfHint' | translate }}</mat-hint>
     </mat-form-field>
 
     <mat-form-field (click)="picker.open()" class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>Your birth date <b>(There is a minimum registration age!)</b></mat-label>
+      <mat-label [innerHTML]="'register.birthDateLabel' | translate"></mat-label>
       <input formControlName="birthDate" matInput [min]="minDate" [max]="minimumRegistrationDate"
         [matDatepicker]="picker" />
-      <mat-hint>MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not
-        shared
-        with anyone. Minimum registration age varies depending on the instance</mat-hint>
+      <mat-hint>{{ 'register.birthDateHint' | translate }}</mat-hint>
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
     <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>Gender</mat-label>
-      <mat-hint>This actually does not do anything at all</mat-hint>
+      <mat-label>{{ 'register.gender' | translate }}</mat-label>
+      <mat-hint>{{ 'register.genderHint' | translate }}</mat-hint>
       <mat-select>
         @for (gender of genders; track $index) {
         <mat-option [value]="gender" [innerHTML]="gender">{{ gender }}</mat-option>
@@ -75,17 +73,20 @@
       </mat-select>
     </mat-form-field>
     <div class="pt-2 px-3 pb-2 border-round-md" style="border: 1px solid #999">
-      <label for="avatar" class="block font-medium mb-2">Upload your avatar</label>
+      <label for="avatar" class="block font-medium mb-2">{{ 'register.uploadAvatar' | translate }}</label>
       <div class="flex flex-row align-content-center">
         <button type="button" mat-stroked-button color="primary" (click)="avatarInput.click()">
-          <fa-icon [icon]="faUpload" class="m-1"></fa-icon>Choose File
+          <fa-icon [icon]="faUpload" class="m-1"></fa-icon>{{ 'register.chooseFile' | translate }}
         </button>
         <input #avatarInput formControlName="avatar" id="avatar" type="file"
           accept="image/jpeg,image/png,image/webp,image/gif" hidden (change)="imgSelected($event)" />
         <p class="m-auto ml-1">{{ selectedFileName }}</p>
       </div>
     </div>
-
+    <div class="w-full mt-3">
+      <mat-checkbox formControlName="confirmReadAbout"></mat-checkbox>
+      <mat-label [innerHTML]="'register.confirmReadAbout' | translate"></mat-label>
+    </div>
     <div class="flex">
       <button color="primary" mat-flat-button extended [disabled]="!loginForm.valid"
         class="w-full border-round-md mt-4">

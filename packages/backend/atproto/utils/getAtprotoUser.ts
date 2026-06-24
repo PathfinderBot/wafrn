@@ -6,39 +6,31 @@ import { getDeletedUser } from "../../utils/cacheGetters/getDeletedUser.js";
 import { completeEnvironment } from "../../utils/backendOptions.js";
 import { getDidDoc } from "../../utils/atproto/getDidDoc.js";
 import { getRemoteActor } from "../../utils/activitypub/getRemoteActor.js";
-import { Queue } from "bullmq";
+import { getQueue } from "../../utils/queues.js";
 import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
 import { resolveHandle } from "../../utils/atproto/resolveHandleToDid.js";
 import getUserAgent from "../../utils/getUserAgent.js";
 
-const mergeUsersQueue = new Queue("mergeUsers", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 6,
-    backoff: {
-      type: "exponential",
-      delay: 25000,
-    },
-    removeOnFail: false,
-  },
-});
+const mergeUsersQueue = getQueue("mergeUsers");
 
 async function forcePopulateUsers(dids: string[], localUser: User) {
-  const userFounds = await User.findAll({
-    where: {
-      bskyDid: {
-        [Op.in]: dids,
+  try {
+    const userFounds = await User.findAll({
+      where: {
+        bskyDid: {
+          [Op.in]: dids,
+        },
       },
-    },
-  });
-  const foundUsersDids = userFounds.map((elem) => elem.bskyDid);
-  const notFoundUsers = dids.filter((elem) => !foundUsersDids.includes(elem));
-  if (notFoundUsers.length > 0) {
-    for await (const did of notFoundUsers) {
-      await getAtprotoUser(did);
+    });
+    const foundUsersDids = userFounds.map((elem) => elem.bskyDid);
+    const notFoundUsers = dids.filter((elem) => !foundUsersDids.includes(elem));
+    if (notFoundUsers.length > 0) {
+      for await (const did of notFoundUsers) {
+        await getAtprotoUser(did);
+      }
     }
-  }
+  } catch(error: any){}
+  
 }
 
 async function getAtprotoUser(

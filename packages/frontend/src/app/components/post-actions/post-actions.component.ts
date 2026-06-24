@@ -44,6 +44,7 @@ import { PostActionButtonsComponent } from "../post-action-buttons/post-action-b
 import { SimpleDialogService } from "src/app/services/simple-dialog.service";
 import { BlocksService } from "src/app/services/blocks.service";
 import { MatDialog } from "@angular/material/dialog";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: "app-post-actions",
@@ -51,6 +52,7 @@ import { MatDialog } from "@angular/material/dialog";
     PostActionButtonsComponent,
     MatButtonModule,
     MatMenuModule,
+    MatTooltipModule,
     FontAwesomeModule,
     TranslateModule,
   ],
@@ -89,7 +91,7 @@ export class PostActionsComponent implements OnChanges {
     this.bskyUrl() &&
     this.post()
       .remotePostId.replace(/^https?:\/\//, "")
-      .startsWith(new URL(EnvironmentService.environment.baseUrl).hostname)
+      .startsWith(window.location.hostname)
       ? this.bskyUrl()
       : this.post().displayUrl
       ? (this.post().displayUrl as string)

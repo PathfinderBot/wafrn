@@ -11,11 +11,12 @@ import {
   MAT_DIALOG_DATA,
 } from "@angular/material/dialog";
 import { LoaderComponent } from "../loader/loader.component";
+import { TranslateModule } from "@ngx-translate/core";
 @Component({
   selector: "app-delete-post",
   templateUrl: "./delete-post.component.html",
   styleUrls: ["./delete-post.component.scss"],
-  imports: [MatButtonModule, MatDialogTitle, LoaderComponent],
+  imports: [MatButtonModule, MatDialogTitle, LoaderComponent, TranslateModule],
 })
 export class DeletePostComponent {
   private deletePostService = inject(DeletePostService);

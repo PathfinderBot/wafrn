@@ -243,6 +243,24 @@ export class LoginService {
     return res
   }
 
+  async updateEmail(password: string, newEmail: string) {
+    let res = false
+    const payload = {
+      password: password,
+      email: newEmail
+    }
+    try {
+      const response: any = await firstValueFrom(this.http
+      .post(`${EnvironmentService.environment.baseUrl}/changeEmail`, payload))
+      if(response && response.success) {
+        res = true
+      }
+    } catch (error) {
+      console.error(error)
+    }
+    return res
+  }
+
   async activateAccount(email: string, code: string) {
     const res = false
     const payload = {
@@ -376,7 +394,9 @@ export class LoginService {
       hideNoDescriptionMedia: 'wafrn.hideNoDescriptionMedia',
       disableRewootsExploreLocal: 'wafrn.disableRewootsExploreLocal',
       disableRewootsDashboard: 'wafrn.disableRewootsDashboard',
-      disableReplies: 'wafrn.disableReplies'
+      disableReplies: 'wafrn.disableReplies',
+      disableBsky: 'wafrn.disableBsky',
+      forceReducedMotion: 'wafrn.forceReducedMotion'
     }
 
     try {
@@ -572,5 +592,10 @@ export class LoginService {
     await firstValueFrom(
       this.http.post(EnvironmentService.environment.baseUrl + '/connect-bsky-account', { url: account, password })
     )
+  }
+
+  userPrefersReducedMotion(): boolean {
+    const res = window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true || localStorage.getItem('forceReducedMotion') === 'true';
+    return res;
   }
 }

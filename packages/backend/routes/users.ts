@@ -52,9 +52,9 @@ import { acceptRemoteFollow } from '../utils/activitypub/acceptRemoteFollow.js'
 import showdown from 'showdown'
 import { $Typed, AppBskyActorProfile, AtpAgent, BskyAgent } from '@atproto/api'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
-import { forceUpdateCacheDidsAtThread, getCacheAtDids } from '../atproto/cache/getCacheAtDids.js'
+import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
 import dompurify from 'isomorphic-dompurify'
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import * as OTPAuth from 'otpauth'
 import verifyTotp from '../utils/verifyTotp.js'
 import { follow } from '../utils/follow.js'
@@ -85,18 +85,7 @@ const markdownConverter = new showdown.Converter({
 })
 const forbiddenCharacters = [':', '@', '/', '<', '>', '"', '&', '?']
 
-const generateUserKeyPairQueue = new Queue('generateUserKeyPair', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const generateUserKeyPairQueue = getQueue('generateUserKeyPair')
 
 const serviceUrl = completeEnvironment.bskyPds
   ? completeEnvironment.bskyPds.startsWith('http')
@@ -104,18 +93,7 @@ const serviceUrl = completeEnvironment.bskyPds
     : 'https://' + completeEnvironment.bskyPds
   : ''
 
-const deletePostQueue = new Queue('deletePostQueue', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const deletePostQueue = getQueue('deletePostQueue')
 
 const slurs = [
   'chinaman',
@@ -283,7 +261,7 @@ function userRoutes(app: Application) {
               birthDate: new Date(req.body.birthDate),
               avatar: avatarURL,
               activated: false,
-              registerIp: getIp(req, true),
+              registerIp: getIp(req),
               lastLoginIp: 'ACCOUNT_NOT_ACTIVATED',
               banned: false,
               activationCode,
@@ -323,15 +301,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                  email,
-                  subject: `Welcome to ${instanceHost}, please verify your email!`,
-                  body: `\
+                email,
+                subject: `Welcome to ${instanceHost}, please verify your email!`,
+                body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `
-                })
+              })
             await Promise.all([userWithEmail, emailSent])
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
@@ -580,9 +558,10 @@ function userRoutes(app: Application) {
           subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`
           body = '<p>;D</p>'
         } else {
-          subject = `The email account for your ${completeEnvironment.instanceUrl} account ${user.url} has been verified`
+          subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewd by an admin!`
           body = `\
 <p>Thanks for verifying your email, Our admin team will review your registration request soon!</p>
+<p>We do check registrations to avoid spam and harrasment campaigns, your safety is important<p>
 `
         }
         try {
@@ -654,6 +633,92 @@ function userRoutes(app: Application) {
     })
   })
 
+  app.post('/api/changeEmail', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    try {
+      const userId = req.jwtData?.userId as string
+      const user = (await User.scope('full').findByPk(userId)) as User
+      const password = req.body.password
+      const newEmail = req.body.email
+
+      if (!user) {
+        return res.status(404).send({
+          success: false,
+          message: 'User not found'
+        })
+      }
+
+      if (!password) {
+        return res.status(400).send({
+          success: false,
+          message: '"password" is required in body'
+        })
+      }
+
+      if (!newEmail) {
+        return res.status(400).send({
+          success: false,
+          message: '"email" is required in body'
+        })
+      }
+
+      if (!validateEmail(newEmail)) {
+        return res.status(400).send({
+          success: false,
+          message: 'Invalid email format'
+        })
+      }
+
+      const passwordMatches = await bcrypt.compare(password, user.password)
+      if (!passwordMatches) {
+        return res.status(403).send({
+          success: false,
+          message: 'Incorrect password'
+        })
+      }
+
+      // Check if email already exists (excluding current user)
+      const emailExists = await User.findOne({
+        where: {
+          email: newEmail.toLowerCase(),
+          id: { [Op.ne]: userId }
+        }
+      })
+
+      if (emailExists) {
+        return res.status(400).send({
+          success: false,
+          message: 'Email already in use'
+        })
+      }
+
+      // Update email
+      user.email = newEmail.toLowerCase()
+      await user.save()
+
+      // Force update bluesky email if bluesky is enabled
+      if (user.enableBsky && user.bskyDid) {
+        try {
+          await forceUpdateBskyEmail(user)
+          await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
+        } catch (error) {
+          logger.error({
+            message: `Error updating bluesky email for user ${user.url}`,
+            error: error
+          })
+          // Don't fail the entire request if bluesky sync fails
+        }
+      }
+
+      res.send({ success: true })
+    } catch (error) {
+      logger.error(error)
+      res.status(500).send({
+        success: false,
+        message: 'Error changing email'
+      })
+    }
+  })
+
   app.post('/api/login', loginRateLimiter, onePerSecondLimiter, async (req, res) => {
     let success = false
     try {
@@ -708,7 +773,7 @@ function userRoutes(app: Application) {
                     { expiresIn: '31536000s' }
                   )
                 })
-                userWithEmail.lastLoginIp = getIp(req, true)
+                userWithEmail.lastLoginIp = getIp(req)
                 await userWithEmail.save()
               }
             } else {
@@ -783,7 +848,7 @@ function userRoutes(app: Application) {
                   { expiresIn: '31536000s' }
                 )
               })
-              userWithEmail.lastLoginIp = getIp(req, true)
+              userWithEmail.lastLoginIp = getIp(req)
               await userWithEmail.save()
             }
           }
@@ -1072,19 +1137,19 @@ function userRoutes(app: Application) {
       let followed = blog.isRemoteUser
         ? blog.followingCount
         : Follows.count({
-            where: {
-              followerId: blog.id,
-              accepted: true
-            }
-          })
+          where: {
+            followerId: blog.id,
+            accepted: true
+          }
+        })
       let followers = blog.isRemoteUser
         ? blog.followerCount
         : Follows.count({
-            where: {
-              followedId: blog.id,
-              accepted: true
-            }
-          })
+          where: {
+            followedId: blog.id,
+            accepted: true
+          }
+        })
       const publicOptions = UserOptions.findAll({
         where: {
           userId: blog.id,
@@ -1123,10 +1188,10 @@ function userRoutes(app: Application) {
 
       const postCount = blog
         ? await Post.count({
-            where: {
-              userId: blog.id
-            }
-          })
+          where: {
+            userId: blog.id
+          }
+        })
         : 0
 
       followed = await followed
@@ -1330,7 +1395,7 @@ function userRoutes(app: Application) {
             identifier: user.bskyDid,
             password: password
           })
-          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
+          await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
         } catch (error) {
           logger.error({
             message: `Failed to update bsky account password for user ${user.url}`,
@@ -1547,8 +1612,10 @@ function userRoutes(app: Application) {
               error: 'Failed to connect bluesky account. Please try again.'
             })
           }
-          await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
-          await forceUpdateCacheDidsAtThread()
+          await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
+          await forceUpdateCacheDidsAtThread({
+            addLocalUserDid: newDid
+          })
           await redisCache.del('bskySession:' + user.id)
           await updateUserDidDoc(user)
           return res.send({ success: true })
@@ -1748,6 +1815,28 @@ function userRoutes(app: Application) {
         })
       }
 
+      if (userAsking) {
+        const blocksExisting = await Blocks.count({
+          where: {
+            [Op.or]: [
+              {
+                blockerId: userAsking,
+                blockedId: userRecivingAsk.id
+              },
+              {
+                blockerId: userRecivingAsk.id,
+                blockedId: userAsking
+              }
+            ]
+          }
+        })
+        if (blocksExisting > 0) {
+          return res.send({
+            success: false
+          })
+        }
+      }
+
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
       await Ask.create({
         question: dompurify.sanitize(question, { ALLOWED_TAGS: [] }),
@@ -1911,8 +2000,6 @@ It is slow because we have to send every fedi server that has ever seen a post o
 
 async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
-    await forceUpdateCacheDidsAtThread()
-    await getCacheAtDids(true)
     await updateUserDidDoc(user)
     let pronouns: string | undefined
     let website: string | undefined

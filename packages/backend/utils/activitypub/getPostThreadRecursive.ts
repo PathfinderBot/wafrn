@@ -11,17 +11,7 @@ import {
   User,
   sequelize,
   Ask,
-  Notification,
-  EmojiReaction,
-  PostAncestor,
-  PostReport,
-  QuestionPoll,
-  Quotes,
-  RemoteUserPostView,
-  SilencedPost,
-  UserBitesPostRelation,
-  UserBookmarkedPosts,
-  UserLikesPostRelations
+  Notification
 } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
 import { logger } from '../logger.js'
@@ -37,25 +27,125 @@ import { getDeletedUser } from '../cacheGetters/getDeletedUser.js'
 import { InteractionControl, InteractionControlType, Privacy } from '../../models/post.js'
 import { getPostThreadPDSDirect, processSinglePost } from '../../atproto/utils/getAtProtoThread.js'
 import * as cheerio from 'cheerio'
-import { PostView, ThreadViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js'
 import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import escapeHTML from 'escape-html'
-import { wait } from '../wait.js'
 import { canInteract } from '../baseQueryNew.js'
-import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
+import { getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
+import { getQueue } from '../queues.js'
 
-const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const updateMediaDataQueue = getQueue('processRemoteMediaData')
+
+const mergeBskyPostRelatedRecordsSql = `
+  WITH
+  updated_emoji_reactions AS (
+    UPDATE "emojiReactions"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_notifications AS (
+    UPDATE "notifications"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_post_reports AS (
+    UPDATE "postReports"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_post_ancestors AS (
+    UPDATE "postsancestors" AS ancestors
+    SET "postsId" = :remotePostId
+    WHERE ancestors."postsId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "postsancestors" AS existing_ancestors
+        WHERE existing_ancestors."postsId" = :remotePostId
+          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
+      )
+    RETURNING 1
+  ),
+  updated_question_polls AS (
+    UPDATE "questionPolls"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_quoter_quotes AS (
+    UPDATE "quotes" AS quotes
+    SET "quoterPostId" = :remotePostId, "updatedAt" = NOW()
+    WHERE quotes."quoterPostId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "quotes" AS existing_quotes
+        WHERE existing_quotes."quoterPostId" = :remotePostId
+          AND existing_quotes."quotedPostId" = quotes."quotedPostId"
+      )
+    RETURNING 1
+  ),
+  updated_quoted_quotes AS (
+    UPDATE "quotes" AS quoted_quotes
+    SET "quotedPostId" = :remotePostId, "updatedAt" = NOW()
+    WHERE quoted_quotes."quotedPostId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "quotes" AS existing_quoted_quotes
+        WHERE existing_quoted_quotes."quotedPostId" = :remotePostId
+      )
+    RETURNING 1
+  ),
+  updated_remote_user_post_views AS (
+    UPDATE "remoteUserPostViews" AS views
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE views."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "remoteUserPostViews" AS existing_views
+        WHERE existing_views."postId" = :remotePostId
+          AND existing_views."userId" = views."userId"
+      )
+    RETURNING 1
+  ),
+  updated_silenced_posts AS (
+    UPDATE "silencedPosts"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_user_bites AS (
+    UPDATE "userBitesPostRelations"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_bookmarks AS (
+    UPDATE "userBookmarkedPosts" AS bookmarks
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE bookmarks."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "userBookmarkedPosts" AS existing_bookmarks
+        WHERE existing_bookmarks."postId" = :remotePostId
+          AND existing_bookmarks."userId" = bookmarks."userId"
+      )
+    RETURNING 1
+  ),
+  updated_likes AS (
+    UPDATE "userLikesPostRelations" AS likes
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE likes."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "userLikesPostRelations" AS existing_likes
+        WHERE existing_likes."postId" = :remotePostId
+          AND existing_likes."userId" = likes."userId"
+      )
+    RETURNING 1
+  )
+  SELECT 1
+`
 
 async function getPostThreadRecursive(
   user: any,
@@ -78,6 +168,8 @@ async function getPostThreadRecursive(
     reblogControl: InteractionControl.Anyone,
     quoteControl: InteractionControl.Anyone
   }
+  let bskyUri: string | undefined;
+  let bskyCid: string | undefined;
   const checkBluesky = completeEnvironment.enableBsky && !options?.forceNotBsky
   if (remotePostId === null) return
 
@@ -127,7 +219,7 @@ async function getPostThreadRecursive(
     if (remotePostId.startsWith('https://fed.brid.gy/r/')) {
       const profileAndPost = remotePostId.split('/profile/')[1].split('/post/')
       let bskyProfile = profileAndPost[0]
-      let bskyUri = profileAndPost[1]
+      bskyUri = profileAndPost[1]
       uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
     }
     if (uri) {
@@ -145,7 +237,7 @@ async function getPostThreadRecursive(
             // OK TIME TO UPDATE WHO IS PARENT OF DESCENDENTS
             await Post.update(
               {
-                parentId: bskyVersion.id
+                parentId: bskyVersion.id,
               },
               {
                 where: {
@@ -186,6 +278,15 @@ async function getPostThreadRecursive(
             remotePostId: postPetition.id
           }
         })
+        if (postPetition.blueskyUri && checkBluesky) {
+          try {
+            const directPetition = await getPostThreadPDSDirect(postPetition.blueskyUri)
+            if (directPetition && directPetition.value.fediverseId === postPetition.id) {
+              bskyUri = postPetition.blueskyUri
+              bskyCid = postPetition.blueskyCid
+            }
+          } catch (error) { }
+        }
         if (remotePostInDatabase) {
           if (remotePostInDatabase.remotePostId) {
             const parentPostPetition = await getPetitionSigned(user, remotePostInDatabase.remotePostId)
@@ -348,12 +449,12 @@ async function getPostThreadRecursive(
             parent.hierarchyLevel === 1
               ? parent
               : ((
-                  await parent.getAncestors({
-                    where: {
-                      hierarchyLevel: 1
-                    }
-                  })
-                )[0] as Post)
+                await parent.getAncestors({
+                  where: {
+                    hierarchyLevel: 1
+                  }
+                })
+              )[0] as Post)
           ).remotePostId
           const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
           if (opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
@@ -361,7 +462,7 @@ async function getPostThreadRecursive(
           }
         }
         let postTextContent = `${postPetition.content ? postPetition.content : ''}` // Fix for bridgy giving this as undefined
-        if(invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
+        if (invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
           postTextContent = postTextContent.substring(invisibleMentionsToRemove.name.length)
         }
         if (postPetition.type == 'Video') {
@@ -412,7 +513,6 @@ async function getPostThreadRecursive(
           createdAt = new Date()
         }
 
-        let bskyUri: string | undefined, bskyCid: string | undefined
         let existingBskyPost: Post | undefined
         // check if it's a bridgy post or a post from a wafrn by checking a valid FEP-fffd
         if (postPetition.url && Array.isArray(postPetition.url)) {
@@ -439,7 +539,7 @@ async function getPostThreadRecursive(
                   existingFedi.remotePostId = null
                   await Post.update(
                     {
-                      parentId: postBskyVersion.id
+                      parentId: postBskyVersion.id,
                     },
                     {
                       where: {
@@ -453,7 +553,7 @@ async function getPostThreadRecursive(
                   postBskyVersion.remotePostId = postPetition.id
                   await postBskyVersion.save()
                 }
-                if(!localPostToForceUpdate) {
+                if (!localPostToForceUpdate) {
                   return postBskyVersion
                 }
               } else {
@@ -470,7 +570,7 @@ async function getPostThreadRecursive(
                     existingFedi.isDeleted = true
                     await Post.update(
                       {
-                        parentId: postBskyVersion.id
+                        parentId: postBskyVersion.id,
                       },
                       {
                         where: {
@@ -492,7 +592,7 @@ async function getPostThreadRecursive(
                     await postBskyVersion.save()
                     await Post.update(
                       {
-                        parentId: existingFedi.id
+                        parentId: existingFedi.id,
                       },
                       {
                         where: {
@@ -508,26 +608,9 @@ async function getPostThreadRecursive(
               }
             } else {
               if (!options.ignoreBridgyRepeat) {
-                const processSinglePostQueue = new Queue('processSinglePost', {
-                  connection: completeEnvironment.bullmqConnection,
-                  defaultJobOptions: {
-                    removeOnComplete: true,
-                    removeOnFail: true
-                  }
-                })
+                const processSinglePostQueue = getQueue('processSinglePost')
                 processSinglePostQueue.add('processSinglePost', { post: firstFffd.href, forceUpdate: false })
-                const processFediPostQueue = new Queue('processFediPostQueue', {
-                  connection: completeEnvironment.bullmqConnection,
-                  defaultJobOptions: {
-                    removeOnComplete: true,
-                    attempts: 6,
-                    backoff: {
-                      type: 'exponential',
-                      delay: 2500
-                    },
-                    removeOnFail: false
-                  }
-                })
+                const processFediPostQueue = getQueue('processFediPostQueue')
                 processFediPostQueue.add('processSinglePost', { post: remotePostId }, { delay: 1000 })
               }
             }
@@ -551,9 +634,9 @@ async function getPostThreadRecursive(
           bskyCid: postPetition.blueskyCid,
           ...(bskyCid && bskyUri
             ? {
-                bskyCid,
-                bskyUri
-              }
+              bskyCid,
+              bskyUri
+            }
             : {}),
           ...replyControl
         }
@@ -596,7 +679,10 @@ async function getPostThreadRecursive(
             user,
             postPetition.inReplyTo.id ? postPetition.inReplyTo.id : postPetition.inReplyTo
           )
+          postToCreate.isReply = parent ? parent.isReply || parent.userId != postToCreate.userId : false
+          postToCreate.isBskyExclusive = false
           postToCreate.parentId = parent?.id
+          postToCreate.rootId = parent?.rootId;
         }
 
         const existingPost = localPostToForceUpdate ? await Post.findByPk(localPostToForceUpdate) : undefined
@@ -629,12 +715,12 @@ async function getPostThreadRecursive(
             const postsToQuotePromise: any[] = []
             if (completeEnvironment.enableBsky) {
               postPetition.tag
-              ?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')
-              .forEach((quote: fediverseTag) => {
-                
-                postsToQuotePromise.push(processSinglePost(quote.href as string))
-                postToCreate.content = postToCreate.content.replace(quote.name, '')
-              })
+                ?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')
+                .forEach((quote: fediverseTag) => {
+
+                  postsToQuotePromise.push(processSinglePost(quote.href as string))
+                  postToCreate.content = postToCreate.content.replace(quote.name, '')
+                })
             }
             postPetition.tag
               ?.filter((elem: fediverseTag) => elem.type === 'Link')
@@ -721,7 +807,7 @@ async function getPostThreadRecursive(
         }
         try {
           await addAsksToPost(newPost, fediTags)
-        } catch (error) {}
+        } catch (error) { }
         if (mentionedUsersIds.length != 0) {
           // check if detached
           if (parent?.detached) {
@@ -745,7 +831,7 @@ async function getPostThreadRecursive(
             askContent = askContent.split('@' + completeEnvironment.instanceUrl)[1]
           }
           await Ask.create({
-            question: dompurify.sanitize(askContent, {ALLOWED_TAGS: []}),
+            question: dompurify.sanitize(askContent, { ALLOWED_TAGS: [] }),
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,
@@ -754,166 +840,29 @@ async function getPostThreadRecursive(
         }
 
         if (existingBskyPost) {
-          // very expensive updates! but only happens when bsky
-          // post is already on db but the fedi post is not
-          await EmojiReaction.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await Notification.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await PostReport.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          try {
-            await PostAncestor.update(
-              {
-                postsId: newPost.id
-              },
-              {
-                where: {
-                  postsId: existingBskyPost.id
-                }
-              }
-            )
-          } catch {}
-          await QuestionPoll.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await Quotes.update(
-            {
-              quoterPostId: newPost.id
-            },
-            {
-              where: {
-                quoterPostId: existingBskyPost.id
-              }
-            }
-          )
-          if (
-            !(await Quotes.findOne({
-              where: {
-                quotedPostId: newPost.id
-              }
-            }))
-          ) {
-            await Quotes.update(
-              {
-                quotedPostId: newPost.id
-              },
-              {
-                where: {
-                  quotedPostId: existingBskyPost.id
-                }
-              }
-            )
-          }
-          await RemoteUserPostView.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await SilencedPost.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await SilencedPost.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await UserBitesPostRelation.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await UserBookmarkedPosts.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await UserLikesPostRelations.update(
-            {
-              postId: newPost.id
-            },
-            {
-              where: {
-                postId: existingBskyPost.id
-              }
-            }
-          )
-          await Post.update(
-            {
-              parentId: newPost.id
-            },
-            {
-              where: {
-                parentId: existingBskyPost.id
-              }
-            }
-          )
-
-          // now we delete the existing bsky post
-          await existingBskyPost.destroy()
-
-          // THEN we merge it
           newPost.bskyCid = existingBskyPost.bskyCid
           newPost.bskyUri = existingBskyPost.bskyUri
-          await newPost.save()
+
+          await sequelize.transaction(async (transaction) => {
+            await sequelize.query(mergeBskyPostRelatedRecordsSql, {
+              replacements: {
+                existingPostId: existingBskyPost.id,
+                remotePostId: newPost.id
+              },
+              transaction
+            })
+            await Post.update({
+              parentId: newPost.id,
+            }, {
+              where: {
+                parentId: existingBskyPost.id
+              },
+              transaction
+            })
+
+            await existingBskyPost.destroy({ transaction })
+            await newPost.save({ transaction })
+          })
         }
 
         return newPost

@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatRadioModule } from '@angular/material/radio'
 import { MatCheckboxModule } from '@angular/material/checkbox'
+import { TranslateModule } from '@ngx-translate/core'
 
 @NgModule({
   declarations: [PollComponent],
@@ -16,7 +17,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox'
     FormsModule,
     MatButtonModule,
     MatRadioModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    TranslateModule
   ],
   exports: [PollComponent]
 })

@@ -11,6 +11,7 @@ import { DashboardService } from 'src/app/services/dashboard.service'
 import { MessageService } from 'src/app/services/message.service'
 import { PostsService } from 'src/app/services/posts.service'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-manage-followed-hashtags',
@@ -22,8 +23,9 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
     MatButtonModule,
     LoaderComponent,
     MatFormFieldModule,
-    MatInputModule
-],
+    MatInputModule,
+    TranslateModule
+  ],
   templateUrl: './manage-followed-hashtags.component.html',
   styleUrl: './manage-followed-hashtags.component.scss'
 })
@@ -31,6 +33,7 @@ export class ManageFollowedHashtagsComponent {
   postsService = inject(PostsService);
   private dashboardService = inject(DashboardService);
   private messageService = inject(MessageService);
+  private translateService = inject(TranslateService);
 
   loading = true
   tag = ''
@@ -52,7 +55,12 @@ export class ManageFollowedHashtagsComponent {
     const success = await this.dashboardService.manageHashtagSubscription(tag, follow)
     this.messageService.add({
       severity: success ? 'success' : 'error',
-      summary: success ? `You no longer follow #${tag}` : 'Something went wrong!'
+      summary: success
+        ? this.translateService.instant(
+          follow ? 'manageFollowedHashtags.messages.followed' : 'manageFollowedHashtags.messages.unfollowed',
+          { tag }
+        )
+        : this.translateService.instant('manageFollowedHashtags.messages.error')
     })
     await this.postsService.loadFollowers()
     this.loading = false

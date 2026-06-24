@@ -8,21 +8,10 @@ import getIp from '../utils/getIP.js'
 import optimizeMedia from '../utils/optimizeMedia.js'
 import { logger } from '../utils/logger.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 
-const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
 export default function mediaRoutes(app: Application) {
   app.post(
@@ -41,7 +30,21 @@ export default function mediaRoutes(app: Application) {
           const extension = originalNameArray[originalNameArray.length - 1].toLowerCase()
           const formatsToNotConvert = ['webp', 'aac', 'mp3', 'wav', 'ogg', 'oga', 'm4a', 'pdf']
           if (!formatsToNotConvert.includes(extension)) {
-            fileUrl = `/${await optimizeMedia(file.path)}`
+            try {
+              const optimizedMediaPath = await optimizeMedia(file.path)
+              fileUrl = `/${optimizedMediaPath}`
+            } catch (error) {
+              logger.debug({
+                message: `Error optimizing media`,
+                error: error
+              })
+              res.status(500)
+              return res.send({
+                error: true,
+                message: `Error optimizing mediaº`
+              })
+            }
+
           }
           if (completeEnvironment.removeFolderNameFromFileUploads) {
             fileUrl = fileUrl.slice('/uploads/'.length - 1)

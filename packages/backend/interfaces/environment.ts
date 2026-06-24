@@ -7,6 +7,7 @@ export interface Environment {
     medium: number
     high: number
   }
+  trustProxy: number,
   removeFolderNameFromFileUploads: boolean
   databaseConnectionString: string
   listenIp: string
@@ -19,7 +20,6 @@ export interface Environment {
   instanceUrl: string
   mediaUrl: string
   externalCacheurl: string
-  externalCacheBackups: string[]
   adminUser: string
   adminEmail: string
   adminPassword: string

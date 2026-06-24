@@ -13,35 +13,11 @@ export class EnvironmentService {
   public static environment: any = { ...environment }
 
   constructor() {
-    const environmentCopy: any = { ...environment }
-
-    if (environmentCopy.forceEnvironment) {
-      this.replaceEnvironment(environmentCopy.forceEnvironment)
-    }
-
-    // we only do this if in prod!!
-    if(!environmentCopy.forceLocal ) {
-      let localStorageEnv = localStorage.getItem('environment')
-      if (localStorageEnv && !environmentCopy.production) {
-      this.replaceEnvironment(JSON.parse(localStorageEnv))
-      }
-      firstValueFrom(this.http.get(EnvironmentService.environment.baseUrl + '/environment'))
-      .then((res: any) => {
-        if (res) {
-          this.replaceEnvironment(res)
-          localStorage.setItem('environment', JSON.stringify(res))
-        }
-      })
-      .catch((error) => {
-        console.warn()
-      })
-    }
   }
 
   replaceEnvironment(newEnv: Record<string, string | number | boolean>) {
     for (const key in newEnv) {
       if (newEnv[key] !== undefined) {
-        // @ts-ignore
         EnvironmentService.environment[key] = newEnv[key]
       }
     }

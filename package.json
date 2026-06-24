@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.04.01",
+  "version": "2026.06.03-DEV",
   "description": "wafrn",
   "main": "index.ts",
   "scripts": {
@@ -43,6 +43,7 @@
     "@eslint/config-array": "^0.19.0",
     "@eslint/js": "^9.39.4",
     "@eslint/plugin-kit": "^0.3.4",
+    "@types/node": "^25.6.0",
     "@types/showdown": "^2.0.6",
     "eslint": "^9.39.4",
     "globals": "^15.15.0",

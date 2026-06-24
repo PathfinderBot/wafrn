@@ -10,6 +10,7 @@ import { Dialog } from "@angular/cdk/dialog";
 import { EmojiPickerComponent } from "../emoji-picker/emoji-picker.component";
 import { ParticleService } from "src/app/services/particle.service";
 import { EnvironmentService } from "src/app/services/environment.service";
+import { TranslatePipe } from "@ngx-translate/core";
 
 @Component({
   selector: "app-emoji-react",
@@ -18,6 +19,7 @@ import { EnvironmentService } from "src/app/services/environment.service";
     FontAwesomeModule,
     OverlayModule,
     MatTooltipModule,
+    TranslatePipe,
   ],
   templateUrl: "./emoji-react.component.html",
   styleUrl: "./emoji-react.component.scss",
@@ -64,7 +66,7 @@ export class EmojiReactComponent {
       // Play emoji
       const emojiIsImage = emoji.url !== "";
       if (emojiIsImage) {
-        const fullUrl = `${EnvironmentService.environment.cacheDomain}/api/v2/cache/emoji/${emoji.uuid}`;
+        const fullUrl = `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${emoji.uuid}`;
         this.particle.imageReact(fullUrl);
       } else {
         this.particle.emojiReact(emoji.name);

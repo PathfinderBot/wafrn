@@ -1,6 +1,6 @@
 <div class="emoji-collections">
   <mat-form-field class="w-full mat-form-field-no-padding emoji-search">
-    <mat-label>Search available emojis</mat-label>
+    <mat-label>{{ 'emoji.searchAvailable' | translate }}</mat-label>
     <input [(ngModel)]="filterText" matInput />
   </mat-form-field>
 
@@ -8,7 +8,7 @@
     <div class="emoji-sidebar">
       <button mat-button class="emoji-sidebar-child emoji-collection-button"
         [class.emoji-active-collection]="this.collectionHas(-2)" (click)="this.toggleCollection(-2)">
-        <span><fa-icon title="Recent emojis" [icon]="clockIcon" class="vertical-align-middle"></fa-icon></span>
+        <span><fa-icon title="{{ 'emoji.recentEmojis' | translate }}" [icon]="clockIcon" class="vertical-align-middle"></fa-icon></span>
       </button>
       @for (emojiCollection of emojiCollections; track $index) {
       @if (emojiCollection.emojis.length > 0) {
@@ -27,8 +27,8 @@
       }
     </div>
 
-    <cdk-virtual-scroll-viewport itemSize="55" class="emoji-viewport" minBufferPx="200" maxBufferPx="300"
-      [style.height.px]="this.virtualHeight()">
+    <cdk-virtual-scroll-viewport itemSize="55" class="emoji-viewport" minBufferPx="200" maxBufferPx="300">
+      <!-- [style.height.px]="this.virtualHeight()"> -->
       <div *cdkVirtualFor="let row of this.vcRows()" class="emoji-row" [class.emoji-header]="row.tag === 0">
         @if (row.tag == 0) {
         <h3 class="m-0 text-xl line-height-3 flex-1 emoji-header-text">

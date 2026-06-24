@@ -84,16 +84,8 @@ export class ViewBlogComponent
   // evil
   postsVisible = true;
   mediaVisible = false;
+  activeTabName = signal<string>('blog.tabWoots');
 
-  // HACK: Currently we do not have a special path for media posts so
-  // this is just filtering them manually, though it causes a lot of API calls
-  //
-  // We should replace this with a separate route when that is implemented
-  mediaFilteredPosts() {
-    return this.posts.filter(
-      (thread) => (thread.at(-1)?.medias.length ?? 0) > 0
-    );
-  }
 
   rateLimitLoadSubject = new Subject<void>();
 
@@ -148,7 +140,7 @@ export class ViewBlogComponent
 
   private getAvatarUrl(blogDetails: BlogDetails): string {
     return (
-      EnvironmentService.environment.cacheDomain +
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
       "/api/v2/cache/avatar/" +
       blogDetails.id
     );
@@ -222,12 +214,12 @@ export class ViewBlogComponent
 
     if (res === "confirm") {
       this.settingService.values().useOtherUserCustomThemes = true;
-      this.settingService.forceUpdateValue([{name: "useOtherUserCustomThemes", value: 'true'}], false, false);
+      this.settingService.forceUpdateValue([{ name: "useOtherUserCustomThemes", value: 'true' }], false, false);
       this.themeService.customCSS.set(blogDetails.id);
     }
     if (res === "cancelRemember") {
       this.settingService.values().askToUseOtherUserCustomThemes = false;
-      this.settingService.forceUpdateValue([{name: "useOtherUserCustomThemes", value: 'false'}], false, false);
+      this.settingService.forceUpdateValue([{ name: "useOtherUserCustomThemes", value: 'false' }], false, false);
     }
   }
 
@@ -239,7 +231,7 @@ export class ViewBlogComponent
     this.viewedPostsIds = [];
     const timeScrollStart =
       this.activatedRoute.snapshot.queryParams["startScrollDate"];
-    this.loadPosts(this.currentPage, undefined, true).then(()=> this.loadPosts(this.currentPage, timeScrollStart) ) 
+    this.loadPosts(this.currentPage, undefined, true).then(() => this.loadPosts(this.currentPage, timeScrollStart))
   }
 
   rateLimitLoadPosts() {
@@ -257,7 +249,7 @@ export class ViewBlogComponent
   }
 
   async loadPosts(page: number, timeScrollStart?: number, featured?: boolean) {
-    if(!featured) {
+    if (!featured) {
       this.currentPage += 1;
     }
     if (this.blogUrl === "" || !this.blogDetails()) {
@@ -273,11 +265,14 @@ export class ViewBlogComponent
     }
 
     this.loading.set(true);
+    const currentTab = this.activeTabName();
+    console.log(currentTab)
     const tmpPosts = await this.dashboardService.getBlogPage(
       page,
       this.blogUrl,
       timeScrollStart,
-      featured
+      featured,
+      currentTab == 'blog.tabMedia'
     );
     const filteredPosts = tmpPosts.filter((post: ProcessedPost[]) => {
       let allFragmentsSeen = true;
@@ -291,10 +286,10 @@ export class ViewBlogComponent
       return !allFragmentsSeen;
     });
     this.posts = [...this.posts, ...filteredPosts];
-    if(!featured){
+    if (!featured) {
       this.loading.set(false);
     }
-    if (tmpPosts.length === 0) {
+    if (tmpPosts.length === 0 && !featured) {
       this.noMorePosts = true;
     }
     this.cdr.detectChanges();
@@ -333,15 +328,16 @@ export class ViewBlogComponent
     };
   }
   handleTabChange(event: MatTabChangeEvent) {
-    console.log("tab is now", event.index);
     switch (event.index) {
       case 0:
         this.postsVisible = true;
         this.mediaVisible = false;
+        this.activeTabName.set('blog.tabWoots');
         break;
       case 1:
         this.postsVisible = false;
         this.mediaVisible = true;
+        this.activeTabName.set('blog.tabMedia');
         break;
     }
   }

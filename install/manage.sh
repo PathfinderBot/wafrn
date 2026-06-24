@@ -1,58 +1,27 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
+
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 source "${SCRIPT_DIR}/../.env"
+
+COMPOSE_FILENAME="docker-compose.default.yml"
+
 
 BACKUP_ROOT_DIR=${BACKUP_ROOT_DIR:-$HOME/backup}
 BACKUP_KEEP_DAYS=${BACKUP_KEEP_DAYS:-10}
 BACKUP_POST_BACKUP_TOOL=${BACKUP_POST_BACKUP_TOOL:-$HOME/post_backup.sh}
 
-declare -a docker_compose_files=("docker-compose.simple.yml" "docker-compose.simple.metrics.yml" "docker-compose.advanced.yml" "docker-compose.advanced.metrics.yml")
+declare -a docker_compose_files=("docker-compose.default.yml")
 
-COMPOSE_FILENAME=
 
 check_files_for_update () {
   PARAMS=$1
 
-  COMPOSE_FILENAME="docker-compose."
   SHOULD_EXIT=0
 
-  # figure out which docker compose file we were using
-  for compose_filename in "${docker_compose_files[@]}"
-  do
-    if diff -q docker-compose.yml $compose_filename &>/dev/null; then
-      COMPOSE_FILENAME=$compose_filename
-    fi
-  done
-
-  # check if that docker compose file will change
-  if git diff --name-only '@' '@{u}' | grep -q $COMPOSE_FILENAME; then
-    echo "-------------------------------------------"
-    echo " WARNING"
-    echo
-    echo " Docker compose files have changed!"
-    echo "-------------------------------------------"
-    echo
-
-    # if we're using a nonstandard compose file we'll just throw an error
-    if [ $COMPOSE_FILENAME == "docker-compose." ]; then
-      echo "Please check the release notes, and review the changes,"
-      echo "making sure to update your local config accordingly"
-      echo
-      echo "If you're happy with the changes please re-run the script with"
-      echo "  ./install/manage.sh update -f"
-      SHOULD_EXIT=1
-    else
-      echo "The following updates will be applied automatically after pulling:"
-      echo
-      git diff '@' '@{u}' -- $COMPOSE_FILENAME
-      echo
-    fi
-  else
-    COMPOSE_FILENAME=
-  fi
 
   # check if the environment config will change
   if git diff --name-only '@' '@{u}' | grep -q '.env.example'; then
@@ -94,17 +63,58 @@ case $1 in
 
       git pull
 
-      if [ ! -z "$COMPOSE_FILENAME" ]; then
-        cp $COMPOSE_FILENAME docker-compose.yml
+      cp docker-compose.default.yml docker-compose.yml
+
+      # Ensure required data volume directories exist
+      VOLUMES=(dbpg pds frontend redis prometheus_data grafana_data)
+      for vol in "${VOLUMES[@]}"; do
+        if [ ! -d "data/$vol" ]; then
+          # Try to copy existing docker volume data if available
+          SRC="/var/lib/docker/volumes/wafrn_${vol}/_data"
+            echo "Transferring existing volume data from $SRC to data/$vol (using sudo)"
+            docker compose --profile "*" down
+            mkdir -p "data/$vol"
+            if sudo mv "$SRC/." "data/$vol/" 2>/dev/null; then
+              echo "Moved data from $SRC to data/$vol"
+            else
+              echo "mv failed (possibly busy). Falling back to rsync copy + delete"
+              if command -v rsync >/dev/null 2>&1; then
+                sudo rsync -aHAX --numeric-ids --delete "$SRC/" "data/$vol/" || {
+                  echo "rsync failed copying from $SRC to data/$vol"
+                }
+                # attempt to remove source files (best-effort)
+                sudo rm -rf "$SRC/"* || {
+                  echo "Failed to remove files from $SRC after rsync; leaving originals in place"
+                }
+              else
+                echo "rsync not available; leaving empty directory. Install rsync, run the update again, and the old data will be transferred on the next attempt."
+              fi
+            fi
+            # Ensure the current user owns the transferred data
+            sudo chown --recursive "$USER":"$USER" "data/$vol" || {
+              echo "Failed to chown data/$vol to $USER"
+            }
+        fi
+      done
+
+      # Ensure data/caddy exists 
+      if [ ! -d "data/caddy" ]; then
+        echo "Creating data/caddy directory"
+        mkdir -p "data/caddy" || {
+          echo "Failed to create data/caddy"
+        }
+        # Ensure current user owns the created directory
+        sudo chown --recursive "$USER":"$USER" "data/caddy" || {
+          echo "Failed to chown data/caddy to $USER"
+        }
       fi
+
       $SCRIPT_DIR/_auto_updater.sh $OLD_SHA
 
       #docker compose down
       docker compose pull
-      docker compose up --build -d
-      docker compose stop
-      docker system prune -f
       docker compose down
+      docker system prune -f
       docker volume rm wafrn_cache
       docker compose up -d
       docker compose logs -t -n 50 -f
@@ -119,6 +129,7 @@ case $1 in
     pushd "$BACKUP_DIR"
       echo "Backing up database"
       docker start wafrn-db-1
+      sleep 5
       docker exec wafrn-db-1 pg_dumpall -c | zstd -9 > db.sql.zst
       echo "Backing up uploads folder"
       tar --zstd -cf uploads.tar.zst -C "$SCRIPT_DIR/../packages/backend/uploads" .
@@ -143,7 +154,10 @@ case $1 in
       pushd "$RESTORE_DIR"
         echo "Restoring database"
         docker start wafrn-db-1
+        echo "waiting 10 seconds for the database to start"
+        sleep 10
         zstdcat db.sql.zst | docker exec -i wafrn-db-1 psql -X -f - -d postgres
+        echo "VACUUM ANALYZE" | docker exec -i wafrn-db-1 psql -X -f - -d postgres
         echo "Restoring uploads directory"
         rm -rf "$SCRIPT_DIR/../packages/backend/uploads" && mkdir "$SCRIPT_DIR/../packages/backend/uploads"
         tar --zstd -xf uploads.tar.zst -C "$SCRIPT_DIR/../packages/backend/uploads"
@@ -162,11 +176,22 @@ case $1 in
     ;;
   clean)
     pushd "$SCRIPT_DIR/.."
-    rm -rf packages/backend/cache/ && mkdir packages/backend/cache/
+    echo "Stoping wafrn to clean cache"
+    docker compose down
+    docker volume rm wafrn_cache
+    docker compose up -d
+    echo "Wafrn restarted"
     popd
     ;;
   logs)
     pushd "${SCRIPT_DIR}/.."
+    docker compose logs -t -n 50 -f
+    popd
+    ;;
+  build)
+    pushd "${SCRIPT_DIR}/.."
+    echo "Force building containers"
+    docker compose up --build -d
     docker compose logs -t -n 50 -f
     popd
     ;;
@@ -177,6 +202,7 @@ case $1 in
     echo "  restore: Restore a specific backup"
     echo "  clean: Cleans the cache"
     echo "  logs: Starts tailing docker logs"
+    echo "  build: Force build containers"
     exit 1
     ;;
 esac

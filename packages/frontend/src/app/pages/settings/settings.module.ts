@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { Route, RouterModule } from '@angular/router'
 import { SettingsComponent } from './settings.component'
+import { UpdateEmailComponent } from '../update-email/update-email.component'
 
 const routes: Route[] = [
   {
@@ -35,6 +36,10 @@ const routes: Route[] = [
   {
     path: 'miscellaneous',
     component: SettingsComponent
+  },
+  {
+    path: 'updateEmail',
+    component: UpdateEmailComponent
   }
 ]
 
@@ -42,4 +47,4 @@ const routes: Route[] = [
   declarations: [],
   imports: [CommonModule, RouterModule.forChild(routes)]
 })
-export class SettingsModule {}
+export class SettingsModule { }

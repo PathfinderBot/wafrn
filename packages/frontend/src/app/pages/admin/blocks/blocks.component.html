@@ -2,24 +2,24 @@
   <h2 class="my-3 text-3xl">{{ 'menu.admin.blocklist' | translate }}</h2>
 </div>
 <div class="mb-3 lg:mx-4 wafrn-container-wide">
-  <p>This sucks to look at so here's a second step of buttons before you see the data</p>
+  <p>{{ 'admin.common.secondStepNotice' | translate }}</p>
   <div class="flex gap-3">
-    <button mat-stroked-button (click)="showUserBlocks = !showUserBlocks">Show users blocked by users</button>
+    <button mat-stroked-button (click)="showUserBlocks = !showUserBlocks">{{ 'admin.blocks.showUsersBlockedByUsers' | translate }}</button>
     <button mat-stroked-button (click)="showUserServerBlocks = !showUserServerBlocks"
-      >Show servers blocked by users</button
+      >{{ 'admin.blocks.showServersBlockedByUsers' | translate }}</button
     >
   </div>
 </div>
 <mat-card [class.hidden]="!showUserBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
-  <h2>Per user user blocks</h2>
+  <h2>{{ 'admin.blocks.perUserUserBlocks' | translate }}</h2>
   <mat-form-field class="w-full mat-form-field-no-padding">
-    <mat-label>Search</mat-label>
+    <mat-label>{{ 'common.search' | translate }}</mat-label>
     <input (input)="onUserBlockChange($event)" matNativeControl spellcheck="false" />
   </mat-form-field>
   <div class="w-full overflow-x-auto">
     <table mat-table matSort #userBlocksSort="matSort" [dataSource]="userBlocks">
       <ng-container matColumnDef="blocker">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>Blocker</th>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>{{ 'admin.blocks.blocker' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           <a [routerLink]="'/blog/' + row.blocker.url">
             <div class="flex gap-2 align-items-start">
@@ -30,7 +30,7 @@
         </td>
       </ng-container>
       <ng-container matColumnDef="blocked">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>Blocked</th>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>{{ 'admin.blocks.blocked' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           <a [routerLink]="'/blog/' + row.blocked.url">
             <div class="flex gap-2 align-items-start">
@@ -41,13 +41,13 @@
         </td>
       </ng-container>
       <ng-container matColumnDef="reason">
-        <th mat-header-cell *matHeaderCellDef>Reason</th>
+        <th mat-header-cell *matHeaderCellDef>{{ 'admin.blocks.reason' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           {{ row.reason }}
         </td>
       </ng-container>
       <ng-container matColumnDef="createdAt">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>Date</th>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>{{ 'common.date' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           {{ row.createdAt | date: 'M/d/yy, h:mm:ss a' }}
         </td>
@@ -60,20 +60,20 @@
     #userBlocksPaginator
     [pageSizeOptions]="[10, 25, 50, 100]"
     showFirstLastButtons
-    aria-label="Select user block list page"
+    [attr.aria-label]="'admin.blocks.selectUserBlockListPage' | translate"
   >
   </mat-paginator>
 </mat-card>
 <mat-card [class.hidden]="!showUserServerBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
-  <h2>Per user server blocks</h2>
+  <h2>{{ 'admin.blocks.perUserServerBlocks' | translate }}</h2>
   <mat-form-field class="w-full mat-form-field-no-padding">
-    <mat-label>Search</mat-label>
+    <mat-label>{{ 'common.search' | translate }}</mat-label>
     <input (input)="onUserServerBlockChange($event)" matNativeControl spellcheck="false" />
   </mat-form-field>
   <div class="w-full overflow-x-auto">
     <table mat-table matSort #userServerBlocksSort="matSort" [dataSource]="userServerBlocks">
       <ng-container matColumnDef="userBlocker">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>User blocker</th>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>{{ 'admin.blocks.userBlocker' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           <a [routerLink]="'/blog/' + row.userBlocker.url">
             <div class="flex gap-2 align-items-start">
@@ -84,13 +84,13 @@
         </td>
       </ng-container>
       <ng-container matColumnDef="blockedServer">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>Server</th>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>{{ 'admin.serverList.server' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           {{ row.blockedServer.displayName }}
         </td>
       </ng-container>
       <ng-container matColumnDef="createdAt">
-        <th mat-header-cell mat-sort-header *matHeaderCellDef>Date</th>
+        <th mat-header-cell mat-sort-header *matHeaderCellDef>{{ 'common.date' | translate }}</th>
         <td mat-cell *matCellDef="let row">
           {{ row.createdAt | date: 'M/d/yy, h:mm:ss a' }}
         </td>
@@ -103,7 +103,7 @@
     #userServerBlocksPaginator
     [pageSizeOptions]="[10, 25, 50, 100]"
     showFirstLastButtons
-    aria-label="Select server block list page"
+    [attr.aria-label]="'admin.blocks.selectServerBlockListPage' | translate"
   >
   </mat-paginator>
 </mat-card>

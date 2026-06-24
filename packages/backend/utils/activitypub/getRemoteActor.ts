@@ -1,4 +1,4 @@
-import { Job, Queue, QueueEvents } from "bullmq";
+import { Job, QueueEvents } from "bullmq";
 import { sequelize, User } from "../../models/index.js";
 
 import { logger } from "../logger.js";
@@ -7,26 +7,18 @@ import { getDeletedUser } from "../cacheGetters/getDeletedUser.js";
 import { forcePopulateUsers } from "../../atproto/utils/getAtprotoUser.js";
 import { redisCache } from "../redis.js";
 import { completeEnvironment } from "../backendOptions.js";
+import { getQueue } from "../queues.js";
+import { getRemoteActorIdProcessor } from "../queueProcessors/getRemoteActorIdProcessor.js";
 
-const queue = new Queue("getRemoteActorId", {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    removeOnFail: true,
-    attempts: 2,
-    backoff: {
-      type: "exponential",
-      delay: 1000,
-    },
-  },
-});
+const queue = getQueue("getRemoteActorId");
 const queueEvents = new QueueEvents("getRemoteActorId", {
   connection: completeEnvironment.bullmqConnection,
 });
 async function getRemoteActor(
   actorUrl: string | undefined,
   user: User | null,
-  forceUpdate = false
+  forceUpdate = false,
+  doNotUseQueue = false
 ): Promise<User | null> {
   if (!user) {
     logger.debug({
@@ -75,20 +67,36 @@ async function getRemoteActor(
       );
     }
     let userId = await getUserIdFromRemoteId(actorUrl);
+    let result = undefined;
     if (userId === "") {
-      const job = await queue.add("getRemoteActorId", {
-        actorUrl: actorUrl,
-        userId: user.id,
-        forceUpdate: forceUpdate,
-      });
-      const result = await job.waitUntilFinished(queueEvents).catch((error) => {
-        logger.debug({
-          message: `Error while geting user`,
-          user: actorUrl,
-          by: user.url,
-          error: error,
+      if (doNotUseQueue) {
+        const tmpUserId = await getRemoteActorIdProcessor({
+          data: {
+            actorUrl: actorUrl,
+            userId: user.id,
+            forceUpdate: false,
+          }
+        } as Job)
+        if (tmpUserId) {
+          userId = tmpUserId
+        }
+
+      }
+      else {
+        const job = await queue.add("getRemoteActorId", {
+          actorUrl: actorUrl,
+          userId: user.id,
+          forceUpdate: forceUpdate,
         });
-      });
+        result = await job.waitUntilFinished(queueEvents).catch((error) => {
+          logger.debug({
+            message: `Error while geting user`,
+            user: actorUrl,
+            by: user.url,
+            error: error,
+          });
+        });
+      }
       if (result && result.id) {
         userId = result.id;
       } else {
@@ -110,12 +118,12 @@ async function getRemoteActor(
       error: error,
     });
   }
-  // update user if last update was more than 24 hours ago
+  // update user if last update was more than 1 week ago
   if (remoteUser && remoteUser.url !== completeEnvironment.deletedUser) {
     const lastUpdate = new Date(remoteUser.updatedAt);
     const now = new Date();
     if (
-      now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000 ||
+      now.getTime() - lastUpdate.getTime() > 24 * 3600 * 1000 * 7 ||
       forceUpdate
     ) {
       await queue.add(
@@ -123,6 +131,7 @@ async function getRemoteActor(
         { actorUrl: actorUrl, userId: user.id, forceUpdate: true },
         {
           jobId: actorUrl.replaceAll(":", "_").replaceAll("/", "_"),
+          priority: 2097152
         }
       );
     }

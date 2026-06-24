@@ -1,77 +1,77 @@
-  <h1>Migrate from bluesky</h1>
+<h1>{{ 'migrateBluesky.title' | translate }}</h1>
 @if (environment().enableBsky) {
   <mat-stepper orientation="vertical">
     <mat-step state="prerequisites">
-      <ng-template matStepLabel><b>Prerequisites</b></ng-template>
-      <p>Migrating from Bluesky is relatively easy, but requires your attention!</p>
-      <p>Let's get some prerequisites out of the way:</p>
+      <ng-template matStepLabel><b>{{ 'migrateBluesky.prerequisites.label' | translate }}</b></ng-template>
+      <p>{{ 'migrateBluesky.prerequisites.intro' | translate }}</p>
+      <p>{{ 'migrateBluesky.prerequisites.outOfTheWay' | translate }}</p>
       <ul>
-        <li>If you're currently using a wafrn-hosted bsky account, <b>it will be nuked.</b></li>
-        <li>This doesn't always go smoothly! If any issues occur, reach out to the wafrn team!</li>
-        <li>If you are using a <code>.bsky.social</code> handle, it will be moved to <code>.{{ environment().bskyPDSUrl }}</code></li>
-        <li>You cannot use your own PDS. You will be using the Wafrn-hosted one.</li>
+        <li><span [innerHTML]="'migrateBluesky.prerequisites.hostedAccountWarning' | translate"></span></li>
+        <li>{{ 'migrateBluesky.prerequisites.supportWarning' | translate }}</li>
+        <li [innerHTML]="'migrateBluesky.prerequisites.handleMove' | translate:{pdsUrl: environment().bskyPDSUrl}"></li>
+        <li>{{ 'migrateBluesky.prerequisites.pdsWarning' | translate }}</li>
       </ul>
-      <p>When you're ready, continue here:</p>
+      <p>{{ 'migrateBluesky.prerequisites.continue' | translate }}</p>
       <div>
-        <button matButton="filled" matStepperNext>Next</button>
+        <button matButton="filled" matStepperNext>{{ 'migrateBluesky.next' | translate }}</button>
       </div>
     </mat-step>
     <mat-step state="unlinking">
-      <ng-template matStepLabel><b>Unlinking and deleting the old account</b></ng-template>
-      <p>First off, we must unlink (and delete) your previous linked bluesky account. This is the Wafrn-hosted one, if you have one.</p>
-      <p>This will also give you an "invite code", that we'll use in the next steps to move over your existing account. Please write it down!</p>
+      <ng-template matStepLabel><b>{{ 'migrateBluesky.unlinking.label' | translate }}</b></ng-template>
+      <p>{{ 'migrateBluesky.unlinking.intro' | translate }}</p>
+      <p>{{ 'migrateBluesky.unlinking.inviteCodeInfo' | translate }}</p>
       @if (!code) {
         <button [disabled]="loading" (click)="loadInviteCode()" mat-flat-button class="w-full">
-          Delete bsky associated account and get invite code
+          {{ 'migrateBluesky.unlinking.deleteAndGetCode' | translate }}
         </button>
       } @else {
-        <p>Your invite code is</p>
+        <p>{{ 'migrateBluesky.unlinking.inviteCodeIs' | translate }}</p>
         <p><b>{{ code }}</b></p>
       }
-      <p>Got the code? Alright, on to the next step.</p>
+      <p>{{ 'migrateBluesky.unlinking.gotCode' | translate }}</p>
       <div>
-        <button matButton="filled" matStepperNext>Next</button>
+        <button matButton="filled" matStepperNext>{{ 'migrateBluesky.next' | translate }}</button>
       </div>
     </mat-step>
     <mat-step state="pdsmoover">
-      <ng-template matStepLabel><b>PDSMoover - Actually moving the account</b></ng-template>
-      <p>Now we'll use an external migration tool, called <a href="https://pdsmoover.com">PDS Moover</a> to do the actual migration part.</p>
-      <p>For the provider, give them this URL: <code>{{ environment().bskyPDSUrl }}</code></p>
-      <p>Follow their instructions <i>closely.</i> If something goes wrong, reach out to the Wafrn team and your site admin!</p>
-      <p>And of course, give PDS Moover the invite code that you wrote down</p>
-      <p><small>You wrote it down, right? If not, go back.</small></p>
+      <ng-template matStepLabel><b>{{ 'migrateBluesky.pdsMoover.label' | translate }}</b></ng-template>
+      <p [innerHTML]="'migrateBluesky.pdsMoover.intro' | translate"></p>
+      <p>{{ 'migrateBluesky.pdsMoover.providerUrl' | translate }} <code>{{ environment().bskyPDSUrl }}</code></p>
+      <p [innerHTML]="'migrateBluesky.pdsMoover.followInstructions' | translate"></p>
+      <p>{{ 'migrateBluesky.pdsMoover.useInviteCode' | translate }}</p>
+      <p><small>{{ 'migrateBluesky.pdsMoover.wroteItDown' | translate }}</small></p>
       <div>
-        <button matButton="filled" matStepperNext>Next</button>
+        <button matButton="filled" matStepperNext>{{ 'migrateBluesky.next' | translate }}</button>
       </div>
     </mat-step>
     <mat-step state="linking">
-      <ng-template matStepLabel><b>Linking the account to Wafrn</b></ng-template>
-      <p>If the "MOOVE" went alright, we'll now need to link up the migrated account to Wafrn.</p>
-      <p>To do this, we log in to the newly migrated account as if it was any other Bluesky account on <a href="https://bsky.app">bsky.app</a>, and create an "App Password"</p>
-      <p>You'll find the relevant options in Settings > Privacy and Security > App Passwords</p>
-      <p>Once you've grabbed a new app password, put it in together with the new username here:</p>
+      <ng-template matStepLabel><b>{{ 'migrateBluesky.linking.label' | translate }}</b></ng-template>
+      <p>{{ 'migrateBluesky.linking.intro' | translate }}</p>
+      <p [innerHTML]="'migrateBluesky.linking.createAppPassword' | translate"></p>
+      <p>{{ 'migrateBluesky.linking.appPasswordLocation' | translate }}</p>
+      <p>{{ 'migrateBluesky.linking.formIntro' | translate }}</p>
       <form [hidden]="loading" class="px-3" [formGroup]="bskyForm" (ngSubmit)="linkBskyAccount()">
         <mat-form-field class="w-full">
-          <mat-label>New name of account (@accountName.{{environment().bskyPDSUrl}})</mat-label>
+          <mat-label>{{ 'migrateBluesky.linking.accountLabel' | translate:{pdsUrl: environment().bskyPDSUrl} }}</mat-label>
           <input formControlName="account" type="text" matInput />
         </mat-form-field>
         <mat-form-field class="w-full">
-          <mat-label>App Password (NOT YOUR PASSWORD, A BLUESKY APP PASSWORD)</mat-label>
+          <mat-label>{{ 'migrateBluesky.linking.appPasswordLabel' | translate }}</mat-label>
           <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
           <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
             <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
           </button>
-          <mat-error> Password is required </mat-error>
+          <mat-error>{{ 'migrateBluesky.linking.passwordRequired' | translate }}</mat-error>
         </mat-form-field>
         <button [disabled]="!bskyForm.valid" mat-flat-button color="primary" extended class="w-full border-round-md mt-4">
-          <span class="flex gap-2">Link account</span>
+          <span class="flex gap-2">{{ 'migrateBluesky.linking.linkAccount' | translate }}</span>
         </button>
       </form>
     </mat-step>
     <mat-step state="profit">
-      <ng-template matStepLabel><b>Profit?</b></ng-template>
-      <p>Hooray! All should be done! Please verify on your profile that the bluesky handle is visible. Your old Bluesky posts should also start appearing on your profile.</p>
-      <p>If there was any issues, <i><b>please reach out!</b></i>The Wafrn team and admins of your site are happy to help :)</p>
+      <ng-template matStepLabel><b>{{ 'migrateBluesky.profit.label' | translate }}</b></ng-template>
+      <p>{{ 'migrateBluesky.profit.done' | translate }}</p>
+      <p [innerHTML]="'migrateBluesky.profit.support' | translate"></p>
     </mat-step>
     <!-- All of these fucking icons straight up don't work -->
 

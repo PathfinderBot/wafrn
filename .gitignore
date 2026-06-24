@@ -9,7 +9,7 @@ config.ts
 /out-tsc
 
 # custom caddy config
-packages/caddy
+#packages/caddy
 
 # Only exists if Bazel was run
 /bazel-out
@@ -56,3 +56,6 @@ Thumbs.db
 
 # default docker compose
 docker-compose.yml
+
+
+data/

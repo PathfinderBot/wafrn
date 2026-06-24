@@ -3,12 +3,12 @@
     @if (notes) {
       <p class="m-0 text-sm">
         <a class="subtle-link notes-link" mat-stroked-button [postLink]="fragment()"
-          ><b>{{ notes }}</b> notes</a
+          ><b>{{ notes }}</b> {{ 'bottomReplyBar.notes' | translate }}</a
         >
       </p>
     } @else {
       <p class="m-0 text-sm">
-        <a [postLink]="fragment()" class="subtle-link notes-link">View thread</a>
+        <a [postLink]="fragment()" class="subtle-link notes-link">{{ 'bottomReplyBar.viewThread' | translate }}</a>
       </p>
     }
   </div>

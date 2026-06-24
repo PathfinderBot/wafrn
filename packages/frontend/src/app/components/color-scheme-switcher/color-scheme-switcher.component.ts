@@ -17,6 +17,7 @@ import {
   lightDarkModeData,
   ThemeService
 } from 'src/app/services/theme.service'
+import { TranslatePipe } from '@ngx-translate/core'
 
 // !! NOTE FOR ADDING THEMES !! //
 //
@@ -31,7 +32,8 @@ import {
     MatTooltipModule,
     FaIconComponent,
     MatCheckboxModule,
-    NgClass
+    NgClass,
+    TranslatePipe
   ],
   templateUrl: './color-scheme-switcher.component.html',
   styleUrl: './color-scheme-switcher.component.scss'

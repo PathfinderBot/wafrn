@@ -212,7 +212,8 @@ export function getPostHtml(
         'word-wrap': [new RegExp('.*')],
         'writing-mode': [new RegExp('.*')]
       }
-    }
+    },
+    allowVulnerableTags: true,
   })
   // we remove stuff like img and script tags. we only allow certain stuff.
   const parsedAsHTML = parser.parseFromString(sanitized, 'text/html')

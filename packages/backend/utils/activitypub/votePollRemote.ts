@@ -13,25 +13,15 @@ import { completeEnvironment } from '../backendOptions.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
 import { postPetitionSigned } from './postPetitionSigned.js'
 import { logger } from '../logger.js'
-import { Queue, QueueEvents } from 'bullmq'
+import { getQueue } from '../queues.js'
+import { QueueEvents } from 'bullmq'
 import _ from 'underscore'
 import { emojiToAPTag } from './emojiToAPTag.js'
 import { wait } from '../wait.js'
 import { loadPoll } from './loadPollFromPost.js'
 import { getPostThreadRecursive } from './getPostThreadRecursive.js'
 
-const sendPostQueue = new Queue('sendPostToInboxes', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const sendPostQueue = getQueue('sendPostToInboxes')
 
 const queueEvents = new QueueEvents('sendPostToInboxes', {
   connection: completeEnvironment.bullmqConnection

@@ -16,7 +16,6 @@ import { Op, Model } from 'sequelize'
 import { logger } from '../../utils/logger.js'
 import { DeleteOp, RepoOp } from '@skyware/firehose'
 import { processSinglePost } from '../utils/getAtProtoThread.js'
-import { getCacheAtDids } from '../cache/getCacheAtDids.js'
 import { deletePostCommon } from '../../utils/deletePost.js'
 import { redisCache } from '../../utils/redis.js'
 import { likePostRemote } from '../../utils/activitypub/likePost.js'
@@ -25,6 +24,7 @@ import { Privacy } from '../../models/post.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { wait } from '../../utils/wait.js'
 import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
+import { FOLLOWED_BSKY_DIDS_CACHE_KEY } from '../../constants.js'
 
 const adminUser = getAdminUser()
 async function processFirehose(job: Job) {
@@ -90,96 +90,43 @@ async function processFirehose(job: Job) {
             break
           }
           case 'app.bsky.feed.like': {
-            let user = undefined
-            let likedPostId = undefined
-            try {
-              if ((await getCacheAtDids()).followedDids.has(job.data.repo)) {
-                const postLikedUri = record.subject.uri
-                const postId = await processSinglePost(postLikedUri)
-                if (postId) {
-                  user = remoteUser.url
-                  likedPostId = postId
-                  const [like, likeCreated] = await UserLikesPostRelations.findOrCreate({
-                    where: {
-                      userId: remoteUser.id,
-                      postId: postId
-                    },
-                    defaults: {
-                      userId: remoteUser.id,
-                      postId: postId,
-                      bskyPath: operation.path
-                    }
-                  })
-                  const post = await Post.findByPk(postId)
-                  if (post && likeCreated) {
-                    await createNotification(
-                      {
-                        notificationType: 'LIKE',
-                        postId: postId,
-                        userId: remoteUser.id,
-                        notifiedUserId: post.userId,
-                        detached: false
-                      },
-                      {
-                        postContent: post.content,
-                        userUrl: remoteUser.url
-                      }
-                    )
-                  }
+            const postLikedUri = record.subject.uri
+            const postId = await processSinglePost(postLikedUri)
+            if (postId) {
+              const [like, likeCreated] = await UserLikesPostRelations.findOrCreate({
+                where: {
+                  userId: remoteUser.id,
+                  postId: postId
+                },
+                defaults: {
+                  userId: remoteUser.id,
+                  postId: postId,
+                  bskyPath: operation.path
                 }
-              } else {
-                const postInDb = await Post.findOne({
-                  where: {
-                    bskyUri: record.subject.uri
-                  }
-                })
-                if (postInDb) {
-                  user = remoteUser.url
-                  likedPostId = postInDb.id
-                  await UserLikesPostRelations.findOrCreate({
-                    where: {
-                      userId: remoteUser.id,
-                      postId: postInDb.id
-                    },
-                    defaults: {
-                      bskyPath: operation.path,
-                      userId: remoteUser.id,
-                      postId: postInDb.id
-                    }
-                  })
-                  // TODO fix notification not being created
-
-                  await createNotification(
-                    {
-                      notificationType: 'LIKE',
-                      postId: postInDb.id,
-                      userId: remoteUser.id,
-                      notifiedUserId: postInDb.userId,
-                      detached: false
-                    },
-                    {
-                      postContent: postInDb.content,
-                      userUrl: remoteUser.url
-                    }
-                  )
-                }
-              }
-            } catch (error) {
-              logger.debug({
-                message: `Error creating bluesky like`,
-                user,
-                likedPostId,
-                record,
-                error
               })
+              if (likeCreated) {
+                const post = (await Post.findByPk(postId)) as Post
+                await createNotification(
+                  {
+                    notificationType: 'LIKE',
+                    postId: postId,
+                    userId: remoteUser.id,
+                    notifiedUserId: post.userId,
+                    detached: false
+                  },
+                  {
+                    postContent: post.content,
+                    userUrl: remoteUser.url
+                  }
+                )
+              }
             }
-
             break
           }
           case 'app.bsky.feed.post': {
             const postBskyUri = `at://${job.data.repo}/${operation.path}`
             const postCreated = await processSinglePost(postBskyUri)
-            if(!postCreated) {
+            if (!postCreated) {
               logger.debug(`Failed to obtain post: ${postBskyUri}`)
             }
             break
@@ -189,7 +136,8 @@ async function processFirehose(job: Job) {
             if (!record.subject) {
               logger.error({
                 message: `Missing basic info for rewoot`,
-                record})
+                record
+              })
               break
             }
             const postToBeRewooted = await processSinglePost(record.subject.uri, false)
@@ -274,10 +222,16 @@ async function processFirehose(job: Job) {
           case 'app.bsky.graph.block': {
             const userBlocked = await getAtprotoUser(record.subject)
             if (userBlocked) {
-              await Blocks.create({
-                blockedId: userBlocked.id,
-                blockerId: remoteUser.id,
-                bskyPath: operation.path
+              await Blocks.findOrCreate({
+                where: {
+                  blockedId: userBlocked.id,
+                  blockerId: remoteUser.id
+                },
+                defaults: {
+                  bskyPath: operation.path,
+                  blockedId: userBlocked.id,
+                  blockerId: remoteUser.id
+                }
               })
             }
             break

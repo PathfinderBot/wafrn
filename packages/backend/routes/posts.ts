@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op} from 'sequelize'
+import { Op } from 'sequelize'
 import {
   Blocks,
   Post,
@@ -17,7 +17,6 @@ import { sequelize } from '../models/index.js'
 import getStartScrollParam from '../utils/getStartScrollParam.js'
 import { logger } from '../utils/logger.js'
 import { createPostLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
-import { Queue } from 'bullmq'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
@@ -36,6 +35,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
+import { getFlowProducer, getQueue } from '../utils/queues.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -46,31 +46,9 @@ const markdownConverter = new showdown.Converter({
   emoji: true,
   encodeEmails: false
 })
+const prepareSendPostQueue = getQueue('prepareSendPost')
+const sendPostBskyQueue = getQueue('sendPostBsky')
 
-const prepareSendPostQueue = new Queue('prepareSendPost', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
-
-const sendPostBskyQueue = new Queue('sendPostBsky', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'fixed'
-    },
-    removeOnFail: true
-  }
-})
 export default function postsRoutes(app: Application) {
   app.get(
     '/api/article/:user?/:slug',
@@ -81,8 +59,8 @@ export default function postsRoutes(app: Application) {
       const postSlug = req.params?.slug
       const user = userUrl
         ? await User.findOne({
-            where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
-          })
+          where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
+        })
         : await getAdminUser()
       if (!user) {
         res.sendStatus(404)
@@ -146,6 +124,7 @@ export default function postsRoutes(app: Application) {
     let success = false
     const id = req.query.id as string
     const featured = req.query.featured == 'true'
+    const mediaOnly = req.query.mediaOnly == 'true'
 
     if (id) {
       const blog = await User.findOne({
@@ -179,31 +158,39 @@ export default function postsRoutes(app: Application) {
         ) {
           privacyArray.push(Privacy.FollowersOnly)
         }
-        const queryObject = null
-        const postIds = await Post.findAll({
+        let queryObject: any = {
           order: [['createdAt', 'DESC']],
           limit: featured ? undefined : completeEnvironment.postsPerPage,
-          attributes: ['id'],
+          attributes: ['id', 'createdAt', 'featured'],
           where: {
             createdAt: { [Op.lt]: getStartScrollParam(req) },
             featured: featured
               ? {
-                  [Op.ne]: null
-                }
+                [Op.ne]: null
+              }
               : {
-                  [Op.or]: [
-                    {
-                      [Op.ne]: null
-                    },
-                    { [Op.eq]: null }
-                  ]
-                },
+                [Op.or]: [
+                  {
+                    [Op.ne]: null
+                  },
+                  { [Op.eq]: null }
+                ]
+              },
             userId: blogId,
             privacy: {
               [Op.in]: privacyArray
             }
           }
-        })
+        }
+        if (mediaOnly) {
+          queryObject = {
+            include: [
+              { model: Media, required: true }
+            ],
+            ...queryObject,
+          }
+        }
+        const postIds = await Post.findAll(queryObject)
         const postsByBlog = await getUnjointedPosts(
           postIds.map((post: any) => post.id),
           req.jwtData?.userId ? req.jwtData.userId : '00000000-0000-0000-0000-000000000000',
@@ -365,19 +352,19 @@ export default function postsRoutes(app: Application) {
           // only count on reblogs
           const blocksExistingOnParents = parent
             ? await Blocks.count({
-                where: {
-                  [Op.or]: [
-                    {
-                      blockerId: posterId,
-                      blockedId: parent.userId
-                    },
-                    {
-                      blockedId: posterId,
-                      blockerId: parent.userId
-                    }
-                  ]
-                }
-              })
+              where: {
+                [Op.or]: [
+                  {
+                    blockerId: posterId,
+                    blockedId: parent.userId
+                  },
+                  {
+                    blockedId: posterId,
+                    blockerId: parent.userId
+                  }
+                ]
+              }
+            })
             : 0
 
           if (bannedUsers > 0) {
@@ -398,8 +385,8 @@ export default function postsRoutes(app: Application) {
           }
         }
 
-        let content = (req.body.content ? ' ' + req.body.content.trim() : '').substring(0, 2*1024*1024)
-        const content_warning = req.body.content_warning.substring(0, 2*1024)
+        let content = (req.body.content ? ' ' + req.body.content.trim() : '').substring(0, 2 * 1024 * 1024)
+        const content_warning = req.body.content_warning.substring(0, 2 * 1024)
           ? req.body.content_warning.trim()
           : posterUser?.NSFW
             ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
@@ -552,7 +539,7 @@ export default function postsRoutes(app: Application) {
           }
 
           post.content = content
-          post.markdownContent = req.body.content.substring(0, 2*1024*1024)
+          post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
           post.privacy = bodyPrivacy
           await post.save()
@@ -589,8 +576,8 @@ export default function postsRoutes(app: Application) {
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          let initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({where: {hierarchyLevel : 1}}))[0]) : undefined
-          if(initialPost && initialPost.replyControl != InteractionControl.Anyone) {
+          const initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({ where: { hierarchyLevel: 1 } }))[0]) : undefined
+          if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }
           post = await Post.create({
@@ -599,11 +586,14 @@ export default function postsRoutes(app: Application) {
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,
-            markdownContent: req.body.content.substring(0, 2*1024*1024),
+            markdownContent: req.body.content.substring(0, 2 * 1024 * 1024),
             isReblog: isReblog,
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
-            likeControl: req.body.canLike || InteractionControl.Anyone
+            likeControl: req.body.canLike || InteractionControl.Anyone,
+            isReply: parent ? (parent.isReply || parent.userId != posterId) : false,
+            isBskyExclusive: parent ? parent.isBskyExclusive : false
+
           })
         }
 
@@ -780,18 +770,7 @@ export default function postsRoutes(app: Application) {
       })
       if (medias.length) {
         // We force update the media metadata because of posibility of it not having height and width metadata
-        const updateMediaDataQueue = new Queue('processRemoteMediaData', {
-          connection: completeEnvironment.bullmqConnection,
-          defaultJobOptions: {
-            removeOnComplete: true,
-            attempts: 3,
-            backoff: {
-              type: 'exponential',
-              delay: 1000
-            },
-            removeOnFail: true
-          }
-        })
+        const updateMediaDataQueue = getQueue('processRemoteMediaData')
         await updateMediaDataQueue.addBulk(
           medias.map((media: any) => {
             return {
@@ -801,18 +780,7 @@ export default function postsRoutes(app: Application) {
           })
         )
       }
-      const jobData = { postId: post.id, petitionBy: post.userId }
-
-      if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-        await sendPostBskyQueue.add('sendPostBsky', jobData, {
-          delay: 500
-        })
-      } else {
-        await prepareSendPostQueue.add('prepareSendPost', jobData, {
-          jobId: post.id,
-          delay: 1500
-        })
-      }
+      triggerPostFederation(post, user)
       success = true
     }
     res.send({
@@ -908,15 +876,11 @@ function getMaxPrivacy(privacies: PrivacyType[]) {
 
 async function triggerPostFederation(post: Post, user: User) {
   const jobData = { postId: post.id, petitionBy: post.userId }
-
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    await sendPostBskyQueue.add('sendPostBsky', jobData, {
-      delay: 500
-    })
+    sendPostBskyQueue.add('sendPostBsky', jobData)
   } else {
-    await prepareSendPostQueue.add('prepareSendPost', jobData, {
+    prepareSendPostQueue.add('prepareSendPost', jobData, {
       jobId: post.id,
-      delay: 1500
     })
   }
 }

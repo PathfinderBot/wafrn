@@ -14,7 +14,7 @@ import {
 import { authenticateToken } from '../utils/authenticateToken.js'
 import { Model, Op, Sequelize } from 'sequelize'
 import { logger } from '../utils/logger.js'
-import { Queue } from 'bullmq'
+import { getQueue } from '../utils/queues.js'
 import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
 import _ from 'underscore'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
@@ -25,18 +25,7 @@ import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 
-const deletePostQueue = new Queue('deletePostQueue', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000
-    },
-    removeOnFail: true
-  }
-})
+const deletePostQueue = getQueue('deletePostQueue')
 
 export default function deletePost(app: Application) {
   app.delete('/api/deletePost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {

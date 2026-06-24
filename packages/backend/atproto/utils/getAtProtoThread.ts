@@ -1,21 +1,12 @@
 import {
-  EmojiReaction,
   Media,
   Notification,
   Post,
-  PostAncestor,
   PostMentionsUserRelation,
-  PostReport,
   PostTag,
-  QuestionPoll,
   Quotes,
-  RemoteUserPostView,
   sequelize,
-  SilencedPost,
-  User,
-  UserBitesPostRelation,
-  UserBookmarkedPosts,
-  UserLikesPostRelations
+  User
 } from '../../models/index.js'
 import { Op, QueryTypes } from 'sequelize'
 import { getAtprotoUser } from './getAtprotoUser.js'
@@ -47,19 +38,121 @@ import { DidDocument } from '@atcute/identity'
 import { extractUriComponents } from './obtainUriComponents.js'
 import { getPetitionSigned } from '../../utils/activitypub/getPetitionSigned.js'
 import getUserAgent from '../../utils/getUserAgent.js'
+import { getQueue } from '../../utils/queues.js'
 
-const processSinglePostQueue = new Queue('processSinglePost', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 6,
-    backoff: {
-      type: 'exponential',
-      delay: 2500
-    },
-    removeOnFail: false
-  }
-})
+const processSinglePostQueue = getQueue('processSinglePost')
+
+const mergeRemotePostRelatedRecordsSql = `
+  WITH
+  updated_emoji_reactions AS (
+    UPDATE "emojiReactions"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_notifications AS (
+    UPDATE "notifications"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_post_reports AS (
+    UPDATE "postReports"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_post_ancestors AS (
+    UPDATE "postsancestors" AS ancestors
+    SET "postsId" = :remotePostId
+    WHERE ancestors."postsId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "postsancestors" AS existing_ancestors
+        WHERE existing_ancestors."postsId" = :remotePostId
+          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
+      )
+    RETURNING 1
+  ),
+  updated_question_polls AS (
+    UPDATE "questionPolls"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_quoter_quotes AS (
+    UPDATE "quotes" AS quotes
+    SET "quoterPostId" = :remotePostId, "updatedAt" = NOW()
+    WHERE quotes."quoterPostId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "quotes" AS existing_quotes
+        WHERE existing_quotes."quoterPostId" = :remotePostId
+          AND existing_quotes."quotedPostId" = quotes."quotedPostId"
+      )
+    RETURNING 1
+  ),
+  updated_quoted_quotes AS (
+    UPDATE "quotes" AS quoted_quotes
+    SET "quotedPostId" = :remotePostId, "updatedAt" = NOW()
+    WHERE quoted_quotes."quotedPostId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "quotes" AS existing_quoted_quotes
+        WHERE existing_quoted_quotes."quotedPostId" = :remotePostId
+      )
+    RETURNING 1
+  ),
+  updated_remote_user_post_views AS (
+    UPDATE "remoteUserPostViews" AS views
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE views."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "remoteUserPostViews" AS existing_views
+        WHERE existing_views."postId" = :remotePostId
+          AND existing_views."userId" = views."userId"
+      )
+    RETURNING 1
+  ),
+  updated_silenced_posts AS (
+    UPDATE "silencedPosts"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_user_bites AS (
+    UPDATE "userBitesPostRelations"
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE "postId" = :existingPostId
+    RETURNING 1
+  ),
+  updated_bookmarks AS (
+    UPDATE "userBookmarkedPosts" AS bookmarks
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE bookmarks."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "userBookmarkedPosts" AS existing_bookmarks
+        WHERE existing_bookmarks."postId" = :remotePostId
+          AND existing_bookmarks."userId" = bookmarks."userId"
+      )
+    RETURNING 1
+  ),
+  updated_likes AS (
+    UPDATE "userLikesPostRelations" AS likes
+    SET "postId" = :remotePostId, "updatedAt" = NOW()
+    WHERE likes."postId" = :existingPostId
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "userLikesPostRelations" AS existing_likes
+        WHERE existing_likes."postId" = :remotePostId
+          AND existing_likes."userId" = likes."userId"
+      )
+    RETURNING 1
+  )
+  SELECT 1
+`
 
 // returns the post id
 async function processSinglePost(uri: string, forceUpdate = false): Promise<string | undefined> {
@@ -106,7 +199,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   let verifiedFedi: string | undefined
   const postPetitionPds = await getPostThreadPDSDirect(uri)
-  if(!postPetitionPds) {
+  if (!postPetitionPds) {
     return;
   }
   const post = postPetitionPds?.value as AppBskyFeedPost.Main
@@ -131,8 +224,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
         completeEnvironment.bskySlingshotUrl +
-          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
-          `?identifier=${extractUriComponents(uri).did}`
+        '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+        `?identifier=${extractUriComponents(uri).did}`
       )
       if (res.ok) {
         const json = (await res.json()) as { pds: string }
@@ -171,9 +264,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   if (verifiedFedi) {
     try {
-      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
-        forceNotBsky: true
+      const remotePostV0 = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
+        forceNotBsky: true,
+        forceUpdate: true
       })
+      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, remotePostV0?.id, {
+        forceNotBsky: true,
+        forceUpdate: true
+      })
+
       const bskyCid = postPetitionPds!.cid as string
       const bskyUri = postPetitionPds!.uri
       if (remotePost && remotePost.remotePostId) {
@@ -185,6 +284,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         await remotePost.save()
         return remotePost.id
       } else if (remotePost) {
+        // HERE?
         remotePost.bskyCid = bskyCid
         remotePost.bskyUri = bskyUri
         // if there's already a bsky post about
@@ -192,175 +292,58 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         // and prob update the things
         const existingPost = await Post.findOne({
           where: {
-            bskyCid: bskyCid,
+            bskyUri: bskyUri,
             remotePostId: null
           }
         })
-        if (existingPost && !(await getAllLocalUserIdsSet()).has(existingPost.userId)) {
-          // very expensive updates! but only happens when user
-          // searches existing post that is alr on db
-          await EmojiReaction.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await Notification.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await PostReport.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          try {
-            await PostAncestor.update(
-              {
-                postsId: remotePost.id
-              },
-              {
-                where: {
-                  postsId: existingPost.id
-                }
-              }
-            )
-          } catch {}
-          await QuestionPoll.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await Quotes.update(
-            {
-              quoterPostId: remotePost.id
-            },
-            {
-              where: {
-                quoterPostId: existingPost.id
-              }
-            }
-          )
-          if (
-            !(await Quotes.findOne({
-              where: {
-                quotedPostId: remotePost.id
-              }
-            }))
-          ) {
-            await Quotes.update(
-              {
-                quotedPostId: remotePost.id
-              },
-              {
-                where: {
-                  quotedPostId: existingPost.id
-                }
-              }
-            )
-          }
-          await RemoteUserPostView.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await SilencedPost.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await SilencedPost.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await UserBitesPostRelation.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await UserBookmarkedPosts.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await UserLikesPostRelations.update(
-            {
-              postId: remotePost.id
-            },
-            {
-              where: {
-                postId: existingPost.id
-              }
-            }
-          )
-          await Post.update(
-            {
-              parentId: remotePost.id
-            },
-            {
-              where: {
-                parentId: existingPost.id
-              }
-            }
-          )
-
-          await Post.destroy({
+        if (existingPost) {
+          const localUserIds = await getAllLocalUserIds()
+          if (await User.scope('full').count({
             where: {
-              bskyCid: bskyCid,
-              remotePostId: null,
-              userId: {
-                [Op.notIn]: await getAllLocalUserIds()
+              id: existingPost.userId,
+              email: {
+                [Op.not]: null
               }
             }
-          })
+          })) {
+            await remotePost.save()
+          } else {
+            // Converted to a super single query
+            await sequelize.transaction(async (transaction) => {
+              await sequelize.query(mergeRemotePostRelatedRecordsSql, {
+                replacements: {
+                  existingPostId: existingPost.id,
+                  remotePostId: remotePost.id
+                },
+                transaction
+              })
+
+              await Post.update({
+                parentId: remotePost.id,
+              }, {
+                where: {
+                  parentId: existingPost.id,
+                },
+                transaction
+              })
+
+              await Post.destroy({
+                where: {
+                  bskyCid: bskyCid,
+                  remotePostId: null,
+                  userId: {
+                    [Op.notIn]: localUserIds
+                  }
+                },
+                transaction
+              })
+
+              await remotePost.save({ transaction })
+            })
+          }
+        } else {
+          await remotePost.save()
         }
-        await remotePost.save()
         if (forceUpdate) {
           await processReplies(remotePost.bskyUri as string)
         }
@@ -374,23 +357,13 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
   }
   if (!postCreator || !postPetitionPds) {
-    const usr = postCreator ? postCreator : await User.findOne({ where: { url: completeEnvironment.deletedUser } })
-
-    const invalidPost = await Post.create({
-      userId: usr?.id,
-      content: `Failed to get atproto post`,
-      parentId: parentId,
-      isDeleted: true,
-      createdAt: new Date(0),
-      updatedAt: new Date(0)
-    })
-    return invalidPost.id
+    return undefined
   }
   if (postCreator && post) {
     const medias = getPostMedias(postPetitionPds.uri, post)
     let tags: string[] = []
     let mentions: string[] = []
-    let postText = post.text
+    let postText = post.text || ''
     let federatedWoot = false
     if (post.fullText || post.bridgyOriginalText) {
       federatedWoot = true
@@ -413,8 +386,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         })
         mentions = mentionedUsers.map((elem) => elem.id)
       }
-      if(!federatedWoot) {
-          const rt = new RichText({
+      if (!federatedWoot) {
+        const rt = new RichText({
           text: postText,
           facets: post.facets
         })
@@ -437,10 +410,12 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         }
         postText = text
       }
-      
+
     }
 
-    if (!federatedWoot) postText = postText.replaceAll('\n', '<br>')
+    if (!federatedWoot) {
+      postText = postText ? postText.replaceAll('\n', '<br>') : ''
+    }
 
     const labels = getPostLabels(postPetitionPds.value as AppBskyFeedPost.Main)
     let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
@@ -452,6 +427,13 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if (createdAt.getTime() > new Date().getTime()) {
       createdAt = new Date()
     }
+
+    let isReply = false;
+    if (parentId) {
+      const parentPost = (await Post.findByPk(parentId)) as Post
+      isReply = parentPost.isReply || parentPost.userId != postCreator.id;
+    }
+
     const newData = {
       userId: postCreator.id,
       bskyCid: postPetitionPds.cid,
@@ -461,23 +443,25 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       privacy: Privacy.Public,
       parentId: parentId,
       content_warning: cw,
-      ...(await getPostInteractionLevels(uri, parentId))
+      ...(await getPostInteractionLevels(uri, parentId)),
+      isBskyExclusive: true, // TODO hmmm
+      isReply: isReply,
     }
     if (!parentId) {
       delete newData.parentId
     }
 
-    if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate) {
-      
-      const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
-      if(`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
+    if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate && postCreator.bskyDid) {
+
+      const userPds = await getServerFromDid(postCreator.bskyDid, true)
+      if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
         // OH SHIT THIS USER IS NO LONGER IN WAFRN
         const oldDid = postCreator.bskyDid
         postCreator.bskyDid = null;
         postCreator.enableBsky = false;
         postCreator.alternateUrl = undefined
         await postCreator.save();
-        postCreator = await getAtprotoUser(oldDid as string, {ignoreCache: true})
+        postCreator = await getAtprotoUser(oldDid, { ignoreCache: true })
       } else {
         // await wait(1500)
       }
@@ -487,9 +471,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       defaults: newData
     })
     // some linting issues sorry this one could be in other place but the linter complains about other part of the code (npm run type-check)
-    if(!postCreator) {
+    if (!postCreator) {
       return;
-  }
+    }
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
     if (!(await getAllLocalUserIdsSet()).has(postToProcess.userId) || created) {
       if (!created) {
@@ -606,15 +590,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     return postToProcess.id
   } else {
-    
-    if(!postPetitionPds) {
+
+    if (!postPetitionPds) {
       logger.error({
-      message: `Error obtaining user: ${uri}`,
-      error: {
-        postCreator: postCreator,
-        post: post
-      }
-    })
+        message: `Error obtaining user: ${uri}`,
+        error: {
+          postCreator: postCreator,
+          post: post
+        }
+      })
       throw new Error(`Error obtaining user: ${uri}`)
     }
   }
@@ -662,7 +646,7 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   if ((embed as AppBskyEmbedExternal.Main).external) {
     const external = (embed as AppBskyEmbedExternal.Main).external
     return {
-      mediaType: external.uri.startsWith('https://media.ternor.com/') ? 'image/gif' : 'text/html',
+      mediaType: (external.uri.startsWith('https://media.tenor.com/') || external.uri.startsWith('https://static.klipy.com/')) ? 'image/gif' : 'text/html',
       description: external.title,
       url: external.uri,
       mediaOrder: 0,
@@ -678,6 +662,25 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
         description: media.alt,
         height: media.aspectRatio?.height,
         width: media.aspectRatio?.width,
+        url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
+        mediaOrder: index,
+        external: true
+      }
+    })
+    return toConcat
+  }
+  // gallery embed (multiple images, new style for 5-10 images)
+  if ((embed as any)['$type'] === 'app.bsky.embed.gallery' || (embed as any).items) {
+    const items = (embed as any).items as Array<any>
+    const toConcat = items.map((item, index) => {
+      // item is of type app.bsky.embed.gallery#image
+      const image = item.image
+      const cid = image.ref['$link'] ? image.ref['$link'] : image.ref.toString()
+      return {
+        mediaType: image.mimeType,
+        description: item.alt,
+        height: item.aspectRatio?.height,
+        width: item.aspectRatio?.width,
         url: `?cid=${encodeURIComponent(cid)}&did=${encodeURIComponent(did)}`,
         mediaOrder: index,
         external: true

@@ -48,6 +48,13 @@ const settingKeyVariants = [
   'hideFollows',
   'hideProfileNotLoggedIn',
   'disableEmailNotifications',
+  'showNotificationsFrom',
+  'notifyMentions',
+  'notifyReactions',
+  'notifyQuotes',
+  'notifyFollows',
+  'notifyRewoots',
+  'notifyBites',
   'botAccount',
   // everything else - stored in the options table
   'theme', // This and v
@@ -105,7 +112,9 @@ const settingKeyVariants = [
   'disableFollowingCounts',
   'disablePostCounts',
   'showMediaDescriptions',
-  'markAllMediaAsNSFW'
+  'markAllMediaAsNSFW',
+  'disableBsky',
+  'forceReducedMotion',
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -241,6 +250,68 @@ export class SettingsService {
       profileOption: true,
       type: 'checkbox',
       default: false
+    },
+    showNotificationsFrom: {
+      key: 'showNotificationsFrom',
+      translationKey: 'profile.preferences.showNotificationsFrom',
+      serverKey: 'wafrn.notificationsFrom',
+      localStorageKey: 'notificationsFrom',
+      type: 'select',
+      default: '1',
+      variants: {
+        '1': 'profile.preferences.notifyFrom.everyone',
+        '2': 'profile.preferences.notifyFrom.followers',
+        '3': 'profile.preferences.notifyFrom.following',
+        '4': 'profile.preferences.notifyFrom.mutual'
+      }
+    },
+    notifyMentions: {
+      key: 'notifyMentions',
+      translationKey: 'profile.preferences.notifyWhen.mentioned',
+      serverKey: 'wafrn.notifyMentions',
+      localStorageKey: 'notifyMentions',
+      type: 'checkbox',
+      default: true
+    },
+    notifyReactions: {
+      key: 'notifyReactions',
+      translationKey: 'profile.preferences.notifyWhen.likesEmojiReacts',
+      serverKey: 'wafrn.notifyReactions',
+      localStorageKey: 'notifyReactions',
+      type: 'checkbox',
+      default: true
+    },
+    notifyQuotes: {
+      key: 'notifyQuotes',
+      translationKey: 'profile.preferences.notifyWhen.quoted',
+      serverKey: 'wafrn.notifyQuotes',
+      localStorageKey: 'notifyQuotes',
+      type: 'checkbox',
+      default: true
+    },
+    notifyFollows: {
+      key: 'notifyFollows',
+      translationKey: 'profile.preferences.notifyWhen.followed',
+      serverKey: 'wafrn.notifyFollows',
+      localStorageKey: 'notifyFollows',
+      type: 'checkbox',
+      default: true
+    },
+    notifyRewoots: {
+      key: 'notifyRewoots',
+      translationKey: 'profile.preferences.notifyWhen.rewooted',
+      serverKey: 'wafrn.notifyRewoots',
+      localStorageKey: 'notifyRewoots',
+      type: 'checkbox',
+      default: true
+    },
+    notifyBites: {
+      key: 'notifyBites',
+      translationKey: 'profile.preferences.notifyWhen.bitten',
+      serverKey: 'wafrn.notifyBites',
+      localStorageKey: 'notifyBites',
+      type: 'checkbox',
+      default: true
     },
     // For new options, add below here.
     botAccount: {
@@ -469,6 +540,22 @@ export class SettingsService {
       translationKey: 'settings.disableReplies',
       serverKey: 'wafrn.disableReplies',
       localStorageKey: 'disableReplies',
+      type: 'checkbox',
+      default: false
+    },
+    disableBsky: {
+      key: 'disableBsky',
+      translationKey: 'settings.disableBsky',
+      serverKey: 'wafrn.disableBsky',
+      localStorageKey: 'disableBsky',
+      type: 'checkbox',
+      default: false
+    },
+    forceReducedMotion: {
+      key: 'forceReducedMotion',
+      serverKey: 'forceReducedMotion',
+      localStorageKey: 'forceReducedMotion',
+      translationKey: 'settings.forceReducedMotion',
       type: 'checkbox',
       default: false
     },
@@ -835,7 +922,7 @@ export class SettingsService {
       type: 'generic',
       values: [
         { type: 'header', value: 'settings.header.emailAndPassword' },
-        // { type: 'description', value: '[Email Change] (not currently available, sorry!)' },
+        { type: 'link', value: 'menu.settings.updateEmail', route: '/settings/updateEmail' },
         { type: 'key', value: 'disableEmailNotifications' },
         { type: 'component', value: new ComponentPortal(SettingChangePasswordComponent) },
         { type: 'link', value: 'profile.security.mfa.setup', route: '/mfaSetup' }, // FIXME: make this on the page itself?
@@ -851,6 +938,7 @@ export class SettingsService {
         { type: 'separator' },
         { type: 'header', value: 'settings.header.migration' },
         { type: 'key', value: 'alsoKnownAs' },
+        { type: 'link', value: 'Migrate out', route: '/profile/migrate-out' },
         { type: 'link', value: 'menu.settings.importFollows', route: '/profile/importFollows' }, // FIXME: make this on the page itself?
         { type: 'separator' },
         { type: 'header', value: 'settings.header.deleteAccount' },
@@ -912,6 +1000,7 @@ export class SettingsService {
         { type: 'key', value: 'disableRewootsExploreLocal' },
         { type: 'key', value: 'disableRewootsDashboard' },
         { type: 'key', value: 'disableReplies' },
+        { type: 'key', value: 'disableBsky' },
         { type: 'key', value: 'automaticallyExpandPosts' },
         { type: 'key', value: 'expandQuotes' },
         { type: 'key', value: 'disableLinkPreviews' },
@@ -932,7 +1021,15 @@ export class SettingsService {
         { type: 'key', value: 'autoAddSpecifiedTags' },
         { type: 'key', value: 'autoAddSpecifiedTagsAsks' },
         { type: 'key', value: 'autoAddSpecifiedTagsAsksNoGeneral' },
-        { type: 'key', value: 'autoAddContentWarning' }
+        { type: 'key', value: 'autoAddContentWarning' },
+        { type: 'header', value: 'settings.header.notificationsBehaviour' },
+        { type: 'key', value: 'showNotificationsFrom' },
+        { type: 'key', value: 'notifyMentions' },
+        { type: 'key', value: 'notifyFollows' },
+        { type: 'key', value: 'notifyReactions' },
+        { type: 'key', value: 'notifyQuotes' },
+        { type: 'key', value: 'notifyRewoots' },
+        { type: 'key', value: 'notifyBites' },
       ]
     },
     {
@@ -953,8 +1050,8 @@ export class SettingsService {
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },
         { type: 'key', value: 'defaultPostRewootPrivacy' },
-        {type: 'key', value: 'defaultPostEditorCanReply'},
-        {type: 'key', value: 'defaultPostEditorCanQuote'},
+        { type: 'key', value: 'defaultPostEditorCanReply' },
+        { type: 'key', value: 'defaultPostEditorCanQuote' },
 
         { type: 'separator' },
         { type: 'header', value: 'settings.header.followers' },
@@ -1211,7 +1308,7 @@ export class SettingsService {
    *
    * @returns whether the server was able to save your value
    */
-  async forceUpdateValue(values: {name: SettingKey, value: string |string[]}[], updateLocalStorage: boolean, sendRemote: boolean): Promise<boolean> {
+  async forceUpdateValue(values: { name: SettingKey, value: string | string[] }[], updateLocalStorage: boolean, sendRemote: boolean): Promise<boolean> {
     let keyList: SettingKey[] = values.map(elem => elem.name)
 
     // Optionally write to localStorage
@@ -1231,7 +1328,7 @@ export class SettingsService {
         this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/editOptions`, {
           options: values.map(elem => {
             return {
-              name: 'wafrn.' + this.data[elem.name].localStorageKey ,
+              name: 'wafrn.' + this.data[elem.name].localStorageKey,
               value: elem.value
             }
           })
@@ -1304,7 +1401,7 @@ export class SettingsService {
       return JSON.stringify(list)
     }
     console.error('Error converting list to string!', list)
-    if(list){
+    if (list) {
       return list.toString() // should not happen lmao
     } else { // well it did happen
       return ''

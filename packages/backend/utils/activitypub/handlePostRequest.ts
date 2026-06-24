@@ -1,28 +1,16 @@
 import { SignedRequest } from '../../interfaces/fediverse/signedRequest.js'
 import { Response } from 'express'
 import { getPostAndUserFromPostId } from '../cacheGetters/getPostAndUserFromPostId.js'
-import { getFollowerRemoteIds } from '../cacheGetters/getFollowerRemoteIds.js'
 import { logger } from '../logger.js'
 import { postToJSONLD } from './postToJSONLD.js'
 import { getRemoteActor } from './getRemoteActor.js'
-import { Queue } from 'bullmq'
-import { completeEnvironment } from '../backendOptions.js'
-import { FederatedHost, Follows, User } from '../../models/index.js'
+import { getQueue } from '../queues.js'
+import { Follows, User } from '../../models/index.js'
 import { Op } from 'sequelize'
 import { Privacy } from '../../models/post.js'
+import { redisCache } from '../redis.js'
 
-const processPostViewQueue = new Queue('processRemoteView', {
-  connection: completeEnvironment.bullmqConnection,
-  defaultJobOptions: {
-    removeOnComplete: true,
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 25000
-    },
-    removeOnFail: true
-  }
-})
+const processPostViewQueue = getQueue('processRemoteView')
 
 async function handlePostRequest(req: SignedRequest, res: Response) {
   if (req.params?.id) {
@@ -71,28 +59,26 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
         return res.sendStatus(403)
       }
       if (post.privacy === Privacy.FollowersOnly) {
-        const followerIds = await getFollowerRemoteIds(user.id)
         try {
           if (remoteActor) {
-            const followerServers = (
-              await User.findAll({
-                include: [FederatedHost],
-                where: {
-                  id: {
-                    [Op.in]: (
-                      await Follows.findAll({
-                        where: {
-                          followedId: user.id
-                        }
-                      })
-                    ).map((elem: any) => elem.followerId)
+            // Optimized: check followers more efficiently
+            const isFollower = !!await Follows.findOne({
+              include: [
+                {
+                  model: User,
+                  as: 'follower',
+                  where: {
+                    federatedHostId: remoteActor.federatedHostId
                   }
                 }
-              })
-            ).map((elem: any) => elem.federatedHostId)
-            if (
-              !(followerIds.includes(remoteActor.remoteId) || followerServers.includes(remoteActor.federatedHostId))
-            ) {
+              ],
+              where: {
+                followedId: user.id,
+                accepted: true
+              }
+            })
+
+            if (!isFollower) {
               res.sendStatus(403)
               return
             }
@@ -112,17 +98,21 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
           return
         }
       }
-      const response = await postToJSONLD(post.id)
+      const response = await postToJSONLD(post.id, post)
       if (!response) {
         return res.sendStatus(404)
       }
       res.set({
-        'content-type': 'application/activity+json'
+        'content-type': 'application/activity+json',
+        'cache-control': 'public, max-age=300' // Cache for 5 minutes in CDN/reverse proxy
       })
-      res.send({
+      const jsonResponse = {
         ...response.object,
         '@context': response['@context']
-      })
+      }
+      // Cache the HTTP response for subsequent requests
+      await redisCache.set(`postHttpResponse:${post.id}`, JSON.stringify(jsonResponse), 'EX', 300)
+      res.send(jsonResponse)
     } else {
       res.sendStatus(404)
     }

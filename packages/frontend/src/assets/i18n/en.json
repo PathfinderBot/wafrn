@@ -7,7 +7,12 @@
     "character": "character",
     "default": "Default",
     "commit": "commit",
-    "buildDate": "Build time"
+    "buildDate": "Build time",
+    "logoAlt": "Logo",
+    "actions": "Actions",
+    "none": "None",
+    "search": "Search",
+    "date": "Date"
   },
   "login": {
     "title": "Log in",
@@ -25,6 +30,15 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "loginButton": "Log in",
+    "recoverPasswordTitle": "Don't worry, we also forget a lot of things",
+    "recoverPasswordManager": "But you should try a password manager!",
+    "rememberedPassword": "Did you just remember your password?",
+    "loginNow": "That's great! Log in now!",
+    "requestPasswordReset": "Request a password reset",
+    "setNewPassword": "Set a new password",
+    "loginAfterReset": "And just log in after that!",
+    "newPassword": "New password",
+    "resetPassword": "Reset password",
     "checkEmail": "Please check your email",
     "checkEmailLine1": "We have sent you an email. Please do check your email and the spam folder",
     "checkEmailLine2": "If you have any problem, write to the instance admin, whose email can be found <a href=\"/about\">here</a>",
@@ -41,7 +55,22 @@
     "registerOnOtherInstance": "But because Wafrn is decentralized, you can join to another server and interact with people from this server!",
     "selfHostInstance": "Or, you can self-host your own Wafrn instance!",
     "findServers": "Find one on join.wafrn.net",
-    "selfHostInstructions": "Self-hosting Instructions"
+    "selfHostInstructions": "Self-hosting Instructions",
+    "confirmReadAbout": "I confirm that I have read the <a href=\"/about\" target=\"_blank\">\"About\"</a> section.",
+    "passwordRequired": "Password is required",
+    "inviteCode": "Invite code",
+    "inviteCodeRequired": "Invite code is required",
+    "username": "Username",
+    "usernameHint": "Right now we do not allow special characters or spaces",
+    "usernameInvalid": "Username contains invalid characters",
+    "describeYourself": "Describe yourself",
+    "describeYourselfHint": "A short description of yourself so other people can know who you are",
+    "birthDateLabel": "Your birth date <b>(There is a minimum registration age!)</b>",
+    "birthDateHint": "MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not shared with anyone. Minimum registration age varies depending on the instance",
+    "gender": "Gender",
+    "genderHint": "This actually does not do anything at all",
+    "uploadAvatar": "Upload your avatar",
+    "chooseFile": "Choose File"
   },
   "notifications": {
     "title": "Notifications",
@@ -50,14 +79,118 @@
   },
   "asks": {
     "title": "Asks",
+    "loader": "asks",
     "noAsks": "No more asks found",
-    "nobodyAsked": "Nobody asked..."
+    "nobodyAsked": "Nobody asked...",
+    "answer": "Answer",
+    "ignore": "Ignore"
+  },
+  "search": {
+    "howSearchWorksTitle": "How search works",
+    "howSearchWorksFederation": "Wafrn connects with the fediverse and bluesky. You can search tags \"tumblr style\" but for better results we recommend using \"twitter style\" for fandoms.",
+    "howSearchWorksPosts": "You can search <b>public</b> posts that wafrn has already seen. You can get more posts of these types by following a tag!",
+    "howSearchWorksUsers": "You can search for users. Search will return users by url. You can search for fedi users but you need to use the full @: as example, @foone@digipres.club",
+    "howSearchWorksRemotePosts": "You can also search for remote posts by the URL of the fedi or bluesky post, as example [EXAMPLE URL]",
+    "searchTerm": "Search term",
+    "submit": "Search",
+    "advancedSearchOptions": "Advanced search options",
+    "filterByUser": "Filter by user",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "postsTab": "Posts",
+    "usersTab": "Users",
+    "loadingMore": "Loading more...",
+    "noNewResults": "No new results"
+  },
+  "migrateBluesky": {
+    "title": "Migrate from bluesky",
+    "next": "Next",
+    "prerequisites": {
+      "label": "Prerequisites",
+      "intro": "Migrating from Bluesky is relatively easy, but requires your attention!",
+      "outOfTheWay": "Let's get some prerequisites out of the way:",
+      "hostedAccountWarning": "If you're currently using a wafrn-hosted bsky account, <b>it will be nuked.</b>",
+      "supportWarning": "This doesn't always go smoothly! If any issues occur, reach out to the wafrn team!",
+      "handleMove": "If you are using a <code>.bsky.social</code> handle, it will be moved to <code>.{{pdsUrl}}</code>",
+      "pdsWarning": "You cannot use your own PDS. You will be using the Wafrn-hosted one.",
+      "continue": "When you're ready, continue here:"
+    },
+    "unlinking": {
+      "label": "Unlinking and deleting the old account",
+      "intro": "First off, we must unlink (and delete) your previous linked bluesky account. This is the Wafrn-hosted one, if you have one.",
+      "inviteCodeInfo": "This will also give you an \"invite code\", that we'll use in the next steps to move over your existing account. Please write it down!",
+      "deleteAndGetCode": "Delete bsky associated account and get invite code",
+      "inviteCodeIs": "Your invite code is",
+      "gotCode": "Got the code? Alright, on to the next step."
+    },
+    "pdsMoover": {
+      "label": "PDSMoover - Actually moving the account",
+      "intro": "Now we'll use an external migration tool, called <a href=\"https://pdsmoover.com\">PDS Moover</a> to do the actual migration part.",
+      "providerUrl": "For the provider, give them this URL:",
+      "followInstructions": "Follow their instructions <i>closely.</i> If something goes wrong, reach out to the Wafrn team and your site admin!",
+      "useInviteCode": "And of course, give PDS Moover the invite code that you wrote down",
+      "wroteItDown": "You wrote it down, right? If not, go back."
+    },
+    "linking": {
+      "label": "Linking the account to Wafrn",
+      "intro": "If the \"MOOVE\" went alright, we'll now need to link up the migrated account to Wafrn.",
+      "createAppPassword": "To do this, we log in to the newly migrated account as if it was any other Bluesky account on <a href=\"https://bsky.app\">bsky.app</a>, and create an \"App Password\"",
+      "appPasswordLocation": "You'll find the relevant options in Settings > Privacy and Security > App Passwords",
+      "formIntro": "Once you've grabbed a new app password, put it in together with the new username here:",
+      "accountLabel": "New name of account (@accountName.{{pdsUrl}})",
+      "appPasswordLabel": "App Password (NOT YOUR PASSWORD, A BLUESKY APP PASSWORD)",
+      "passwordRequired": "Password is required",
+      "linkAccount": "Link account"
+    },
+    "profit": {
+      "label": "Profit?",
+      "done": "Hooray! All should be done! Please verify on your profile that the bluesky handle is visible. Your old Bluesky posts should also start appearing on your profile.",
+      "support": "If there was any issues, <i><b>please reach out!</b></i>The Wafrn team and admins of your site are happy to help :)"
+    },
+    "messages": {
+      "accountNotFound": "Account not found, try without the @",
+      "checkPassword": "Account found, but please do check password",
+      "accountSynchronized": "Account synchronized successfully"
+    }
+  },
+  "enableBluesky": {
+    "title": "Enable Bluesky",
+    "readThis": "Please read the following before enabling Bluesky for your account.",
+    "publicPostsOnly": "Only posts marked public on Wafrn will also be published to Bluesky.",
+    "allPostsPublic": "Public posts on Bluesky are visible to everyone, even outside of your followers.",
+    "acceptsFollows": "Anyone can follow your Bluesky account unless you manually approve follow requests.",
+    "corporationWarning": "Bluesky is operated by a private company, so their policies and features may change.",
+    "blocksPublic": "Blocking someone on Wafrn does not guarantee they are blocked on Bluesky or vice versa.",
+    "replyControls": "Reply permissions and controls are handled by Bluesky and may differ from Wafrn settings.",
+    "partialStorage": "Only some content is stored on this Wafrn instance, and Bluesky may keep its own copies.",
+    "headerImageWarning": "Your header image may not be carried over exactly to Bluesky.",
+    "loginIntro": "To enable Bluesky, you will log in through the Bluesky flow and authorize your account.",
+    "jankyWarning": "This feature is still experimental; the login flow may be unstable.",
+    "loginServer": "You will log in through the Bluesky server at {{server}}.",
+    "emailPasswordInfo": "If you already have a Bluesky account with the same email, it may be linked to your Wafrn account on {{instanceName}}.",
+    "passwordNotSynchronized": "Your Wafrn and Bluesky passwords are not synchronized. Use the password from your existing account or create one on Bluesky if needed.",
+    "currentPassword": "Current password",
+    "enableButton": "Enable Bluesky",
+    "instanceDisabled": "Bluesky is disabled on this instance"
+  },
+  "manageFollowedHashtags": {
+    "title": "Manage followed hashtags",
+    "unfollowTag": "Unfollow #{{tag}}",
+    "tagToSubscribe": "Tag to subscribe",
+    "subscribeToTag": "Subscribe to tag",
+    "messages": {
+      "followed": "You now follow #{{tag}}",
+      "unfollowed": "You no longer follow #{{tag}}",
+      "error": "Something went wrong!"
+    }
   },
   "menu": {
     "login": "Log in",
     "register": "Register",
     "dashboard": "Dashboard",
     "dashboardHover": "View dashboard",
+    "navigationMenu": "Navigation menu",
+    "previousPage": "Previous page",
     "writeWoot": "Woot",
     "notifications": "Notifications",
     "explore": "Explore",
@@ -99,7 +232,8 @@
       "myBlockedServers": "Blocked servers",
       "importFollows": "Import followers",
       "superSecretMenu": "Super Secret Menu",
-      "detachedNotifications": "Unauthorized Notifications"
+      "detachedNotifications": "Unauthorized Notifications",
+      "updateEmail": "Update Email"
     },
     "admin": {
       "title": "Admin",
@@ -110,7 +244,8 @@
       "blocklist": "Blocked users",
       "stats": "Stats",
       "awaitingAproval": "Awaiting approval",
-      "inviteCodes": "Invite codes"
+      "inviteCodes": "Invite codes",
+      "emailCampaign": "Email campaign"
     }
   },
   "theme-editor": {
@@ -122,6 +257,11 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "addMentionPlaceholder": "Add mention (FEATURE NOT DONE YET)",
+    "addPoll": "Add poll",
+    "mentionedUsers": "Mentioned users",
+    "removeMention": "remove {{url}}",
+    "contentWarningLabel": "Content Warning",
     "interactionControl": {
       "anyone": "Anyone",
       "FollowingAndMentioned": "People I follow and mentioned users",
@@ -165,13 +305,65 @@
     "contentWarningTooltip": "Content Warning",
     "insertEmojiTooltip": "Insert emoji",
     "hiddenMentionsTooltip": "Other mentioned users",
-    "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/user\">the guide!</a>",
+    "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">the guide!</a>",
     "usernameLabel": "Wooting as",
-    "noResults": "No results."
+    "noResults": "No results.",
+    "quotable": "Who can quote",
+    "whoCanReply": "Who can reply"
   },
   "blog": {
     "tabWoots": "Woots",
-    "tabMedia": "Media"
+    "tabMedia": "Media",
+    "followsYou": "Follows you",
+    "mutuals": "Mutuals",
+    "userAvatarAlt": "User avatar",
+    "requestFollow": "Request follow",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "moreOptions": "More options",
+    "blockServer": "Block server",
+    "unblockServer": "Unblock server",
+    "blueskyBadge": "Bluesky",
+    "adminBadge": "Admin",
+    "adminTooltip": "{{url}} is an admin of {{instanceHostname}}",
+    "botBadge": "Bot",
+    "fediverseAttachments": "Fediverse Attachments",
+    "askQuestion": "Ask a question",
+    "remoteAskSummary": "Send ask from outside Wafrn",
+    "remoteAskDescription": "You can send this user a non-anonymous ask from your fedi instance with the following structure: \"!ask @{{url}} YOUR QUESTION HERE\". The media and emojis you attach will be ignored, and you can only send one mention on the post. If it goes wrong, the user will receive it as a regular DM. Also, the content of the DM will be published as the AP object to verify the ask as genuine.",
+    "movedAccount": "This user has moved to a new account:",
+    "remoteProfileLoggedInWarning": "As this user is from a remote instance, the shown information may be incomplete.",
+    "remoteProfileLoggedOutWarning": "To see external users you need to be logged in. You can view their profile on their actual instance.",
+    "viewOnRemoteInstance": "View on remote instance",
+    "postCount": "Post Count",
+    "following": "Following",
+    "followers": "Followers",
+    "noMorePosts": "No more posts...",
+    "searchUser": "Search user",
+    "user": "User",
+    "since": "Since",
+    "followUser": "Follow user",
+    "acceptFollower": "Accept this follower",
+    "removeFollower": "Remove this follower",
+    "selectFollowsPage": "Select page of follows",
+    "selectServerBlocksPage": "Select page of server blocks"
+  },
+  "about": {
+    "showBubbledServers": "Show list of bubbled servers",
+    "bubbledServersLoader": "bubbled servers",
+    "bubbleServers": "Bubble servers",
+    "bubbleServersDescription": "The instances shown below are the instances part of the \"WAFRN & Friends\" feed",
+    "showBlockedServers": "Show list of blocked servers",
+    "blockedServersLoader": "blocked servers",
+    "blockedServers": "Blocked servers",
+    "blockedServersDescription": "In case of possible error, please contact the admin team by email",
+    "blockedServersUnavailable": "Blocked servers has not been made available on this server."
+  },
+  "theme": {
+    "changeColorScheme": "Change color scheme",
+    "toggleTheme": "Toggle theme",
+    "modeTooltip": "{{mode}} mode",
+    "themeTooltip": "{{theme}} theme"
   },
   "profile": {
     "profile": {
@@ -221,6 +413,7 @@
       "dashboardIsExploreLocal": "Default dashboard is explore local instead of following",
       "cocAIne": "Replace the word artificial intelligence with custom word (cocaine?)",
       "customCocAIne": "Custom word for AI replacement",
+      "customCocAInePlaceholder": "custom word. requires enable replace",
       "notRecommendedOptions": "Not recommended options",
       "disableNSFWFilter": "Disable NSFW images filter",
       "automaticallyExpandAllPosts": "Automatically expand all woots",
@@ -230,6 +423,7 @@
     "privacy": {
       "defaultPostPrivacy": "Default woot privacy",
       "asks": "Asks",
+      "options": "Options",
       "disableEmailNotifications": "Disable email notifications",
       "hideFollows": "Hide my follows and followers",
       "hideProfileNotLoggedInDescription": "Hide profile to not logged in users and search (this will only apply to your profile IN this wafrn, not to\nyour woots nor other fedi instances or bluesky)",
@@ -267,6 +461,7 @@
       "movingFromAccount": "'Moving from a different account (without the @)'",
       "wordsThatWillAutoCwPosts": "Words that will add cw to woot",
       "superMutedWords": "Phrases that will not show a woot with them (BE CAREFUL WITH THESE)",
+      "mutedWordsPlaceholder": "Enter muted words, one per line",
       "availableEmoji": "Available emojis",
       "rollToCrash": "Roll a dice to crash your browser",
       "rollSurvived": "Survived!",
@@ -278,7 +473,24 @@
       "psa2_1": "Please refer to",
       "psa2_2": "the FAQ",
       "psa2_3": "to find out what does/doesn't work generally speaking.",
-      "psa3": "In the future, we aim to have Bluesky-Specific settings in here, like the ability to change the Bluesky username."
+      "psa3": "In the future, we aim to have Bluesky-Specific settings in here, like the ability to change the Bluesky username.",
+      "enableBlueskyLink": "To enable bluesky, please <a href='\"/profile/enable-bluesky\"'>click here</a>"
+    },
+    "importFollows": {
+      "title": "Import your follows from another instance",
+      "uploadCsvIntro": "Let's upload a CSV",
+      "uploadCsv": "Upload CSV",
+      "uploading": "Uploading... This might take some time",
+      "failedFollows": "We had problems following these {{ count }} users users:",
+      "followAllUsers": "Follow all users",
+      "followingPeople": "Following people... This might take some time",
+      "notFoundUsers": "We had problems finding these {{ count }} users users:"
+    },
+    "migrateOut": {
+      "title": "Migrate out",
+      "instructions": "You need to first create an alias on the new fedi account you are moving to",
+      "newAccount": "New account (without the @)",
+      "migrate": "Migrate"
     },
     "migrate": {
       "psa1": "To migrate to another server please create an alias and click",
@@ -293,6 +505,9 @@
       "profile": "Profile",
       "preferences": "Preferences",
       "privacySecurity": "Privacy and Security",
+      "bluesky": "Bluesky",
+      "deleteAccount": "Delete account",
+      "migrateOut": "Migrate out",
       "misc": "Miscellaneous"
     },
     "updateButton": "Update profile"
@@ -329,7 +544,8 @@
       "fun": "Fun",
       "wellbeing": "Wellbeing",
       "media": "Media",
-      "editorBehavior": "Editor Behavior"
+      "editorBehavior": "Editor Behavior",
+      "notificationsBehaviour": "Notifications Behavior"
     },
     "fediPropertyKey": "Property Name",
     "fediPropertyValue": "Property Value",
@@ -341,6 +557,11 @@
     "description": "Description",
     "changePasswordTitle": "Request a password change",
     "changePassword": "Change password",
+    "changeEmailTitle": "Change your email",
+    "changeEmailDescription": "Enter your new email and your password to update your email address.",
+    "changeEmail": "Update Email",
+    "changeEmailSuccess": "Your email has been updated successfully!",
+    "changeEmailError": "Failed to update your email. Please try again.",
     "autoAcceptFollowsFromFollowing": "Automatically accept follow requests from followed users",
     "autoRejectFollowsFromUsersYouDoNotFollow": "Automatically reject follow requests from users you don't follow",
     "changePasswordDescription": "A link change your password has been sent to your email.",
@@ -357,7 +578,9 @@
     "autoAddSpecifiedTagsAsksNoGeneral": "Don't add the general tags on ask replies",
     "autoAddSpecifiedTagsAsksNoGeneralDescription": "Enable this if you want the tags different between normal woots and ask replies",
     "autoAddSpecifiedTagsDescription": "Add tags below to automatically add them on the editor on your every single woot. You can always remove it on the editor. Multiple tags can be added by adding a comma and a space.",
-    "autoAddContentWarning": "Add specified content warning", 
+    "autoAddContentWarning": "Add specified content warning",
+    "invalidSetting": "Something went very wrong",
+    "noVariantsSet": "No variants set",
     "autoAddContentWarningDescription": "If you woot mostly stuff that requires a content warning, you can add it here to automatically add it when you woot. You can always remove it by removing the content warning text on the editor.",
     "alsoKnownAs": "Previous alias",
     "requestAccountDeletion": "Request Account Deletion",
@@ -406,8 +629,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
-    "defaultPostEditorCanReply":"Default who can reply",
-    "defaultPostEditorCanQuote":"Default woot can be quoted",
+    "defaultPostEditorCanReply": "Default who can reply",
+    "defaultPostEditorCanQuote": "Default woot can be quoted",
     "postEditorPrivacyOptions": {
       "public": "Public",
       "followersOnly": "Followers Only",
@@ -417,6 +640,8 @@
     "disableRewootsExploreLocal": "Disable rewoots in Explore local feed",
     "disableRewootsDashboard": "Disable rewoots in Dashboard",
     "disableReplies": "Disable replies in feeds",
+    "disableBsky": "Disable bsky posts in feeds",
+    "forceReducedMotion": "Reduced motion: epilepsy safe html for posts and disable custom user themes",
     "mutedWords": "Muted words",
     "mutedWordsDescription": "One word per line. Woots with these phrases will be placed behind a CW.",
     "superMutedWords": "Blocked words",
@@ -475,6 +700,8 @@
       "generateInviteCodeWarning": "Generating an invite code will delete IRREVERSIBLY any associated bsky account"
     },
     "admin": {
+      "blockIpTitle": "Block this ip?",
+      "blockIpDescription": "Do you want to block this ip?",
       "requireExtraStepsTitle": "Require extra steps from user",
       "requireExtraStepsDescription": "User will be sent an email with additional steps.",
       "userUsedVPNTitle": "Mark user as using a VPN",
@@ -612,6 +839,7 @@
     "smoothScroll": "Smooth scroll"
   },
   "post-actions": {
+    "postActions": "Post actions",
     "shareUrl": "Copy link",
     "shareExternalUrl": "Copy remote link",
     "viewOnAtproto": "View on Atproto",
@@ -638,12 +866,26 @@
     "unblockUser": "Unblock user",
     "reportUser": "Report user",
     "bitePost": "Bite woot",
-    "biteUser": "Bite user"
+    "biteUser": "Bite user",
+    "reactWithEmoji": "React with an emoji",
+    "fetchMoreExternalReplies": "Try fetching more external replies",
+    "viewInitialPost": "View initial post",
+    "rewooted": "rewooted"
   },
   "post-header": {
     "follow": "Follow",
     "awaitingApproval": "Awaiting approval",
-    "viewPost": "View woot"
+    "viewPost": "View woot",
+    "edited": "Edited {{date}}"
+  },
+  "post": {
+    "expandWoot": "Expand woot",
+    "collapsedPosts": "{{count}} posts",
+    "threadCollapsed": "Thread collapsed because it's very long but we show you the end of the thread"
+  },
+  "bottomReplyBar": {
+    "notes": "notes",
+    "viewThread": "View thread"
   },
   "post-fragment": {
     "mutedWords": "Woot contains muted words:",
@@ -656,9 +898,75 @@
   "media": {
     "noAltText": "Media does not have alt text",
     "sensitiveContent": "This media contains sensitive content",
-    "manuallyHidden": "Media manually hidden"
+    "manuallyHidden": "Media manually hidden",
+    "showAltText": "Show alt text",
+    "showMedia": "Show media",
+    "openPdf": "Click here to see the PDF file that is embedded in this post",
+    "hideImage": "Hide image"
+  },
+  "poll": {
+    "vote": "Vote"
+  },
+  "deletePost": {
+    "title": "This is a SLOW PROCESS. It will take some time to be deleted off the fediverse.",
+    "description": "Your post will be deleted. If the post has no rewoots, it will be totally deleted. If it has rewoots, the content will be changed to \"This post has been deleted.\""
   },
   "admin": {
+    "common": {
+      "secondStepNotice": "This is a lot of data, so use the buttons below to show it."
+    },
+    "stats": {
+      "atProtoWaiting": "ATProto waiting",
+      "atProtoSendPostAwaiting": "ATProto send post awaiting",
+      "inboxStillWaiting": "Inbox still waiting",
+      "preparationSendAwaiting": "Preparation send awaiting",
+      "sendPostAwaiting": "Send post awaiting",
+      "deletePostAwaiting": "Delete post awaiting",
+      "websocketAwaiting": "Websocket awaiting",
+      "getUserFediverseWaiting": "Get user fediverse waiting",
+      "mergeUsersAwaiting": "Merge users awaiting",
+      "mergePostsAwaiting": "Merge posts awaiting",
+      "generateKeysWaiting": "Generate private and public key for new user"
+    },
+    "inviteCodes": {
+      "createInvite": "Create invite",
+      "filterInviteCodes": "Filter invite codes",
+      "copyLink": "Copy link",
+      "copyCode": "Copy code",
+      "code": "Code",
+      "createdBy": "Created by",
+      "expiresIn": "Expires in",
+      "usedBy": "Used by",
+      "selectInviteCodesPage": "Select invite codes page"
+    },
+    "bans": {
+      "showBannedUsers": "Show banned users",
+      "unban": "Unban",
+      "selectBanListPage": "Select ban list page"
+    },
+    "blocks": {
+      "showUsersBlockedByUsers": "Show users blocked by users",
+      "showServersBlockedByUsers": "Show servers blocked by users",
+      "perUserUserBlocks": "Per user user blocks",
+      "perUserServerBlocks": "Per user server blocks",
+      "blocker": "Blocker",
+      "blocked": "Blocked",
+      "reason": "Reason",
+      "userBlocker": "User blocker",
+      "selectUserBlockListPage": "Select user block list page",
+      "selectServerBlockListPage": "Select server block list page",
+      "selectBlockedUsersPage": "Select page of blocked users",
+      "selectMutedUsersPage": "Select page of muted users"
+    },
+    "serverList": {
+      "serverFilter": "Server Filter",
+      "server": "Server",
+      "extendedFederation": "Extended federation",
+      "bubbleTimeline": "Bubble timeline",
+      "comment": "Comment",
+      "selectServerListPage": "Select server list page",
+      "saveChanges": "Save changes"
+    },
     "pendingUsers": {
       "url": "URL",
       "email": "Email",
@@ -667,14 +975,57 @@
       "checkIpInfo": "Check on IPinfo",
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
-      "userUsedVPN": "User used VPN"
+      "userUsedVPN": "User used VPN",
+      "blockIp": "Block IP",
+      "usersLoader": "users",
+      "noUsersPending": "No users pending approval!"
+    },
+    "emailCampaign": {
+      "title": "Email campaign",
+      "subject": "Subject",
+      "emailHtml": "Email HTML",
+      "sendTest": "Send test",
+      "sendCampaign": "Send campaign",
+      "messages": {
+        "success": "Campaign successfully sent",
+        "error": "Campaign failed"
+      }
+    },
+    "emojiUploader": {
+      "description": "For internal use. Upload single or collections of emoji here.",
+      "uploadEmojis": "Upload emojis",
+      "uploadButtonHint": "<- button that uploads emojis",
+      "collectionsPreview": "Collections preview:"
     },
     "reportList": {
       "ignoreReport": "Ignore report",
       "forceNSFW": "Mark user as NSFW",
       "banUser": "Ban user",
       "reopenReport": "Reopen report",
-      "forceCw": "Force CW on woot"
+      "forceDelete": "Delete woot",
+      "forceCw": "Force CW on woot",
+      "reportsFilter": "Reports Filter",
+      "advancedLabel": "(Advanced)",
+      "report": "Report",
+      "and": "and",
+      "advancedSearchHelp": "Advanced Search Help",
+      "advancedHelpIntro": "You can add advanced filters by prefixing filter keywords in the following list with plus sign <code>+</code> as an additive filter or minus sign <code>-</code> as a subtractive filter. Select filters are separated from their value by either a colon <code>:</code> or equal sign <code>=</code>, for example <code>+target:EvilUser</code>. Select filters can be used implicitly as additive filters without a plus sign <code>+</code>.",
+      "advancedHelpLogic": "Additive filters are OR within their category but AND with different keywords. Subtractive filters are AND with themselves and other keywords.",
+      "existingKeywords": "Here are the existing keywords:",
+      "keywordReporter": "<code>r</code> or <code>reporter</code> (Select) URL of the user who reported the target",
+      "keywordTarget": "<code>t</code> or <code>target</code> (Select) URL of the user who was reported",
+      "keywordResolved": "<code>d</code> or <code>resolved</code> (Flag) whether a report was resolved",
+      "examples": "Examples:",
+      "exampleResolved": "<code>+resolved</code> filters to only resolved reports",
+      "exampleUnresolved": "<code>-r=ReportSpammer -d</code> filters to unresolved reports not sent by <code>ReportSpammer</code>",
+      "exampleReporter": "<code>+reporter=Vigilante r:VigilanteAlt -target=EvilUser</code> filters to only reports of user <code>EvilUser</code> that were sent by <code>Vigilante</code> or <code>VigilanteAlt</code>",
+      "reporter": "Reporter",
+      "targetUser": "Target User",
+      "postType": "(post)",
+      "accountType": "(account)",
+      "type": "Type",
+      "resolved": "Resolved",
+      "selectReportListPage": "Select report list page"
     }
   },
   "page-not-found": {
@@ -698,6 +1049,15 @@
     }
   },
   "serverAnnouncements": {
-    "bsky_account_force_disabled": "Your bluesky account was disconnected due an error in wafrn"
+    "bsky_account_force_disabled": "Your bluesky account was disconnected due to an error in wafrn"
+  },
+  "emoji": {
+    "searchAvailable": "Search available emojis",
+    "recentEmojis": "Recently used emojis"
+    ,"reactionsUnsupported": "Mastodon and bluesky do not support emoji reactions yet"
+  },
+  "dashboard": {
+    "notFollowingAnyone": "You dont seem to be following anyone!",
+    "exploreLinks": "<a href=\"/dashboard/exploreLocal\">Click here to go to the explore page</a>"
   }
 }

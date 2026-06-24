@@ -24,6 +24,7 @@ import {
   faScrewdriverWrench,
   faRefresh,
   faLock,
+  faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
 import { BlocksService } from "src/app/services/blocks.service";
@@ -98,6 +99,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   userIcon = faUser;
   bskyIcon = faBluesky;
   botIcon = faRobot;
+  followerIcon = faUserGroup;
   adminIcon = faScrewdriverWrench;
   usersIcon = faUsers;
   blockUserIcon = faUserSlash;
@@ -126,7 +128,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails();
     if (blog === undefined) return;
-    this.headerUrl = `${EnvironmentService.environment.cacheDomain}/api/v2/cache/header/${blog.id}`
+    this.headerUrl = `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/header/${blog.id}`
     const askLevelOption = blog.publicOptions.find(
       (elem) => elem.optionName == "wafrn.public.asks"
     );
@@ -138,9 +140,13 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       ? [1, 2].includes(askLevel)
       : askLevel == 1;
     this.allowAsk =
+      this.allowAsk && !blog.blocked;
+    this.allowAsk =
       this.allowAsk && this.loginService.getLoggedUserUUID() != blog.id;
     this.allowRemoteAsk =
       askLevel != 3 && this.loginService.getLoggedUserUUID() != blog.id;
+    this.allowRemoteAsk =
+      this.allowRemoteAsk && !blog.blocked;
     this.isMe = blog.id == this.loginService.getLoggedUserUUID();
     let path = this.activatedRoute.snapshot.routeConfig?.path;
     if (path && this.allowAsk && path.toLowerCase().endsWith("/ask")) {

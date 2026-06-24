@@ -60,11 +60,25 @@ export class PendingUsersComponent {
     this.reloadList()
   }
 
+  async blockIp(user: SimplifiedUser) {
+    const confirm = await this.simpleDialog.createConfirmDialog({
+      title: 'dialog.admin.blockIpTitle',
+      content: 'dialog.admin.blockIpDescription'
+    })
+
+    if (!confirm) return
+
+    await this.adminService.blockIp(user.registerIp as string)
+    await this.userUsedVPN(user);
+    window.location.reload();
+  }
+
   async reloadList() {
     this.pendingUsers = []
     await this.adminService.getPendingActivationUsers().then((response) => {
       this.pendingUsers = response.map((elem) => {
         elem.avatar = EnvironmentService.environment.baseMediaUrl + elem.avatar
+        elem.registerIp = elem.registerIp?.split(',')[0]
         return elem
       })
     })

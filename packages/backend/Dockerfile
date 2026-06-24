@@ -21,12 +21,11 @@ RUN npm install
 # copy the rest of the files
 COPY packages/backend .
 
+
 # create log folder early to prevent node err: cannot open logs/*.log
 RUN mkdir -p logs
 
-COPY packages/backend/environment.dev.ts environment.ts
-
-RUN npm run type-check
+COPY packages/backend/environment.example.ts environment.ts
 
 # some default values
 ENV POSTGRES_HOST=db
@@ -37,11 +36,14 @@ ENV LISTEN_IP=0.0.0.0
 ENV PORT=9000
 ENV LOG_DESTINATION=1
 
+VOLUME ["/app/packages/backend/uploads"]
+VOLUME ["/app/packages/backend/cache"]
+
 # expose port from environment.ts
 EXPOSE ${PORT}
 
 # set up configuration from environment, then run tini as entrypoint to be able to handle kernel signals
-ENTRYPOINT ["tini","--","./docker-entrypoint.sh"]
+ENTRYPOINT ["tini","--"]
 
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
 

@@ -7,7 +7,7 @@
   <div class="flex flex-column gap-3 justify-content-between">
     <div class="flex flex-wrap justify-content-between gap-3">
       <div>
-        <img [src]="avatarUrl()" alt="user avatar" class="blog-avatar-image" />
+        <img [src]="avatarUrl()" alt="{{ 'blog.userAvatarAlt' | translate }}" class="blog-avatar-image" />
       </div>
       <div class="flex">
         <div>
@@ -33,23 +33,23 @@
                 ">
             @if (postService.followedUserIds.indexOf(blog.id) === -1) {
             @if (blog.manuallyAcceptsFollows) {
-            <fa-icon [icon]="lockIcon" class="mr-2"></fa-icon>Request follow
+            <fa-icon [icon]="lockIcon" class="mr-2"></fa-icon>{{ 'blog.requestFollow' | translate }}
             }
             @else {
-            Follow
+            {{ 'blog.follow' | translate }}
             }
             } @else {
-            Unfollow
+            {{ 'blog.unfollow' | translate }}
             }
           </button>
           }
           @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
           <button mat-stroked-button color="accent" class="split-button-left" (click)="unfollowUser(blog.id)">
-            Awaiting approval
+            {{ 'post-header.awaitingApproval' | translate }}
           </button>
           }
           @if (loggedIn) {
-          <button aria-label="More options" [matMenuTriggerFor]="menu" mat-stroked-button
+          <button [attr.aria-label]="'blog.moreOptions' | translate" [matMenuTriggerFor]="menu" mat-stroked-button
             [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
             class="split-button-right">
             <fa-icon [icon]="expandDownIcon"></fa-icon>
@@ -91,12 +91,12 @@
           @if (!blog.isBlueskyUser) {
           @if (!blog.serverBlocked) {
           <button mat-menu-item (click)="blockService.blockServer(blog.id)">
-            <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>Block server
+            <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>{{ 'blog.blockServer' | translate }}
           </button>
           } @else {
           @if (blog.federatedHost) {
           <button mat-menu-item (click)="blockService.unblockServer(blog.federatedHost!.id)">
-            <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>Unblock server
+            <fa-icon class="mr-2" [icon]="unblockServerIcon"></fa-icon>{{ 'blog.unblockServer' | translate }}
           </button>
           }
           }
@@ -159,14 +159,23 @@
       </p>
       <div class="flex gap-2 mt-2 mb-0 text-sm line-height-3 profile-badges">
         @if (blog?.isBlueskyUser) {
-        <span class="badge bsky-badge"> <fa-icon class="mr-2" [icon]="bskyIcon"></fa-icon>Bluesky </span>
+        <span class="badge bsky-badge"> <fa-icon class="mr-2" [icon]="bskyIcon"></fa-icon>{{ 'blog.blueskyBadge' | translate }} </span>
         }
         @if (blog?.isAdmin) {
-        <span class="badge admin-badge" [matTooltip]="blog?.url + ' is an admin of ' + instanceHostname"> <fa-icon
-            class="mr-2" [icon]="adminIcon"></fa-icon>Admin </span>
+        <span class="badge admin-badge" [matTooltip]="'blog.adminTooltip' | translate:{ url: blog?.url, instanceHostname }"> <fa-icon
+            class="mr-2" [icon]="adminIcon"></fa-icon>{{ 'blog.adminBadge' | translate }} </span>
         }
         @if (blog?.isBot) {
-        <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>Bot </span>
+        <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>{{ 'blog.botBadge' | translate }} </span>
+        }
+        @if (!isMe && blog && postService.myFollowers.includes(blog.id)) {
+          <span class="badge follower-badge"> <fa-icon class="mr-2" [icon]="followerIcon"></fa-icon>
+          @if (postService.followedUserIds.includes(blog.id)) {
+            {{ 'blog.mutuals' | translate }}
+          } @else {
+            {{ 'blog.followsYou' | translate }}
+          }
+          </span>
         }
       </div>
     </div>
@@ -175,7 +184,7 @@
   @if (fediComp().length !== 0) {
   <hr class="my-3" />
   <div class="w-full overflow-hidden flex flex-column gap-2">
-    <p class="m-0 text-sm subtle-title">Fediverse Attachments</p>
+    <p class="m-0 text-sm subtle-title">{{ 'blog.fediverseAttachments' | translate }}</p>
     @for (fediAt of fediComp(); track fediAt) {
     <dl class="flex m-0">
       <dt [innerHTML]="fediAt.name" class="w-3 font-bold"></dt>
@@ -187,25 +196,18 @@
   @if (allowAsk) {
   <hr class="my-4" />
   <div class="flex flex-wrap justify-content-center gap-3">
-    <button mat-stroked-button color="accent" (click)="openAskDialog()">Ask a question</button>
+    <button mat-stroked-button color="accent" (click)="openAskDialog()">{{ 'blog.askQuestion' | translate }}</button>
   </div>
   }
   @if (allowRemoteAsk) {
   <details class="mt-2">
-    <summary class="text-center">Send ask from outside Wafrn</summary>
-    <p class="m-0">
-      You can send this user a non-anonymous ask from your fedi instance with the following structure: " !ask &#64;{{
-      blog?.url
-      }}
-      YOUR QUESTION HERE". The medias and emojis you attach will be ignored, and you can only send one mention on the
-      post. If it goes wrong, the user will receive it as a regular DM. Also, the content of the DM will be published
-      as the AP object to verify the ask as genuine
-    </p>
+    <summary class="text-center">{{ 'blog.remoteAskSummary' | translate }}</summary>
+    <p class="m-0" [innerHTML]="'blog.remoteAskDescription' | translate:{ url: blog?.url }"></p>
   </details>
   }
   @if (blog?.migratedTo) {
   <app-info-card class="mt-2" type="caution" [iconOverride]="movedAccountIcon">
-    This user has moved to a new account:
+    {{ 'blog.movedAccount' | translate }}
     <span class="h-card">
       <a href="u-url mention" [href]="migratedToUrl">
         {{blog?.migratedTo?.startsWith('@') ? '' : '@'}}{{blog?.migratedTo}}
@@ -217,15 +219,15 @@
   <app-info-card class="mt-2" [type]="loggedIn ? 'info' : 'caution'">
     {{
     loggedIn
-    ? 'As this user is from a remote instance, the shown information may be incomplete.'
-    : 'To see external users you need to be logged in. You can view their profile on their actual instance.'
+    ? ('blog.remoteProfileLoggedInWarning' | translate)
+    : ('blog.remoteProfileLoggedOutWarning' | translate)
     }}
     @if (blog) {
     <a [href]="
           blog.url.split('@').length === 3
             ? ( blog.displayUrl ? blog.displayUrl : blog.remoteId)
             : 'https://bsky.app/profile/' + blog?.url?.split('@')?.at(1)
-        " target="_blank">View on remote instance</a>
+        " target="_blank">{{ 'blog.viewOnRemoteInstance' | translate }}</a>
     }
   </app-info-card>
   }
@@ -239,7 +241,7 @@
         ) || '-'
         }}
       </b>
-      <p class="m-0 text-xs">Post Count</p>
+      <p class="m-0 text-xs">{{ 'blog.postCount' | translate }}</p>
     </a>
     <a [routerLink]="['/blog', blog?.url, 'following']" class="flex flex-column justify-content-center subtle-link">
       <b class="m-0 text-lg text-center">
@@ -250,7 +252,7 @@
         ) || '-'
         }}
       </b>
-      <p class="m-0 text-xs">Following</p>
+      <p class="m-0 text-xs">{{ 'blog.following' | translate }}</p>
     </a>
     <a [routerLink]="['/blog', blog?.url, 'followers']" class="flex flex-column justify-content-center subtle-link">
       <b class="m-0 text-lg text-center">
@@ -261,7 +263,7 @@
         ) || '-'
         }}
       </b>
-      <p class="m-0 text-xs">Followers</p>
+      <p class="m-0 text-xs">{{ 'blog.followers' | translate }}</p>
     </a>
   </footer>
 </mat-card>

@@ -38,7 +38,7 @@
           <mat-label>{{ 'profile.profile.changeBio' | translate }}</mat-label>
           <textarea
             matInput
-            placeholder="Description"
+            placeholder="{{ 'settings.description' | translate }}"
             style="min-height: 20vh"
             formControlName="description"
           ></textarea>
@@ -220,7 +220,7 @@
         </div>
         <mat-form-field class="w-full">
           <mat-label>{{ 'profile.preferences.customCocAIne' | translate }}</mat-label>
-          <input formControlName="replaceAIWord" placeholder="custom word. requires enable replace" matNativeControl />
+          <input formControlName="replaceAIWord" placeholder="{{ 'profile.preferences.customCocAInePlaceholder' | translate }}" matNativeControl />
         </mat-form-field>
         <mat-accordion>
           <mat-expansion-panel hideToggle>
@@ -239,7 +239,7 @@
         </mat-accordion>
       </mat-tab>
       <mat-tab label="{{ 'profile.tabHeaders.privacySecurity' | translate }}">
-        <h2 class="preference-subheader">Options</h2>
+        <h2 class="preference-subheader">{{ 'profile.privacy.options' | translate }}</h2>
         <mat-form-field class="w-full" appearance="outline">
           <mat-label>{{ 'profile.privacy.defaultPostPrivacy' | translate }}</mat-label>
           <mat-select [required]="true" formControlName="defaultPostEditorPrivacy">
@@ -300,12 +300,12 @@
       </mat-tab>
       <mat-tab label="{{ 'profile.tabHeaders.misc' | translate }}">
         <mat-form-field class="w-full">
-          <mat-label>Hide quotes</mat-label>
+          <mat-label>{{ 'settings.hideQuotes' | translate }}</mat-label>
           <mat-select formControlName="hideQuotes">
-            <mat-option [value]="1">CW from users you disabled quotes</mat-option>
-            <mat-option [value]="2">CW from anyone you dont follow and disabled quotes in the profile</mat-option>
+            <mat-option [value]="1">{{ 'settings.hideQuotesOptions.cwDisabledQuotesUsers' | translate }}</mat-option>
+            <mat-option [value]="2">{{ 'settings.hideQuotesOptions.cwUnfollowedOrDisabledQuotesUsers' | translate }}</mat-option>
             <mat-option [value]="3"
-              >Hide posts containing quotes from users you dont follow and users who you disabled quotes</mat-option
+              >{{ 'settings.hideQuotesOptions.hidePostsDisabledQuotesUsers' | translate }}</mat-option
             >
           </mat-select>
         </mat-form-field>
@@ -313,7 +313,7 @@
           <!-- TODO replace text here with variable that can be translated -->
           <app-user-selector
             (optionSelected)="userAliasSelected($event.remoteId)"
-            [controlText]="'Moving from a different account (without the @)'"
+            [controlText]="'profile.other.movingFromAccount' | translate"
           ></app-user-selector>
         </section>
         <hr />
@@ -380,24 +380,24 @@
         </div>
       </mat-tab>
     </form>
-    <mat-tab label="Bluesky">
+    <mat-tab label="{{ 'profile.tabHeaders.bluesky' | translate }}">
       <!-- I swear I'll translate this, don't merge before I do! -->
       <p>{{ 'profile.bsky.psa1' | translate }}</p>
       <p>
         {{ 'profile.bsky.psa2_1' | translate }}
-        <a href="https://wafrn.net/faq/user.html#blueskyIntegrationo">{{ 'profile.bsky.psa2_2' | translate }}</a>
+        <a href="https://wafrn.net/faq/Bluesky.html">{{ 'profile.bsky.psa2_2' | translate }}</a>
         {{ 'profile.bsky.psa2_3' | translate }}
       </p>
       <p>{{ 'profile.bsky.psa3' | translate }}</p>
-      <p>To enable bluesky, please <a [routerLink]="'/profile/enable-bluesky'">click here</a></p>
+      <p [innerHTML]="'profile.bsky.enableBlueskyLink' | translate"></p>
     </mat-tab>
-    <mat-tab label="Migrate out">
+    <mat-tab label="{{ 'profile.tabHeaders.migrateOut' | translate }}">
       <p>
         {{ 'profile.migrate.psa1' | translate }}
         <a [routerLink]="'/profile/migrate-out'">{{ 'profile.migrate.psa2' | translate }}</a>
       </p></mat-tab
     >
-    <mat-tab label="Delete account">
+    <mat-tab label="{{ 'profile.tabHeaders.deleteAccount' | translate }}">
       <p>{{ 'profile.delete.psa1' | translate }}</p>
       <p>{{ 'profile.delete.psa2' | translate }}</p>
       <form>
