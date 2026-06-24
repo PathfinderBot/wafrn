@@ -306,9 +306,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.canReply = this.loginService.getUserDefaultReplyControl();
     this.canBeQuoted = this.loginService.getUserDefaultQuoteControl()
     if (this.data?.post) {
-      this.contentWarning = this.data.post.content_warning
-        ? this.data.post.content_warning
-        : "";
+      this.contentWarning = this.data.post.content_warning ?? "";
       this.privacy = Math.max(this.data.post.privacy, this.privacy);
     }
     this.emojiSubscription = this.postService.updateFollowers.subscribe(() => {
@@ -359,13 +357,14 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       } else {
         this.messages.add({
           severity: "warn",
-          summary: "This post is an old post and you are editing the HTML raw.",
+          summary: "editor.oldPostHtmlRawWarning",
+          translate: true,
         });
         this.postCreatorForm.controls["content"].patchValue(
           this.data.post.content
         );
       }
-      this.contentWarning = this.data.post.content_warning;
+      this.contentWarning = this.data.post.content_warning ?? "";
       this.tags = this.data.post.tags.map((tag) => tag.tagName).join(",");
       this.uploadedMedias = this.data.post.medias
         ? this.data.post.medias.filter((elem) => elem.mediaOrder < 9999)

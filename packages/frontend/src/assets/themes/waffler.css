@@ -481,7 +481,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 
 /*** PROFILE */
 @media (min-width: 800px) {
-	mat-drawer-content:has(app-view-blog:not(.snappy-hide)) {
+	mat-drawer-content app-view-blog:not(.snappy-hide) {
 		position: relative;
 		margin-block: 14px !important;
 		border-radius: calc(var(--mat-sys-corner-medium) + 6px) !important;

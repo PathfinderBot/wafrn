@@ -286,6 +286,7 @@
     "wootQuoteConfirmButton": "Add woot as quote",
     "wootTextLabel": "Woot text",
     "wootTextPlaceholder": "Start writing...",
+    "oldPostHtmlRawWarning": "This post is an old post and you are editing the HTML raw.",
     "uploadMediaIndicator": "Drop to upload media",
     "bskyLengthWarning": "Text above 300 characters will be cut off and instead a link to wafrn will be shown",
     "bskyLengthNotice": "This only affects Bluesky, currently only an approximation!",
