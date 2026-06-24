@@ -564,3 +564,5 @@ export function filterLanguageCode(text: any): string | undefined {
 export function getLanguage(code: string): Language | undefined {
    return LANGUAGES_MAP[code]
 }
+
+export {LANGUAGES}

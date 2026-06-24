@@ -74,6 +74,7 @@ import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
 import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
 import { syncBskyAccountData } from '../utils/atproto/syncBskyAccountData.js'
+import { LANGUAGES } from '../utils/languages.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -1319,6 +1320,7 @@ function userRoutes(app: Application) {
         mutedUsers: await mutedUsers,
         followedHashtags: await followedHashtags,
         enableBluesky: user.enableBsky && user.bskyDid,
+        languages: LANGUAGES,
         // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
         serviceAnnouncements,
         mutedRewoots,

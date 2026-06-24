@@ -639,6 +639,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "mediaOnly",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -717,6 +724,9 @@
                     "example": "any"
                   },
                   "idPostToEdit": {
+                    "example": "any"
+                  },
+                  "language": {
                     "example": "any"
                   },
                   "ask": {
@@ -1213,6 +1223,57 @@
                     "example": "any"
                   },
                   "newPassword": {
+                    "example": "any"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/changeEmail": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "example": "any"
+                  },
+                  "email": {
                     "example": "any"
                   }
                 }
