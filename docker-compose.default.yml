@@ -127,42 +127,6 @@ services:
     image: adminer
     restart: unless-stopped
     logging: *default-logging
-    depends_on:
-      - db
-    environment:
-      ADMINER_DEFAULT_SERVER: db
-      ADMINER_DEFAULT_DRIVER: pgsql
-      ADMINER_DEFAULT_DB: ${POSTGRES_DBNAME}
-      ADMINER_DEFAULT_USERNAME: ${POSTGRES_USER}
-      ADMINER_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
-
-  adminer-auth:
-    image: nginx:alpine
-    restart: unless-stopped
-    logging: *default-logging
-    depends_on:
-      - adminer
-    environment:
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-    entrypoint:
-      - sh
-      - -c
-      - |
-        apk add --no-cache apache2-utils
-        htpasswd -bc /etc/nginx/.htpasswd admin "$$ADMIN_PASSWORD"
-        cat > /etc/nginx/conf.d/default.conf << 'EOF'
-        server {
-          listen 8080;
-          location / {
-            auth_basic "Restricted";
-            auth_basic_user_file /etc/nginx/.htpasswd;
-            proxy_pass http://adminer:8080;
-            proxy_set_header Host $$host;
-            proxy_set_header X-Real-IP $$remote_addr;
-          }
-        }
-        EOF
-        nginx -g "daemon off;"
 
   redis:
     image: redis:8.4
