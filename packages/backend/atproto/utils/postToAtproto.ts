@@ -205,15 +205,15 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
   let res: any = {};
 
-  for (const token of tokens) {
+  for (const [index, token] of tokens.entries()) {
     let text = builder.text;
     if (token.type === "link") text += token.text;
     else text += token.raw;
 
-    current = current + encoder.encode(token.raw).byteLength;
+    const tokenLength = encoder.encode(token.raw).byteLength;
+    const nextLength = current + tokenLength;
     // well a bit dirty but yeah taking the case out is worse and ughh
-    if (current > postMax && medias.length && medias.length <= 4) {
-
+    if (nextLength > (postMax - shortenerWithMediaLength) && medias.length && medias.length <= 4) {
       builder.addLink(
         "[...]",
         `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`
@@ -221,9 +221,10 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       postShortened = true;
       break;
-    } else if (current > postMax) {
+    } else if (nextLength > postMax) {
+      const currentTextLength = encoder.encode(builder.text).byteLength;
       const lengthLeft =
-        postMax - builder.text.length - textOnlyShortenerLength;
+        postMax - currentTextLength - textOnlyShortenerLength;
       if (token.type === "link")
         builder.addLink(token.text.slice(0, lengthLeft), token.url);
       else builder.addText(token.raw.slice(0, lengthLeft));
@@ -232,6 +233,8 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       postShortened = true;
       break;
     }
+
+    current = nextLength;
 
     if (token.type === "link") {
       builder.addLink(token.text, token.url);
