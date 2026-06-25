@@ -122,7 +122,7 @@ const slurs = [
   'negro',
   'nig',
   'nig-nog',
-  'nigga',
+  // 'nigga', // this one is reclaimable for what I understand. Salem uses it.
   'nigger',
   'nigguh',
   'pajeet',
@@ -142,7 +142,7 @@ const slurs = [
   'wetback',
   'wigger',
   'wop',
-  'yid'
+  'yid' 
 ]
 
 function userRoutes(app: Application) {
@@ -194,7 +194,7 @@ function userRoutes(app: Application) {
           req.body.url &&
           req.body.url.match(/^[a-z0-9_A-Z]+([\_-]+[a-z0-9_A-Z]+)*$/i) &&
           validateEmail(req.body.email) &&
-          !slurs.includes(req.body.url.toLowerCase() && slurs.every((elem) => !req.body.url.includes(elem)))
+          !slurs.includes(req.body.url.toLowerCase())
         ) {
           const birthDate = new Date(req.body.birthDate)
           const minimumAge = new Date()

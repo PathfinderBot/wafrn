@@ -93,6 +93,7 @@ import { ParticleService } from "src/app/services/particle.service";
 import { SettingsService } from "src/app/services/settings.service";
 import { InteractionControl } from "src/app/interfaces/InteractionControl";
 import { MatSelectModule } from "@angular/material/select";
+import { Language } from "src/app/interfaces/language";
 
 type EmojiSuggestion = {
   img: string;
@@ -163,6 +164,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   pollQuestions: QuestionPollQuestion[] = [];
   disableImageUploadButton = false;
   uploadedMedias: WafrnMedia[] = [];
+  languages: Language[] = [];
 
   settings = this.settingsService.values();
 
@@ -312,6 +314,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.emojiSubscription = this.postService.updateFollowers.subscribe(() => {
       this.emojiCollections.set([...this.postService.emojiCollections]);
       this.fuse.setCollection(this.emojiProcessed());
+      this.languages = this.postService.languages;
     });
     this.postService.loadFollowers();
     const currentUserId = this.jwtService.getTokenData()?.userId;

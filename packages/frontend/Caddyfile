@@ -87,7 +87,7 @@ http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
     }
 
     handle_path /adminer* {
-        reverse_proxy {$ADMINER_HOST:wafrn-adminer-1:8080}
+        reverse_proxy {$ADMINER_HOST:wafrn-adminer-auth-1:8080}
     }
 
     handle / {
