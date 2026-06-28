@@ -1,52 +1,37 @@
 /* eslint-disable guard-for-in */
-import { Post } from '../models/index.js'
-import { Op } from 'sequelize'
+import { Post, sequelize } from '../models/index.js'
+import { Op, QueryTypes } from 'sequelize'
 import { Privacy } from '../models/post.js'
 
-export default async function getPosstGroupDetails(postGroup: any[]) {
-  const getPostFirstParentId = (post: any) => {
-    if (!post?.ancestors) {
-      return post.id
-    } else {
-      let furthestDate = new Date()
-      let id = post.id
-      post.ancestors.forEach((ancestor: any) => {
-        if (furthestDate > ancestor.createdAt) {
-          furthestDate = ancestor.createdAt
-          id = ancestor.id
-        }
-      })
-      return id
+export default async function getPostGroupDetails(postGroup: any[]) {
+  const postIds: string[] = postGroup.map((elem) => elem.rootId)
+
+  // Get count of posts for each rootId
+  const queryCounts = await sequelize.query(
+    `
+    SELECT 
+      "rootId",
+      COUNT(*) as notes
+    FROM posts
+    WHERE "rootId" = ANY(ARRAY[:postIds]::uuid[])
+      AND "isDeleted" = false
+    GROUP BY "rootId"
+    `,
+    {
+      replacements: { postIds: postIds },
+      type: QueryTypes.SELECT
     }
-  }
-  const postIds: string[] = postGroup.map((elem) => getPostFirstParentId(elem))
-  // TODO optimize this! I feel like this might be more optimizable. This is one of those things
-  const fullPostTree = await Post.findAll({
-    where: {
-      id: { [Op.in]: postIds }
-    },
-    attributes: ['id'],
-    include: [
-      {
-        model: Post,
-        as: 'descendents',
-        attributes: ['id'],
-        where: {
-          privacy: {
-            [Op.ne]: Privacy.DirectMessage
-          }
-        }
-      }
-    ]
+  ) as Array<{ rootId: string; notes: number }>
+
+  // Create a map for quick lookup
+  const notesMap = new Map<string, number>()
+  queryCounts.forEach((row: any) => {
+    notesMap.set(row.rootId, row.notes)
   })
+
+  // Add notes count to each post group element
   return postGroup.map((elem) => {
-    let notes = 0
-    fullPostTree.forEach((elementWithNotes) => {
-      const idtoCheck = getPostFirstParentId(elem)
-      if (idtoCheck === elementWithNotes.id) {
-        notes = elementWithNotes.descendents.length
-      }
-    })
-    return { ...elem.dataValues, notes }
+    const notes = notesMap.get(elem.rootId) || 0
+    return { ...(elem.dataValues || elem), notes }
   })
 }

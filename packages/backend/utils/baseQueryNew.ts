@@ -218,28 +218,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
     }
     // END DETECT BSKY NSFW
   }
-  const posts = await Post.findAll({
-    include: [
-      {
-        model: Post,
-        as: 'ancestors',
-        required: false,
-        where: {
-          isDeleted: {
-            [Op.ne]: true
-          }
-        }
-      }
-    ],
-    where: {
-      id: {
-        [Op.in]: postIdsInput
-      },
-      isDeleted: {
-        [Op.ne]: true
-      }
-    }
-  })
+  const posts = await findPostsWithAncestors(postIdsInput)
   posts.forEach((post: any) => {
     userIds.push(post.userId)
     postIds.push(post.id)
@@ -346,7 +325,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   for (const usr of await users) {
     usersMap.set(usr.id, usr)
   }
-  const postWithNotes = getPosstGroupDetails(posts)
+  const postWithNotes = await getPosstGroupDetails(posts)
   await Promise.all([emojis, users, polls, medias, tags, postWithNotes])
   const hostsIds = (await users).filter((elem) => elem.federatedHostId).map((elem) => elem.federatedHostId)
   const blockedHosts = await FederatedHost.findAll({
@@ -406,8 +385,12 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   const postsMentioningUser: string[] = mentions.postMentionRelation
     .filter((mention: any) => mention.userMentioned === posterId)
     .map((mention: any) => mention.post)
+
+  // debug shit
+  await Promise.all([postWithNotes, quotedPosts])
   const allPosts = (await postWithNotes)
-    .concat((await postWithNotes).flatMap((elem: any) => elem.ancestors))
+    .concat((await postWithNotes)
+      .flatMap((elem: any) => elem.ancestors))
     .concat(await quotedPosts)
     .map((elem: any) => (elem.dataValues ? elem.dataValues : elem))
   const postsToFullySend = allPosts.filter((post: any) => {
@@ -589,22 +572,9 @@ async function canInteract(
         break
       }
       case InteractionControl.SameAsOp: {
-        // special one for bsky too
-        // ok we need to check for the initial post and to the calculations with it.
-        // we look for op post
-        const parentsIds = (
-          await sequelize.query(`SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${post.id}'`, {
-            type: QueryTypes.SELECT
-          })
-        ).map((elem: any) => elem.ancestorId as string)
-        const originalPost = await Post.findOne({
-          where: {
-            hierarchyLevel: 1,
-            id: {
-              [Op.in]: parentsIds
-            }
-          }
-        })
+        const originalPost = await Post.findByPk(
+          post.rootId as string
+        )
         if (!originalPost || originalPost?.id === post.id) {
           res = false
         } else {
@@ -660,13 +630,35 @@ async function addPostCanInteract(
   if (post.ancestors) {
     post.ancestors = await Promise.all(
       post.ancestors.map((elem: Post) =>
-        addPostCanInteract(userId, elem.dataValues, userFollowersInput, userFollowingInput, mentionsInput)
+        addPostCanInteract(userId, (elem.dataValues || elem), userFollowersInput, userFollowingInput, mentionsInput)
       )
     )
   }
 
   return post
 }
+
+
+
+async function findPostsWithAncestors(postIdsInput: string[]) {
+  const postsOriginal = await Post.findAll({
+    where: {
+      id: { [Op.in]: postIdsInput },
+      isDeleted: { [Op.ne]: true }
+    }
+  })
+  const posts = []
+  for await (const post of postsOriginal) {
+    const tmp = await post.getAncestorsCustom()
+    posts.push({ ...post.dataValues, ancestors: tmp.map(elem => elem.dataValues) })
+  }
+
+  return posts;
+
+
+}
+
+
 
 export {
   getUnjointedPosts,

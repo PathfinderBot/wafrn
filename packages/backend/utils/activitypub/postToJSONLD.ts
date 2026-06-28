@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 import {
   Media,
   Post,
@@ -73,11 +73,23 @@ async function postToJSONLD(
     let dbPost = (await getPostAndUserFromPostId(post.parentId)).data;
 
     const ancestorIdsQuery = await sequelize.query(
-      `SELECT "ancestorId" FROM "postsancestors" where "postsId" = '${post.parentId}'`
-    );
+      `
+  WITH RECURSIVE ancestors AS (
+    SELECT "parentId" as id FROM posts WHERE id = :postParentId AND "parentId" IS NOT NULL
+    UNION ALL
+    SELECT p.id FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT id as "ancestorId" FROM ancestors
+  `,
+      {
+        replacements: { postParentId: post.parentId },
+        type: QueryTypes.SELECT
+      }
+    ) as Array<{ ancestorId: string }>
     let ancestors: Post[] = [];
-    const ancestorIds: string[] = ancestorIdsQuery[0].map(
-      (elem: any) => elem.ancestorId
+    const ancestorIds: string[] = ancestorIdsQuery.map(
+      (elem) => elem.ancestorId
     );
     if (ancestorIds.length > 0) {
       ancestors = await Post.findAll({

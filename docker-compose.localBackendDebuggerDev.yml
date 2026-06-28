@@ -30,6 +30,19 @@ services:
       - "8070:8070"
       - "6379:6379"
 
+  bullboard:
+    container_name: bullboard
+    image: nauverse/bull-board
+    restart: unless-stopped
+    ports:
+    - "3000:3000"
+    environment:
+      REDIS_URL: redis:6379
+      BULL_PREFIX: bull
+    depends_on:
+      - redis
+
+
 volumes:
   dbpg:
   redis:

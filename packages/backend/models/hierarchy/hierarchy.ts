@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import { BaseError, Model } from "sequelize";
 
+
+
 class HierarchyError extends BaseError {
   constructor(message?: string) {
     super(message);
@@ -24,7 +26,6 @@ function beforeFindAfterExpandIncludeAll(this: any, options: any) {
   // hierarchies can be skipped if their are none
   options.hierarchyExists = hierarchyExists || checkHierarchy(options, model);
 }
-
 function afterFind(this: any, result: any, options: any) {
   // If no results, return
   if (!result) return;
@@ -393,9 +394,23 @@ async function beforeUpdate(this: any, item: any, options: any) {
     if (parent[foreignKey] === itemId) {
       illegal = true;
     } else if (level > oldLevel + 2) {
-      illegal = await through.findOne(
-        addOptions({ where: { [throughKey]: parentId, [throughForeignKey]: itemId } }, options)
+      // New style: check if newParent is descendant of itemId using recursive CTE
+      const result = await sequelize.query(
+        `
+            WITH RECURSIVE descendants AS (
+              SELECT id FROM ${model.getTableName()}
+              WHERE id = $1
+              UNION ALL
+              SELECT p.id
+              FROM ${model.getTableName()} p
+              INNER JOIN descendants d ON p."${foreignKey}" = d.id
+            )
+            SELECT COUNT(*) as count FROM descendants WHERE id = $2
+          `,
+        addOptions({ replacements: [itemId, parentId], type: 'SELECT' }, options)
       );
+      illegal = result[0].count > 0;
+
     }
     if (illegal) throw new HierarchyError('Parent cannot be a descendent of itself');
   }
@@ -407,20 +422,27 @@ async function beforeUpdate(this: any, item: any, options: any) {
 
     // Update hierarchy level for all descendents
     const levelDiff = level - oldLevel;
+
+    // New style: use recursive CTE to find descendants
     const sql = `
-      UPDATE ${model.getTableName()}
-      SET "${levelFieldName}" = "${levelFieldName}" + $1
-      WHERE id IN (
-        SELECT "${throughKey}"
-        FROM ${through.getTableName()} AS ancestors
-        WHERE ancestors."${throughForeignKey}" = $2
-      )
-    `;
+        WITH RECURSIVE descendants AS (
+          SELECT id FROM ${model.getTableName()}
+          WHERE id = $1
+          UNION ALL
+          SELECT p.id
+          FROM ${model.getTableName()} p
+          INNER JOIN descendants d ON p."${foreignKey}" = d.id
+        )
+        UPDATE ${model.getTableName()}
+        SET "${levelFieldName}" = "${levelFieldName}" + $2
+        WHERE id IN (SELECT id FROM descendants)
+      `;
 
     await sequelize.query(
       sql,
-      addOptions({ replacements: [levelDiff, itemId] }, options)
+      addOptions({ replacements: [itemId, levelDiff] }, options)
     );
+
   }
 
   // Delete ancestors from hierarchy table for item and all descendents

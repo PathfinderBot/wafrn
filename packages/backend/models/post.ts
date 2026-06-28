@@ -41,10 +41,12 @@ import {
   HasManyRemoveAssociationsMixin,
   HasManySetAssociationsMixin,
   HasOneGetAssociationMixin,
-  QueryTypes
+  QueryTypes,
+  Op
 } from 'sequelize'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { sequelize } from './sequelize.js'
+
 
 export const Privacy = {
   Public: 0,
@@ -302,6 +304,78 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   @BelongsToMany(() => Post, () => PostAncestor, 'ancestorId', 'postsId')
   declare descendents: Post[]
   declare getDescendents: BelongsToManyGetAssociationsMixin<Post>
+
+  async getAncestorsCustom(): Promise<Post[]> {
+    // New style: recursive CTE via parentId
+    const ancestorIds = await sequelize.query(
+      `
+        WITH RECURSIVE ancestors AS (
+    SELECT "parentId" AS id
+    FROM posts
+    WHERE id = '${this.id}' 
+      AND "rootId" = '${this.rootId}'
+      AND "parentId" IS NOT NULL
+
+    UNION ALL
+
+    SELECT p."parentId"
+    FROM posts p
+    INNER JOIN ancestors a
+        ON p.id = a.id
+    WHERE p."parentId" IS NOT NULL
+)
+SELECT id
+FROM ancestors;
+        `,
+      {
+        type: QueryTypes.SELECT
+      }
+    ) as Array<{ id: string }>
+
+    if (ancestorIds.length === 0) return []
+
+    const ids = ancestorIds.map(row => row.id)
+    return await Post.findAll({
+      where: {
+        id: {
+          [Op.in]: ids
+        }
+      },
+      order: [['hierarchyLevel', 'DESC']]
+    })
+
+  }
+
+  async getDescendentsCustom(): Promise<Post[]> {
+    // New style: recursive CTE via parentId
+    const descendantIds = await sequelize.query(
+      `
+        WITH RECURSIVE descendants AS (
+          SELECT id FROM posts WHERE "parentId" = '${this.id}'
+          UNION ALL
+          SELECT p.id FROM posts p
+          INNER JOIN descendants d ON p."parentId" = d.id
+        )
+        SELECT id FROM descendants
+        `,
+      {
+        type: QueryTypes.SELECT
+      }
+    ) as Array<{ id: string }>
+
+    if (descendantIds.length === 0) return []
+
+    const ids = descendantIds.map(row => row.id)
+    return await Post.findAll({
+      where: {
+        id: {
+          [Op.in]: ids
+        }
+      },
+      order: [['hierarchyLevel', 'ASC']]
+    })
+
+  }
 
   @HasMany(() => Notification, {
     sourceKey: 'id'

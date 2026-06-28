@@ -30,7 +30,7 @@ export async function forcePopulateCache() {
   if (followedHashtags.length) {
     await redisCache.sadd(FOLLOWED_HASHTAGS_CACHE_KEY, followedHashtags)
   }
-  const repliedPosts: string[] = (await queryInterface.sequelize.query(`SELECT "bskyUri" FROM "posts" WHERE "id" IN (SELECT "ancestorId" FROM "postsancestors" WHERE "postsId" IN (SELECT "id" FROM  "posts" where "userId" IN (select "id" FROM "users" WHERE "email" IS NOT NULL) AND "hierarchyLevel"!=1 AND "bskyUri" IS NOT NULL ORDER BY "createdAt" DESC LIMIT 100000)) and "hierarchyLevel" = 1 and "bskyUri" is NOT NULL`))[0].map((elem: any) => elem.bskyUri)
+  const repliedPosts: string[] = (await queryInterface.sequelize.query(`SELECT "bskyUri" FROM "posts" WHERE "id" IN (SELECT "rootId" FROM  "posts" where "userId" IN (select "id" FROM "users" WHERE "email" IS NOT NULL) AND "hierarchyLevel"!=1 AND "bskyUri" IS NOT NULL ORDER BY "createdAt" DESC LIMIT 100000) and "hierarchyLevel" = 1 and "bskyUri" is NOT NULL;`))[0].map((elem: any) => elem.bskyUri)
   logger.debug({
     message: 'Loaded cache: number of replied posts: ' + repliedPosts.length
   })

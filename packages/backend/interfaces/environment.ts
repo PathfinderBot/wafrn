@@ -28,7 +28,7 @@ export interface Environment {
   postsPerPage: number
   logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | string
   blocklistUrl: string
-  frontedLocation: string
+  frontedLocation: string,
   bullmqConnection: {
     host: string
     port: number

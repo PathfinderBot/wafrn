@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.06.03-DEV",
+  "version": "2026.06.03-DEV-NEWQUERYSTYLE",
   "description": "wafrn",
   "main": "index.ts",
   "scripts": {

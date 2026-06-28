@@ -107,7 +107,6 @@ batch AS (
     SELECT id, "parentId"
     FROM posts
     WHERE "rootId" IS NULL
-    ORDER BY "hierarchyLevel" ASC
     LIMIT ${batchSize}
 ),
 chain AS (
@@ -177,10 +176,6 @@ WHERE posts.id = expanded.id;`, {
     else {
       logger.info(`Updating rootId: processed ${processed} (${updated}), iteration ${iteration}`)
     }
-
-
-    // Wait before next batch
-    // await wait(500)
   }
 }
 

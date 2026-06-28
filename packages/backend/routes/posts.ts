@@ -248,9 +248,18 @@ export default function postsRoutes(app: Application) {
                 message: 'You need to enable bluesky'
               })
             } else {
+              const sqlQuery = `
+  WITH RECURSIVE ancestors AS (
+    SELECT id FROM posts WHERE id = '${parent.id}'
+    UNION ALL
+    SELECT p.id FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
+  `
               // we do same check for all parents
               const ancestorIdsQuery = await sequelize.query(
-                `SELECT "ancestorId" FROM "postsancestors" where "postsId" = '${parent.id}'`
+                sqlQuery
               )
               const ancestorIds: string[] = ancestorIdsQuery[0].map((elem: any) => elem.ancestorId)
               if (ancestorIds.length > 0) {
