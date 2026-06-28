@@ -75,7 +75,7 @@ async function postToJSONLD(
     const ancestorIdsQuery = await sequelize.query(
       `
   WITH RECURSIVE ancestors AS (
-    SELECT "parentId" as id FROM posts WHERE id = :postParentId AND "parentId" IS NOT NULL
+    SELECT "id", "parentId" as id FROM posts WHERE id = :postParentId AND "parentId" IS NOT NULL
     UNION ALL
     SELECT p.id FROM posts p
     INNER JOIN ancestors a ON p.id = a."parentId"
