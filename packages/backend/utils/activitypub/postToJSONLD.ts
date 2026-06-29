@@ -75,12 +75,12 @@ async function postToJSONLD(
     const ancestorIdsQuery = await sequelize.query(
       `
   WITH RECURSIVE ancestors AS (
-    SELECT "id", "parentId" as id FROM posts WHERE id = :postParentId AND "parentId" IS NOT NULL
+    SELECT id, "parentId" FROM posts WHERE id = :postParentId
     UNION ALL
-    SELECT p.id FROM posts p
+    SELECT p.id, p."parentId" FROM posts p
     INNER JOIN ancestors a ON p.id = a."parentId"
   )
-  SELECT id as "ancestorId" FROM ancestors
+  SELECT "parentId" as "ancestorId" FROM ancestors WHERE "parentId" IS NOT NULL
   `,
       {
         replacements: { postParentId: post.parentId },
