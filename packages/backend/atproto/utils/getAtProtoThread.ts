@@ -328,7 +328,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
                 transaction
               })
 
-              await Post.destroy({
+              await Post.update({
+                isDeleted: true,
+              }, {
                 where: {
                   bskyCid: bskyCid,
                   remotePostId: null,
