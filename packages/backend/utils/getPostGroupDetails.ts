@@ -31,7 +31,8 @@ export default async function getPostGroupDetails(postGroup: any[]) {
 
   // Add notes count to each post group element
   return postGroup.map((elem) => {
-    const notes = notesMap.get(elem.rootId) || 0
+    let notes = notesMap.get(elem.rootId) || 1
+    notes = notes - 1
     return { ...(elem.dataValues || elem), notes }
   })
 }
