@@ -1,4 +1,4 @@
-FROM grafana/grafana:12.0
+FROM grafana/grafana:12.2
 
 COPY datasources /etc/grafana/provisioning/datasources
 COPY dashboards /var/lib/grafana/dashboards
