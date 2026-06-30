@@ -56,18 +56,6 @@ const mergeBskyPostRelatedRecordsSql = `
     WHERE "postId" = :existingPostId
     RETURNING 1
   ),
-  updated_post_ancestors AS (
-    UPDATE "postsancestors" AS ancestors
-    SET "postsId" = :remotePostId
-    WHERE ancestors."postsId" = :existingPostId
-      AND NOT EXISTS (
-        SELECT 1
-        FROM "postsancestors" AS existing_ancestors
-        WHERE existing_ancestors."postsId" = :remotePostId
-          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
-      )
-    RETURNING 1
-  ),
   updated_question_polls AS (
     UPDATE "questionPolls"
     SET "postId" = :remotePostId, "updatedAt" = NOW()
@@ -447,15 +435,7 @@ async function getPostThreadRecursive(
         } else if (parent) {
           // we check if op has property forceDescendentsToUseSameInteractionControls
           const opId = (
-            parent.hierarchyLevel === 1
-              ? parent
-              : ((
-                await parent.getAncestors({
-                  where: {
-                    hierarchyLevel: 1
-                  }
-                })
-              )[0] as Post)
+            (await Post.findByPk(parent.rootId as string)) as Post
           ).remotePostId
           const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
           if (opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
@@ -465,7 +445,7 @@ async function getPostThreadRecursive(
 
         let { postTextContent, postLanguage } = processContentAndLanguage(postPetition)
 
-        if(invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
+        if (invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
           postTextContent = postTextContent.substring(invisibleMentionsToRemove.name.length)
         }
         if (postPetition.type == 'Video') {

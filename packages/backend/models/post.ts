@@ -30,14 +30,12 @@ import { UserBookmarkedPosts } from './userBookmarkedPosts.js'
 import { PostHostView } from './postHostView.js'
 import { RemoteUserPostView } from './remoteUserPostView.js'
 import { FederatedHost } from './federatedHost.js'
-import { PostAncestor } from './postAncestor.js'
 import {
   BelongsToGetAssociationMixin,
   BelongsToManyGetAssociationsMixin,
   BelongsToManySetAssociationsMixin,
   BelongsToSetAssociationMixin,
   HasManyGetAssociationsMixin,
-  HasManyRemoveAssociationMixin,
   HasManyRemoveAssociationsMixin,
   HasManySetAssociationsMixin,
   HasOneGetAssociationMixin,
@@ -297,15 +295,7 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   @HasMany(() => Post, 'parentId')
   declare children: Post[]
 
-  @BelongsToMany(() => Post, () => PostAncestor, 'postsId', 'ancestorId')
-  declare ancestors: Post[]
-  declare getAncestors: BelongsToManyGetAssociationsMixin<Post>
-
-  @BelongsToMany(() => Post, () => PostAncestor, 'ancestorId', 'postsId')
-  declare descendents: Post[]
-  declare getDescendents: BelongsToManyGetAssociationsMixin<Post>
-
-  async getAncestorsCustom(): Promise<Post[]> {
+  async getAncestors(): Promise<Post[]> {
     // New style: recursive CTE via parentId
     const ancestorIds = await sequelize.query(
       `
@@ -492,10 +482,8 @@ FROM ancestors;
       foreignKey: 'parentId',
       levelFieldName: 'hierarchyLevel',
       rootIdFieldName: 'rootId',
-      through: PostAncestor,
       throughKey: 'postsId',
       throughForeignKey: 'ancestorId',
-      throughTable: 'postancestors'
     }
   }
 

@@ -481,11 +481,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   if (post.parentId) {
     // ok this post is in reply to something
     const parent = await Post.findByPk(post.parentId);
-    const ancestors = await post.getAncestors({
-      where: {
-        hierarchyLevel: 1,
-      },
-    });
+    const ancestors = await post.getAncestors();
 
     const rootPost = ancestors[0];
     res.reply = {

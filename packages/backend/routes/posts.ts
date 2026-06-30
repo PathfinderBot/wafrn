@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op } from 'sequelize'
+import { Op, QueryTypes } from 'sequelize'
 import {
   Blocks,
   Post,
@@ -223,14 +223,7 @@ export default function postsRoutes(app: Application) {
 
       const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
       try {
-        const parent = await Post.findByPk(req.body.parent, {
-          include: [
-            {
-              model: Post,
-              as: 'ancestors'
-            }
-          ]
-        })
+        const parent = await Post.findByPk(req.body.parent)
         if (!parent && req.body.parent) {
           success = false
           res.status(500)
@@ -304,26 +297,40 @@ export default function postsRoutes(app: Application) {
         // we check that the user is not reblogging a post by someone who blocked them or the other way arround
         if (parent) {
           // we check to add user mention if bsky id
-          const ancestors = await parent.getAncestors({
-            attributes: ['userId'],
-            where: {
-              bskyUri: {
-                [Op.ne]: null
+          const ancestors = await sequelize.query(
+            `
+  WITH RECURSIVE ancestors AS (
+    SELECT id, "parentId", "hierarchyLevel", "userId", "bskyUri"
+    FROM posts
+    WHERE id = :parentId
+    UNION ALL
+    SELECT p.id, p."parentId", p."hierarchyLevel", p."userId", p."bskyUri"
+    FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT "userId"
+  FROM ancestors
+  WHERE "bskyUri" IS NOT NULL
+    AND "hierarchyLevel" > :minLevel
+  ORDER BY "hierarchyLevel" DESC
+  `,
+            {
+              replacements: {
+                parentId: parent.id,
+                minLevel: parent.hierarchyLevel - 3
               },
-              hierarchyLevel: {
-                [Op.gt]: parent.hierarchyLevel - 3
-              }
+              type: QueryTypes.SELECT
             }
-          })
+          )
 
           if (req.body.content != '') {
-            mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem) => elem.userId))
+            mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem: any) => elem.userId))
             if (parent.bskyUri && parent.userId != posterId) {
               mentionsToAdd.push(parent.userId)
             }
           }
 
-          const postParentsUsers: string[] = parent.ancestors.map((elem: any) => elem.userId)
+          const postParentsUsers: string[] = (await parent.getAncestors()).map((elem: any) => elem.userId)
           postParentsUsers.push(parent.userId)
 
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
@@ -587,7 +594,9 @@ export default function postsRoutes(app: Application) {
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          const initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({ where: { hierarchyLevel: 1 } }))[0]) : undefined
+          const initialPost = parent ? (
+            await Post.findByPk(parent.rootId as string)
+          ) : undefined
           if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }

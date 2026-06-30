@@ -5,7 +5,6 @@ import {
   Follows,
   Notification,
   Post,
-  PostAncestor,
   User,
 } from "../../models/index.js";
 import { wait } from "../wait.js";
@@ -104,7 +103,7 @@ async function sendMail() {
       order: [["createdAt", "DESC"]],
     });
 
-    const postQuotesRewootsAncestors = await PostAncestor.findAll({
+    const postQuotesRewootsAncestors: any[] = [] /*await PostAncestor.findAll({
       where: {
         ancestorId: {
           [Op.in]: allUserPosts.map((x) => x.id),
@@ -112,7 +111,7 @@ async function sendMail() {
       },
       include: ["post", "ancestor"]
     });
-
+    */
     const posts = currentUserCounts ? parseInt(currentUserCounts.postCount) : 0;
     const rewoots = currentUserCounts
       ? parseInt(currentUserCounts.reblogCount)

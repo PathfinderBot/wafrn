@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.js'
 import { Sequelize } from 'sequelize-typescript'
-import { beforeFindAfterExpandIncludeAll, afterFind } from './hierarchy/hierarchy.js'
+import { beforeFindAfterExpandIncludeAll } from './hierarchy/hierarchy.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 
 const sequelize = new Sequelize(completeEnvironment.databaseConnectionString, {
@@ -29,6 +29,5 @@ const sequelize = new Sequelize(completeEnvironment.databaseConnectionString, {
 })
 
 sequelize.addHook('beforeFindAfterExpandIncludeAll', 'hierarchyPreCheck', beforeFindAfterExpandIncludeAll)
-sequelize.addHook('afterFind', 'hierarchyPostProcess', afterFind)
 
 export { sequelize, Sequelize }

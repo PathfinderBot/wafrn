@@ -649,7 +649,7 @@ async function findPostsWithAncestors(postIdsInput: string[]) {
   })
   const posts = []
   for await (const post of postsOriginal) {
-    const tmp = await post.getAncestorsCustom()
+    const tmp = await post.getAncestors()
     posts.push({ ...post.dataValues, ancestors: tmp.map(elem => elem.dataValues) })
   }
 

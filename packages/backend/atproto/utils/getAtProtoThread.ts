@@ -63,18 +63,6 @@ const mergeRemotePostRelatedRecordsSql = `
     WHERE "postId" = :existingPostId
     RETURNING 1
   ),
-  updated_post_ancestors AS (
-    UPDATE "postsancestors" AS ancestors
-    SET "postsId" = :remotePostId
-    WHERE ancestors."postsId" = :existingPostId
-      AND NOT EXISTS (
-        SELECT 1
-        FROM "postsancestors" AS existing_ancestors
-        WHERE existing_ancestors."postsId" = :remotePostId
-          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
-      )
-    RETURNING 1
-  ),
   updated_question_polls AS (
     UPDATE "questionPolls"
     SET "postId" = :remotePostId, "updatedAt" = NOW()
@@ -499,14 +487,31 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         )
       }
       if (parentId) {
-        const ancestors = await postToProcess.getAncestors({
-          attributes: ['userId'],
-          where: {
-            hierarchyLevel: {
-              [Op.gt]: postToProcess.hierarchyLevel - 5
-            }
+        const ancestors = await sequelize.query(
+          `
+  WITH RECURSIVE ancestors AS (
+    SELECT id, "parentId", "hierarchyLevel", "userId"
+    FROM posts
+    WHERE id = :postId
+    UNION ALL
+    SELECT p.id, p."parentId", p."hierarchyLevel", p."userId"
+    FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT "userId"
+  FROM ancestors
+  WHERE "hierarchyLevel" > :minLevel
+  ORDER BY "hierarchyLevel" DESC
+  `,
+          {
+            replacements: {
+              postId: postToProcess.id,
+              minLevel: postToProcess.hierarchyLevel - 5
+            },
+            type: QueryTypes.SELECT
           }
-        })
+        ) as Array<{ userId: string }>
+
         mentions = mentions.concat(ancestors.map((elem) => elem.userId))
       }
       mentions = [...new Set(mentions)]
@@ -807,8 +812,17 @@ async function processReplies(uri: string, cursor?: string) {
     if (localPost.hierarchyLevel != 1) {
       const ancestors = (
         await sequelize.query(
-          `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
+          `
+    WITH RECURSIVE ancestors AS (
+      SELECT "parentId" as "ancestorId" FROM posts WHERE id = :postId AND "parentId" IS NOT NULL
+      UNION ALL
+      SELECT p.id FROM posts p
+      INNER JOIN ancestors a ON p.id = a."ancestorId"
+    )
+    SELECT DISTINCT "ancestorId" FROM ancestors
+    `,
           {
+            replacements: { postId: localPost.id },
             type: QueryTypes.SELECT
           }
         )
