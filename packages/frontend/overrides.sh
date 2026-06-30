@@ -35,6 +35,9 @@ find "$OVERRIDES_FOLDER" -type f | while IFS= read -r file; do
   fi
 done
 
+jq --arg ts "$(date +%s)" '.timestamp = ($ts | tonumber)' "$tmp_file" > "${tmp_file}.new"
+mv "${tmp_file}.new" "$tmp_file"
+
 mv "$tmp_file" "$HASH_TABLE_FILE"
 rm -f "$tmp_file"
 rm -f "${tmp_file}.new"
