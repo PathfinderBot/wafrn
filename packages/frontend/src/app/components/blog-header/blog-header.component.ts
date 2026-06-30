@@ -25,9 +25,12 @@ import {
   faRefresh,
   faLock,
   faUserGroup,
+  faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import { BlogDetails } from "src/app/interfaces/blogDetails";
+import { SimplifiedUser } from "src/app/interfaces/simplified-user";
 import { BlocksService } from "src/app/services/blocks.service";
+import { EditorService } from "src/app/services/editor.service";
 import { LoginService } from "src/app/services/login.service";
 import { MessageService } from "src/app/services/message.service";
 import { PostsService } from "src/app/services/posts.service";
@@ -63,6 +66,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   protected loginService = inject(LoginService);
   postService = inject(PostsService);
   private messages = inject(MessageService);
+  private editorService = inject(EditorService);
   blockService = inject(BlocksService);
   dialogService = inject(MatDialog);
   activatedRoute = inject(ActivatedRoute);
@@ -96,6 +100,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   rawJsonIcon = faCode;
   migratedToUrl = "";
 
+  envelopeIcon = faEnvelope;
   userIcon = faUser;
   bskyIcon = faBluesky;
   botIcon = faRobot;
@@ -169,6 +174,22 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void { }
+
+  async openDirectMessage(blog: BlogDetails) {
+    const mentionUrl = blog.url?.startsWith("@") ? blog.url : `@${blog.url}`;
+    const mentionUser: SimplifiedUser = {
+      avatar: this.avatarUrl(),
+      id: blog.id,
+      url: blog.url,
+      name: blog.name ?? blog.url,
+    };
+
+    await this.editorService.openDialogWithData({
+      content: `${mentionUrl} `,
+      privacy: 10,
+      mentionUser,
+    });
+  }
 
   async unfollowUser(id: string) {
     const response = await this.postService.unfollowUser(id);

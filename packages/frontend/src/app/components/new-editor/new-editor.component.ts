@@ -304,9 +304,15 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
     this.data = EditorService.editorData;
     this.editing = this.data?.edit == true;
-    this.privacy = this.loginService.getUserDefaultPostPrivacyLevel();
+    this.privacy = this.data?.privacy ?? this.loginService.getUserDefaultPostPrivacyLevel();
     this.canReply = this.loginService.getUserDefaultReplyControl();
     this.canBeQuoted = this.loginService.getUserDefaultQuoteControl()
+    if (this.data?.content) {
+      this.postCreatorForm.controls["content"].patchValue(this.data.content);
+    }
+    if (this.data?.mentionUser) {
+      this.mentionedUsers.push(this.data.mentionUser);
+    }
     if (this.data?.post) {
       this.contentWarning = this.data.post.content_warning ?? "";
       this.privacy = Math.max(this.data.post.privacy, this.privacy);

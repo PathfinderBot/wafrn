@@ -328,6 +328,7 @@
     "adminBadge": "Admin",
     "adminTooltip": "{{url}} is an admin of {{instanceHostname}}",
     "botBadge": "Bot",
+    "directMessage": "Direct message",
     "fediverseAttachments": "Fediverse Attachments",
     "askQuestion": "Ask a question",
     "remoteAskSummary": "Send ask from outside Wafrn",
