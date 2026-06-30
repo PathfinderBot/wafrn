@@ -38,7 +38,7 @@ async function prepareSendRemotePostWorker(job: Job) {
   }
 
   const localUser = await User.scope("full").findByPk(post.userId);
-  const parents = await sequelize.query(
+  const parentsQuery = post.parentId ? (await sequelize.query(
     `
   WITH RECURSIVE ancestors AS (
     SELECT id, "parentId", "userId", content, "hierarchyLevel", "createdAt", "updatedAt"
@@ -50,18 +50,25 @@ async function prepareSendRemotePostWorker(job: Job) {
     INNER JOIN ancestors a ON p.id = a."parentId"
   )
   SELECT 
-    a.id, a."parentId", a."userId", a.content, a."hierarchyLevel", a."createdAt", a."updatedAt",
-    u.id as "user_id"
+    a.id
   FROM ancestors a
-  LEFT JOIN users u ON a."userId" = u.id
-  ORDER BY a."hierarchyLevel" DESC
   `,
     {
-      replacements: { postId: post.id },
+      replacements: { postId: post.parentId as string },
       type: QueryTypes.SELECT
     }
-  ) as Array<any>
-
+  ) as Array<{ id: string }>).map(elem => elem.id) : []
+  const parents = parentsQuery.length ? await Post.findAll({
+    include: [
+      {
+        model: User,
+        as: "user",
+      },
+    ],
+    where: {
+      id: parentsQuery
+    }
+  }) : []
   // we check if we need to send the post to fedi
   const sendPostToFedi = parents.every((elem) => elem.postShouldGoFedi);
   if (localUser && sendPostToFedi) {
