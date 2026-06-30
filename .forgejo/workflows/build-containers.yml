@@ -51,7 +51,7 @@ jobs:
             context: .
           - package: grafana
             dockerfile: monitoring/grafana/Dockerfile
-            context: .
+            context: monitoring/grafana
 
     permissions:
       contents: read
