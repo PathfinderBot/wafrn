@@ -481,13 +481,12 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   if (post.parentId) {
     // ok this post is in reply to something
     const parent = await Post.findByPk(post.parentId);
-    const ancestors = await post.getAncestors();
+    const rootPost = await Post.findByPk(post.rootId as string)
 
-    const rootPost = ancestors[0];
     res.reply = {
       root: {
-        uri: rootPost.bskyUri,
-        cid: rootPost.bskyCid,
+        uri: rootPost?.bskyUri,
+        cid: rootPost?.bskyCid,
       },
       parent: {
         uri: parent?.bskyUri,
