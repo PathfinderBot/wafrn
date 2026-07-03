@@ -212,8 +212,17 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
     const tokenLength = encoder.encode(token.raw).byteLength;
     const nextLength = current + tokenLength;
-    // well a bit dirty but yeah taking the case out is worse and ughh
-    if (nextLength > (postMax - shortenerWithMediaLength) && medias.length && medias.length <= 4) {
+    const isMediaPost = medias.length > 0 && medias.length <= 4;
+    const isLastToken = index === tokens.length - 1;
+    const remainingAfterToken = postMax - nextLength;
+    const shouldShortenEarlyForMedia =
+      isMediaPost &&
+      !isLastToken &&
+      nextLength <= postMax &&
+      remainingAfterToken < shortenerWithMediaLength;
+
+    // only force early shortening for media posts when there's more text after this token
+    if ((isMediaPost && nextLength > postMax) || shouldShortenEarlyForMedia) {
       builder.addLink(
         "[...]",
         `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`
