@@ -204,11 +204,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
     })
   }
-  if (
-    postPetitionPds &&
-    postPetitionPds.value &&
-    ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
-  ) {
+  if (hasFediverseMirrorMetadata(postPetitionPds)) {
     // original is fedi. lets wait half second
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
@@ -347,6 +343,21 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       })
     }
   }
+  if (!postCreator || !postPetitionPds) {
+    return undefined
+  }
+
+  const existingPost = !forceUpdate
+    ? await Post.findOne({
+        where: {
+          bskyUri: uri
+        }
+      })
+    : null
+  if (shouldShortCircuitToExistingPost(forceUpdate, postPetitionPds, existingPost)) {
+    return existingPost?.id
+  }
+
   if (!postCreator || !postPetitionPds) {
     return undefined
   }
@@ -921,4 +932,29 @@ function getPostLanguage(post: AppBskyFeedPost.Main): string | undefined {
   return undefined
 }
 
-export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies }
+function hasFediverseMirrorMetadata(
+  postPetitionPds: ComAtprotoRepoGetRecord.OutputSchema | undefined
+): boolean {
+  return Boolean(
+    postPetitionPds?.value &&
+      ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
+  )
+}
+
+function shouldShortCircuitToExistingPost(
+  forceUpdate: boolean,
+  postPetitionPds: ComAtprotoRepoGetRecord.OutputSchema | undefined,
+  existingPost: { id?: string | number | null } | null | undefined
+): boolean {
+  return !forceUpdate && Boolean(existingPost) && !hasFediverseMirrorMetadata(postPetitionPds)
+}
+
+
+export {
+  getQuotedPostUri,
+  processSinglePost,
+  getPostThreadPDSDirect,
+  getPostInteractionLevels,
+  processReplies,
+  hasFediverseMirrorMetadata
+}

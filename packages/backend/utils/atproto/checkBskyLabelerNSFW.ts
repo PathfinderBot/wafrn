@@ -21,7 +21,7 @@ async function checkBskyLabelersNSFW(posts: Post[]): Promise<void> {
       // hardcoded: bsky moderation service
       sources: ["did:plc:ar7c4by46qjdydhdevvrndac"],
     });
-    let petitionResult = (await promiseRace([getLabelsPetition], 2500))[0];
+    let petitionResult = (await promiseRace([getLabelsPetition], 5000))[0];
     if (petitionResult?.data?.labels && petitionResult.data.labels.length > 0) {
       let labels: Map<string, string[]> = new Map();
       for await (const label of petitionResult.data.labels) {
