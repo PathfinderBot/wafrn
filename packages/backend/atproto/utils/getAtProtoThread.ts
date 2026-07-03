@@ -814,7 +814,9 @@ async function processReplies(uri: string, cursor?: string) {
         await sequelize.query(
           `
     WITH RECURSIVE ancestors AS (
-      SELECT "parentId" as "ancestorId" FROM posts WHERE id = :postId AND "parentId" IS NOT NULL
+      SELECT "parentId" as "ancestorId" FROM posts WHERE id = :postId
+      AND "parentId" IS NOT NULL
+      AND rootId = :rootId
       UNION ALL
       SELECT p.id FROM posts p
       INNER JOIN ancestors a ON p.id = a."ancestorId"
@@ -822,7 +824,7 @@ async function processReplies(uri: string, cursor?: string) {
     SELECT DISTINCT "ancestorId" FROM ancestors
     `,
           {
-            replacements: { postId: localPost.id },
+            replacements: { postId: localPost.id, rootId: localPost.rootId },
             type: QueryTypes.SELECT
           }
         )
