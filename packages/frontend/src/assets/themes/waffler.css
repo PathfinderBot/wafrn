@@ -356,6 +356,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		overflow: auto hidden;
 		margin: calc(0px - var(--post-padding));
 		padding: var(--post-padding);
+		scrollbar-width: auto;
 		app-wafrn-media, app-link-preview {
 			display: contents;
 		}
