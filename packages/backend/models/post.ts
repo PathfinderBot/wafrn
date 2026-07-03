@@ -304,7 +304,7 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     FROM posts
     WHERE id = '${this.id}' 
       AND "rootId" = '${this.rootId}'
-      AND "parentId" IS NOT NULL
+      AND "id" != '${this.rootId}'
 
     UNION ALL
 
