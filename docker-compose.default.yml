@@ -127,6 +127,8 @@ services:
     image: adminer
     restart: unless-stopped
     logging: *default-logging
+    volumes:
+      - ./data/adminer:/var/lib/php/sessions # Improved admin experience
 
   redis:
     image: redis:8.4
