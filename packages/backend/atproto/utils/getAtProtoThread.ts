@@ -9,7 +9,7 @@ import {
   User
 } from '../../models/index.js'
 import { Op, QueryTypes } from 'sequelize'
-import { getAtprotoUser } from './getAtprotoUser.js'
+import { clearStaleBskyIdentity, getAtprotoUser } from './getAtprotoUser.js'
 import { logger } from '../../utils/logger.js'
 import {
   AppBskyEmbedExternal,
@@ -281,8 +281,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             remotePostId: null
           }
         })
+        const localUserIds = await getAllLocalUserIds()
         if (existingPost) {
-          const localUserIds = await getAllLocalUserIds()
           if (await User.scope('full').count({
             where: {
               id: existingPost.userId,
@@ -329,6 +329,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             })
           }
         } else {
+          if (localUserIds.includes(remotePost.userId)) {
+            let postCreator = await User.findByPk(remotePost.userId) as User
+            const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
+            if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
+              const oldDid = postCreator.bskyDid
+              postCreator = await getAtprotoUser(oldDid as string, { ignoreCache: true }) as User
+              remotePost.userId = postCreator.id
+            }
+          }
           await remotePost.save()
         }
         if (forceUpdate) {
@@ -349,10 +358,10 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
 
   const existingPost = !forceUpdate
     ? await Post.findOne({
-        where: {
-          bskyUri: uri
-        }
-      })
+      where: {
+        bskyUri: uri
+      }
+    })
     : null
   if (shouldShortCircuitToExistingPost(forceUpdate, postPetitionPds, existingPost)) {
     return existingPost?.id
@@ -457,18 +466,14 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
 
     if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate && postCreator.bskyDid) {
-
       const userPds = await getServerFromDid(postCreator.bskyDid, true)
       if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
         // OH SHIT THIS USER IS NO LONGER IN WAFRN
         const oldDid = postCreator.bskyDid
-        postCreator.bskyDid = null;
-        postCreator.enableBsky = false;
-        postCreator.alternateUrl = undefined
-        await postCreator.save();
-        postCreator = await getAtprotoUser(oldDid, { ignoreCache: true })
-      } else {
-        // await wait(1500)
+        postCreator = await clearStaleBskyIdentity(postCreator)
+        if (postCreator?.bskyDid) {
+          postCreator = await getAtprotoUser(oldDid, { ignoreCache: true })
+        }
       }
     }
     const [postToProcess, created] = await Post.findOrCreate({
@@ -940,7 +945,7 @@ function hasFediverseMirrorMetadata(
 ): boolean {
   return Boolean(
     postPetitionPds?.value &&
-      ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
+    ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
   )
 }
 

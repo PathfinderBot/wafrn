@@ -13,6 +13,31 @@ import getUserAgent from "../../utils/getUserAgent.js";
 
 const mergeUsersQueue = getQueue("mergeUsers");
 
+async function clearStaleBskyIdentity(user: User) {
+  const did = user.bskyDid
+  if (!did) {
+    return user
+  }
+
+  try {
+    const userPds = await getServerFromDid(did, true)
+    const expectedPds = `https://${completeEnvironment.bskyPds}`.toLowerCase()
+    if (userPds?.toLowerCase() !== expectedPds) {
+      user.bskyDid = null
+      user.enableBsky = false
+      user.alternateUrl = undefined
+      await user.save()
+    }
+  } catch (error) {
+    logger.debug({
+      message: 'Problem checking bsky PDS for user',
+      userId: user.id,
+      did,
+      error
+    })
+  }
+}
+
 async function forcePopulateUsers(dids: string[], localUser: User) {
   try {
     const userFounds = await User.findAll({
@@ -280,4 +305,4 @@ async function internalGetDBUser(did: string, url: string) {
     return foundUsers.find((elem) => elem.bskyDid === did);
   }
 }
-export { getAtprotoUser, forcePopulateUsers };
+export { getAtprotoUser, forcePopulateUsers, clearStaleBskyIdentity };
