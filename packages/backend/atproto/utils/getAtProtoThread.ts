@@ -228,6 +228,10 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       // prob wafrn post, but lets verify it
       try {
         const id = postPetitionPds.value.fediverseId as string
+        // ok so it can happen that bsky sends the post TOO QUICK and the target server still hasnt updated
+        // so we get the initial cache that we absolutely flush at start!
+        // we may not even need this. But we had too many issues already.
+        await wait(250)
         const fediPostObject = await getPetitionSigned(await getAdminUser(), id)
         if (
           fediPostObject &&
