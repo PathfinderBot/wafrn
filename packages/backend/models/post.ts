@@ -296,18 +296,19 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   declare children: Post[]
 
   async getAncestors(): Promise<Post[]> {
-    // New style: recursive CTE via parentId
-    const ancestorIds = await sequelize.query(
-      `
+    if (!this.rootId) {
+      return [];
+    }
+  // New style: recursive CTE via parentId
+  const ancestorIds = await sequelize.query(
+    `
         WITH RECURSIVE ancestors AS (
     SELECT "parentId" AS id
     FROM posts
-    WHERE id = '${this.id}' 
-      AND "rootId" = '${this.rootId}'
-      AND "id" != '${this.rootId}'
-
+    WHERE id = :id
+      AND "rootId" = :rootId
+      AND "id" != :rootId
     UNION ALL
-
     SELECT p."parentId"
     FROM posts p
     INNER JOIN ancestors a
@@ -317,24 +318,25 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
 SELECT id
 FROM ancestors;
         `,
-      {
-        type: QueryTypes.SELECT
-      }
-    ) as Array<{ id: string }>
-
-    if (ancestorIds.length === 0) return []
-
-    const ids = ancestorIds.map(row => row.id)
-    return await Post.findAll({
-      where: {
-        id: {
-          [Op.in]: ids
-        }
+    {
+      replacements: {
+        id: this.id,
+        rootId: this.rootId
       },
-      order: [['hierarchyLevel', 'DESC']]
-    })
-
-  }
+      type: QueryTypes.SELECT
+    }
+  ) as Array<{ id: string }>
+  if (ancestorIds.length === 0) return []
+  const ids = ancestorIds.map(row => row.id)
+  return await Post.findAll({
+    where: {
+      id: {
+        [Op.in]: ids
+      }
+    },
+    order: [['hierarchyLevel', 'DESC']]
+  })
+}
 
   async getDescendentsCustom(): Promise<Post[]> {
     // New style: recursive CTE via parentId
