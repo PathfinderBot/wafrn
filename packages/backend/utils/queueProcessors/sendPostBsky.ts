@@ -10,6 +10,7 @@ import { AtUri } from '@atproto/api'
 import { redisBloom, redisCache } from '../redis.js'
 import { ROOT_REPLIED_POSTS } from '../../constants.js'
 import { getQueue } from '../queues.js'
+import { Op } from 'sequelize'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
@@ -116,6 +117,9 @@ async function sendPostBsky(job: Job) {
             await wait(750)
             const duplicatedPost = await Post.findOne({
               where: {
+                id: {
+                  [Op.ne]: post.id
+                },
                 bskyCid: bskyPost.cid
               }
             })
