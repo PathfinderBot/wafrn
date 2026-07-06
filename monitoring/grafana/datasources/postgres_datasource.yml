@@ -3,7 +3,7 @@ apiVersion: 1
 datasources:
 - name: Postgres
   uid: pgwatch-metrics
-  type: postgres
+  type: grafana-postgresql-datasource
   url: db:5432
   access: proxy
   user: $POSTGRES_METRICS_USER

@@ -726,7 +726,7 @@
       "description": "\"max_connections\" configuration setting. Changing requires re-start. 500/1000 Warn / Error thresholds by default",
       "format": "short",
       "gauge": {
-        "maxValue": 100,
+        "maxValue": 2500,
         "minValue": 0,
         "show": false,
         "thresholdLabels": false,

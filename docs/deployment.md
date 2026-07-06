@@ -69,20 +69,7 @@ There is a convenience script that will generate secret values appropriately. To
 bash install/env_secret_setup.sh
 ```
 
-If you want to run Wafrn on a low-memory system (not recommended), you can modify your environment variables instead of using a separate compose file:
-On the .env file, at the end:
-
-- Set `BACKEND_REPLICAS=1` to run only a single backend instance
-- Set `WORKERS_REPLICAS=0` to disable background workers
-- Set `BACKEND_HOST=wafrn-backend-1:9000` to point to the single backend instance
-
 These settings will significantly reduce resource usage, but will also limit performance and functionality. This approach is only recommended for testing or very small personal instances.
-
-Make sure to list the name of the docker-compose you've chosen in your env. For example, if you wanted to use the advanced file, you would specify the following:
-
-```sh
-COMPOSE_FILENAME=docker-compose.advanced.yml
-```
 
 Next you'll need to fill in all of the details of your domain. For example if you're trying to run your website under `wafrn.example.com` (and your DNS is already pointing to the computer running docker) you'll need to update the following details:
 
@@ -243,3 +230,35 @@ at.YOURINSTANCENAME, *.at.YOURINSTANCENAME {
 ```
 
 Then, you need to proxy it
+
+
+### Wafrn with just 2gb of ram. And swap
+
+Add swap. 4 or 8 GB just in case. Minimum real recomended is 4gb of ram, as its what gabboman.xyz is bein ran on
+
+If you want to run Wafrn on a low-memory system (not recommended), you can modify your environment variables on the .env file, by adding at the end:
+
+- `BACKEND_REPLICAS=1` to run only a single backend instance
+- `WORKERS_REPLICAS=0` to disable background workers
+- `BACKEND_HOST=wafrn-backend-1:9000` to point to the single backend instance
+- `USE_WORKERS=true` to make most jobs to be on the main thread.
+
+With this, a single user instance is using a total of 2700mb of ram, with a 7 month size database of lots of follows. You will be better than that at the begining. This is fine with some swap.
+
+
+#### Do not do this unless there is no other option
+
+Another option to reduce usage is to disable other services used by wafrn.
+
+```docker compose stop bullboard``` is the only one on this list that is ok to do, but you wont be able to see the queues of your instance. This will free up 200 to 300mb of ram.
+
+```docker compose stop websocket``` will stop the real time notifications from fedi. But will also disable IMPORTANT DB MAINTENANCE FEATURES. You can stop this for 100 or 200 extra mb of "free" ram, but some important maintenance tasks and future features wont run.
+
+Bluesky pds worker is run in a separate thread. You can stop that service too but you will be forced to use the standard bsky appview as fallback mode. This will:
+
+- Stop you from reciving notifications real time from bluesky and only while scrolling
+- Forced to use their apis. If they're down you wont get any posts
+- Forced to use their moderation. If they ban an account is banned for you too.
+
+Just do ```docker compose stop pds_worker``` each time after updates. This will reduce ram usage in 200 or 300mb. You can also have bluesky totaly disabled. I mean that is ok.
+

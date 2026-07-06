@@ -222,7 +222,7 @@ services:
       context: monitoring/grafana
       dockerfile: Dockerfile
     volumes:
-      - ./data/grafana_data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     restart: unless-stopped
     profiles: [metrics]
     env_file: .env
@@ -269,6 +269,7 @@ services:
 
 volumes:
   cache:
+  grafana_data:
 
 
 networks:
