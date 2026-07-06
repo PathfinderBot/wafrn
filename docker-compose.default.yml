@@ -217,7 +217,7 @@ services:
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
 
   grafana:
-    image: codeberg.org/wafrn/wafrn-grafana:${IMAGE_TAG:-main}
+    image: codeberg.org/wafrn/wafrn-grafana:main
     build:
       context: monitoring/grafana
       dockerfile: Dockerfile
