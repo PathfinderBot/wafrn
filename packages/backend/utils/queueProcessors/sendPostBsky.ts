@@ -7,9 +7,10 @@ import { postToAtproto } from '../../atproto/utils/postToAtproto.js'
 import { wait } from '../wait.js'
 import { logger } from '../logger.js'
 import { AtUri } from '@atproto/api'
-import { redisBloom } from '../redis.js'
+import { redisBloom, redisCache } from '../redis.js'
 import { ROOT_REPLIED_POSTS } from '../../constants.js'
 import { getQueue } from '../queues.js'
+import { Op } from 'sequelize'
 
 async function sendPostBsky(job: Job) {
   const post = await Post.findByPk(job.data.postId)
@@ -59,6 +60,12 @@ async function sendPostBsky(job: Job) {
               await redisBloom.add(ROOT_REPLIED_POSTS, atProtoObject.reply.root)
             }
             const bskyPost = await agent.post(atProtoObject)
+            if (bskyPost) {
+              post.bskyUri = bskyPost.uri
+              post.bskyCid = bskyPost.cid
+              await post.save()
+              await Promise.all([redisCache.del('postAndUser:' + post.id), redisCache.del('postToJsonLD:' + post.id)])
+            }
             const { rkey } = new AtUri(bskyPost.uri)
             if (bskyPost && agent.session && post.quoteControl != InteractionControl.Anyone) {
               await agent.com.atproto.repo.createRecord({
@@ -110,6 +117,9 @@ async function sendPostBsky(job: Job) {
             await wait(750)
             const duplicatedPost = await Post.findOne({
               where: {
+                id: {
+                  [Op.ne]: post.id
+                },
                 bskyCid: bskyPost.cid
               }
             })

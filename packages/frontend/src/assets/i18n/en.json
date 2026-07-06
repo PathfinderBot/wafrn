@@ -79,6 +79,7 @@
   },
   "asks": {
     "title": "Asks",
+    "loader": "asks",
     "noAsks": "No more asks found",
     "nobodyAsked": "Nobody asked...",
     "answer": "Answer",
@@ -188,6 +189,8 @@
     "register": "Register",
     "dashboard": "Dashboard",
     "dashboardHover": "View dashboard",
+    "navigationMenu": "Navigation menu",
+    "previousPage": "Previous page",
     "writeWoot": "Woot",
     "notifications": "Notifications",
     "explore": "Explore",
@@ -254,6 +257,10 @@
     "updateButton": "Update Theme"
   },
   "editor": {
+    "addMentionPlaceholder": "Add mention (FEATURE NOT DONE YET)",
+    "addPoll": "Add poll",
+    "mentionedUsers": "Mentioned users",
+    "removeMention": "remove {{url}}",
     "contentWarningLabel": "Content Warning",
     "interactionControl": {
       "anyone": "Anyone",
@@ -279,6 +286,7 @@
     "wootQuoteConfirmButton": "Add woot as quote",
     "wootTextLabel": "Woot text",
     "wootTextPlaceholder": "Start writing...",
+    "oldPostHtmlRawWarning": "This post is an old post and you are editing the HTML raw.",
     "uploadMediaIndicator": "Drop to upload media",
     "bskyLengthWarning": "Text above 300 characters will be cut off and instead a link to wafrn will be shown",
     "bskyLengthNotice": "This only affects Bluesky, currently only an approximation!",
@@ -320,6 +328,7 @@
     "adminBadge": "Admin",
     "adminTooltip": "{{url}} is an admin of {{instanceHostname}}",
     "botBadge": "Bot",
+    "directMessage": "Direct message",
     "fediverseAttachments": "Fediverse Attachments",
     "askQuestion": "Ask a question",
     "remoteAskSummary": "Send ask from outside Wafrn",
@@ -406,6 +415,7 @@
       "dashboardIsExploreLocal": "Default dashboard is explore local instead of following",
       "cocAIne": "Replace the word artificial intelligence with custom word (cocaine?)",
       "customCocAIne": "Custom word for AI replacement",
+      "customCocAInePlaceholder": "custom word. requires enable replace",
       "notRecommendedOptions": "Not recommended options",
       "disableNSFWFilter": "Disable NSFW images filter",
       "automaticallyExpandAllPosts": "Automatically expand all woots",
@@ -415,6 +425,7 @@
     "privacy": {
       "defaultPostPrivacy": "Default woot privacy",
       "asks": "Asks",
+      "options": "Options",
       "disableEmailNotifications": "Disable email notifications",
       "hideFollows": "Hide my follows and followers",
       "hideProfileNotLoggedInDescription": "Hide profile to not logged in users and search (this will only apply to your profile IN this wafrn, not to\nyour woots nor other fedi instances or bluesky)",
@@ -452,6 +463,7 @@
       "movingFromAccount": "'Moving from a different account (without the @)'",
       "wordsThatWillAutoCwPosts": "Words that will add cw to woot",
       "superMutedWords": "Phrases that will not show a woot with them (BE CAREFUL WITH THESE)",
+      "mutedWordsPlaceholder": "Enter muted words, one per line",
       "availableEmoji": "Available emojis",
       "rollToCrash": "Roll a dice to crash your browser",
       "rollSurvived": "Survived!",
@@ -463,7 +475,24 @@
       "psa2_1": "Please refer to",
       "psa2_2": "the FAQ",
       "psa2_3": "to find out what does/doesn't work generally speaking.",
-      "psa3": "In the future, we aim to have Bluesky-Specific settings in here, like the ability to change the Bluesky username."
+      "psa3": "In the future, we aim to have Bluesky-Specific settings in here, like the ability to change the Bluesky username.",
+      "enableBlueskyLink": "To enable bluesky, please <a href='\"/profile/enable-bluesky\"'>click here</a>"
+    },
+    "importFollows": {
+      "title": "Import your follows from another instance",
+      "uploadCsvIntro": "Let's upload a CSV",
+      "uploadCsv": "Upload CSV",
+      "uploading": "Uploading... This might take some time",
+      "failedFollows": "We had problems following these {{ count }} users users:",
+      "followAllUsers": "Follow all users",
+      "followingPeople": "Following people... This might take some time",
+      "notFoundUsers": "We had problems finding these {{ count }} users users:"
+    },
+    "migrateOut": {
+      "title": "Migrate out",
+      "instructions": "You need to first create an alias on the new fedi account you are moving to",
+      "newAccount": "New account (without the @)",
+      "migrate": "Migrate"
     },
     "migrate": {
       "psa1": "To migrate to another server please create an alias and click",
@@ -478,6 +507,9 @@
       "profile": "Profile",
       "preferences": "Preferences",
       "privacySecurity": "Privacy and Security",
+      "bluesky": "Bluesky",
+      "deleteAccount": "Delete account",
+      "migrateOut": "Migrate out",
       "misc": "Miscellaneous"
     },
     "updateButton": "Update profile"
@@ -549,6 +581,8 @@
     "autoAddSpecifiedTagsAsksNoGeneralDescription": "Enable this if you want the tags different between normal woots and ask replies",
     "autoAddSpecifiedTagsDescription": "Add tags below to automatically add them on the editor on your every single woot. You can always remove it on the editor. Multiple tags can be added by adding a comma and a space.",
     "autoAddContentWarning": "Add specified content warning",
+    "invalidSetting": "Something went very wrong",
+    "noVariantsSet": "No variants set",
     "autoAddContentWarningDescription": "If you woot mostly stuff that requires a content warning, you can add it here to automatically add it when you woot. You can always remove it by removing the content warning text on the editor.",
     "alsoKnownAs": "Previous alias",
     "requestAccountDeletion": "Request Account Deletion",
@@ -922,7 +956,9 @@
       "reason": "Reason",
       "userBlocker": "User blocker",
       "selectUserBlockListPage": "Select user block list page",
-      "selectServerBlockListPage": "Select server block list page"
+      "selectServerBlockListPage": "Select server block list page",
+      "selectBlockedUsersPage": "Select page of blocked users",
+      "selectMutedUsersPage": "Select page of muted users"
     },
     "serverList": {
       "serverFilter": "Server Filter",
@@ -1020,6 +1056,7 @@
   "emoji": {
     "searchAvailable": "Search available emojis",
     "recentEmojis": "Recently used emojis"
+    ,"reactionsUnsupported": "Mastodon and bluesky do not support emoji reactions yet"
   },
   "dashboard": {
     "notFollowingAnyone": "You dont seem to be following anyone!",

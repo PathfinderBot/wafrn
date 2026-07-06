@@ -149,6 +149,8 @@ export class RegisterComponent {
     "Home of the Whooper:  West virginia",
     "Wait, you wrote widsom not wisdom before",
     "Utrechter",
+    "This gender has been deprecated and will be removed in a future release. Please transition to a supported gender", // https://types.pl/@132ikl/116715148016786713
+    "There are more than two. And they are all mine",
     "Hopelessly addicted",
     "The cause of the hopeless addiction",
     "DEATH DEATH MURDER MURDER",
@@ -291,7 +293,7 @@ export class RegisterComponent {
     "Oblivion´s NPC AI",
     "Neofetch ASCII art",
     "Karen took it with the kids",
-    "DELTARUNE spoilers",
+    "DELTARUNE Chapter 7 spoilers",
     "Spheal",
     "ON SALE 50% OFF PICK THIS GENDER NOW AND GET ONE FREE",
     "Prilosec®",
@@ -319,10 +321,10 @@ export class RegisterComponent {
     confirmReadAbout: new FormControl(false, [Validators.requiredTrue]),
     ...(this.registrationLevel === "INVITE"
       ? {
-          inviteCode: new UntypedFormControl(this.inviteCode ?? "", [
-            Validators.required,
-          ]),
-        }
+        inviteCode: new UntypedFormControl(this.inviteCode ?? "", [
+          Validators.required,
+        ]),
+      }
       : {}),
   });
 
@@ -331,7 +333,7 @@ export class RegisterComponent {
     this.minimumRegistrationDate = new Date();
     this.minimumRegistrationDate.setFullYear(
       this.minimumRegistrationDate.getFullYear() -
-        (EnvironmentService.environment.minimumAgeToRegister ?? 18)
+      (EnvironmentService.environment.minimumAgeToRegister ?? 18)
     );
     // do not accept dates before 1900
     this.minDate = new Date();
@@ -359,19 +361,19 @@ export class RegisterComponent {
         });
         this.router.navigate(["/checkMail"]);
       } else {
-        if(petition.message) {
+        if (petition.message) {
           this.simpleDialogService.createConfirmDialog({
-          title: 'Error',
-          content: petition.message,
-          options: {
-            confirm: 'ok'
-          }
+            title: 'Error',
+            content: petition.message,
+            options: {
+              confirm: 'ok'
+            }
           })
         } else {
           this.messages.add({
-          severity: "warn",
-          summary: "Email or url in use",
-        });
+            severity: "warn",
+            summary: "Email or url in use",
+          });
         }
 
         this.loginForm.enable();

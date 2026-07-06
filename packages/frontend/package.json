@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.06.02",
+  "version": "2026.07.01",
   "scripts": {
     "ng": "ng",
     "start": "npm run prebuild && ng serve",

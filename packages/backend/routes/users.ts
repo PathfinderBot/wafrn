@@ -74,6 +74,7 @@ import { updateUserDidDoc } from '../utils/atproto/updateUserDidDoc.js'
 import { wait } from '../utils/wait.js'
 import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
 import { syncBskyAccountData } from '../utils/atproto/syncBskyAccountData.js'
+import { LANGUAGES } from '../utils/languages.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -121,7 +122,7 @@ const slurs = [
   'negro',
   'nig',
   'nig-nog',
-  'nigga',
+  // 'nigga', // this one is reclaimable for what I understand. Salem uses it.
   'nigger',
   'nigguh',
   'pajeet',
@@ -141,7 +142,7 @@ const slurs = [
   'wetback',
   'wigger',
   'wop',
-  'yid'
+  'yid' 
 ]
 
 function userRoutes(app: Application) {
@@ -193,7 +194,7 @@ function userRoutes(app: Application) {
           req.body.url &&
           req.body.url.match(/^[a-z0-9_A-Z]+([\_-]+[a-z0-9_A-Z]+)*$/i) &&
           validateEmail(req.body.email) &&
-          !slurs.includes(req.body.url.toLowerCase() && slurs.every((elem) => !req.body.url.includes(elem)))
+          !slurs.includes(req.body.url.toLowerCase())
         ) {
           const birthDate = new Date(req.body.birthDate)
           const minimumAge = new Date()
@@ -1319,6 +1320,7 @@ function userRoutes(app: Application) {
         mutedUsers: await mutedUsers,
         followedHashtags: await followedHashtags,
         enableBluesky: user.enableBsky && user.bskyDid,
+        languages: LANGUAGES,
         // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
         serviceAnnouncements,
         mutedRewoots,

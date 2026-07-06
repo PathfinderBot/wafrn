@@ -356,6 +356,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		overflow: auto hidden;
 		margin: calc(0px - var(--post-padding));
 		padding: var(--post-padding);
+		scrollbar-width: auto;
 		app-wafrn-media, app-link-preview {
 			display: contents;
 		}
@@ -481,7 +482,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 
 /*** PROFILE */
 @media (min-width: 800px) {
-	mat-drawer-content:has(app-view-blog:not(.snappy-hide)) {
+	mat-drawer-content app-view-blog:not(.snappy-hide) {
 		position: relative;
 		margin-block: 14px !important;
 		border-radius: calc(var(--mat-sys-corner-medium) + 6px) !important;
@@ -516,7 +517,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 		margin-top: calc(0px - var(--post-padding));
 		border-bottom-left-radius: 0;
 		border-bottom-right-radius: 0;
-		transition: height .4s cubic-bezier(.7,0,0,1);
+		/* transition: height .4s cubic-bezier(.7,0,0,1); removed due to memleak */
 		@media (min-width: 800px) {
 			&::before {
 				content: "";
@@ -525,7 +526,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
 				background: inherit;
 				z-index: -1;
 				background-size: 1px 1px;
-				filter: blur(5px);
+				/* filter: blur(5px); removed due memleak */
 				background-repeat: repeat;
 				opacity: .4;
 			}

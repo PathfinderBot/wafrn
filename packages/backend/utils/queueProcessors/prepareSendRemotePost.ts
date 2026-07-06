@@ -1,4 +1,4 @@
-import { Model, Op, Sequelize } from "sequelize";
+import { Model, Op, QueryTypes, Sequelize } from "sequelize";
 import { logger } from "../logger.js";
 import { postPetitionSigned } from "../activitypub/postPetitionSigned.js";
 import {
@@ -38,14 +38,37 @@ async function prepareSendRemotePostWorker(job: Job) {
   }
 
   const localUser = await User.scope("full").findByPk(post.userId);
-  const parents = await post.getAncestors({
+  const parentsQuery = post.parentId ? (await sequelize.query(
+    `
+  WITH RECURSIVE ancestors AS (
+    SELECT id, "parentId", "userId", content, "hierarchyLevel", "createdAt", "updatedAt"
+    FROM posts
+    WHERE id = :postId
+    UNION ALL
+    SELECT p.id, p."parentId", p."userId", p.content, p."hierarchyLevel", p."createdAt", p."updatedAt"
+    FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT 
+    a.id
+  FROM ancestors a
+  `,
+    {
+      replacements: { postId: post.parentId as string },
+      type: QueryTypes.SELECT
+    }
+  ) as Array<{ id: string }>).map(elem => elem.id) : []
+  const parents = parentsQuery.length ? await Post.findAll({
     include: [
       {
         model: User,
         as: "user",
       },
     ],
-  });
+    where: {
+      id: parentsQuery
+    }
+  }) : []
   // we check if we need to send the post to fedi
   const sendPostToFedi = parents.every((elem) => elem.postShouldGoFedi);
   if (localUser && sendPostToFedi) {

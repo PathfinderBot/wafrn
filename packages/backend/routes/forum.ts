@@ -26,6 +26,7 @@ import {
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import { Privacy } from '../models/post.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
+import { completeEnvironment } from '../utils/backendOptions.js'
 
 export default function forumRoutes(app: Application) {
   app.get('/api/forum/:id', optionalAuthentication, async (req: AuthorizedRequest, res: Response) => {
@@ -38,14 +39,24 @@ export default function forumRoutes(app: Application) {
       attributes: ['id', 'hierarchyLevel']
     })
     if (postsToGet) {
+      const query = `
+    WITH RECURSIVE descendants AS (
+      SELECT id FROM posts WHERE "parentId" = '${postsToGet.id}' AND "isDeleted" = false
+      UNION ALL
+      SELECT p.id FROM posts p
+      INNER JOIN descendants d ON p."parentId" = d.id
+      WHERE p."isDeleted" = false
+    )
+    SELECT DISTINCT id FROM descendants
+    `
       let postIds = (
         await sequelize.query(
-          `SELECT DISTINCT "postsId" FROM "postsancestors" where "ancestorId" = '${postsToGet.id}'`,
+          query,
           {
             type: QueryTypes.SELECT
           }
         )
-      ).map((elem: any) => elem.postsId)
+      ).map((elem: any) => elem.id)
       const fullPostsToGet = await Post.findAll({
         include: [
           {
@@ -203,8 +214,8 @@ export default function forumRoutes(app: Application) {
             ...x,
             ...(pronouns
               ? {
-                  pronouns
-                }
+                pronouns
+              }
               : {})
           }
         }),

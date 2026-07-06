@@ -20,6 +20,12 @@
         </div>
         @if (!isMe && blog) {
         <div>
+          @if (loggedIn && !isMe && !blog.isBlueskyUser) {
+          <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="openDirectMessage(blog)"
+            matTooltip="{{ 'blog.directMessage' | translate }}">
+            <fa-icon [fixedWidth]="true" [icon]="envelopeIcon"></fa-icon>
+          </button>
+          }
           @if (loggedIn) {
           <button matButton="outlined" style="width: 40px; padding: 0; margin-right: 4px" (click)="biteAccount(blog.id)"
             matTooltip="{{ 'post-actions.biteUser' | translate }}">
@@ -159,23 +165,26 @@
       </p>
       <div class="flex gap-2 mt-2 mb-0 text-sm line-height-3 profile-badges">
         @if (blog?.isBlueskyUser) {
-        <span class="badge bsky-badge"> <fa-icon class="mr-2" [icon]="bskyIcon"></fa-icon>{{ 'blog.blueskyBadge' | translate }} </span>
+        <span class="badge bsky-badge"> <fa-icon class="mr-2" [icon]="bskyIcon"></fa-icon>{{ 'blog.blueskyBadge' |
+          translate }} </span>
         }
         @if (blog?.isAdmin) {
-        <span class="badge admin-badge" [matTooltip]="'blog.adminTooltip' | translate:{ url: blog?.url, instanceHostname }"> <fa-icon
-            class="mr-2" [icon]="adminIcon"></fa-icon>{{ 'blog.adminBadge' | translate }} </span>
+        <span class="badge admin-badge"
+          [matTooltip]="'blog.adminTooltip' | translate:{ url: blog?.url, instanceHostname }"> <fa-icon class="mr-2"
+            [icon]="adminIcon"></fa-icon>{{ 'blog.adminBadge' | translate }} </span>
         }
         @if (blog?.isBot) {
-        <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>{{ 'blog.botBadge' | translate }} </span>
+        <span class="badge bot-badge"> <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>{{ 'blog.botBadge' | translate
+          }} </span>
         }
         @if (!isMe && blog && postService.myFollowers.includes(blog.id)) {
-          <span class="badge follower-badge"> <fa-icon class="mr-2" [icon]="followerIcon"></fa-icon>
+        <span class="badge follower-badge"> <fa-icon class="mr-2" [icon]="followerIcon"></fa-icon>
           @if (postService.followedUserIds.includes(blog.id)) {
-            {{ 'blog.mutuals' | translate }}
+          {{ 'blog.mutuals' | translate }}
           } @else {
-            {{ 'blog.followsYou' | translate }}
+          {{ 'blog.followsYou' | translate }}
           }
-          </span>
+        </span>
         }
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Ask } from './ask'
 import { ProcessedPost } from './processed-post'
+import type { SimplifiedUser } from './simplified-user'
 
 export interface EditorData {
   scrollDate: Date
@@ -8,4 +9,7 @@ export interface EditorData {
   post?: ProcessedPost
   quote?: ProcessedPost
   edit?: boolean
+  privacy?: number
+  content?: string
+  mentionUser?: SimplifiedUser
 }

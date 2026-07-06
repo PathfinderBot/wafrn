@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 import {
   Ask,
   Emoji,
@@ -6,6 +6,7 @@ import {
   Media,
   Post,
   PostTag,
+  sequelize,
   User,
   UserLikesPostRelations,
 } from "../../models/index.js";
@@ -94,14 +95,31 @@ async function getPostAndUserFromPostId(
     });
     if (dbQuery) {
       // check if its a bsky post because we dont enjoy bsky posts going to fedi!
-      const parents = await dbQuery.getAncestors({
-        include: [
-          {
-            model: User,
-            as: "user",
-          },
-        ],
-      });
+      const parents = await sequelize.query(
+        `
+  WITH RECURSIVE ancestors AS (
+    SELECT id, "parentId", "userId", content, "hierarchyLevel", "createdAt", "updatedAt"
+    FROM posts
+    WHERE id = :postId
+    UNION ALL
+    SELECT p.id, p."parentId", p."userId", p.content, p."hierarchyLevel", p."createdAt", p."updatedAt"
+    FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT 
+    a.id, a."parentId", a."userId", a.content, a."hierarchyLevel", a."createdAt", a."updatedAt",
+    u.id as "user_id", u.url, u.email
+  FROM ancestors a
+  LEFT JOIN users u ON a."userId" = u.id
+  ORDER BY a."hierarchyLevel" DESC
+  `,
+        {
+          replacements: { postId: dbQuery.id },
+          type: QueryTypes.SELECT,
+          raw: true
+        }
+      ) as Array<any>
+
       const isBskyPost = parents.some((elem) => elem.isRemoteBlueskyPost);
       if (isBskyPost) {
         res = { found: false };

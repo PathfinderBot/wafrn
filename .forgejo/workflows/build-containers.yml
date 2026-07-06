@@ -42,7 +42,16 @@ jobs:
     needs: tsc
     strategy:
       matrix:
-        package: [frontend, backend]
+        include:
+          - package: frontend
+            dockerfile: packages/frontend/Dockerfile
+            context: .
+          - package: backend
+            dockerfile: packages/backend/Dockerfile
+            context: .
+          - package: grafana
+            dockerfile: monitoring/grafana/Dockerfile
+            context: monitoring/grafana
 
     permissions:
       contents: read
@@ -79,11 +88,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: packages/${{ matrix.package }}/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-buildcache
-          cache-to: type=registry,mode=max,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-buildcache

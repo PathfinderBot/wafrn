@@ -9,7 +9,7 @@ import {
   User
 } from '../../models/index.js'
 import { Op, QueryTypes } from 'sequelize'
-import { getAtprotoUser } from './getAtprotoUser.js'
+import { clearStaleBskyIdentity, getAtprotoUser } from './getAtprotoUser.js'
 import { logger } from '../../utils/logger.js'
 import {
   AppBskyEmbedExternal,
@@ -39,6 +39,7 @@ import { extractUriComponents } from './obtainUriComponents.js'
 import { getPetitionSigned } from '../../utils/activitypub/getPetitionSigned.js'
 import getUserAgent from '../../utils/getUserAgent.js'
 import { getQueue } from '../../utils/queues.js'
+import { filterLanguageCode } from '../../utils/languages.js'
 
 const processSinglePostQueue = getQueue('processSinglePost')
 
@@ -60,18 +61,6 @@ const mergeRemotePostRelatedRecordsSql = `
     UPDATE "postReports"
     SET "postId" = :remotePostId, "updatedAt" = NOW()
     WHERE "postId" = :existingPostId
-    RETURNING 1
-  ),
-  updated_post_ancestors AS (
-    UPDATE "postsancestors" AS ancestors
-    SET "postsId" = :remotePostId
-    WHERE ancestors."postsId" = :existingPostId
-      AND NOT EXISTS (
-        SELECT 1
-        FROM "postsancestors" AS existing_ancestors
-        WHERE existing_ancestors."postsId" = :remotePostId
-          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
-      )
     RETURNING 1
   ),
   updated_question_polls AS (
@@ -215,11 +204,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       message: `Problem obtaining parent bsky: post ${uri} parent ${parentUri}`
     })
   }
-  if (
-    postPetitionPds &&
-    postPetitionPds.value &&
-    ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
-  ) {
+  if (hasFediverseMirrorMetadata(postPetitionPds)) {
     // original is fedi. lets wait half second
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
@@ -243,6 +228,10 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       // prob wafrn post, but lets verify it
       try {
         const id = postPetitionPds.value.fediverseId as string
+        // ok so it can happen that bsky sends the post TOO QUICK and the target server still hasnt updated
+        // so we get the initial cache that we absolutely flush at start!
+        // we may not even need this. But we had too many issues already.
+        await wait(250)
         const fediPostObject = await getPetitionSigned(await getAdminUser(), id)
         if (
           fediPostObject &&
@@ -264,9 +253,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   }
   if (verifiedFedi) {
     try {
-      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
-        forceNotBsky: true
+      const remotePostV0 = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, undefined, {
+        forceNotBsky: true,
+        forceUpdate: true
       })
+      const remotePost = await getPostThreadRecursive(await getAdminUser(), verifiedFedi, undefined, remotePostV0?.id, {
+        forceNotBsky: true,
+        forceUpdate: true
+      })
+
       const bskyCid = postPetitionPds!.cid as string
       const bskyUri = postPetitionPds!.uri
       if (remotePost && remotePost.remotePostId) {
@@ -278,6 +273,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         await remotePost.save()
         return remotePost.id
       } else if (remotePost) {
+        // HERE?
         remotePost.bskyCid = bskyCid
         remotePost.bskyUri = bskyUri
         // if there's already a bsky post about
@@ -289,8 +285,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             remotePostId: null
           }
         })
+        const localUserIds = await getAllLocalUserIds()
         if (existingPost) {
-          const localUserIds = await getAllLocalUserIds()
           if (await User.scope('full').count({
             where: {
               id: existingPost.userId,
@@ -320,7 +316,9 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
                 transaction
               })
 
-              await Post.destroy({
+              await Post.update({
+                isDeleted: true,
+              }, {
                 where: {
                   bskyCid: bskyCid,
                   remotePostId: null,
@@ -335,6 +333,15 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             })
           }
         } else {
+          if (localUserIds.includes(remotePost.userId)) {
+            let postCreator = await User.findByPk(remotePost.userId) as User
+            const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
+            if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
+              const oldDid = postCreator.bskyDid
+              postCreator = await getAtprotoUser(oldDid as string, { ignoreCache: true }) as User
+              remotePost.userId = postCreator.id
+            }
+          }
           await remotePost.save()
         }
         if (forceUpdate) {
@@ -349,6 +356,21 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       })
     }
   }
+  if (!postCreator || !postPetitionPds) {
+    return undefined
+  }
+
+  const existingPost = !forceUpdate
+    ? await Post.findOne({
+      where: {
+        bskyUri: uri
+      }
+    })
+    : null
+  if (shouldShortCircuitToExistingPost(forceUpdate, postPetitionPds, existingPost)) {
+    return existingPost?.id
+  }
+
   if (!postCreator || !postPetitionPds) {
     return undefined
   }
@@ -427,6 +449,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       isReply = parentPost.isReply || parentPost.userId != postCreator.id;
     }
 
+    const postLanguage = getPostLanguage(post);
+
     const newData = {
       userId: postCreator.id,
       bskyCid: postPetitionPds.cid,
@@ -439,24 +463,21 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       ...(await getPostInteractionLevels(uri, parentId)),
       isBskyExclusive: true, // TODO hmmm
       isReply: isReply,
+      language: postLanguage,
     }
     if (!parentId) {
       delete newData.parentId
     }
 
     if ((await getAllLocalUserIdsSet()).has(newData.userId) && !forceUpdate && postCreator.bskyDid) {
-
       const userPds = await getServerFromDid(postCreator.bskyDid, true)
       if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
         // OH SHIT THIS USER IS NO LONGER IN WAFRN
         const oldDid = postCreator.bskyDid
-        postCreator.bskyDid = null;
-        postCreator.enableBsky = false;
-        postCreator.alternateUrl = undefined
-        await postCreator.save();
-        postCreator = await getAtprotoUser(oldDid, { ignoreCache: true })
-      } else {
-        // await wait(1500)
+        postCreator = await clearStaleBskyIdentity(postCreator)
+        if (postCreator?.bskyDid) {
+          postCreator = await getAtprotoUser(oldDid, { ignoreCache: true })
+        }
       }
     }
     const [postToProcess, created] = await Post.findOrCreate({
@@ -486,14 +507,31 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         )
       }
       if (parentId) {
-        const ancestors = await postToProcess.getAncestors({
-          attributes: ['userId'],
-          where: {
-            hierarchyLevel: {
-              [Op.gt]: postToProcess.hierarchyLevel - 5
-            }
+        const ancestors = await sequelize.query(
+          `
+  WITH RECURSIVE ancestors AS (
+    SELECT id, "parentId", "hierarchyLevel", "userId"
+    FROM posts
+    WHERE id = :postId
+    UNION ALL
+    SELECT p.id, p."parentId", p."hierarchyLevel", p."userId"
+    FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT "userId"
+  FROM ancestors
+  WHERE "hierarchyLevel" > :minLevel
+  ORDER BY "hierarchyLevel" DESC
+  `,
+          {
+            replacements: {
+              postId: postToProcess.id,
+              minLevel: postToProcess.hierarchyLevel - 5
+            },
+            type: QueryTypes.SELECT
           }
-        })
+        ) as Array<{ userId: string }>
+
         mentions = mentions.concat(ancestors.map((elem) => elem.userId))
       }
       mentions = [...new Set(mentions)]
@@ -639,7 +677,7 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   if ((embed as AppBskyEmbedExternal.Main).external) {
     const external = (embed as AppBskyEmbedExternal.Main).external
     return {
-      mediaType: (external.uri.startsWith('https://media.ternor.com/') || external.uri.startsWith('https://static.klipy.com/')) ? 'image/gif' : 'text/html',
+      mediaType: (external.uri.startsWith('https://media.tenor.com/') || external.uri.startsWith('https://static.klipy.com/')) ? 'image/gif' : 'text/html',
       description: external.title,
       url: external.uri,
       mediaOrder: 0,
@@ -794,8 +832,22 @@ async function processReplies(uri: string, cursor?: string) {
     if (localPost.hierarchyLevel != 1) {
       const ancestors = (
         await sequelize.query(
-          `SELECT DISTINCT "ancestorId" FROM "postsancestors" where "postsId" = '${localPost.id}'`,
+          `
+    WITH RECURSIVE ancestors AS (
+      SELECT "parentId" as "ancestorId", ARRAY["parentId"] as path
+      FROM posts
+      WHERE id = :postId AND "id" != :rootId AND "rootId" = :rootId
+      UNION ALL
+      SELECT p."parentId", path || p."parentId"
+      FROM posts p
+      INNER JOIN ancestors a ON p.id = a."ancestorId"
+      WHERE p.id != :rootId
+        AND NOT p."parentId" = ANY(path)
+    )
+    SELECT DISTINCT "ancestorId" FROM ancestors
+    `,
           {
+            replacements: { postId: localPost.id, rootId: localPost.rootId },
             type: QueryTypes.SELECT
           }
         )
@@ -883,4 +935,38 @@ async function getPostThreadPDSDirect(inputUri: string) {
   }
 }
 
-export { getQuotedPostUri, processSinglePost, getPostThreadPDSDirect, getPostInteractionLevels, processReplies }
+/** Checks if `post.langs` has only 1 value and if its present in languages.ts */
+function getPostLanguage(post: AppBskyFeedPost.Main): string | undefined {
+  if (post.langs && post.langs.length == 1) {
+    return filterLanguageCode(post.langs[0])
+  }
+
+  return undefined
+}
+
+function hasFediverseMirrorMetadata(
+  postPetitionPds: ComAtprotoRepoGetRecord.OutputSchema | undefined
+): boolean {
+  return Boolean(
+    postPetitionPds?.value &&
+    ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
+  )
+}
+
+function shouldShortCircuitToExistingPost(
+  forceUpdate: boolean,
+  postPetitionPds: ComAtprotoRepoGetRecord.OutputSchema | undefined,
+  existingPost: { id?: string | number | null } | null | undefined
+): boolean {
+  return !forceUpdate && Boolean(existingPost) && !hasFediverseMirrorMetadata(postPetitionPds)
+}
+
+
+export {
+  getQuotedPostUri,
+  processSinglePost,
+  getPostThreadPDSDirect,
+  getPostInteractionLevels,
+  processReplies,
+  hasFediverseMirrorMetadata
+}

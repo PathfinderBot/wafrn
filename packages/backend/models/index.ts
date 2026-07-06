@@ -13,7 +13,6 @@ import { MfaDetails } from './mfaDetails.js'
 import { Mutes } from './mutes.js'
 import { Notification } from './notification.js'
 import { Post } from './post.js'
-import { PostAncestor } from './postAncestor.js'
 import { PostEmojiRelations } from './postEmojiRelations.js'
 import { PostHostView } from './postHostView.js'
 import { PostMentionsUserRelation } from './postMentionsUserRelation.js'
@@ -55,7 +54,6 @@ sequelize.addModels([
   Mutes,
   Notification,
   Post,
-  PostAncestor,
   PostEmojiRelations,
   PostHostView,
   PostMentionsUserRelation,
@@ -102,7 +100,6 @@ export {
   Mutes,
   Notification,
   Post,
-  PostAncestor,
   PostEmojiRelations,
   PostHostView,
   PostMentionsUserRelation,

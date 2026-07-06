@@ -30,21 +30,21 @@ import { UserBookmarkedPosts } from './userBookmarkedPosts.js'
 import { PostHostView } from './postHostView.js'
 import { RemoteUserPostView } from './remoteUserPostView.js'
 import { FederatedHost } from './federatedHost.js'
-import { PostAncestor } from './postAncestor.js'
 import {
   BelongsToGetAssociationMixin,
   BelongsToManyGetAssociationsMixin,
   BelongsToManySetAssociationsMixin,
   BelongsToSetAssociationMixin,
   HasManyGetAssociationsMixin,
-  HasManyRemoveAssociationMixin,
   HasManyRemoveAssociationsMixin,
   HasManySetAssociationsMixin,
   HasOneGetAssociationMixin,
-  QueryTypes
+  QueryTypes,
+  Op
 } from 'sequelize'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { sequelize } from './sequelize.js'
+
 
 export const Privacy = {
   Public: 0,
@@ -100,7 +100,8 @@ export interface PostAttributes {
   detached?: boolean,
   rootId?: string | null,
   isBskyExclusive?: boolean,
-  isReply?: boolean
+  isReply?: boolean,
+  language: string | undefined,
 }
 
 @Table({
@@ -274,6 +275,13 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   })
   declare detached: boolean;
 
+  @Column({
+    type: DataType.STRING(3),
+    allowNull: true,
+    defaultValue: undefined,
+  })
+  declare language: string | undefined;
+
   @BelongsTo(() => Post, "parentId")
   declare parent: Post; declare getParent: BelongsToGetAssociationMixin<Post>;
   declare setParent: BelongsToSetAssociationMixin<Post, string>;
@@ -287,13 +295,79 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   @HasMany(() => Post, 'parentId')
   declare children: Post[]
 
-  @BelongsToMany(() => Post, () => PostAncestor, 'postsId', 'ancestorId')
-  declare ancestors: Post[]
-  declare getAncestors: BelongsToManyGetAssociationsMixin<Post>
+  async getAncestors(): Promise<Post[]> {
+    if (!this.rootId) {
+      return [];
+    }
+  // New style: recursive CTE via parentId
+  const ancestorIds = await sequelize.query(
+    `
+        WITH RECURSIVE ancestors AS (
+    SELECT "parentId" AS id
+    FROM posts
+    WHERE id = :id
+      AND "rootId" = :rootId
+      AND "id" != :rootId
+    UNION ALL
+    SELECT p."parentId"
+    FROM posts p
+    INNER JOIN ancestors a
+        ON p.id = a.id
+    WHERE p."parentId" IS NOT NULL
+)
+SELECT id
+FROM ancestors;
+        `,
+    {
+      replacements: {
+        id: this.id,
+        rootId: this.rootId
+      },
+      type: QueryTypes.SELECT
+    }
+  ) as Array<{ id: string }>
+  if (ancestorIds.length === 0) return []
+  const ids = ancestorIds.map(row => row.id)
+  return await Post.findAll({
+    where: {
+      id: {
+        [Op.in]: ids
+      }
+    },
+    order: [['hierarchyLevel', 'DESC']]
+  })
+}
 
-  @BelongsToMany(() => Post, () => PostAncestor, 'ancestorId', 'postsId')
-  declare descendents: Post[]
-  declare getDescendents: BelongsToManyGetAssociationsMixin<Post>
+  async getDescendentsCustom(): Promise<Post[]> {
+    // New style: recursive CTE via parentId
+    const descendantIds = await sequelize.query(
+      `
+        WITH RECURSIVE descendants AS (
+          SELECT id FROM posts WHERE "parentId" = '${this.id}'
+          UNION ALL
+          SELECT p.id FROM posts p
+          INNER JOIN descendants d ON p."parentId" = d.id
+        )
+        SELECT id FROM descendants
+        `,
+      {
+        type: QueryTypes.SELECT
+      }
+    ) as Array<{ id: string }>
+
+    if (descendantIds.length === 0) return []
+
+    const ids = descendantIds.map(row => row.id)
+    return await Post.findAll({
+      where: {
+        id: {
+          [Op.in]: ids
+        }
+      },
+      order: [['hierarchyLevel', 'ASC']]
+    })
+
+  }
 
   @HasMany(() => Notification, {
     sourceKey: 'id'
@@ -410,10 +484,8 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
       foreignKey: 'parentId',
       levelFieldName: 'hierarchyLevel',
       rootIdFieldName: 'rootId',
-      through: PostAncestor,
       throughKey: 'postsId',
       throughForeignKey: 'ancestorId',
-      throughTable: 'postancestors'
     }
   }
 

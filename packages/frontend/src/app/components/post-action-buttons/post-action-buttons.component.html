@@ -71,7 +71,7 @@
                 [matTooltip]="'post-actions.unbookmarkPost' | translate"
                 mat-button
                 (click)="unbookmarkPost()"
-                class="mat-circle-button unlike-icon"
+                class="mat-circle-button unbookmark-icon"
                 [disabled]="loadingBookmark"
               >
                 <fa-icon size="lg" [icon]="unbookmarkIcon"></fa-icon>
@@ -81,7 +81,7 @@
                 [matTooltip]="'post-actions.bookmarkPost' | translate"
                 mat-button
                 (click)="bookmarkPost($event)"
-                class="mat-circle-button unlike-icon"
+                class="mat-circle-button bookmark-icon"
                 [disabled]="loadingBookmark"
               >
                 <fa-icon size="lg" [icon]="bookmarkIcon"></fa-icon>

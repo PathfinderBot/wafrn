@@ -20,6 +20,7 @@ import { emojis } from "../lists/emoji-compact";
 import { EnvironmentService } from "./environment.service";
 import { SimpleDialogService } from "./simple-dialog.service";
 import { ServiceAnnouncement } from "../interfaces/service-announcement";
+import { Language } from "../interfaces/language";
 @Injectable({
   providedIn: "root",
 })
@@ -74,6 +75,7 @@ export class PostsService {
 
   public silencedPostsIds: string[] = [];
   public mutedUsers: string[] = [];
+  public languages: Language[] = [];
   public followedUserIds: Array<string> = [];
   public emojiCollections: EmojiCollection[] = [];
   public notYetAcceptedFollowedUsersIds: Array<string> = [];
@@ -110,7 +112,8 @@ export class PostsService {
         mutedRewoots: string[];
         mutedQuotes: string[];
         enableBluesky: boolean;
-        serviceAnnouncements: ServiceAnnouncement[]
+        serviceAnnouncements: ServiceAnnouncement[];
+        languages: Language[];
       }>(`${EnvironmentService.environment.baseUrl}/my-ui-options`)
     );
     if(followsAndBlocks.serviceAnnouncements && followsAndBlocks.serviceAnnouncements.length > 0) {
@@ -125,6 +128,7 @@ export class PostsService {
           })
     }
     this.followedHashtags = followsAndBlocks.followedHashtags;
+    this.languages = followsAndBlocks.languages || [];
     this.emojiCollections = followsAndBlocks.emojis
       ? followsAndBlocks.emojis
       : [];
@@ -602,6 +606,9 @@ export class PostsService {
       for (const media of newPost.medias) {
         postContentWithoutHTMLTags = `${postContentWithoutHTMLTags} ${media.description}`        
       }
+    }
+    if (newPost.tags && newPost.tags.length > 0) {
+      postContentWithoutHTMLTags = `${postContentWithoutHTMLTags} ${newPost.tags.map((tag) => tag.tagName).join(' ')} `
     }
     postContentWithoutHTMLTags = postContentWithoutHTMLTags.toLowerCase()
     let detectedWords: string[] = []

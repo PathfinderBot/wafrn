@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import { BaseError, Model } from "sequelize";
 
+
+
 class HierarchyError extends BaseError {
   constructor(message?: string) {
     super(message);
@@ -23,38 +25,6 @@ function beforeFindAfterExpandIncludeAll(this: any, options: any) {
   // Record whether `hierarchy` is set anywhere in includes, so expansion of
   // hierarchies can be skipped if their are none
   options.hierarchyExists = hierarchyExists || checkHierarchy(options, model);
-}
-
-function afterFind(this: any, result: any, options: any) {
-  // If no results, return
-  if (!result) return;
-
-  // If no hierarchies to expand anywhere in tree of includes, return
-  if (!options.hierarchyExists) return;
-
-  const model = this, // eslint-disable-line no-invalid-this
-    { hierarchy } = model;
-
-  let parent;
-
-  // Where called from getDescendents, find id of parent
-  if (options.hierarchy && options.includeMap) {
-    const include = options.includeMap[hierarchy.through.name];
-
-    if (include && include.where) {
-      const parentId = include.where[hierarchy.throughForeignKey];
-      if (parentId) parent = { [hierarchy.primaryKey]: parentId };
-    }
-  }
-
-  // Convert hierarchies into trees
-  convertHierarchies(result, options, model, parent);
-
-  // Where called from getDescendents, retrieve result from parent.children
-  if (parent) {
-    result.length = 0;
-    result.push(...parent[hierarchy.childrenAs]);
-  }
 }
 
 function checkHierarchy(options: any, model: any): boolean | undefined {
@@ -87,142 +57,6 @@ function checkHierarchy(options: any, model: any): boolean | undefined {
   }
 
   return hierarchyExists;
-}
-
-function convertHierarchies(results: any, options: any, model: any, parent: any) {
-  if (!results) return;
-
-  // Convert hierarchies into trees
-  if (options.include) {
-    for (const include of options.include) {
-      const includeModel = include.model,
-        accessor = include.as;
-
-      if (!Array.isArray(results)) results = [results];
-
-      for (const result of results) {
-        convertHierarchies(result[accessor], include, includeModel, result);
-      }
-    }
-  }
-
-  if (options.hierarchy) convertHierarchy(results, model, parent);
-}
-
-function convertHierarchy(results: any, model: any, parent: any) {
-  const { hierarchy } = model,
-    { primaryKey, foreignKey } = hierarchy,
-    childrenAccessor = hierarchy.childrenAs,
-    descendentsAccessor = hierarchy.descendentsAs,
-    throughAccessor = hierarchy.through.name;
-
-  // Get parent ID and create output array
-  let parentId, output: any[];
-  if (parent) {
-    parentId = parent[primaryKey];
-
-    // Remove parent.descendents and create empty parent.children array
-    output = [];
-    setValue(parent, childrenAccessor, output);
-    deleteValue(parent, descendentsAccessor);
-  } else {
-    parentId = null;
-
-    // Duplicate results array and empty output array
-    output = results;
-    results = results.slice();
-    output.length = 0;
-  }
-
-  // Run through all results, turning into tree
-
-  // Create references object keyed by id
-  // NB IDs prepended with '_' to ensure keys are non-numerical for fast hash lookup
-  const references: any = {};
-  for (const item of results) {
-    references[`_${item[primaryKey]}`] = item;
-  }
-
-  // Run through results, transferring to output array or nesting within parent
-  for (const item of results) {
-    // Remove reference to through table
-    deleteValue(item, throughAccessor);
-
-    // If top-level item, add to output array
-    const thisParentId = item[foreignKey];
-    if (thisParentId === parentId) {
-      output.push(item);
-      continue;
-    }
-
-    // Not top-level item - nest inside parent
-    const thisParent = references[`_${thisParentId}`];
-    if (!thisParent) {
-      throw new HierarchyError(`Parent ID ${thisParentId} not found in result set`);
-    }
-
-    let parentChildren = thisParent[childrenAccessor];
-    if (!parentChildren) {
-      parentChildren = [];
-      setValue(thisParent, childrenAccessor, parentChildren);
-    }
-
-    parentChildren.push(item);
-  }
-}
-
-function setValue(item: any, key: any, value: any) {
-  item[key] = value;
-  if (item instanceof Model) item.dataValues[key] = value;
-}
-
-function deleteValue(item: any, key: any) {
-  delete item[key];
-  if (item instanceof Model) delete item.dataValues[key];
-}
-
-// Replace field names in SQL marked with * with the identifier text quoted.
-// e.g. SELECT *field FROM `Tasks` with identifiers {field: 'name'}
-// -> SELECT `name` FROM `Tasks`
-function replaceFieldNames(sql: any, identifiers: any, model: any) {
-  const { queryInterface } = model.sequelize;
-  for (let identifier in identifiers) {
-    let fieldName: any = identifiers[identifier];
-    // Get table field name for model field
-    fieldName = (model.rawAttributes || model.attributes)[fieldName].field;
-
-    // Replace identifiers
-    sql = sql.replace(
-      new RegExp(`\\*${identifier}(?![a-zA-Z0-9_])`, 'g'),
-      queryInterface.quoteIdentifier(fieldName)
-    );
-  };
-  return sql;
-}
-
-// Replace identifier with model's full table name taking schema into account
-function replaceTableNames(sql: any, identifiers: any, sequelize: any) {
-  const { queryInterface } = sequelize;
-  for (let identifier in identifiers) {
-    let model = identifiers[identifier];
-    const tableName = model.getTableName();
-    sql = sql.replace(
-      new RegExp(`\\*${identifier}(?![a-zA-Z0-9_])`, 'g'),
-      tableName.schema ? tableName.toString() : queryInterface.quoteIdentifier(tableName)
-    );
-  };
-  return sql;
-}
-
-// String format conversion from camelCase or underscored format to human-readable format
-// e.g. 'fooBar' -> 'Foo Bar', 'foo_bar' -> 'Foo Bar'
-function humanize(str: any) {
-  if (str == null || str === '') return '';
-  str = `${str}`.replace(
-    /[-_\s]+(.)?/g,
-    (match, c) => (c ? c.toUpperCase() : '')
-  );
-  return str[0].toUpperCase() + str.slice(1).replace(/([A-Z])/g, ' $1');
 }
 
 // Add transaction and logging from options to query options
@@ -292,9 +126,7 @@ async function beforeCreate(this: any, item: any, options: any) {
 
 async function afterCreate(this: any, item: any, options: any) {
   const model = this,
-    {
-      primaryKey, foreignKey, levelFieldName, rootIdFieldName, through, throughKey, throughForeignKey
-    } = model.hierarchy,
+    { primaryKey, foreignKey, rootIdFieldName } = model.hierarchy,
     values = item.dataValues,
     parentId = valueFilteredByFields(foreignKey, item, options);
 
@@ -308,40 +140,12 @@ async function afterCreate(this: any, item: any, options: any) {
     );
     return;
   }
-
-  // Create row in hierarchy table for parent
-  const itemId = values[primaryKey];
-
-  // Get ancestors
-  let ancestors;
-  if (values[levelFieldName] === 2) {
-    // If parent is at top level - no ancestors
-    ancestors = [];
-  } else {
-    // Get parent's ancestors
-    ancestors = await through.findAll(
-      addOptions({ where: { [throughKey]: parentId }, attributes: [throughForeignKey] }, options)
-    );
-  }
-
-  // Add parent as ancestor
-  ancestors.push({ [throughForeignKey]: parentId });
-
-  // Save ancestors
-  ancestors = ancestors.map((ancestor: any) => ({
-    [throughForeignKey]: ancestor[throughForeignKey],
-    [throughKey]: itemId
-  }));
-
-  await through.bulkCreate(ancestors, addOptions({}, options));
 }
 
 async function beforeUpdate(this: any, item: any, options: any) {
   const model = this,
     { sequelize } = model,
-    {
-      primaryKey, foreignKey, levelFieldName, rootIdFieldName, through, throughKey, throughForeignKey
-    } = model.hierarchy,
+    { primaryKey, foreignKey, levelFieldName, rootIdFieldName } = model.hierarchy,
     values = item.dataValues;
 
   // If parent not being updated, exit
@@ -393,9 +197,22 @@ async function beforeUpdate(this: any, item: any, options: any) {
     if (parent[foreignKey] === itemId) {
       illegal = true;
     } else if (level > oldLevel + 2) {
-      illegal = await through.findOne(
-        addOptions({ where: { [throughKey]: parentId, [throughForeignKey]: itemId } }, options)
+      // New style: check if newParent is descendant of itemId using recursive CTE
+      const result = await sequelize.query(
+        `
+            WITH RECURSIVE descendants AS (
+              SELECT id FROM ${model.getTableName()}
+              WHERE id = :itemId
+              UNION ALL
+              SELECT p.id
+              FROM ${model.getTableName()} p
+              INNER JOIN descendants d ON p."${foreignKey}" = d.id
+            )
+            SELECT COUNT(*) as count FROM descendants WHERE id = :parentId
+          `,
+        addOptions({ replacements: { itemId: itemId, parentId: parentId }, type: 'SELECT' }, options)
       );
+      illegal = (result as any)[0].count > 0;
     }
     if (illegal) throw new HierarchyError('Parent cannot be a descendent of itself');
   }
@@ -407,68 +224,25 @@ async function beforeUpdate(this: any, item: any, options: any) {
 
     // Update hierarchy level for all descendents
     const levelDiff = level - oldLevel;
-    const sql = `
-      UPDATE ${model.getTableName()}
-      SET "${levelFieldName}" = "${levelFieldName}" + $1
-      WHERE id IN (
-        SELECT "${throughKey}"
-        FROM ${through.getTableName()} AS ancestors
-        WHERE ancestors."${throughForeignKey}" = $2
-      )
-    `;
 
-    await sequelize.query(
-      sql,
-      addOptions({ replacements: [levelDiff, itemId] }, options)
-    );
-  }
-
-  // Delete ancestors from hierarchy table for item and all descendents
-  if (oldParentId !== null) {
+    // New style: use recursive CTE to find descendants
     const sql = `
-      DELETE FROM ${through.getTableName()}
-      USING ${through.getTableName()} AS descendents,
-            ${through.getTableName()} AS ancestors
-      WHERE descendents."${throughKey}" = ${through.getTableName()}."${throughKey}"
-        AND ancestors."${throughForeignKey}" = ${through.getTableName()}."${throughForeignKey}"
-        AND ancestors."${throughKey}" = $1
-        AND (
-          descendents."${throughForeignKey}" = $1
-          OR descendents."${throughKey}" = $1
+        WITH RECURSIVE descendants AS (
+          SELECT id FROM ${model.getTableName()}
+          WHERE id = :itemId
+          UNION ALL
+          SELECT p.id
+          FROM ${model.getTableName()} p
+          INNER JOIN descendants d ON p."${foreignKey}" = d.id
         )
-    `;
+        UPDATE ${model.getTableName()}
+        SET "${levelFieldName}" = "${levelFieldName}" + :levelDiff
+        WHERE id IN (SELECT id FROM descendants)
+      `;
 
     await sequelize.query(
       sql,
-      addOptions({ replacements: [itemId] }, options)
-    );
-  }
-
-  // Insert ancestors into hierarchy table for item and all descendents
-  if (parentId !== null) {
-    const sql = `
-      INSERT INTO ${through.getTableName()} ("${throughKey}", "${throughForeignKey}")
-      SELECT descendents."${throughKey}", ancestors."${throughForeignKey}"
-      FROM (
-        SELECT "${throughKey}"
-        FROM ${through.getTableName()}
-        WHERE "${throughForeignKey}" = $1
-        UNION ALL
-        SELECT $1
-      ) AS descendents,
-      (
-        SELECT "${throughForeignKey}"
-        FROM ${through.getTableName()}
-        WHERE "${throughKey}" = $2
-        UNION ALL
-        SELECT $2
-      ) AS ancestors
-      ON CONFLICT DO NOTHING
-    `;
-
-    await sequelize.query(
-      sql,
-      addOptions({ replacements: [itemId, parentId] }, options)
+      addOptions({ replacements: { itemId: itemId, levelDiff: levelDiff } }, options)
     );
   }
 
@@ -480,21 +254,21 @@ async function beforeUpdate(this: any, item: any, options: any) {
     const sql = `
       WITH RECURSIVE descendants AS (
         SELECT id FROM ${model.getTableName()}
-        WHERE id = $1
+        WHERE id = :itemId
         UNION ALL
         SELECT p.id
         FROM ${model.getTableName()} p
         INNER JOIN descendants d ON p."${foreignKey}" = d.id
       )
       UPDATE ${model.getTableName()}
-      SET "${rootIdFieldName}" = $2
+      SET "${rootIdFieldName}" = :newRootId
       WHERE id IN (SELECT id FROM descendants)
         AND "${rootIdFieldName}" IS NOT NULL
     `;
 
     await sequelize.query(
       sql,
-      addOptions({ replacements: [itemId, newRootId] }, options)
+      addOptions({ replacements: { itemId: itemId, newRootId: newRootId } }, options)
     );
   }
 }
@@ -554,7 +328,6 @@ async function beforeBulkUpdate(this: any, options: any) {
 
 export {
   beforeFindAfterExpandIncludeAll,
-  afterFind,
   beforeCreate,
   afterCreate,
   beforeUpdate,

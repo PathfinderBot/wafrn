@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op } from 'sequelize'
+import { Op, QueryTypes } from 'sequelize'
 import {
   Blocks,
   Post,
@@ -36,6 +36,7 @@ import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 import { getFlowProducer, getQueue } from '../utils/queues.js'
+import { filterLanguageCode } from '../utils/languages.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -222,14 +223,7 @@ export default function postsRoutes(app: Application) {
 
       const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
       try {
-        const parent = await Post.findByPk(req.body.parent, {
-          include: [
-            {
-              model: Post,
-              as: 'ancestors'
-            }
-          ]
-        })
+        const parent = await Post.findByPk(req.body.parent)
         if (!parent && req.body.parent) {
           success = false
           res.status(500)
@@ -247,9 +241,18 @@ export default function postsRoutes(app: Application) {
                 message: 'You need to enable bluesky'
               })
             } else {
+              const sqlQuery = `
+  WITH RECURSIVE ancestors AS (
+    SELECT id FROM posts WHERE id = '${parent.id}'
+    UNION ALL
+    SELECT p.id FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
+  `
               // we do same check for all parents
               const ancestorIdsQuery = await sequelize.query(
-                `SELECT "ancestorId" FROM "postsancestors" where "postsId" = '${parent.id}'`
+                sqlQuery
               )
               const ancestorIds: string[] = ancestorIdsQuery[0].map((elem: any) => elem.ancestorId)
               if (ancestorIds.length > 0) {
@@ -294,26 +297,40 @@ export default function postsRoutes(app: Application) {
         // we check that the user is not reblogging a post by someone who blocked them or the other way arround
         if (parent) {
           // we check to add user mention if bsky id
-          const ancestors = await parent.getAncestors({
-            attributes: ['userId'],
-            where: {
-              bskyUri: {
-                [Op.ne]: null
+          const ancestors = await sequelize.query(
+            `
+  WITH RECURSIVE ancestors AS (
+    SELECT id, "parentId", "hierarchyLevel", "userId", "bskyUri"
+    FROM posts
+    WHERE id = :parentId
+    UNION ALL
+    SELECT p.id, p."parentId", p."hierarchyLevel", p."userId", p."bskyUri"
+    FROM posts p
+    INNER JOIN ancestors a ON p.id = a."parentId"
+  )
+  SELECT "userId"
+  FROM ancestors
+  WHERE "bskyUri" IS NOT NULL
+    AND "hierarchyLevel" > :minLevel
+  ORDER BY "hierarchyLevel" DESC
+  `,
+            {
+              replacements: {
+                parentId: parent.id,
+                minLevel: parent.hierarchyLevel - 3
               },
-              hierarchyLevel: {
-                [Op.gt]: parent.hierarchyLevel - 3
-              }
+              type: QueryTypes.SELECT
             }
-          })
+          )
 
           if (req.body.content != '') {
-            mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem) => elem.userId))
+            mentionsToAdd = mentionsToAdd.concat(ancestors.map((elem: any) => elem.userId))
             if (parent.bskyUri && parent.userId != posterId) {
               mentionsToAdd.push(parent.userId)
             }
           }
 
-          const postParentsUsers: string[] = parent.ancestors.map((elem: any) => elem.userId)
+          const postParentsUsers: string[] = (await parent.getAncestors()).map((elem: any) => elem.userId)
           postParentsUsers.push(parent.userId)
 
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
@@ -542,6 +559,7 @@ export default function postsRoutes(app: Application) {
           post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
           post.privacy = bodyPrivacy
+          post.language = filterLanguageCode(req.body.language)
           await post.save()
         } else {
           if (req.body.parent) {
@@ -576,7 +594,9 @@ export default function postsRoutes(app: Application) {
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          const initialPost = parent ? (parent.hierarchyLevel === 1 ? parent : (await parent.getAncestors({ where: { hierarchyLevel: 1 } }))[0]) : undefined
+          const initialPost = parent ? (
+            await Post.findByPk(parent.rootId as string)
+          ) : undefined
           if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }
@@ -592,8 +612,8 @@ export default function postsRoutes(app: Application) {
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
             likeControl: req.body.canLike || InteractionControl.Anyone,
             isReply: parent ? (parent.isReply || parent.userId != posterId) : false,
-            isBskyExclusive: parent ? parent.isBskyExclusive : false
-
+            isBskyExclusive: parent ? parent.isBskyExclusive : false,
+            language: filterLanguageCode(req.body.language),
           })
         }
 

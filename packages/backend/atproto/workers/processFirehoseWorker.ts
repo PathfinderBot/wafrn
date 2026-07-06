@@ -315,7 +315,9 @@ async function processFirehose(job: Job) {
                     reblogsToDelete.forEach(async (elem) => {
                       await redisCache.del('postAndUser:' + elem)
                     })
-                    await Post.destroy({
+                    await Post.update({
+                      isDeleted: true
+                    }, {
                       where: {
                         id: {
                           [Op.in]: reblogsToDelete
@@ -355,7 +357,8 @@ async function processFirehose(job: Job) {
                 }
               })
               if (post) {
-                await post.destroy()
+                post.isDeleted = true
+                await post.save();
               }
               break
             }

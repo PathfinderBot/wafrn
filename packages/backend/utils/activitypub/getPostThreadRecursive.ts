@@ -32,6 +32,7 @@ import escapeHTML from 'escape-html'
 import { canInteract } from '../baseQueryNew.js'
 import { getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
 import { getQueue } from '../queues.js'
+import { filterLanguageCode } from '../languages.js'
 
 const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
@@ -53,18 +54,6 @@ const mergeBskyPostRelatedRecordsSql = `
     UPDATE "postReports"
     SET "postId" = :remotePostId, "updatedAt" = NOW()
     WHERE "postId" = :existingPostId
-    RETURNING 1
-  ),
-  updated_post_ancestors AS (
-    UPDATE "postsancestors" AS ancestors
-    SET "postsId" = :remotePostId
-    WHERE ancestors."postsId" = :existingPostId
-      AND NOT EXISTS (
-        SELECT 1
-        FROM "postsancestors" AS existing_ancestors
-        WHERE existing_ancestors."postsId" = :remotePostId
-          AND existing_ancestors."ancestorId" = ancestors."ancestorId"
-      )
     RETURNING 1
   ),
   updated_question_polls AS (
@@ -446,22 +435,16 @@ async function getPostThreadRecursive(
         } else if (parent) {
           // we check if op has property forceDescendentsToUseSameInteractionControls
           const opId = (
-            parent.hierarchyLevel === 1
-              ? parent
-              : ((
-                await parent.getAncestors({
-                  where: {
-                    hierarchyLevel: 1
-                  }
-                })
-              )[0] as Post)
+            (await Post.findByPk(parent.rootId as string)) as Post
           ).remotePostId
           const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
           if (opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
             replyControl.replyControl = InteractionControl.SameAsOp
           }
         }
-        let postTextContent = `${postPetition.content ? postPetition.content : ''}` // Fix for bridgy giving this as undefined
+
+        let { postTextContent, postLanguage } = processContentAndLanguage(postPetition)
+
         if (invisibleMentionsToRemove && postTextContent.startsWith(invisibleMentionsToRemove.name)) {
           postTextContent = postTextContent.substring(invisibleMentionsToRemove.name.length)
         }
@@ -638,7 +621,8 @@ async function getPostThreadRecursive(
               bskyUri
             }
             : {}),
-          ...replyControl
+          ...replyControl,
+          language: postLanguage,
         }
 
         if (postPetition.name) {
@@ -1022,6 +1006,39 @@ async function processEmojis(post: any, fediEmojis: any[]) {
   }
 
   return await post.setEmojis(emojis)
+}
+
+/**
+ * Checks if activity object contains `contentMap`.
+ * 
+ * Returns the content and language from the `contentMap` if
+ *   - there's only one language property
+ *   - language is present in utils/languages.ts
+ * @param postPetition 
+ * @returns content and language code
+ */
+function processContentAndLanguage(postPetition: any): { postTextContent: string, postLanguage: string | undefined } {
+  const contentMap = postPetition.contentMap
+
+  if (typeof contentMap == 'object') {
+    const keys = Object.keys(contentMap)
+
+    if (keys.length == 1) {
+      const language = filterLanguageCode(keys[0])
+
+      if (language) {
+        return {
+          postTextContent: postPetition.contentMap[keys[0]] || '',
+          postLanguage: language,
+        }
+      }
+    }
+  }
+
+  return {
+    postTextContent: postPetition.content || '',
+    postLanguage: undefined,
+  }
 }
 
 export { getPostThreadRecursive }
