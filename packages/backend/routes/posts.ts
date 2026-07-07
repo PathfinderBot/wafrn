@@ -242,13 +242,14 @@ export default function postsRoutes(app: Application) {
               })
             } else {
               const sqlQuery = `
-  WITH RECURSIVE ancestors AS (
-    SELECT id FROM posts WHERE id = '${parent.id}'
-    UNION ALL
-    SELECT p.id FROM posts p
-    INNER JOIN ancestors a ON p.id = a."parentId"
-  )
-  SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
+WITH RECURSIVE ancestors AS (
+  SELECT id, "parentId" FROM posts WHERE id = '${parent.id}'
+  UNION ALL
+  SELECT p.id, p."parentId"
+  FROM posts p
+  INNER JOIN ancestors a ON p.id = a."parentId"
+)
+SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
   `
               // we do same check for all parents
               const ancestorIdsQuery = await sequelize.query(
