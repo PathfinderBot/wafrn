@@ -88,3 +88,10 @@ HAVING COUNT(*) > 1))`
   );
   return true;
 }
+
+await queryInterface.sequelize.query(`
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_posts_content_trgm_privacy
+ON public.posts
+USING gin (content gin_trgm_ops)
+WHERE privacy IN (0, 2);
+`)
