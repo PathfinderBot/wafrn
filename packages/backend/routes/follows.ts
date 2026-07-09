@@ -36,32 +36,27 @@ export default function followsRoutes(app: Application) {
           })
         }
       }
+      let bskyFollowResult
       // bsky user
-      if (userToBeFollowed && userToBeFollowed.isBlueskyUser && !userToBeFollowed.remoteId) {
+      if (userToBeFollowed && userToBeFollowed.isBlueskyUser) {
         const localUser = await User.findByPk(posterId)
         if (localUser?.enableBsky && localUser?.bskyDid) {
-          // follow on bsk
+          // follow on bsky
           const agent = await getAtProtoSession(localUser)
           const followResult = (await agent.follow(userToBeFollowed.bskyDid as string)) as any
           if (followResult.validationStatus == 'valid') {
-            await follow(posterId, req.body.userId, res, followResult)
+            bskyFollowResult = followResult
             await forceUpdateCacheDidsAtThread({
               addFollowedDid: userToBeFollowed.bskyDid as string,
             })
-            return res.send({ success: true })
           } else {
             return res.sendStatus(500)
           }
-        } else {
-          return res.status(400).send({
-            error: true,
-            message: 'You are trying to follow a bsky user. You need to enable bluesky on your profile settings'
-          })
         }
       }
 
       if (req.body?.userId && posterId) {
-        success = await follow(posterId, req.body.userId, res)
+        success = await follow(posterId, req.body.userId, res, bskyFollowResult)
       }
     } catch (error) {
       logger.error(error)
