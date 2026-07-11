@@ -1,14 +1,7 @@
 import { Job } from 'bullmq'
 import {
-  Blocks,
-  EmojiReaction,
   FederatedHost,
-  Follows,
-  Mutes,
-  Post,
-  PostMentionsUserRelation,
   User,
-  UserLikesPostRelations,
   UserOptions,
   sequelize
 } from '../../models/index.js'
@@ -154,111 +147,14 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
               existingUser.remoteId = `${existingUser.remoteId}_OVERWRITTEN_ON${new Date().getTime()}`
               existingUser.url = `${existingUser.url}_OVERWRITTEN_ON${new Date().getTime()}`
               await existingUser.save()
+
               if (userRes) {
-                const updates = [
-                  Follows.update(
-                    {
-                      followerId: userRes.id
-                    },
-                    {
-                      where: {
-                        followerId: existingUser.id
-                      }
-                    }
-                  ),
-                  Follows.update(
-                    {
-                      followedId: userRes.id
-                    },
-                    {
-                      where: {
-                        followedId: existingUser.id
-                      }
-                    }
-                  ),
-                  Post.update(
-                    {
-                      userId: userRes.id
-                    },
-                    {
-                      where: {
-                        userId: existingUser.id
-                      }
-                    }
-                  ),
-                  UserLikesPostRelations.update(
-                    {
-                      userId: userRes.id
-                    },
-                    {
-                      where: {
-                        userId: existingUser.id
-                      }
-                    }
-                  ),
-                  EmojiReaction.update(
-                    {
-                      userId: userRes.id
-                    },
-                    {
-                      where: {
-                        userId: existingUser.id
-                      }
-                    }
-                  ),
-                  Blocks.update(
-                    {
-                      blockedId: userRes.id
-                    },
-                    {
-                      where: {
-                        blockedId: existingUser.id
-                      }
-                    }
-                  ),
-                  Blocks.update(
-                    {
-                      blockerId: userRes.id
-                    },
-                    {
-                      where: {
-                        blockerId: existingUser.id
-                      }
-                    }
-                  ),
-                  Mutes.update(
-                    {
-                      muterId: userRes.id
-                    },
-                    {
-                      where: {
-                        muterId: existingUser.id
-                      }
-                    }
-                  ),
-                  Mutes.update(
-                    {
-                      mutedId: userRes.id
-                    },
-                    {
-                      where: {
-                        mutedId: existingUser.id
-                      }
-                    }
-                  ),
-                  PostMentionsUserRelation.update(
-                    {
-                      userId: userRes.id
-                    },
-                    {
-                      where: {
-                        userId: existingUser.id
-                      }
-                    }
-                  )
-                ]
-                await Promise.all(updates)
+                await mergeUsersQueue.add('mergeUsers', {
+                  primaryUserId: userRes.id,
+                  userToMergeId: existingUser.id
+                })
               }
+
               await redisCache.del('userRemoteId:' + existingUser.remoteId)
             }
             if (userRes) {
