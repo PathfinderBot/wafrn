@@ -14,7 +14,7 @@ import RichtextBuilder from "@atcute/bluesky-richtext-builder";
 import { Main } from "@atproto/api/dist/client/types/app/bsky/richtext/facet.js";
 import { tokenize } from "@atcute/bluesky-richtext-parser";
 import { removeMarkdown } from "./removeMarkdown.js";
-import optimizeMedia from "../../utils/optimizeMedia.js";
+import optimizeMedia, { createThumbnail } from "../../utils/optimizeMedia.js";
 import dompurify from "isomorphic-dompurify";
 import ffmpeg from "fluent-ffmpeg";
 import { completeEnvironment } from "../../utils/backendOptions.js";
@@ -54,6 +54,20 @@ function getUserName(user?: { url: string }): string {
     res = user.url;
   }
   return res;
+}
+
+async function uploadExternalThumb(
+  agent: BskyAgent,
+  imageUrl: string,
+  baseUrl: string
+) {
+  const absoluteImageUrl = new URL(imageUrl, baseUrl).toString();
+  const previewImage = await createThumbnail(absoluteImageUrl);
+
+  const { data } = await agent.uploadBlob(previewImage, {
+    encoding: "image/jpeg",
+  });
+  return data.blob;
 }
 
 async function postToAtproto(post: Post, agent: BskyAgent) {
@@ -254,7 +268,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       shasum.update(token.url.toLowerCase());
       const urlHash = shasum.digest("hex");
       let linkPreview:
-        | { url: string; title: string; description: string }
+        | { url: string; title: string; description: string; images?: string[] }
         | undefined = JSON.parse(
           (await redisCache.get("linkPreviewCache:" + urlHash)) ?? "{}"
         );
@@ -264,7 +278,12 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
             followRedirects: "follow",
             headers: { "User-Agent": getUserAgent('LinkPreview') },
           })) as
-            | { url: string; title: string; description: string }
+            | {
+              url: string;
+              title: string;
+              description: string;
+              images?: string[];
+            }
             | undefined;
           await redisCache.set(
             "linkPreviewCache:" + urlHash,
@@ -291,6 +310,22 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
               `from ${new URL(linkPreview.url).hostname}`,
           },
         };
+        // lets try adding an embed for link preview
+        try {
+          if (linkPreview.images && linkPreview.images[0]) {
+            const previewImageUrl = linkPreview.images[0];
+            res.embed.external.thumb = await uploadExternalThumb(
+              agent,
+              previewImageUrl,
+              linkPreview.url
+            );
+          }
+        } catch (error) {
+          logger.info({
+            message: `Error while obtaining link preview for ${token.url}`,
+            error: error,
+          });
+        }
       }
     } else builder.addText(token.raw);
   }
@@ -330,16 +365,16 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   const fullText = processedContent ?? post.content;
   if (rt.facets) {
     rt.facets = rt.facets.filter((facet) => {
-      res = true;
+      let internalRes = true;
       if (
         facet.features[0] &&
         (facet.features[0]["$type"] as string) ==
         "app.bsky.richtext.facet#mention"
       ) {
-        let didOfMention = (facet.features[0] as any)["did"];
-        res = !!didOfMention;
+        const didOfMention = (facet.features[0] as any)["did"];
+        internalRes = !!didOfMention;
       }
-      return res;
+      return internalRes;
     });
   }
   res = {
