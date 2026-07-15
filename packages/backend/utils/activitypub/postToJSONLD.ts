@@ -45,6 +45,9 @@ async function postToJSONLD(
   if (!post) {
     return undefined;
   }
+  if (post.isBskyExclusive) {
+    return undefined;
+  }
   const localUser = post.user;
   let userAsker = undefined;
   const ask = post.ask;
