@@ -4,7 +4,7 @@ import { RawPost } from "../interfaces/raw-post";
 import { MediaService } from "./media.service";
 import { HttpClient } from "@angular/common/http";
 import sanitizeHtml from "sanitize-html";
-import { BehaviorSubject, firstValueFrom, lastValueFrom } from "rxjs";
+import { BehaviorSubject, firstValueFrom, lastValueFrom, Subject } from "rxjs";
 import { JwtService } from "./jwt.service";
 import {
   basicPost,
@@ -39,27 +39,13 @@ export class PostsService {
     /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g;
   public updateFollowers: BehaviorSubject<boolean> =
     new BehaviorSubject<boolean>(false);
-  public postLiked: BehaviorSubject<{ id: string; like: boolean }> =
-    new BehaviorSubject<{ id: string; like: boolean }>({
-      id: "undefined",
-      like: false,
-    });
+  public postLiked = new Subject<{ id: string; like: boolean }>();
 
-  public emojiReacted = new BehaviorSubject<{
+  public emojiReacted = new Subject<{
     postId: string;
     emoji: Emoji;
     type: "react" | "undo_react";
-  }>({
-    postId: "",
-    emoji: {
-      id: "",
-      url: "",
-      name: "",
-      external: false,
-      uuid: "",
-    },
-    type: "react",
-  });
+  }>();
 
   public rewootedPosts = signal(new Set<string>(), { equal: () => false });
 
@@ -243,10 +229,12 @@ export class PostsService {
           })
       }
     }
-    this.postLiked.next({
-      id: id,
-      like: true,
-    });
+    if (res) {
+      this.postLiked.next({
+        id: id,
+        like: true,
+      });
+    }
     return res;
   }
 
@@ -267,10 +255,12 @@ export class PostsService {
     } catch (exception) {
       console.error(exception);
     }
-    this.postLiked.next({
-      id: id,
-      like: false,
-    });
+    if (res) {
+      this.postLiked.next({
+        id: id,
+        like: false,
+      });
+    }
     return res;
   }
 
@@ -337,19 +327,23 @@ export class PostsService {
     } catch (exception) {
       console.error(exception);
     }
-    let allEmojis: Emoji[] = [];
-    this.emojiCollections.forEach(
-      (col) => (allEmojis = allEmojis.concat(col.emojis))
-    );
-    const emoji = allEmojis.find(
-      (elem) => elem.name === emojiName || elem.id === emojiName
-    ) as Emoji;
-    const emojiIsUnicode = emoji.url.length === 0;
-    this.emojiReacted.next({
-      type: undo ? "undo_react" : "react",
-      postId: postId,
-      emoji: emojiIsUnicode ? this.convertUnicodeEmoji(emoji) : emoji,
-    });
+    if (res) {
+      let allEmojis: Emoji[] = [];
+      this.emojiCollections.forEach(
+        (col) => (allEmojis = allEmojis.concat(col.emojis))
+      );
+      const emoji = allEmojis.find(
+        (elem) => elem.name === emojiName || elem.id === emojiName
+      ) as Emoji | undefined;
+      if (emoji) {
+        const emojiIsUnicode = emoji.url.length === 0;
+        this.emojiReacted.next({
+          type: undo ? "undo_react" : "react",
+          postId: postId,
+          emoji: emojiIsUnicode ? this.convertUnicodeEmoji(emoji) : emoji,
+        });
+      }
+    }
 
     return res;
   }

@@ -304,7 +304,12 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
 
       // at this point the current reaction is always defined on the map
       // so we can always access it to increment the users array
-      if (reaction.user !== undefined) {
+      if (
+        reaction.user !== undefined &&
+        !emojiReactions[reaction.content].users.some(
+          (user) => user.id === reaction.user?.id
+        )
+      ) {
         emojiReactions[reaction.content].users.push(reaction.user);
       }
     });
@@ -339,13 +344,21 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
 
   renderLikeDislike({ like }: { id: string; like: boolean }) {
     if (like) {
-      this.fragment().emojiReactions.push({
-        content: "♥️",
-        emojiId: "Like",
-        postId: this.fragment().id,
-        user: this.createUserObject(),
-        userId: this.userId,
-      });
+      const alreadyLiked = this.fragment().emojiReactions.some(
+        (reaction) =>
+          reaction.userId === this.userId &&
+          reaction.emojiId === "Like" &&
+          this.isLike(reaction.content)
+      );
+      if (!alreadyLiked) {
+        this.fragment().emojiReactions.push({
+          content: "♥️",
+          emojiId: "Like",
+          postId: this.fragment().id,
+          user: this.createUserObject(),
+          userId: this.userId,
+        });
+      }
     } else {
       // Remove it from the fragment
       this.fragment().emojiReactions = this.fragment().emojiReactions.filter(
@@ -370,14 +383,21 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
     );
     const collection = this.emojiCollection()[collectionIndex];
     if (type === "react") {
-      this.fragment().emojiReactions.push({
-        emojiId: emoji.id,
-        emoji: emoji,
-        userId: this.loginService.getLoggedUserUUID(),
-        postId: this.fragment().id,
-        content: emoji.name,
-        user: this.createUserObject(),
-      });
+      const alreadyReacted = this.fragment().emojiReactions.some(
+        (reaction) =>
+          reaction.userId === this.userId &&
+          reaction.content === emoji.name
+      );
+      if (!alreadyReacted) {
+        this.fragment().emojiReactions.push({
+          emojiId: emoji.id,
+          emoji: emoji,
+          userId: this.userId,
+          postId: this.fragment().id,
+          content: emoji.name,
+          user: this.createUserObject(),
+        });
+      }
     } else {
       if (collection) {
         if (collection.users.length === 1) {
@@ -393,7 +413,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
       // Remove it from the fragment
       this.fragment().emojiReactions = this.fragment().emojiReactions.filter(
         (e) => {
-          return !(e.emojiId === emoji.id && e.userId === this.userId);
+          return !(e.content === emoji.name && e.userId === this.userId);
         }
       );
     }
