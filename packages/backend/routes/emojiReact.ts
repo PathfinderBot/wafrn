@@ -58,17 +58,24 @@ export default function emojiReactRoutes(app: Application) {
             };
       if (emoji) {
         try {
+          const reactionContent = emoji.name ? emoji.name : emojiName;
           const existing = EmojiReaction.findOne({
             where: {
               userId: userId,
               postId: postId,
-              emojiId: emoji.id,
+              content: reactionContent,
             },
           });
           await Promise.all([userPromise, postPromise, emoji, existing]);
           let user = await userPromise;
           let post = await postPromise;
-          if (userId && user && post && !(await existing)) {
+          if (await existing) {
+            return res.status(400).send({
+              success: false,
+              message: `you already reacted with ${emojiName} to this post`,
+            });
+          }
+          if (userId && user && post) {
             const options = await getUserOptions(user.id);
             const userFederatesWithThreads = options.filter(
               (elem) =>
@@ -90,7 +97,7 @@ export default function emojiReactRoutes(app: Application) {
               userId: userId,
               postId: postId,
               emojiId: emoji.name ? emoji.name : undefined,
-              content: emoji.name ? emoji.name : emojiName,
+              content: reactionContent,
             });
             await reaction.save();
             await createNotification(
@@ -111,9 +118,6 @@ export default function emojiReactRoutes(app: Application) {
             );
             success = true;
             emojiReactRemote(reaction);
-          }
-          if (await existing) {
-            success = true;
           }
         } catch (error) {
           logger.debug(error);
