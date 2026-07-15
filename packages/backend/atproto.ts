@@ -9,6 +9,7 @@ import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_D
 import { forcePopulateCache } from "./atproto/cache/forcePopulateCache.js";
 import { getQueue } from "./utils/queues.js";
 import { wait } from "./utils/wait.js";
+import { getAtprotoUser } from "./atproto/utils/getAtprotoUser.js";
 
 //const firehose = new Firehose(`wss://bolson.bsky.dev`);
 
@@ -82,6 +83,14 @@ jetstream.on("commit", async (event) => {
     } else {
       await firehoseQueue.add("processFirehoseQueue", data);
     }
+  }
+});
+
+// with this we may be able to detect users moving off servers
+jetstream.on("identity", async (event) => {
+  const didToUpdate = event.identity.did
+  if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, didToUpdate)) {
+    await getAtprotoUser(didToUpdate, { ignoreCache: true })
   }
 });
 
