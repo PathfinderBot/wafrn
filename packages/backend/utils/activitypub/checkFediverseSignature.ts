@@ -57,10 +57,10 @@ function getCheckFediverseSignatureFunction(force = false) {
         remoteUserUrl = sigHead.keyId.split("/main-key")[0];
       }
       hostUrl = new URL(remoteUserUrl).host;
-      
+
       // Check for WafrnObtainBskyPost header
       const allowBskyPost = req.header("WafrnObtainBskyPost") === "True";
-      
+
       let bannedHostInCache: string | null | undefined = await redisCache.get(
         "server:" + hostUrl
       );
@@ -231,7 +231,7 @@ function getCheckFediverseSignatureFunction(force = false) {
         specialWafrnAllowBskyPostFlag: allowBskyPost,
       };
     } catch (error: any) {
-      req.fediData = { fediHost: hostUrl, valid: false, specialWafrnAllowBskyPostFlag: allowBskyPost };
+      req.fediData = { fediHost: hostUrl, valid: false };
       await getRemoteActor(remoteUserUrl, (adminUser) as User, true);
       if (force) {
         success = false;
