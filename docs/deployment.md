@@ -231,7 +231,7 @@ at.YOURINSTANCENAME, *.at.YOURINSTANCENAME {
 
 Then, you need to proxy it
 
-### Wafrn with just 2gb of ram. And swap
+### Wafrn with just 2gb of ram. And swap
 
 Add swap. 4 or 8 GB just in case. Minimum real recomended is 4gb of ram, as its what gabboman.xyz is bein ran on
 
