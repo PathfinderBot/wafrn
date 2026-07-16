@@ -17,6 +17,11 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
     const cachePost = await getPostAndUserFromPostId(req.params.id)
     const post = cachePost.data
     if (post) {
+      // this can leak some posts to fedi but also without it we will get posts with duplicated users (user.at.instance and user@instance)
+      // if (post.isBskyExclusive) {
+      //  res.sendStatus(404)
+      //  return
+      // }
       // we get remote user async-ly
       const fediData = req.fediData as {
         fediHost: string

@@ -144,7 +144,7 @@ async function getPostAndUserFromPostId(
       });
       Promise.all([likes, shares, reacts]);
 
-      res = { found: true, data: dbQuery.dataValues };
+      res = { found: true, data: { ...dbQuery.dataValues, isBskyExclusive: (await Post.findByPk(dbQuery.dataValues.id) as Post).isBskyExclusive } };
       if (res.data.ask) {
         const userAsker = await User.findByPk(res.data.ask.userAsker);
         res.data.ask.asker = userAsker;

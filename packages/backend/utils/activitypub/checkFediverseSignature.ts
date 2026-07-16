@@ -57,6 +57,10 @@ function getCheckFediverseSignatureFunction(force = false) {
         remoteUserUrl = sigHead.keyId.split("/main-key")[0];
       }
       hostUrl = new URL(remoteUserUrl).host;
+      
+      // Check for WafrnObtainBskyPost header
+      const allowBskyPost = req.header("WafrnObtainBskyPost") === "True";
+      
       let bannedHostInCache: string | null | undefined = await redisCache.get(
         "server:" + hostUrl
       );
@@ -87,6 +91,7 @@ function getCheckFediverseSignatureFunction(force = false) {
         fediHost: hostUrl,
         remoteUserUrl: remoteUserUrl,
         valid: false,
+        specialWafrnAllowBskyPostFlag: allowBskyPost,
       };
       let remoteKeyData = await getKey(remoteUserUrl, adminUser);
       let remoteKey;
@@ -111,6 +116,7 @@ function getCheckFediverseSignatureFunction(force = false) {
                 req.body.type == "Delete" &&
                 req.body.actor == req.body.object &&
                 req.body.actor == remoteUserUrl),
+            specialWafrnAllowBskyPostFlag: allowBskyPost,
           };
           next();
           return;
@@ -222,9 +228,10 @@ function getCheckFediverseSignatureFunction(force = false) {
         fediHost: hostUrl,
         remoteUserUrl: remoteUserUrl,
         valid: success,
+        specialWafrnAllowBskyPostFlag: allowBskyPost,
       };
     } catch (error: any) {
-      req.fediData = { fediHost: hostUrl, valid: false };
+      req.fediData = { fediHost: hostUrl, valid: false, specialWafrnAllowBskyPostFlag: allowBskyPost };
       await getRemoteActor(remoteUserUrl, (adminUser) as User, true);
       if (force) {
         success = false;
