@@ -209,7 +209,7 @@ This will make wafrn listen in the port 8080 without forcing https. And the pds 
 
 We recommend caddy for HTTPS reasons. If you are going to use any other software, base yourself in this config and if you get it working, please add a PR expanding on this config!
 
-````
+```
 {
     on_demand_tls {
         ask http://localhost:3000/tls-check
@@ -230,7 +230,6 @@ at.YOURINSTANCENAME, *.at.YOURINSTANCENAME {
 ```
 
 Then, you need to proxy it
-
 
 ### Wafrn with just 2gb of ram. And swap
 
@@ -261,4 +260,3 @@ Bluesky pds worker is run in a separate thread. You can stop that service too bu
 - Forced to use their moderation. If they ban an account is banned for you too.
 
 Just do ```docker compose stop pds_worker``` each time after updates. This will reduce ram usage in 200 or 300mb. You can also have bluesky totaly disabled. I mean that is ok.
-
