@@ -10,8 +10,20 @@ import { getQueue } from "../../utils/queues.js";
 import { getServerFromDid } from "../../utils/atproto/getServerFromDid.js";
 import { resolveHandle } from "../../utils/atproto/resolveHandleToDid.js";
 import getUserAgent from "../../utils/getUserAgent.js";
+import { redisCache } from "../../utils/redis.js";
 
 const mergeUsersQueue = getQueue("mergeUsers");
+
+async function unlinkStaleFediverseIdentity(user: User) {
+  const remoteId = user.remoteId
+  if (!remoteId) {
+    return
+  }
+
+  user.remoteId = null
+  await user.save()
+  await redisCache.del('userRemoteId:' + remoteId.toLocaleLowerCase())
+}
 
 async function clearStaleBskyIdentity(user: User) {
   const did = user.bskyDid
@@ -191,8 +203,15 @@ async function getAtprotoUser(
       ? userFound
       : await internalGetDBUser(newDataTmp.bskyDid, newDataTmp.url);
     // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
-    if (userFound?.email || (userFound?.remoteId && !userFound.isBskyPrimary)) {
+    if (userFound?.email) {
       return (await User.findByPk(userFound.id)) as User;
+    }
+    if (userFound?.remoteId && !userFound.isBskyPrimary) {
+      const knownFediverseIds = doc?.alsoKnownAs?.filter((elem) => elem.startsWith('http')) ?? []
+      if (knownFediverseIds.includes(userFound.remoteId)) {
+        return (await User.findByPk(userFound.id)) as User;
+      }
+      await unlinkStaleFediverseIdentity(userFound)
     }
     if (userFound && !userFound.email) {
       // we check just in case that user with url does not exist:

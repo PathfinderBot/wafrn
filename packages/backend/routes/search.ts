@@ -1,5 +1,5 @@
 import { Application, Response } from 'express'
-import { Op } from 'sequelize'
+import { Op, QueryTypes } from 'sequelize'
 import { Emoji, Post, PostTag, User, UserEmojiRelation } from '../models/index.js'
 import { sequelize } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
@@ -309,88 +309,108 @@ export default function searchRoutes(app: Application) {
       userId?: string
     }
   ): Promise<string[]> {
-    let res: string[] = []
+    const perPage = completeEnvironment.postsPerPage
+    const privacyFilter = [Privacy.Public, Privacy.LocalOnly]
+    const userFilterSql = options?.userId ? 'AND "post"."userId" = :filterUserId' : ''
+
+    // --- Count exact matches (capped at 5000 so this stays cheap) ---
     const totalPostExactMatchQuery: any = await sequelize.query(
-      `SELECT
-        count(*) AS "count"
-      FROM
-        (
-          SELECT 1
-          FROM "postTags" AS "postTags"
-          INNER JOIN "posts" AS "post"
-            ON "postTags"."postId" = "post"."id"
-            AND "post"."privacy" IN (0, 2)
-            ${options?.userId ? 'AND "post"."userId" = \'' + options.userId + "'" : ''}
-          WHERE "postTags"."tagName" ILIKE ':searchParam' limit 5000
-        );`,
+      `SELECT count(*) AS "count"
+     FROM (
+       SELECT 1
+       FROM "postTags" AS "postTags"
+       INNER JOIN "posts" AS "post"
+         ON "postTags"."postId" = "post"."id"
+         AND "post"."privacy" IN (:privacy)
+         ${userFilterSql}
+       WHERE lower("postTags"."tagName") = lower(:searchParam)
+       LIMIT 5000
+     ) sub;`,
       {
         replacements: {
-          searchParam: searchTerm
-        }
+          searchParam: searchTerm,
+          privacy: privacyFilter,
+          ...(options?.userId ? { filterUserId: options.userId } : {})
+        },
+        type: QueryTypes.SELECT
       }
     )
-    const totalPostExactMatch = totalPostExactMatchQuery[0][0].count
-    let completeMatch: Promise<PostTag[]> | PostTag[] | null = null
-    let looseMatch: Promise<PostTag[]> | PostTag[] | null = null
+    const totalPostExactMatch = Number(totalPostExactMatchQuery[0].count)
 
-    let postsWhereObject: any = {
-      privacy: { [Op.in]: [Privacy.Public, Privacy.LocalOnly] }
+    let completeMatch: Promise<any[]> | any[] | null = null
+    let looseMatch: Promise<any[]> | any[] | null = null
+
+    // --- Exact tag matches ---
+    if (totalPostExactMatch >= page * perPage || totalPostExactMatch === 5000) {
+      completeMatch = sequelize.query(
+        `WITH matched AS (
+         SELECT "id", "postId", "createdAt"
+         FROM "postTags"
+         WHERE lower("tagName") = lower(:searchParam)
+         OFFSET 0
+       )
+       SELECT matched."postId"
+       FROM matched
+       INNER JOIN "posts" AS post
+         ON matched."postId" = post."id"
+         AND post."privacy" IN (:privacy)
+         ${userFilterSql}
+       ORDER BY matched."createdAt" DESC
+       LIMIT :limit OFFSET :offset;`,
+        {
+          replacements: {
+            searchParam: searchTerm,
+            privacy: privacyFilter,
+            limit: perPage,
+            offset: page * perPage,
+            ...(options?.userId ? { filterUserId: options.userId } : {})
+          },
+          type: QueryTypes.SELECT
+        }
+      )
     }
-    if (options?.userId) {
-      postsWhereObject = { ...postsWhereObject, userId: options.userId }
-    }
-    if (totalPostExactMatch >= page * completeEnvironment.postsPerPage || totalPostExactMatch == 10000) {
-      completeMatch = PostTag.findAll({
-        where: {
-          tagName: {
-            [Op.iLike]: searchTerm
-          }
-        },
-        include: [
-          {
-            model: Post,
-            required: true,
-            attributes: ['id', 'userId', 'privacy'],
-            where: postsWhereObject
-          }
-        ],
-        attributes: ['postId'],
-        order: [['createdAt', 'DESC']],
-        limit: completeEnvironment.postsPerPage,
-        offset: page * completeEnvironment.postsPerPage
-      })
-    }
-    const looseSearchPage = page - Math.floor(totalPostExactMatch / completeEnvironment.postsPerPage)
+
+    // --- Loose (substring) tag matches, excluding exact matches already covered above ---
+    const looseSearchPage = page - Math.floor(totalPostExactMatch / perPage)
     if (looseSearchPage >= 0) {
-      looseMatch = PostTag.findAll({
-        where: {
-          tagName: {
-            [Op.iLike]: '%' + searchTerm + '%',
-            [Op.notILike]: searchTerm
-          }
-        },
-        include: [
-          {
-            model: Post,
-            required: true,
-            attributes: ['id', 'userId', 'privacy'],
-            where: postsWhereObject
-          }
-        ],
-        attributes: ['postId'],
-        order: [['createdAt', 'DESC']],
-        limit: completeEnvironment.postsPerPage,
-        offset: looseSearchPage * completeEnvironment.postsPerPage
-      })
+      looseMatch = sequelize.query(
+        `WITH matched AS (
+         SELECT "id", "postId", "createdAt"
+         FROM "postTags"
+         WHERE "tagName" ILIKE :loosePattern
+           AND "tagName" NOT ILIKE :searchParam
+         OFFSET 0
+       )
+       SELECT matched."postId"
+       FROM matched
+       INNER JOIN "posts" AS post
+         ON matched."postId" = post."id"
+         AND post."privacy" IN (:privacy)
+         ${userFilterSql}
+       ORDER BY matched."createdAt" DESC
+       LIMIT :limit OFFSET :offset;`,
+        {
+          replacements: {
+            loosePattern: `%${searchTerm}%`,
+            searchParam: searchTerm,
+            privacy: privacyFilter,
+            limit: perPage,
+            offset: looseSearchPage * perPage,
+            ...(options?.userId ? { filterUserId: options.userId } : {})
+          },
+          type: QueryTypes.SELECT
+        }
+      )
     }
-    await Promise.all([completeMatch, looseMatch])
-    completeMatch = await completeMatch
-    looseMatch = await looseMatch
-    if (completeMatch && completeMatch.length > 0) {
-      res = res.concat(completeMatch.map((elem) => elem.postId))
+
+    const [completeRows, looseRows] = await Promise.all([completeMatch, looseMatch])
+
+    let res: string[] = []
+    if (completeRows && completeRows.length > 0) {
+      res = res.concat(completeRows.map((r: any) => r.postId))
     }
-    if (looseMatch && looseMatch.length > 0) {
-      res = res.concat(looseMatch.map((elem) => elem.postId))
+    if (looseRows && looseRows.length > 0) {
+      res = res.concat(looseRows.map((r: any) => r.postId))
     }
     return res
   }

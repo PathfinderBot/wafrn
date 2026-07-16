@@ -74,7 +74,7 @@ async function getRemoteActor(
           data: {
             actorUrl: actorUrl,
             userId: user.id,
-            forceUpdate: false,
+            forceUpdate: forceUpdate,
           }
         } as Job)
         if (tmpUserId) {

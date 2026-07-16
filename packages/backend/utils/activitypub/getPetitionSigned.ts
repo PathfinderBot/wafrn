@@ -5,7 +5,7 @@ import { User } from "../../models/index.js";
 import { removeUser } from "./removeUser.js";
 import { Op } from "sequelize";
 import { Agent, fetch } from "undici";
-import axios from 'axios' 
+import axios from 'axios'
 import getUserAgent from "../getUserAgent.js";
 async function getPetitionSigned(
   userInput: User,
@@ -18,18 +18,16 @@ async function getPetitionSigned(
     const url = new URL(target);
     const acceptedFormats = "application/activity+json,application/json";
     const sendDate = new Date();
-    const stringToSign = `(request-target): get ${url.pathname}\nhost: ${
-      url.host
-    }\ndate: ${sendDate.toUTCString()}`;
+    const stringToSign = `(request-target): get ${url.pathname}\nhost: ${url.host
+      }\ndate: ${sendDate.toUTCString()}`;
 
     const digest = createHash("sha256").update(stringToSign).digest("base64");
     const signer = createSign("sha256");
     signer.update(stringToSign);
     signer.end();
     const signature = signer.sign(user.privateKey as string).toString("base64");
-    const header = `keyId="${
-      completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date",signature="${signature}"`;
+    const header = `keyId="${completeEnvironment.frontendUrl
+      }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date",signature="${signature}"`;
     const headers = {
       "Content-Type": "application/activity+json",
       "User-Agent": getUserAgent('ActivityPubWorker'),
@@ -39,12 +37,13 @@ async function getPetitionSigned(
       Date: sendDate.toUTCString(),
       Digest: `SHA-256=${digest}`,
       Signature: header,
+      WafrnObtainBskyPost: 'True' // ok so we send a extra bsky flag for allowing to obtain the json ld of bsky exclusive posts
     };
-    petitionResponse = await axios.get(url.href, { headers: headers }) 
+    petitionResponse = await axios.get(url.href, { headers: headers })
     if (petitionResponse?.headers['content-type']?.includes('text/html')) {
-	    logger.trace('Petition returned HTML. throwing exception')
-	    throw new Error('Invalid content type')
-	  } else {
+      logger.trace('Petition returned HTML. throwing exception')
+      throw new Error('Invalid content type')
+    } else {
       res = petitionResponse.data
     }
   } catch (error: any) {

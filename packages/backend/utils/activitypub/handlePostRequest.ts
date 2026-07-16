@@ -17,6 +17,13 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
     const cachePost = await getPostAndUserFromPostId(req.params.id)
     const post = cachePost.data
     if (post) {
+      // this can leak some posts to fedi but also without it we will get posts with duplicated users (user.at.instance and user@instance)
+      // fix: we add a special flag. We give a month or two for other wafrns to update.
+      // TODO uncoment this no sooner than august 16th. Given im going on a cruiswe with my very beautiful wife, do after it?
+      //if (post.isBskyExclusive && !req.fediData?.specialWafrnAllowBskyPostFlag) {
+      //  res.sendStatus(404)
+      //  return
+      // }
       // we get remote user async-ly
       const fediData = req.fediData as {
         fediHost: string

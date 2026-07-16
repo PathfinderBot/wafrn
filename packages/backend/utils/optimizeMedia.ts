@@ -5,6 +5,71 @@ import sharp from 'sharp'
 /* eslint-disable max-len */
 import fs from 'fs'
 import FfmpegCommand from 'fluent-ffmpeg'
+import getUserAgent from './getUserAgent.js'
+
+export async function createThumbnail(imageUrl: string): Promise<Buffer> {
+  const response = await fetch(imageUrl, {
+    headers: { 'User-Agent': getUserAgent('LinkPreview') },
+    signal: AbortSignal.timeout(10000)
+  })
+  if (!response.ok) {
+    throw new Error(`Unable to fetch thumbnail: ${response.status} ${response.statusText}`)
+  }
+
+  const contentLength = Number(response.headers.get('content-length') ?? 0)
+  if (contentLength > 10 * 1024 * 1024) {
+    throw new Error(`Thumbnail is too large: ${contentLength} bytes`)
+  }
+
+  const originalImage = Buffer.from(await response.arrayBuffer())
+  if (originalImage.length > 10 * 1024 * 1024) {
+    throw new Error(`Thumbnail is too large: ${originalImage.length} bytes`)
+  }
+
+  let previewImage = await sharp(originalImage, { failOnError: false })
+    .rotate()
+    .resize({
+      width: 1000,
+      height: 1000,
+      fit: 'inside',
+      withoutEnlargement: true
+    })
+    .jpeg({ quality: 85 })
+    .toBuffer()
+
+  for (const quality of [75, 65, 55, 45]) {
+    if (previewImage.length <= 1000000) break
+    previewImage = await sharp(originalImage, { failOnError: false })
+      .rotate()
+      .resize({
+        width: 800,
+        height: 800,
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .jpeg({ quality })
+      .toBuffer()
+  }
+
+  if (previewImage.length > 1000000) {
+    previewImage = await sharp(originalImage, { failOnError: false })
+      .rotate()
+      .resize({
+        width: 480,
+        height: 480,
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .jpeg({ quality: 45 })
+      .toBuffer()
+  }
+
+  if (previewImage.length > 1000000) {
+    throw new Error(`Thumbnail remains too large after compression: ${previewImage.length} bytes`)
+  }
+
+  return previewImage
+}
 
 export default async function optimizeMedia(
   inputPath: string,
