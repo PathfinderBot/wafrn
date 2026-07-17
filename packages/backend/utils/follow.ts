@@ -5,6 +5,7 @@ import { Response } from 'express'
 import { remoteFollow } from './activitypub/remoteFollow.js'
 import { redisCache } from './redis.js'
 import { createNotification } from './pushNotifications.js'
+import { completeEnvironment } from './backendOptions.js'
 
 async function follow(
   followerId: string,
@@ -19,6 +20,15 @@ async function follow(
         id: followedId
       }
     })
+    // first of all: check bridgy?
+    if (petition && completeEnvironment.enableBsky && ['@bsky.brid.gy@bsky.brid.gy', '@ap.brid.gy'].includes(userFollowed?.url || 'notFound')) {
+      petition.status(400);
+      petition.send({
+        error: true,
+        message: `You are trying to follow bridgy! You can enable bluesky on settings`
+      })
+      return false;
+    }
     const blocksExisting = await Blocks.count({
       where: {
         [Op.or]: [
