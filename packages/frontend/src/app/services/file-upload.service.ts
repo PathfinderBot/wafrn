@@ -14,7 +14,9 @@ export class FileUploadService {
 
   uploadFile(url: string, file: File, formdataName: string) {
     const formData = new FormData()
-    formData.append(formdataName, file)
+    // FUCK YOU WEBKIT
+    const blob = new Blob([file], { type: file.type })
+    formData.append(formdataName, blob, file.name)
     return this.http.post<WafrnMedia[]>(url, formData, { reportProgress: true, observe: 'events' }).pipe(
       catchError((error) => {
         this.messageService.add({ severity: 'error', summary: 'Failed to upload.' })
