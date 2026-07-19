@@ -375,7 +375,7 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
           {
             label: 'menu.settings.follows',
             icon: faUsers,
-            visible: () => this.currentAccount()?.manuallyAcceptsFollows === true,
+            visible: () => this.currentAccount()?.manuallyAcceptsFollows === true || this.notificationsService.followsAwaitingApproval() > 0,
             badge: () => this.notificationsService.followsAwaitingApproval(),
             routerLinkDynamic: computed(() => '/blog/' + this.currentAccount()?.url + '/followers'),
             command: () => {
