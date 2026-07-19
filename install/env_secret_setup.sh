@@ -4,6 +4,11 @@
 #
 # $ ./install/env_secret_setup.sh
 
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq command not found. Install jq."
+    exit 1
+fi
+
 echo creating JWT_SECRET
 export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
 
