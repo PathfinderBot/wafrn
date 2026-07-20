@@ -86,7 +86,7 @@ async function voteInPoll(userId: string, pollId: number) {
         inboxList: inboxes
       },
       {
-        priority: 2097152,
+        priority: 2097151,
         delay: 2500
       }
     )

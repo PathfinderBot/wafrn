@@ -47,7 +47,7 @@ async function sendUpdateProfile(user: User) {
         inboxList: inboxChunk
       },
       {
-        priority: 2097152,
+        priority: 2097151,
         delay: 500
       }
     )
