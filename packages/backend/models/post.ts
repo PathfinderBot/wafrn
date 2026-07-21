@@ -101,6 +101,7 @@ export interface PostAttributes {
   rootId?: string | null,
   isBskyExclusive?: boolean,
   isReply?: boolean,
+  waitToSendPost?: boolean,
   language: string | undefined,
 }
 
@@ -205,6 +206,13 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     defaultValue: false
   })
   declare isDeleted: boolean
+
+  @Column({
+    allowNull: false,
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
+  declare waitToSendPost: boolean
 
   @ForeignKey(() => User)
   @Column({
