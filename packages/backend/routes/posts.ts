@@ -183,7 +183,7 @@ export default function postsRoutes(app: Application) {
               {
                 [Op.or]: [
                   { waitToSendPost: { [Op.ne]: true } },
-                  { userId: req.jwtData?.userId }
+                  { userId: req.jwtData?.userId || '00000000-0000-0000-0000-000000000000' }
                 ]
               }
             ],
