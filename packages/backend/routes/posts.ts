@@ -165,18 +165,28 @@ export default function postsRoutes(app: Application) {
           attributes: ['id', 'createdAt', 'featured'],
           where: {
             createdAt: { [Op.lt]: getStartScrollParam(req) },
-            featured: featured
-              ? {
-                [Op.ne]: null
-              }
-              : {
-                [Op.or]: [
-                  {
+            [Op.and]: [
+              {
+                featured: featured
+                  ? {
                     [Op.ne]: null
-                  },
-                  { [Op.eq]: null }
-                ]
+                  }
+                  : {
+                    [Op.or]: [
+                      {
+                        [Op.ne]: null
+                      },
+                      { [Op.eq]: null }
+                    ]
+                  }
               },
+              {
+                [Op.or]: [
+                  { waitToSendPost: { [Op.ne]: true } },
+                  { userId: req.jwtData?.userId || '00000000-0000-0000-0000-000000000000' }
+                ]
+              }
+            ],
             userId: blogId,
             privacy: {
               [Op.in]: privacyArray

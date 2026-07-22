@@ -57,7 +57,7 @@ export default function dashboardRoutes(app: Application) {
       })
 
       const disableReplies = dbOptiondisableReplies?.optionValue === 'true'
-      const disableRepliesOr = disableReplies ?  [
+      const disableRepliesOr = disableReplies ? [
         {
           isReblog: true
         },
@@ -74,7 +74,7 @@ export default function dashboardRoutes(app: Application) {
       })
 
       const disableBsky = dbOptiondisableBsky?.optionValue === 'true'
-      if(disableBsky) {
+      if (disableBsky) {
         disableRepliesOr.push({
           isBskyExclusive: false
         } as any)
@@ -133,7 +133,7 @@ export default function dashboardRoutes(app: Application) {
           }
 
           whereObject = {
-            detached: {[Op.ne]: true},
+            detached: { [Op.ne]: true },
             [Op.and]: and,
             isReblog: {
               [Op.in]: hideReblogs ? [false, null] : [true, false, null]
@@ -157,8 +157,8 @@ export default function dashboardRoutes(app: Application) {
           }
           const orConditions: any = [
             {
-              userId: { [Op.in]: await getFollowedsIds(posterId)},
-              detached: {[Op.ne]: true}
+              userId: { [Op.in]: await getFollowedsIds(posterId) },
+              detached: { [Op.ne]: true }
             }
           ]
 
@@ -338,6 +338,10 @@ export default function dashboardRoutes(app: Application) {
         subQuery: false,
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
+          [Op.or]: [
+            { waitToSendPost: { [Op.ne]: true } },
+            { userId: posterId || '00000000-0000-0000-0000-000000000000' }
+          ],
           ...whereObject
         }
       })
