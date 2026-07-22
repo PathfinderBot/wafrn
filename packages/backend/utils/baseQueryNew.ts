@@ -191,34 +191,45 @@ async function getEmojis(input: { userIds: string[]; postIds: string[] }): Promi
   }
 }
 
-// TODO optimization: make more promise all and less await dothing await dothing
 async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNotFullyHide = false) {
-  let user = await User.scope('full').findByPk(posterId)
+  const userPromise = User.scope('full').findByPk(posterId)
+  const usersFollowedByPosterPromise: Promise<string[]> = getFollowedsIds(posterId)
+  const usersFollowingPosterPromise: Promise<string[]> = getFollowedsIds(posterId, false, {
+    getFollowersInstead: true
+  })
+  const blockedServersPromise = ServerBlock.findAll({ where: { userBlockerId: posterId } })
 
   // we need a list of all the userId we just got from the post
   let userIds: string[] = []
   let postIds: string[] = []
-  if (completeEnvironment.enableBsky) {
-    // DETECT BSKY NSFW
-    const bskyPosts = await Post.findAll({
-      where: {
-        id: {
-          [Op.in]: postIdsInput
-        },
-        userId: {
-          [Op.notIn]: await getAllLocalUserIds()
-        },
-        bskyUri: {
-          [Op.ne]: null
+
+  const bskyCheckPromise = completeEnvironment.enableBsky
+    ? (async () => {
+      // DETECT BSKY NSFW
+      const bskyPosts = await Post.findAll({
+        where: {
+          id: {
+            [Op.in]: postIdsInput
+          },
+          userId: {
+            [Op.notIn]: await getAllLocalUserIds()
+          },
+          bskyUri: {
+            [Op.ne]: null
+          }
         }
+      })
+      if (bskyPosts && bskyPosts.length) {
+        await checkBskyLabelersNSFW(bskyPosts.filter((elem) => !elem.content_warning && elem.bskyUri))
       }
-    })
-    if (bskyPosts && bskyPosts.length) {
-      await checkBskyLabelersNSFW(bskyPosts.filter((elem) => !elem.content_warning && elem.bskyUri))
-    }
-    // END DETECT BSKY NSFW
-  }
-  const posts = await findPostsWithAncestors(postIdsInput)
+      // END DETECT BSKY NSFW
+    })()
+    : Promise.resolve()
+
+  const postsPromise = findPostsWithAncestors(postIdsInput)
+  await Promise.all([bskyCheckPromise, postsPromise])
+  const posts = await postsPromise
+
   posts.forEach((post: any) => {
     userIds.push(post.userId)
     postIds.push(post.id)
@@ -227,35 +238,38 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       postIds.push(ancestor.id)
     })
   })
+
   const quotes = await getQuotes(postIds)
   const quotedPostsIds = quotes.map((quote) => quote.quotedPostId)
   postIds = postIds.concat(quotedPostsIds)
-  const quotedPosts = await Post.findAll({
-    where: {
-      id: {
-        [Op.in]: quotedPostsIds
-      }
-    }
-  })
-  const asks = await Ask.findAll({
-    attributes: ['question', 'apObject', 'createdAt', 'updatedAt', 'postId', 'userAsked', 'userAsker'],
-    where: {
-      postId: {
-        [Op.in]: postIds
-      }
-    }
-  })
 
-  const rewootedPosts = await Post.findAll({
-    attributes: ['id', 'parentId'],
-    where: {
-      isReblog: true,
-      userId: posterId,
-      parentId: {
-        [Op.in]: postIds
+  const [quotedPosts, asks, rewootedPosts] = await Promise.all([
+    Post.findAll({
+      where: {
+        id: {
+          [Op.in]: quotedPostsIds
+        }
       }
-    }
-  })
+    }),
+    Ask.findAll({
+      attributes: ['question', 'apObject', 'createdAt', 'updatedAt', 'postId', 'userAsked', 'userAsker'],
+      where: {
+        postId: {
+          [Op.in]: postIds
+        }
+      }
+    }),
+    Post.findAll({
+      attributes: ['id', 'parentId'],
+      where: {
+        isReblog: true,
+        userId: posterId,
+        parentId: {
+          [Op.in]: postIds
+        }
+      }
+    })
+  ])
   const rewootIds = rewootedPosts.map((r: any) => r.id)
 
   userIds = userIds
@@ -294,9 +308,9 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   let medias = getMedias([...postIds, ...rewootIds])
   let tags = getTags([...postIds, ...rewootIds])
 
-  const likes = await getLikes(postIds)
-  const bookmarks = await getBookmarks(postIds, posterId)
+  const [likes, bookmarks] = await Promise.all([getLikes(postIds), getBookmarks(postIds, posterId)])
   userIds = userIds.concat(likes.map((like: any) => like.userId))
+
   const users = User.findAll({
     attributes: ['url', 'avatar', 'id', 'name', 'remoteId', 'banned', 'bskyDid', 'federatedHostId', 'isBot'],
     where: {
@@ -325,31 +339,34 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   for (const usr of await users) {
     usersMap.set(usr.id, usr)
   }
-  const postWithNotes = await getPosstGroupDetails(posts)
+  const postWithNotes = getPosstGroupDetails(posts)
   await Promise.all([emojis, users, polls, medias, tags, postWithNotes])
+
   const hostsIds = (await users).filter((elem) => elem.federatedHostId).map((elem) => elem.federatedHostId)
-  const blockedHosts = await FederatedHost.findAll({
-    where: {
-      id: {
-        [Op.in]: hostsIds as string[]
-      },
-      blocked: true
-    }
-  })
+  const [blockedHosts, blockedUsersQuery] = await Promise.all([
+    FederatedHost.findAll({
+      where: {
+        id: {
+          [Op.in]: hostsIds as string[]
+        },
+        blocked: true
+      }
+    }),
+    Blocks.findAll({
+      where: {
+        [Op.or]: [
+          {
+            blockerId: posterId
+          },
+          {
+            blockedId: posterId
+          }
+        ]
+      }
+    })
+  ])
   const blockedHostsIds = blockedHosts.map((elem) => elem.id)
   let blockedUsersSet: Set<string> = new Set()
-  const blockedUsersQuery = await Blocks.findAll({
-    where: {
-      [Op.or]: [
-        {
-          blockerId: posterId
-        },
-        {
-          blockedId: posterId
-        }
-      ]
-    }
-  })
   for (const block of blockedUsersQuery) {
     blockedUsersSet.add(block.blockedId)
     blockedUsersSet.add(block.blockerId)
@@ -358,14 +375,10 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   const bannedUserIds = (await users)
     .filter((elem) => elem.banned || (elem.federatedHostId && blockedHostsIds.includes(elem.federatedHostId)))
     .map((elem) => elem.id)
-  let usersFollowedByPoster: string[] | Promise<string[]> = getFollowedsIds(posterId)
-  let usersFollowingPoster: string[] | Promise<string[]> = getFollowedsIds(posterId, false, {
-    getFollowersInstead: true
-  })
 
-  await Promise.all([usersFollowedByPoster, usersFollowingPoster, tags, medias])
-  usersFollowedByPoster = await usersFollowedByPoster
-  usersFollowingPoster = await usersFollowingPoster
+  await Promise.all([usersFollowedByPosterPromise, usersFollowingPosterPromise, tags, medias])
+  const usersFollowedByPoster = await usersFollowedByPosterPromise
+  const usersFollowingPoster = await usersFollowingPosterPromise
   const tagsAwaited = await tags
   const mediasAwaited = await medias
 
@@ -379,9 +392,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   }
 
   const finalRewootIds = rewootedPosts.filter((r: any) => !invalidRewoots.includes(r.id)).map((r: any) => r.parentId)
-  const blockedServers = (await ServerBlock.findAll({ where: { userBlockerId: posterId } })).map(
-    (elem) => elem.blockedServerId
-  )
+  const blockedServers = (await blockedServersPromise).map((elem) => elem.blockedServerId)
   const postsMentioningUser: string[] = mentions.postMentionRelation
     .filter((mention: any) => mention.userMentioned === posterId)
     .map((mention: any) => mention.post)
@@ -427,6 +438,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
     .map(async (elem) => addPostCanInteract(posterId, elem, usersFollowingPoster, usersFollowedByPoster, mentions))
 
   let finalPostsToSend = await Promise.all(postsToSend)
+  const user = await userPromise
   const userIsAdult = isAdult(user?.birthDate)
 
   if (!userIsAdult && user?.role !== 10) {
@@ -500,7 +512,8 @@ async function canInteract(
   postId: string,
   userFollowersInput?: string[],
   userFollowingInput?: string[],
-  mentionsInput?: { usersMentioned: string[]; postMentionRelation: any[] }
+  mentionsInput?: { usersMentioned: string[]; postMentionRelation: any[] },
+  postInput?: any
 ): Promise<boolean> {
   if (level == InteractionControl.Anyone) {
     return true
@@ -512,7 +525,7 @@ async function canInteract(
       getFollowersInstead: true
     })
   let mentions = mentionsInput ? mentionsInput : getMentionedUserIds([postId])
-  let post: Promise<Post | null> | Post | null = Post.findByPk(postId)
+  let post: Promise<Post | null> | Post | null = postInput !== undefined ? postInput : Post.findByPk(postId)
   await Promise.all([usersFollowing, userFollowers, mentions, post])
   usersFollowing = await usersFollowing
   userFollowers = await userFollowers
@@ -585,7 +598,8 @@ async function canInteract(
             originalPost.id,
             userFollowersInput,
             userFollowingInput,
-            mentionsInput
+            mentionsInput,
+            originalPost
           )
         }
       }
@@ -610,17 +624,42 @@ async function addPostCanInteract(
   }
 > {
   let post: any = { ...postInput }
-  let canReply = canInteract(post.replyControl, userId, post.id, userFollowersInput, userFollowingInput, mentionsInput)
-  let canLike = canInteract(post.likeControl, userId, post.id, userFollowersInput, userFollowingInput, mentionsInput)
+  let canReply = canInteract(
+    post.replyControl,
+    userId,
+    post.id,
+    userFollowersInput,
+    userFollowingInput,
+    mentionsInput,
+    post
+  )
+  let canLike = canInteract(
+    post.likeControl,
+    userId,
+    post.id,
+    userFollowersInput,
+    userFollowingInput,
+    mentionsInput,
+    post
+  )
   let canReblog = canInteract(
     post.reblogControl,
     userId,
     post.id,
     userFollowersInput,
     userFollowingInput,
-    mentionsInput
+    mentionsInput,
+    post
   )
-  let canQuote = canInteract(post.quoteControl, userId, post.id, userFollowersInput, userFollowingInput, mentionsInput)
+  let canQuote = canInteract(
+    post.quoteControl,
+    userId,
+    post.id,
+    userFollowersInput,
+    userFollowingInput,
+    mentionsInput,
+    post
+  )
 
   await Promise.all([canReblog, canReply, canQuote, canLike])
   post.canReply = await canReply
@@ -647,15 +686,14 @@ async function findPostsWithAncestors(postIdsInput: string[]) {
       isDeleted: { [Op.ne]: true }
     }
   })
-  const posts = []
-  for await (const post of postsOriginal) {
-    const tmp = await post.getAncestors()
-    posts.push({ ...post.dataValues, ancestors: tmp.map(elem => elem.dataValues) })
-  }
+  const posts = await Promise.all(
+    postsOriginal.map(async (post) => {
+      const ancestors = await post.getAncestors()
+      return { ...post.dataValues, ancestors: ancestors.map((elem) => elem.dataValues) }
+    })
+  )
 
-  return posts;
-
-
+  return posts
 }
 
 
