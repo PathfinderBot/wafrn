@@ -338,10 +338,10 @@ export default function dashboardRoutes(app: Application) {
         subQuery: false,
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
-          [Op.or]: [
-            { waitToSendPost: { [Op.ne]: true } },
-            { userId: posterId }
-          ],
+          // [Op.or]: [
+          //   { waitToSendPost: { [Op.ne]: true } },
+          //   { userId: posterId }
+          // ],
           ...whereObject
         }
       })
