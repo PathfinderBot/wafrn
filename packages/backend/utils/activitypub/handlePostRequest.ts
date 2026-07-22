@@ -59,7 +59,7 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
           userId: federatedHost?.publicInbox ? '' : remoteActor.id
         })
       }
-      if (post.privacy === Privacy.Draft) {
+      if (post.privacy === Privacy.Draft || post.waitToSendPost) {
         return res.sendStatus(404)
       }
       if (post.privacy === Privacy.DirectMessage) {
