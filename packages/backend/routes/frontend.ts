@@ -231,7 +231,9 @@ function frontend(app: Application) {
           const possibleObjectToSend = cachedResponse ? JSON.parse(cachedResponse) : undefined
           if (
             possibleObjectToSend &&
-            possibleObjectToSend.to) {
+            (possibleObjectToSend.to?.includes('https://www.w3.org/ns/activitystreams#Public') ||
+              possibleObjectToSend.cc?.includes('https://www.w3.org/ns/activitystreams#Public'))
+          ) {
             res.set({
               'content-type': 'application/activity+json',
             })
