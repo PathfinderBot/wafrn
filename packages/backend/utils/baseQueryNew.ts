@@ -203,13 +203,25 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   let userIds: string[] = []
   let postIds: string[] = []
 
+  const postsPromise = findPostsWithAncestors(postIdsInput)
+  const posts = await postsPromise
+
+  posts.forEach((post: any) => {
+    userIds.push(post.userId)
+    postIds.push(post.id)
+    post.ancestors?.forEach((ancestor: any) => {
+      userIds.push(ancestor.userId)
+      postIds.push(ancestor.id)
+    })
+  })
+
   const bskyCheckPromise = completeEnvironment.enableBsky
     ? (async () => {
       // DETECT BSKY NSFW
       const bskyPosts = await Post.findAll({
         where: {
           id: {
-            [Op.in]: postIdsInput
+            [Op.in]: postIds
           },
           userId: {
             [Op.notIn]: await getAllLocalUserIds()
@@ -226,20 +238,9 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
     })()
     : Promise.resolve()
 
-  const postsPromise = findPostsWithAncestors(postIdsInput)
-  await Promise.all([bskyCheckPromise, postsPromise])
-  const posts = await postsPromise
-
-  posts.forEach((post: any) => {
-    userIds.push(post.userId)
-    postIds.push(post.id)
-    post.ancestors?.forEach((ancestor: any) => {
-      userIds.push(ancestor.userId)
-      postIds.push(ancestor.id)
-    })
-  })
-
-  const quotes = await getQuotes(postIds)
+  const quotesPromise = getQuotes(postIds)
+  await Promise.all([bskyCheckPromise, quotesPromise])
+  const quotes = await quotesPromise
   const quotedPostsIds = quotes.map((quote) => quote.quotedPostId)
   postIds = postIds.concat(quotedPostsIds)
 
