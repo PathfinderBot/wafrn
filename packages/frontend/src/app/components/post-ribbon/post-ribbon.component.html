@@ -1,23 +1,33 @@
 @if (card()) {
-  <mat-card appearance="outlined" class="py-2 wafrn-container post-card">
-    <ng-container *ngTemplateOutlet="template"></ng-container>
-  </mat-card>
-} @else {
+<mat-card appearance="outlined" class="py-2 wafrn-container post-card">
   <ng-container *ngTemplateOutlet="template"></ng-container>
+</mat-card>
+} @else {
+<ng-container *ngTemplateOutlet="template"></ng-container>
 }
 
 <ng-template #template>
   <div class="flex align-items-center min-w-0 ribbon-container" [class.nudge-left]="!card()">
     <div class="flex justify-content-center ribbon-icon">
       @if (image() !== undefined) {
-        <fa-icon [fixedWidth]="true" [icon]="plusIcon" size="xs"></fa-icon>
-        <img class="post-emoji"  loading="lazy" [src]="image()" />
+      <fa-icon [fixedWidth]="true" [icon]="plusIcon" size="xs"></fa-icon>
+      <img class="post-emoji" loading="lazy" [src]="image()" />
       } @else if (icon() !== undefined) {
-        <fa-icon [fixedWidth]="true" [icon]="$any(icon())"></fa-icon>
+      <fa-icon [fixedWidth]="true" [icon]="$any(icon())"></fa-icon>
       }
     </div>
-    <app-avatar-small [user]="user()"></app-avatar-small>
+    @if ((users() ?? []).length > 0) {
+    <div class="avatar-stack">
+      @for (groupUser of (users() ?? []); track groupUser.id) {
+      <app-avatar-small [user]="groupUser" class="ribbon-avatar"></app-avatar-small>
+      }
+    </div>
+    } @else {
+    <app-avatar-small [user]="users()[0]"></app-avatar-small>
+    }
     <p class="m-0 min-w-0 white-space-nowrap overflow-hidden text-overflow-ellipsis"><ng-content></ng-content></p>
+    @if (!((users() ?? []).length > 0)) {
     <div class="ml-auto text-sm flex-shrink-0 ribbon-date">{{ timeAgo }}</div>
+    }
   </div>
 </ng-template>

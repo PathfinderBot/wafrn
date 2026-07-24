@@ -15,7 +15,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons'
   styleUrl: './post-ribbon.component.scss'
 })
 export class PostRibbonComponent implements OnInit {
-  readonly user = input.required<SimplifiedUser>()
+  readonly users = input.required<SimplifiedUser[]>()
   readonly icon = input<IconDefinition>()
   readonly image = input<string>()
   readonly time = input.required<Date>()

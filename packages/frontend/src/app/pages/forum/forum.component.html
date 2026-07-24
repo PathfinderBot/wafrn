@@ -39,7 +39,7 @@ content.questionPoll?.questionPollQuestions ||
   <app-bottom-reply-bar [fragment]="content"></app-bottom-reply-bar>
 </mat-card>
 } @else {
-<app-post-ribbon [user]="content.user" [icon]="rewootIcon" [time]="content.createdAt">
+<app-post-ribbon [users]="[content.user]" [icon]="rewootIcon" [time]="content.createdAt">
   <a class="user-link user-name" [blogLink]="content.user" [innerHTML]="content.user.name"></a>
   <span class="text-sm post-action"> {{ 'post-actions.rewooted' | translate }} </span>
   <a [postLink]="content" [postLinkId]="content.parentId" class="user-link user-name"

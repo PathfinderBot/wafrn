@@ -4,12 +4,12 @@
   <h1 class="sr-only" [attr.id]="'notification-title-' + notification.url">
     {{ notification.userName }}
   </h1>
-  <app-post-ribbon [user]="{
+  <app-post-ribbon [users]="[{
         avatar: notification.avatar,
         url: notification.userUrl,
         id: notification.userId,
         name: notification.url
-      }" [icon]="notificationIcons[notification.type]" [image]="emojiUrl || undefined" [card]="false"
+      }]" [icon]="notificationIcons[notification.type]" [image]="emojiUrl || undefined" [card]="false"
     [time]="notification.date">
     <a class="user-link user-name" [routerLink]="'/blog/' + notification.userUrl"
       [innerHTML]="notification.userName"></a>
