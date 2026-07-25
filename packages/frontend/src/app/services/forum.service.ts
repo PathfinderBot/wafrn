@@ -49,7 +49,6 @@ export class ForumService {
         result[0].reblogs.push(elem.user)
       }
     })
-    console.log(result)
     return result
   }
 }
