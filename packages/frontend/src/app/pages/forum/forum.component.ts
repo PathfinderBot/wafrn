@@ -45,6 +45,7 @@ import { Title } from "@angular/platform-browser";
 import { GlobalData } from "src/app/services/global-data.service";
 import { SimpleTitleService } from "src/app/services/simple-title.service";
 import { TranslatePipe } from "@ngx-translate/core";
+import { SimplifiedUser } from "src/app/interfaces/simplified-user";
 
 @Component({
   selector: "app-forum-component",
@@ -78,7 +79,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private simpleTitle = inject(SimpleTitleService);
 
   loading = true;
-  forumPosts = signal<ProcessedPost[]>([]);
+  forumPosts = signal<{ post?: ProcessedPost, reblogs: SimplifiedUser[] }[]>([]);
   post = model<ProcessedPost[]>([]);
   postId = model<string>("");
   snappyPost = snappyInject(SnappyPostData);
@@ -94,7 +95,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   // evil
   findReply = (id: string | undefined) => {
     return (
-      this.forumPosts().find((post) => post.id === id) ??
+      this.forumPosts().find((post) => post.post?.id === id) ??
       this.post().find((post) => post.id === id)
     );
   };
@@ -122,7 +123,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   }
 
   snOnCreate(): void {
-    let data = this.snappyPost(this.snappy)?.post;
+    const data = this.snappyPost(this.snappy)?.post;
     if (!data) return;
 
     let post: ProcessedPost[] = [];
@@ -143,7 +144,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
 
     this.navigationStart = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {});
+      .subscribe(() => { });
 
     if (this.loginService.loggedIn.value) {
       this.myId = this.loginService.getLoggedUserUUID();
@@ -195,8 +196,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
         const postIsArticle = lastPost.privacy === 20;
         if (!postIsArticle) {
           this.simpleTitle.set(
-            `Post by ${lastPost.user.nameMarkdown ?? lastPost.user.name} (${
-              lastPost.user.url
+            `Post by ${lastPost.user.nameMarkdown ?? lastPost.user.name} (${lastPost.user.url
             })`
           );
         }
@@ -228,7 +228,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
         this.post()[this.post().length - 1].id
       )
     );
-    this.itemsPerPage = 50;
+    this.itemsPerPage = 25;
     this.currentPage = 0;
     this.loading = false;
   }

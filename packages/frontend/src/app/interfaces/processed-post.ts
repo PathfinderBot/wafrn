@@ -35,7 +35,7 @@ export interface ProcessedPost {
   ask?: Ask;
   markdownContent: string;
   bskyUri?: string;
-  isRewoot: boolean;
+  isReblog: boolean;
   hierarchyLevel: number;
   bookmarkers: string[];
   canReply: boolean;

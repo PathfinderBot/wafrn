@@ -36,9 +36,15 @@ export class LinkPreviewComponent implements OnChanges {
       }
       this.loading = true
       const linkToGet = this.link.startsWith(EnvironmentService.environment.externalCacheurl)
-      this.url = linkToGet
+      try {
+        this.url = linkToGet
         ? (new URL(this.link, EnvironmentService.environment.frontUrl).searchParams.get('media') as string)
         : this.link
+      } catch(error) {
+        this.url = this.link
+        console.log(this.link)
+      }
+      
       this.hostname = new URL(this.url).hostname
       this.mediaService.getLinkPreview(this.url).then((data) => {
         this.favicon = EnvironmentService.environment.externalCacheurl +
