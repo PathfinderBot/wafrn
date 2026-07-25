@@ -26,7 +26,7 @@
       <app-avatar-small [user]="users()[0]"></app-avatar-small>
     }
     <p class="m-0 min-w-0 white-space-nowrap overflow-hidden text-overflow-ellipsis">
-      @if ((users() || []).length > 0) {
+      @if ((users() || []).length > 1) {
         x {{ users().length }}
       }
       <ng-content></ng-content
