@@ -105,7 +105,7 @@ export class DashboardComponent
     }
     if (purePath.endsWith("silencedPosts")) {
       this.level = 25;
-      this.title = "menu.siencedPosts";
+      this.title = "menu.silencedPosts";
     }
     if (purePath.endsWith("bookmarkedPosts")) {
       this.level = 50;

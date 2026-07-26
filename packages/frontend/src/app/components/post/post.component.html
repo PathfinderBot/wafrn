@@ -2,7 +2,7 @@
 <mat-card [id]="'post-element-' + uniquePost().id" class="wafrn-container post-card" [class.active]="active()"
   [ngClass]="{ 'top-bar': post.length > 1, 'post-card-ios': iOSSafari }" appearance="outlined">
   @if (post.length > 1) {
-  <app-post-ribbon [user]="post[post.length - 1].user" [icon]="headerText() === 'replied' ? replyIcon : reblogIcon"
+  <app-post-ribbon [users]="[post[post.length - 1].user]" [icon]="headerText() === 'replied' ? replyIcon : reblogIcon"
     [card]="false" [time]="post[post.length - 1].createdAt">
     <a class="user-link user-name" [blogLink]="uniquePost().user" [innerHTML]="uniquePost().user.name"></a>
     <span class="text-sm post-action"> {{ headerText() }}</span>
@@ -47,14 +47,14 @@
   </button>
   }
   @if (post.length - postsExpanded > 50 && finalPosts()) {
-    @if(!postCanExpand()) {
-      <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
+  @if(!postCanExpand()) {
+  <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
     {{ 'post.expandWoot' | translate }}
     @if (post.length - postsExpanded > 4) {
     <span>({{ 'post.collapsedPosts' | translate:{count: post.length - postsExpanded} }})</span>
     }
   </button>
-    }
+  }
   <!--We show the 2 final posts if the post is VERY long and there are A LOT of posts to still see-->
   <marquee>{{ 'post.threadCollapsed' | translate }}</marquee>
   <hr style="margin-top: 10vh" />

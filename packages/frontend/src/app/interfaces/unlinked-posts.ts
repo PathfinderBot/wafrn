@@ -43,7 +43,7 @@ export interface basicPost {
   notes?: number
   quotes?: basicPost[]
   markdownContent: string
-  isRewoot: boolean
+  isReblog: boolean
   canReply: boolean
   canQuote: boolean
   canLike: boolean

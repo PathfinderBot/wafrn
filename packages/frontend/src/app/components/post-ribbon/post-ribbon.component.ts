@@ -15,10 +15,10 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons'
   styleUrl: './post-ribbon.component.scss'
 })
 export class PostRibbonComponent implements OnInit {
-  readonly user = input.required<SimplifiedUser>()
+  readonly users = input.required<SimplifiedUser[]>()
   readonly icon = input<IconDefinition>()
   readonly image = input<string>()
-  readonly time = input.required<Date>()
+  readonly time = input<Date>()
   readonly card = input(true)
 
   plusIcon = faPlus
@@ -27,7 +27,7 @@ export class PostRibbonComponent implements OnInit {
 
   ngOnInit(): void {
     // TODO unhardcode
-    const relative = DateTime.fromJSDate(this.time()).setLocale('en').toRelative()
+    const relative = DateTime.fromJSDate(this.time() || new Date()).setLocale('en').toRelative()
     this.timeAgo = relative ? relative : 'ERROR GETING TIME'
   }
 }

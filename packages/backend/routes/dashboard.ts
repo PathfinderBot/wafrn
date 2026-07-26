@@ -1,7 +1,3 @@
-// This file will use the new and improved api that returns more stuff
-// it does more queries but it should be more efficient
-// the MONSTER QUERY we are using now doesnt scale well on threads with lots of users
-
 import { Application, Response } from 'express'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
@@ -49,14 +45,18 @@ export default function dashboardRoutes(app: Application) {
       let whereObject: any = {
         privacy: Privacy.Public
       }
-      const dbOptiondisableReplies = await UserOptions.findOne({
+      const baseUserOptions = await UserOptions.findAll({
         where: {
           userId: posterId,
-          optionName: 'wafrn.disableReplies'
+          optionName: {
+            [Op.in]: ['wafrn.disableReplies', 'wafrn.disableBsky']
+          }
         }
       })
-
-      const disableReplies = dbOptiondisableReplies?.optionValue === 'true'
+      const getBaseOption = (name: string) =>
+        baseUserOptions.find((opt) => opt.optionName === name)?.optionValue === 'true'
+      const disableReplies = getBaseOption('wafrn.disableReplies')
+      const disableBsky = getBaseOption('wafrn.disableBsky')
       const disableRepliesOr = disableReplies ? [
         {
           isReblog: true
@@ -66,36 +66,26 @@ export default function dashboardRoutes(app: Application) {
         }
       ] : []
 
-      const dbOptiondisableBsky = await UserOptions.findOne({
-        where: {
-          userId: posterId,
-          optionName: 'wafrn.disableBsky'
-        }
-      })
-
-      const disableBsky = dbOptiondisableBsky?.optionValue === 'true'
       if (disableBsky) {
         disableRepliesOr.push({
           isBskyExclusive: false
         } as any)
       }
 
-
       switch (level) {
         case 2: {
-          let hideReblogs = false
-          const dbOptiondisableRewootsExploreLocal = await UserOptions.findOne({
-            where: {
-              userId: posterId,
-              optionName: 'wafrn.disableRewootsExploreLocal'
-            }
-          })
+          const [dbOptiondisableRewootsExploreLocal, followedUsers, nonFollowedUsers] = await Promise.all([
+            UserOptions.findOne({
+              where: {
+                userId: posterId,
+                optionName: 'wafrn.disableRewootsExploreLocal'
+              }
+            }),
+            getFollowedsIds(posterId, true),
+            getNonFollowedLocalUsersIds(posterId)
+          ])
 
-          if (dbOptiondisableRewootsExploreLocal?.optionValue === 'true') {
-            hideReblogs = true
-          }
-          const followedUsers = getFollowedsIds(posterId, true)
-          const nonFollowedUsers = getNonFollowedLocalUsersIds(posterId)
+          const hideReblogs = dbOptiondisableRewootsExploreLocal?.optionValue === 'true'
 
           const and: any = [
             {
@@ -105,7 +95,7 @@ export default function dashboardRoutes(app: Application) {
                     [Op.in]: [Privacy.Public, Privacy.FollowersOnly, Privacy.LocalOnly]
                   },
                   userId: {
-                    [Op.in]: await followedUsers
+                    [Op.in]: followedUsers
                   }
                 },
                 {
@@ -113,7 +103,7 @@ export default function dashboardRoutes(app: Application) {
                     [Op.in]: req.jwtData?.userId ? [Privacy.Public, Privacy.LocalOnly] : [Privacy.Public] // only display public if not logged in
                   },
                   userId: {
-                    [Op.in]: await nonFollowedUsers
+                    [Op.in]: nonFollowedUsers
                   }
                 },
                 {
@@ -143,7 +133,18 @@ export default function dashboardRoutes(app: Application) {
           break
         }
         case 1: {
-          const user = await User.findByPk(posterId)
+          const [user, followedIds, subscribedTags, dbOptionDisableRewootsDashboard] = await Promise.all([
+            User.findByPk(posterId),
+            getFollowedsIds(posterId),
+            getFollowedHashtags(posterId),
+            UserOptions.findOne({
+              where: {
+                userId: posterId,
+                optionName: 'wafrn.disableRewootsDashboard'
+              }
+            })
+          ])
+
           if (completeEnvironment.enableBsky && user && user.enableBsky && user.bskyDid) {
             try {
               // we give bluesky 2.5 seconds to load
@@ -157,20 +158,12 @@ export default function dashboardRoutes(app: Application) {
           }
           const orConditions: any = [
             {
-              userId: { [Op.in]: await getFollowedsIds(posterId) },
+              userId: { [Op.in]: followedIds },
               detached: { [Op.ne]: true }
             }
           ]
 
-          const dbOptionDisableRewootsDashboard = await UserOptions.findOne({
-            where: {
-              userId: posterId,
-              optionName: 'wafrn.disableRewootsDashboard'
-            }
-          })
-
           const hideReblogs = dbOptionDisableRewootsDashboard?.optionValue === 'true'
-          const subscribedTags = await getFollowedHashtags(posterId)
 
           if (subscribedTags && subscribedTags.length > 0) {
             // query: get posts with hashtag thing
@@ -249,29 +242,29 @@ export default function dashboardRoutes(app: Application) {
           break
         }
         case 10: {
-          // we get the list of posts twice woopsie. Should fix but this way is not going to be "that much"
-          const dms = await PostMentionsUserRelation.findAll({
-            order: [['createdAt', 'DESC']],
-            limit: POSTS_PER_PAGE,
-            where: {
-              userId: posterId,
-              createdAt: { [Op.lt]: getStartScrollParam(req) }
-            }
-          })
-
-          const lastDmDate: Date = dms.length > 0 ? new Date(dms[dms.length - 1].createdAt) : new Date(0)
-          const myPosts = await Post.findAll({
-            // TODO fix this! there is a THEORETICAL posibility of something going wrong. using all user dms can be too much but just get them between here and last post...
-            order: [['createdAt', 'DESC']],
-            limit: POSTS_PER_PAGE * 10,
-            where: {
-              userId: posterId,
-              privacy: Privacy.DirectMessage,
-              createdAt: {
-                [Op.lt]: getStartScrollParam(req)
+          const [dms, myPosts] = await Promise.all([
+            PostMentionsUserRelation.findAll({
+              order: [['createdAt', 'DESC']],
+              limit: POSTS_PER_PAGE,
+              where: {
+                userId: posterId,
+                createdAt: { [Op.lt]: getStartScrollParam(req) }
               }
-            }
-          })
+            }),
+            Post.findAll({
+              // TODO fix this! there is a THEORETICAL posibility of something going wrong. using all user dms can be too much but just get them between here and last post...
+              attributes: ['id'],
+              order: [['createdAt', 'DESC']],
+              limit: POSTS_PER_PAGE * 10,
+              where: {
+                userId: posterId,
+                privacy: Privacy.DirectMessage,
+                createdAt: {
+                  [Op.lt]: getStartScrollParam(req)
+                }
+              }
+            })
+          ])
 
           whereObject = {
             privacy: Privacy.DirectMessage,
@@ -297,11 +290,12 @@ export default function dashboardRoutes(app: Application) {
           break
         }
         case 50: {
-          // bookmarked posts
           whereObject = {
-            literal: sequelize.literal(
-              `"posts"."id" IN (SELECT "postId" FROM "userBookmarkedPosts" WHERE "userId"='${posterId}')`
-            )
+            [Op.and]: [
+              sequelize.literal(
+                `"posts"."id" IN (SELECT "postId" FROM "userBookmarkedPosts" WHERE "userId" = :posterId)`
+              )
+            ]
           }
           break;
         }
@@ -321,10 +315,12 @@ export default function dashboardRoutes(app: Application) {
             model: User,
             as: 'user',
             required: true,
+            attributes: [],
             include: [
               {
                 model: FederatedHost,
-                required: false
+                required: false,
+                attributes: level === 0 ? ['bubbleTimeline'] : []
               }
             ],
             where: {
@@ -336,6 +332,7 @@ export default function dashboardRoutes(app: Application) {
         limit: POSTS_PER_PAGE,
         attributes: ['id', 'createdAt'],
         subQuery: false,
+        replacements: { posterId: posterId || '00000000-0000-0000-0000-000000000000' },
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
           [Op.or]: [
@@ -351,17 +348,19 @@ export default function dashboardRoutes(app: Application) {
       postsWithTags = await postsWithTags
       let onlyPostIds: string[] = postIds.map((elem) => elem.id)
       if (postsWithTags.length > 0) {
-        let postIdsWithDates: Set<{ postId: string; date: Date }> = new Set()
-        for (let post of postIds) {
-          postIdsWithDates.add({ postId: post.id, date: post.createdAt })
+        const postIdsWithDates = new Map<string, Date>()
+        for (const post of postIds) {
+          postIdsWithDates.set(post.id, post.createdAt)
         }
-        for (let tagPost of postsWithTags) {
-          postIdsWithDates.add({ postId: tagPost.postId, date: tagPost.post.createdAt })
+        for (const tagPost of postsWithTags) {
+          if (!postIdsWithDates.has(tagPost.postId)) {
+            postIdsWithDates.set(tagPost.postId, tagPost.post.createdAt)
+          }
         }
-        onlyPostIds = [...postIdsWithDates]
-          .sort((a, b) => b.date.getTime() - a.date.getTime())
+        onlyPostIds = [...postIdsWithDates.entries()]
+          .sort((a, b) => b[1].getTime() - a[1].getTime())
           .slice(0, POSTS_PER_PAGE)
-          .map((elem) => elem.postId)
+          .map(([postId]) => postId)
       }
 
       res.send(await getUnjointedPosts(onlyPostIds, posterId))

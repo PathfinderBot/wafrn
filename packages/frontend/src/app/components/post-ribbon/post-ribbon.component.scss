@@ -10,6 +10,21 @@
   margin-right: 0.25rem;
 }
 
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.ribbon-avatar {
+  --avatar-size: 28px;
+  position: relative;
+}
+
+.ribbon-avatar:not(:first-child) {
+  margin-left: -0.55rem;
+  z-index: 1;
+}
+
 .ribbon-date {
   color: var(--mat-sys-outline);
 }
