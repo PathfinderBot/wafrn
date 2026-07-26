@@ -20,12 +20,12 @@ import { TranslateModule } from '@ngx-translate/core'
     MatBadgeModule,
     MatMenuModule,
     TranslateModule
-],
+  ],
   templateUrl: './menu-item.component.html',
   styleUrl: './menu-item.component.scss'
 })
 export class MenuItemComponent {
-  private router = inject(Router);
+  private router = inject(Router)
 
   arrowIcon = faChevronDown
 

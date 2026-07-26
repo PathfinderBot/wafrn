@@ -17,16 +17,16 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrl: './ask-list.component.scss'
 })
 export class AskListComponent {
-  private dashboard = inject(DashboardService);
-  private editor = inject(EditorService);
-  private blogService = inject(BlogService);
+  private dashboard = inject(DashboardService)
+  private editor = inject(EditorService)
+  private blogService = inject(BlogService)
   private cdr = inject(ChangeDetectorRef)
 
   loading = true
   asks: Ask[] = []
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.unansweredAsks')
   }
@@ -41,7 +41,6 @@ export class AskListComponent {
     this.asks = asks
     this.loading = false
     this.cdr.detectChanges()
-
   }
 
   async ignoreAsk(ask: Ask) {

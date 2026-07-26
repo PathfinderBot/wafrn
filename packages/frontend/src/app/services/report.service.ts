@@ -17,12 +17,11 @@ type UserId = string
   providedIn: 'any'
 })
 export class ReportService {
-  private http = inject(HttpClient);
-  private dialogService = inject(MatDialog);
-  private messages = inject(MessageService);
-  private blockService = inject(BlocksService);
+  private http = inject(HttpClient)
+  private dialogService = inject(MatDialog)
+  private messages = inject(MessageService)
+  private blockService = inject(BlocksService)
   private simpleDialogService = inject(SimpleDialogService)
-
 
   async report(data: ProcessedPost | UserId) {
     let res: (UserReport & { block: boolean }) | undefined

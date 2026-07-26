@@ -25,7 +25,7 @@ export const audioMap: AudioData = {
   providedIn: 'root'
 })
 export class AudioService {
-  audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
   audios: Map<string, AudioBuffer> = new Map()
 
   constructor() {
@@ -46,7 +46,7 @@ export class AudioService {
   }
 
   async playSound(name: AudioName, volume = 0.3) {
-    const source = this.audioContext.createBufferSource();
+    const source = this.audioContext.createBufferSource()
     const soundFile = audioMap[name]
     try {
       let audio = this.audios.get(soundFile)
@@ -56,11 +56,11 @@ export class AudioService {
         audio = await this.audioContext.decodeAudioData(audioBuf)
       }
       source.buffer = audio
-      const gainNode = this.audioContext.createGain();
-      source.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
-      gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
-      source.start(0);
+      const gainNode = this.audioContext.createGain()
+      source.connect(gainNode)
+      gainNode.connect(this.audioContext.destination)
+      gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime)
+      source.start(0)
     } catch (error) {
       console.error(error)
     }

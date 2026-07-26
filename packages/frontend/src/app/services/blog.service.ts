@@ -10,14 +10,10 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class BlogService {
-  private http = inject(HttpClient);
+  private http = inject(HttpClient)
 
   async refetchUserData(url: string) {
-    const res = await firstValueFrom(
-      this.http.get(
-        EnvironmentService.environment.baseUrl + `/user/${url}/refetchData`
-      )
-    )
+    const res = await firstValueFrom(this.http.get(EnvironmentService.environment.baseUrl + `/user/${url}/refetchData`))
     return true
   }
 
@@ -62,8 +58,6 @@ export class BlogService {
   }
 
   async biteUser(userId: string) {
-    return await firstValueFrom(
-      this.http.post(EnvironmentService.environment.baseUrl + `/bite`, { userId: userId })
-    )
+    return await firstValueFrom(this.http.post(EnvironmentService.environment.baseUrl + `/bite`, { userId: userId }))
   }
 }

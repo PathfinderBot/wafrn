@@ -1,6 +1,6 @@
-import { inject, Injectable } from "@angular/core";
-import { Router } from "@angular/router";
-import { Observable, Subject } from "rxjs";
+import { inject, Injectable } from '@angular/core'
+import { Router } from '@angular/router'
+import { Observable, Subject } from 'rxjs'
 
 /**
  * Service to provide methods to navigate and interact with the Snappy
@@ -10,8 +10,8 @@ import { Observable, Subject } from "rxjs";
   providedIn: 'root'
 })
 export class SnappyService {
-  private readonly router = inject(Router);
-  private readonly stream = new Subject<{ token: string, data: any }>();
+  private readonly router = inject(Router)
+  private readonly stream = new Subject<{ token: string; data: any }>()
 
   /**
    * @description Place data into the snappy stream, to be consumed upon the
@@ -19,8 +19,8 @@ export class SnappyService {
    * @param data - The data to be consumed, must be decorated with `@SnappyInjecatble`
    */
   public injectData(data: any) {
-    if (!(data?.Ψsnappyid)) return;
-    this.stream.next({ token: data.Ψsnappyid, data: data });
+    if (!data?.Ψsnappyid) return
+    this.stream.next({ token: data.Ψsnappyid, data: data })
   }
 
   /**
@@ -30,15 +30,15 @@ export class SnappyService {
    * @param data - The data to be consumed.
    */
   public navigateTo(url: string, data: any) {
-    this.injectData(data);
-    this.router.navigateByUrl(url);
+    this.injectData(data)
+    this.router.navigateByUrl(url)
   }
 
   /**
    * @description Get the stream of new data as an Observable.
    * @returns An Observable of the stream of data.
    */
-  public getStream(): Observable<{ token: string, data: any }> {
-    return this.stream.asObservable();
+  public getStream(): Observable<{ token: string; data: any }> {
+    return this.stream.asObservable()
   }
 }

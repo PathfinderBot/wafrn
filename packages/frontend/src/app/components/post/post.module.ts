@@ -41,4 +41,4 @@ import { TranslateModule } from '@ngx-translate/core'
   exports: [PostComponent],
   providers: [ReportService]
 })
-export class PostModule { }
+export class PostModule {}

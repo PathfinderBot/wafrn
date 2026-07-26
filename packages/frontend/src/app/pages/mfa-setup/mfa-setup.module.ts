@@ -37,4 +37,4 @@ const routes: Routes = [
   ],
   exports: []
 })
-export class MfaSetupModule { }
+export class MfaSetupModule {}

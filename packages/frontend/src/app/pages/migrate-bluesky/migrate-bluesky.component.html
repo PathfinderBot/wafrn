@@ -2,13 +2,17 @@
 @if (environment().enableBsky) {
   <mat-stepper orientation="vertical">
     <mat-step state="prerequisites">
-      <ng-template matStepLabel><b>{{ 'migrateBluesky.prerequisites.label' | translate }}</b></ng-template>
+      <ng-template matStepLabel
+        ><b>{{ 'migrateBluesky.prerequisites.label' | translate }}</b></ng-template
+      >
       <p>{{ 'migrateBluesky.prerequisites.intro' | translate }}</p>
       <p>{{ 'migrateBluesky.prerequisites.outOfTheWay' | translate }}</p>
       <ul>
         <li><span [innerHTML]="'migrateBluesky.prerequisites.hostedAccountWarning' | translate"></span></li>
         <li>{{ 'migrateBluesky.prerequisites.supportWarning' | translate }}</li>
-        <li [innerHTML]="'migrateBluesky.prerequisites.handleMove' | translate:{pdsUrl: environment().bskyPDSUrl}"></li>
+        <li
+          [innerHTML]="'migrateBluesky.prerequisites.handleMove' | translate: { pdsUrl: environment().bskyPDSUrl }"
+        ></li>
         <li>{{ 'migrateBluesky.prerequisites.pdsWarning' | translate }}</li>
       </ul>
       <p>{{ 'migrateBluesky.prerequisites.continue' | translate }}</p>
@@ -17,7 +21,9 @@
       </div>
     </mat-step>
     <mat-step state="unlinking">
-      <ng-template matStepLabel><b>{{ 'migrateBluesky.unlinking.label' | translate }}</b></ng-template>
+      <ng-template matStepLabel
+        ><b>{{ 'migrateBluesky.unlinking.label' | translate }}</b></ng-template
+      >
       <p>{{ 'migrateBluesky.unlinking.intro' | translate }}</p>
       <p>{{ 'migrateBluesky.unlinking.inviteCodeInfo' | translate }}</p>
       @if (!code) {
@@ -26,7 +32,9 @@
         </button>
       } @else {
         <p>{{ 'migrateBluesky.unlinking.inviteCodeIs' | translate }}</p>
-        <p><b>{{ code }}</b></p>
+        <p
+          ><b>{{ code }}</b></p
+        >
       }
       <p>{{ 'migrateBluesky.unlinking.gotCode' | translate }}</p>
       <div>
@@ -34,25 +42,35 @@
       </div>
     </mat-step>
     <mat-step state="pdsmoover">
-      <ng-template matStepLabel><b>{{ 'migrateBluesky.pdsMoover.label' | translate }}</b></ng-template>
+      <ng-template matStepLabel
+        ><b>{{ 'migrateBluesky.pdsMoover.label' | translate }}</b></ng-template
+      >
       <p [innerHTML]="'migrateBluesky.pdsMoover.intro' | translate"></p>
-      <p>{{ 'migrateBluesky.pdsMoover.providerUrl' | translate }} <code>{{ environment().bskyPDSUrl }}</code></p>
+      <p
+        >{{ 'migrateBluesky.pdsMoover.providerUrl' | translate }} <code>{{ environment().bskyPDSUrl }}</code></p
+      >
       <p [innerHTML]="'migrateBluesky.pdsMoover.followInstructions' | translate"></p>
       <p>{{ 'migrateBluesky.pdsMoover.useInviteCode' | translate }}</p>
-      <p><small>{{ 'migrateBluesky.pdsMoover.wroteItDown' | translate }}</small></p>
+      <p
+        ><small>{{ 'migrateBluesky.pdsMoover.wroteItDown' | translate }}</small></p
+      >
       <div>
         <button matButton="filled" matStepperNext>{{ 'migrateBluesky.next' | translate }}</button>
       </div>
     </mat-step>
     <mat-step state="linking">
-      <ng-template matStepLabel><b>{{ 'migrateBluesky.linking.label' | translate }}</b></ng-template>
+      <ng-template matStepLabel
+        ><b>{{ 'migrateBluesky.linking.label' | translate }}</b></ng-template
+      >
       <p>{{ 'migrateBluesky.linking.intro' | translate }}</p>
       <p [innerHTML]="'migrateBluesky.linking.createAppPassword' | translate"></p>
       <p>{{ 'migrateBluesky.linking.appPasswordLocation' | translate }}</p>
       <p>{{ 'migrateBluesky.linking.formIntro' | translate }}</p>
       <form [hidden]="loading" class="px-3" [formGroup]="bskyForm" (ngSubmit)="linkBskyAccount()">
         <mat-form-field class="w-full">
-          <mat-label>{{ 'migrateBluesky.linking.accountLabel' | translate:{pdsUrl: environment().bskyPDSUrl} }}</mat-label>
+          <mat-label>{{
+            'migrateBluesky.linking.accountLabel' | translate: { pdsUrl: environment().bskyPDSUrl }
+          }}</mat-label>
           <input formControlName="account" type="text" matInput />
         </mat-form-field>
         <mat-form-field class="w-full">
@@ -63,13 +81,21 @@
           </button>
           <mat-error>{{ 'migrateBluesky.linking.passwordRequired' | translate }}</mat-error>
         </mat-form-field>
-        <button [disabled]="!bskyForm.valid" mat-flat-button color="primary" extended class="w-full border-round-md mt-4">
+        <button
+          [disabled]="!bskyForm.valid"
+          mat-flat-button
+          color="primary"
+          extended
+          class="w-full border-round-md mt-4"
+        >
           <span class="flex gap-2">{{ 'migrateBluesky.linking.linkAccount' | translate }}</span>
         </button>
       </form>
     </mat-step>
     <mat-step state="profit">
-      <ng-template matStepLabel><b>{{ 'migrateBluesky.profit.label' | translate }}</b></ng-template>
+      <ng-template matStepLabel
+        ><b>{{ 'migrateBluesky.profit.label' | translate }}</b></ng-template
+      >
       <p>{{ 'migrateBluesky.profit.done' | translate }}</p>
       <p [innerHTML]="'migrateBluesky.profit.support' | translate"></p>
     </mat-step>

@@ -6,7 +6,7 @@ import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
   standalone: false
 })
 export class InjectHTMLDirective {
-  private host = inject(ElementRef);
+  private host = inject(ElementRef)
 
   @Input() set injectHTML(content: string | WafrnMedia) {
     if (typeof content == 'string') {

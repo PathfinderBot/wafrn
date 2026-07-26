@@ -1,4 +1,15 @@
-import { afterRenderEffect, Component, computed, ElementRef, input, output, signal, viewChild, viewChildren, inject } from '@angular/core'
+import {
+  afterRenderEffect,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  output,
+  signal,
+  viewChild,
+  viewChildren,
+  inject
+} from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { PostModule } from '../post/post.module'
 import { LoaderComponent } from '../loader/loader.component'
@@ -33,7 +44,7 @@ export type DisplayMode = 'card' | 'grid'
   styleUrl: './post-list.component.scss'
 })
 export class PostListComponent {
-  private globalData = inject(GlobalData);
+  private globalData = inject(GlobalData)
 
   displayMode = input<DisplayMode>('card')
   posts = input.required<ProcessedPost[][]>()
@@ -62,7 +73,7 @@ export class PostListComponent {
   videoIcon = faPhotoFilm
 
   constructor() {
-    const hotkeyService = inject(HotkeyService);
+    const hotkeyService = inject(HotkeyService)
 
     hotkeyService.hotkeySubscription.subscribe((type) => this.handleHotkeys(type))
 

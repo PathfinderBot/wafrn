@@ -1,136 +1,140 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>${{FRONTEND_SHORT_TITLE:-Wafrn}}</title>
+    <!-- BEGIN REMOVE THIS IN EXPRESS FOR SEO -->
+    <meta property="og:title" content="${{FRONTEND_LONG_TITLE:-Wafrn, the social media that respects you}}" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="${{FRONTEND_LONG_TITLE:-Wafrn, the social media that respects you}}" />
+    <meta
+      property="description"
+      content="${{FRONTEND_DESCRIPTION:-Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky}}"
+    />
+    <meta
+      property="og:description"
+      content="${{FRONTEND_DESCRIPTION:-Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky}}"
+    />
+    <meta
+      property="twitter:description"
+      content="${{FRONTEND_DESCRIPTION:-Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky}}"
+    />
+    <meta property="og:image" content="/assets/logo.png" />
+    <meta property="twitter:image" content="/assets/logo.png" />
+    <meta property="og:site_name" content="${{DOMAIN_NAME:-app.wafrn.net}}" />
+    <meta property="twitter:site" content="${{DOMAIN_NAME:-app.wafrn.net}}" />
+    <!-- END REMOVE THIS IN EXPRESS FOR SEO -->
 
-<head>
-  <meta charset="utf-8" />
-  <title>${{FRONTEND_SHORT_TITLE:-Wafrn}}</title>
-  <!-- BEGIN REMOVE THIS IN EXPRESS FOR SEO -->
-  <meta property="og:title" content="${{FRONTEND_LONG_TITLE:-Wafrn, the social media that respects you}}" />
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:title" content="${{FRONTEND_LONG_TITLE:-Wafrn, the social media that respects you}}" />
-  <meta property="description"
-    content="${{FRONTEND_DESCRIPTION:-Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky}}" />
-  <meta property="og:description"
-    content="${{FRONTEND_DESCRIPTION:-Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky}}" />
-  <meta property="twitter:description"
-    content="${{FRONTEND_DESCRIPTION:-Wafrn is a federated social media inspired by tumblr that connects with the fediverse and bluesky}}" />
-  <meta property="og:image" content="/assets/logo.png" />
-  <meta property="twitter:image" content="/assets/logo.png" />
-  <meta property="og:site_name" content="${{DOMAIN_NAME:-app.wafrn.net}}" />
-  <meta property="twitter:site" content="${{DOMAIN_NAME:-app.wafrn.net}}" />
-  <!-- END REMOVE THIS IN EXPRESS FOR SEO -->
-
-  <base href="/" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" href="/assets/icons/icon-512x512.png" />
-  <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="theme-color" content="#20262e" />
-  <script>
-    // Theme switcher bootstrap
-    if (typeof localStorage !== 'undefined') {
-      const localTheme = localStorage.getItem('theme')
-      if (localTheme === 'light' || localTheme === 'dark' || localTheme === 'auto') {
-        document.documentElement.setAttribute('data-theme', localTheme)
-      }
-    } else {
-      document.documentElement.setAttribute('data-theme', 'auto')
-    }
-  </script>
-  <!-- WIP we need to fix the script first <script src="/assets/scripts/pluraldawn.js"> </script> -->
-</head>
-
-<body class="mat-typography mat-app-background">
-  <noscript>
-    <div class="flex flex-column align-items-center justify-content-center text-center" id="no-js">
-      <div class="mb-3"><img src="/assets/logo.avif" alt="Wafrn logo" width="350" /></div>
-      <p class="text-lg">Please enable scripts to use Wafrn.</p>
-      <p class="text-sm text-muted">
-        You can check the source code <a href="https://codeberg.org/wafrn/wafrn">here</a>.<br />
-        We no longer use Google ReCAPTCHA or YouTube's JavaScript
-      </p>
-    </div>
-  </noscript>
-  <div id="splash">
-    <div id="splash-content">
-      <img src="/assets/logo.avif" alt="Wafrn logo" width="25%" id="splash-icon" />
-      <p id="splash-text"></p>
-    </div>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/assets/icons/icon-512x512.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#20262e" />
     <script>
-      const splashTextVariants = [
-        'Hi there!',
-        "Did you know? I didn't.",
-        'Why are you reading this?',
-        'The Mind stat is inversely correlated to your Internet use.',
-        ':3',
-        'Wait, what?',
-        'If this is taking too long, try reloading.',
-        'Switching to your phone is always faster than reloading.',
-        "It's Wafrn'n time!",
-        '[object Object]',
-        'Is your refrigerator running?',
-        'Did you catch up to your refrigerator? They run fast',
-        'Type rd /s /q C:\\Windows\\System32 and press Enter.',
-        'Access developer mode with ALT+F4.',
-        'Reticulating splines…',
-        'Did you hear that?',
-        'AAAAAAAAAUUUGH!',
-        'w00t!!!!1!!1!1!',
-        'I forgot what I was supposed to be doing.',
-        'Nobody asked…',
-        'NIGHTMARE!',
-        "I don't want free earbuds.",
-        'I actually do want free earbuds.',
-        '[REDACTED]',
-        "We're rich!",
-        'Have you finished that pending task, or...?',
-        'Damn, I miss Cohost :(',
-        'Snake? Snake! SNAAAAAAKE!',
-        'What you think about Pineapple on Pizza will determine the rest of your life.',
-        'BOO!!',
-        'Road works ahead? I SURE HOPE IT DOES',
-        'Not removed due to DMCA takedown request. They told us not to',
-        'Stay silly',
-        'Replace cartridge: light cyan',
-        'woot woot!',
-        "help me I'm trapped in a basement forced to write these messages",
-        'I could have been faster in Rust',
-        'The mitochondria is the powerhouse of the cell.',
-        'they wa on my fr until i n (loud incorrect buzzer)',
-        '[LOUD BUZZER]',
-        'Congratulations! This is the special rare loading screen message!',
-        'WAF WAF AWRF WAF WAF AWFRWFAF',
-        'waf, right now',
-        'keep the piss',
-        "when it's completely dark, you're likely to be eaten by a grue",
-        'Oooh! Spinny circle!',
-        'BITES YOU! BITES YOU! BITES YOU',
-        "Remember to hydrate! Or don't, I'm not the boss of you",
-        '67 is never been the funy number',
-        '67 is always been the funy number',
-        "You're THIS 🤏 close to waffing",
-        "I am just adding this message to check that we have updated stuff"
-      ]
-      const splashTextElement = document.getElementById('splash-text')
-
-      // We only use the most Extremely Secure way to get a random number
-      const crypto = window.crypto || window.msCrypto
-      const randArr = new Uint32Array(1)
-      crypto.getRandomValues(randArr)
-      const randomSplashText = splashTextVariants[randArr[0] % splashTextVariants.length]
-
-      splashTextElement.innerText = randomSplashText
-
-      // This is hidden by navigation-menu.component.ts on its onInit method!
+      // Theme switcher bootstrap
+      if (typeof localStorage !== 'undefined') {
+        const localTheme = localStorage.getItem('theme')
+        if (localTheme === 'light' || localTheme === 'dark' || localTheme === 'auto') {
+          document.documentElement.setAttribute('data-theme', localTheme)
+        }
+      } else {
+        document.documentElement.setAttribute('data-theme', 'auto')
+      }
     </script>
-  </div>
-  <div id="indieweb">
-    <div id="microformats">
-      <!-- BEGIN MAIN CONTENT FOR INDIEWEB -->
-      <!-- END MAIN CONTENT FOR INDIEWEB -->
-    </div>
-  </div>
-  <app-root></app-root>
-</body>
+    <!-- WIP we need to fix the script first <script src="/assets/scripts/pluraldawn.js"> </script> -->
+  </head>
 
+  <body class="mat-typography mat-app-background">
+    <noscript>
+      <div class="flex flex-column align-items-center justify-content-center text-center" id="no-js">
+        <div class="mb-3"><img src="/assets/logo.avif" alt="Wafrn logo" width="350" /></div>
+        <p class="text-lg">Please enable scripts to use Wafrn.</p>
+        <p class="text-sm text-muted">
+          You can check the source code <a href="https://codeberg.org/wafrn/wafrn">here</a>.<br />
+          We no longer use Google ReCAPTCHA or YouTube's JavaScript
+        </p>
+      </div>
+    </noscript>
+    <div id="splash">
+      <div id="splash-content">
+        <img src="/assets/logo.avif" alt="Wafrn logo" width="25%" id="splash-icon" />
+        <p id="splash-text"></p>
+      </div>
+      <script>
+        const splashTextVariants = [
+          'Hi there!',
+          "Did you know? I didn't.",
+          'Why are you reading this?',
+          'The Mind stat is inversely correlated to your Internet use.',
+          ':3',
+          'Wait, what?',
+          'If this is taking too long, try reloading.',
+          'Switching to your phone is always faster than reloading.',
+          "It's Wafrn'n time!",
+          '[object Object]',
+          'Is your refrigerator running?',
+          'Did you catch up to your refrigerator? They run fast',
+          'Type rd /s /q C:\\Windows\\System32 and press Enter.',
+          'Access developer mode with ALT+F4.',
+          'Reticulating splines…',
+          'Did you hear that?',
+          'AAAAAAAAAUUUGH!',
+          'w00t!!!!1!!1!1!',
+          'I forgot what I was supposed to be doing.',
+          'Nobody asked…',
+          'NIGHTMARE!',
+          "I don't want free earbuds.",
+          'I actually do want free earbuds.',
+          '[REDACTED]',
+          "We're rich!",
+          'Have you finished that pending task, or...?',
+          'Damn, I miss Cohost :(',
+          'Snake? Snake! SNAAAAAAKE!',
+          'What you think about Pineapple on Pizza will determine the rest of your life.',
+          'BOO!!',
+          'Road works ahead? I SURE HOPE IT DOES',
+          'Not removed due to DMCA takedown request. They told us not to',
+          'Stay silly',
+          'Replace cartridge: light cyan',
+          'woot woot!',
+          "help me I'm trapped in a basement forced to write these messages",
+          'I could have been faster in Rust',
+          'The mitochondria is the powerhouse of the cell.',
+          'they wa on my fr until i n (loud incorrect buzzer)',
+          '[LOUD BUZZER]',
+          'Congratulations! This is the special rare loading screen message!',
+          'WAF WAF AWRF WAF WAF AWFRWFAF',
+          'waf, right now',
+          'keep the piss',
+          "when it's completely dark, you're likely to be eaten by a grue",
+          'Oooh! Spinny circle!',
+          'BITES YOU! BITES YOU! BITES YOU',
+          "Remember to hydrate! Or don't, I'm not the boss of you",
+          '67 is never been the funy number',
+          '67 is always been the funy number',
+          "You're THIS 🤏 close to waffing",
+          'I am just adding this message to check that we have updated stuff'
+        ]
+        const splashTextElement = document.getElementById('splash-text')
+
+        // We only use the most Extremely Secure way to get a random number
+        const crypto = window.crypto || window.msCrypto
+        const randArr = new Uint32Array(1)
+        crypto.getRandomValues(randArr)
+        const randomSplashText = splashTextVariants[randArr[0] % splashTextVariants.length]
+
+        splashTextElement.innerText = randomSplashText
+
+        // This is hidden by navigation-menu.component.ts on its onInit method!
+      </script>
+    </div>
+    <div id="indieweb">
+      <div id="microformats">
+        <!-- BEGIN MAIN CONTENT FOR INDIEWEB -->
+        <!-- END MAIN CONTENT FOR INDIEWEB -->
+      </div>
+    </div>
+    <app-root></app-root>
+  </body>
 </html>

@@ -21,7 +21,7 @@ export const supportedLanguages = [
   'uk',
   'fi',
   'se',
-  'qpv',
+  'qpv'
 ] as const
 type SupportedLanguagesTuple = typeof supportedLanguages
 export type SupportedLanguage = SupportedLanguagesTuple[number]
@@ -45,5 +45,5 @@ export const languageMap: Record<SupportedLanguage, LanguageData> = {
   uk: { name: 'Українська' },
   qpv: { name: 'Viossa' },
   fi: { name: 'Suomi' },
-  se: { name: 'Svenska' },
+  se: { name: 'Svenska' }
 }

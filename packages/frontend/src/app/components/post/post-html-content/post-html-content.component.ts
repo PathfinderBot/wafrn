@@ -1,7 +1,7 @@
-import { Component, inject, input, Signal, ViewEncapsulation, WritableSignal } from '@angular/core';
-import { InjectHtmlModule } from "src/app/directives/inject-html/inject-html.module";
-import { WafrnMedia } from 'src/app/interfaces/wafrn-media';
-import { Theme, LightDarkMode, AdditionalStyleMode, ThemeService } from 'src/app/services/theme.service';
+import { Component, inject, input, Signal, ViewEncapsulation, WritableSignal } from '@angular/core'
+import { InjectHtmlModule } from 'src/app/directives/inject-html/inject-html.module'
+import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
+import { Theme, LightDarkMode, AdditionalStyleMode, ThemeService } from 'src/app/services/theme.service'
 
 @Component({
   selector: 'app-post-html-content',
@@ -17,11 +17,10 @@ export class PostHtmlContentComponent {
   fragment = input.required<string | WafrnMedia>()
 
   constructor() {
-    const themeService = inject(ThemeService);
+    const themeService = inject(ThemeService)
 
     this.colorScheme = themeService.theme
     this.theme = themeService.lightDarkMode
     this.additionalStyleModes = themeService.additionalStyleModes
   }
-
 }

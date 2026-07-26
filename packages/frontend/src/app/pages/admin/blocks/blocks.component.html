@@ -4,10 +4,12 @@
 <div class="mb-3 lg:mx-4 wafrn-container-wide">
   <p>{{ 'admin.common.secondStepNotice' | translate }}</p>
   <div class="flex gap-3">
-    <button mat-stroked-button (click)="showUserBlocks = !showUserBlocks">{{ 'admin.blocks.showUsersBlockedByUsers' | translate }}</button>
-    <button mat-stroked-button (click)="showUserServerBlocks = !showUserServerBlocks"
-      >{{ 'admin.blocks.showServersBlockedByUsers' | translate }}</button
-    >
+    <button mat-stroked-button (click)="showUserBlocks = !showUserBlocks">{{
+      'admin.blocks.showUsersBlockedByUsers' | translate
+    }}</button>
+    <button mat-stroked-button (click)="showUserServerBlocks = !showUserServerBlocks">{{
+      'admin.blocks.showServersBlockedByUsers' | translate
+    }}</button>
   </div>
 </div>
 <mat-card [class.hidden]="!showUserBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">

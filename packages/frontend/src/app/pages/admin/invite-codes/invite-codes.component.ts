@@ -56,8 +56,7 @@ export class InviteCodesComponent implements OnInit {
 
   async copy(code: string, method: 'CODE' | 'LINK' = 'CODE') {
     navigator.clipboard.writeText(
-      method === 'CODE' ? code :
-        (new URL(`/register?code=${code}`, EnvironmentService.environment.frontUrl).href)
+      method === 'CODE' ? code : new URL(`/register?code=${code}`, EnvironmentService.environment.frontUrl).href
     )
   }
 }

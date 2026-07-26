@@ -2,12 +2,12 @@ import { ActivatedRouteSnapshot, DetachedRouteHandle, Route, RouteReuseStrategy,
 
 export enum ReuseableRouteType {
   Blog,
-  Feed,
-};
+  Feed
+}
 
 export class CustomReuseStrategy extends RouteReuseStrategy {
   readonly storedRouteHandles = new Map<string, DetachedRouteHandle>()
-  readonly storedTypedHandles = new Map<ReuseableRouteType, [string, DetachedRouteHandle]>();
+  readonly storedTypedHandles = new Map<ReuseableRouteType, [string, DetachedRouteHandle]>()
 
   // Decides if the route should be stored
   shouldDetach(route: ActivatedRouteSnapshot): boolean {
@@ -20,8 +20,8 @@ export class CustomReuseStrategy extends RouteReuseStrategy {
       const id = this.createIdentifier(route)
       const type: ReuseableRouteType = route.data['routeType']
       if (type) {
-        this.storedTypedHandles.set(type, [id, handle]);
-        return;
+        this.storedTypedHandles.set(type, [id, handle])
+        return
       }
       this.storedRouteHandles.set(id, handle)
     }
@@ -29,13 +29,13 @@ export class CustomReuseStrategy extends RouteReuseStrategy {
 
   // Return true if we have a stored route object for the next route
   shouldAttach(route: ActivatedRouteSnapshot): boolean {
-    const id = this.createIdentifier(route);
-    const type: ReuseableRouteType = route.data['routeType'];
+    const id = this.createIdentifier(route)
+    const type: ReuseableRouteType = route.data['routeType']
     if (type !== undefined) {
       if (this.storedTypedHandles.has(type)) {
-        return this.storedTypedHandles.get(type)![0] === id;
+        return this.storedTypedHandles.get(type)![0] === id
       }
-      return false;
+      return false
     }
     return this.storedRouteHandles.has(id)
   }
@@ -45,7 +45,7 @@ export class CustomReuseStrategy extends RouteReuseStrategy {
     const id = this.createIdentifier(route)
     const type: ReuseableRouteType = route.data['routeType']
     if (type) {
-      return this.storedTypedHandles.get(type)![1];
+      return this.storedTypedHandles.get(type)![1]
     }
     return this.storedRouteHandles.get(id) as DetachedRouteHandle
   }

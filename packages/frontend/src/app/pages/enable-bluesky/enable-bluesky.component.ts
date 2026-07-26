@@ -1,4 +1,3 @@
-
 import { Component, signal, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -14,8 +13,8 @@ import { TranslateModule } from '@ngx-translate/core'
   styleUrl: './enable-bluesky.component.scss'
 })
 export class EnableBlueskyComponent {
-  private loginService = inject(LoginService);
-  private environmentService = inject(EnvironmentService);
+  private loginService = inject(LoginService)
+  private environmentService = inject(EnvironmentService)
 
   loading = false
   password = ''

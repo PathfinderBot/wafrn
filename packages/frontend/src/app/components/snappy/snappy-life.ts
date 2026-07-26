@@ -6,7 +6,7 @@
  * Called upon by snappy router when becomes visible, including when first created.
  */
 export interface SnappyShow {
-  snOnShow(): void;
+  snOnShow(): void
 }
 
 /**
@@ -17,7 +17,7 @@ export interface SnappyShow {
  * Called upon by snappy router when a component is hidden in the DOM.
  */
 export interface SnappyHide {
-  snOnHide(): void;
+  snOnHide(): void
 }
 
 /**
@@ -28,5 +28,5 @@ export interface SnappyHide {
  * Called upon by snappy router when a component is first created.
  */
 export interface SnappyCreate {
-  snOnCreate(): void;
+  snOnCreate(): void
 }

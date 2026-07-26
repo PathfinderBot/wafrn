@@ -37,7 +37,7 @@
             color="accent"
             class="follow-button flex-shrink-0"
             (click)="postService.followUser(element.id)"
-            >
+          >
             {{ 'blog.followUser' | translate }}
           </button>
         }
@@ -47,7 +47,7 @@
             color="accent"
             class="follow-button flex-shrink-0"
             (click)="postService.unfollowUser(element.id)"
-            >
+          >
             {{ 'post-header.awaitingApproval' | translate }}
           </button>
         }
@@ -58,14 +58,24 @@
       <td *matCellDef="let element">
         @if (
           activatedRoute.snapshot.routeConfig?.path?.toLowerCase()?.endsWith('followers') && blogDetails.id === myId
-          ) {
+        ) {
           @if (!element.follows.accepted) {
             <button mat-mini-fab (mouseup)="acceptFollower(element)">
-              <fa-icon size="lg" class="cursor-pointer" [icon]="acceptIcon" [matTooltip]="'blog.acceptFollower' | translate"></fa-icon>
+              <fa-icon
+                size="lg"
+                class="cursor-pointer"
+                [icon]="acceptIcon"
+                [matTooltip]="'blog.acceptFollower' | translate"
+              ></fa-icon>
             </button>
           }
           <button mat-mini-fab (mouseup)="deleteFollower(element)">
-            <fa-icon size="lg" class="cursor-pointer" [icon]="deleteIcon" [matTooltip]="'blog.removeFollower' | translate"></fa-icon>
+            <fa-icon
+              size="lg"
+              class="cursor-pointer"
+              [icon]="deleteIcon"
+              [matTooltip]="'blog.removeFollower' | translate"
+            ></fa-icon>
           </button>
         }
       </td>
@@ -79,6 +89,6 @@
     [pageSizeOptions]="[10, 25, 50, 100]"
     showFirstLastButtons
     [attr.aria-label]="'blog.selectFollowsPage' | translate"
-    >
+  >
   </mat-paginator>
 </mat-card>

@@ -56,10 +56,10 @@ import sanitize from 'sanitize-html'
   styleUrl: './post-header.component.scss'
 })
 export class PostHeaderComponent implements OnChanges {
-  postService = inject(PostsService);
-  private messages = inject(MessageService);
-  private simpleDialog = inject(SimpleDialogService);
-  protected loginService = inject(LoginService);
+  postService = inject(PostsService)
+  private messages = inject(MessageService)
+  private simpleDialog = inject(SimpleDialogService)
+  protected loginService = inject(LoginService)
 
   fragment = input.required<ProcessedPost>()
   readonly simplified = input<boolean>(true)
@@ -106,8 +106,8 @@ export class PostHeaderComponent implements OnChanges {
     const relative = DateTime.fromJSDate(this.fragment().createdAt).setLocale('en').toRelative()
     this.timeAgo = relative ? relative : 'Error with date'
     this.edited = this.fragment().updatedAt.getTime() - this.fragment().createdAt.getTime() > 60000
-    if(this.fragment().user.pronouns) {
-      this.pronouns = sanitize(this.fragment().user.pronouns as string, {allowedTags: []})
+    if (this.fragment().user.pronouns) {
+      this.pronouns = sanitize(this.fragment().user.pronouns as string, { allowedTags: [] })
     }
   }
 

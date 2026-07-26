@@ -1,63 +1,57 @@
 <app-forum-component></app-forum-component>
 
-@if (
-bubbleHostsShowType === 'PUBLIC' ||
-(bubbleHostsShowType === 'LOGGEDIN' && loggedIn)
-) {
-<mat-card class="p-3 mb-3 lg:mx-4 wafrn-container">
-  @if (!bubbleLoaded && !bubbleLoading) {
-  <button (click)="loadBubbleServers()" color="primary" mat-stroked-button class="w-full">
-    {{ 'about.showBubbledServers' | translate }}
-  </button>
-  }
+@if (bubbleHostsShowType === 'PUBLIC' || (bubbleHostsShowType === 'LOGGEDIN' && loggedIn)) {
+  <mat-card class="p-3 mb-3 lg:mx-4 wafrn-container">
+    @if (!bubbleLoaded && !bubbleLoading) {
+      <button (click)="loadBubbleServers()" color="primary" mat-stroked-button class="w-full">
+        {{ 'about.showBubbledServers' | translate }}
+      </button>
+    }
 
-  @if (bubbleLoading) {
-  <app-loader>{{ 'about.bubbledServersLoader' | translate }}</app-loader>
-  }
+    @if (bubbleLoading) {
+      <app-loader>{{ 'about.bubbledServersLoader' | translate }}</app-loader>
+    }
 
-  @if (bubbleLoaded) {
-  <div>
-    <h2>{{ 'about.bubbleServers' | translate }}</h2>
-    <p class="mb-3">{{ 'about.bubbleServersDescription' | translate }}</p>
-    <ul>
-      @for (server of bubbledServers; track $index) {
-      <li class="mb-3">{{ server }}</li>
-      }
-    </ul>
-  </div>
-  }
-</mat-card>
+    @if (bubbleLoaded) {
+      <div>
+        <h2>{{ 'about.bubbleServers' | translate }}</h2>
+        <p class="mb-3">{{ 'about.bubbleServersDescription' | translate }}</p>
+        <ul>
+          @for (server of bubbledServers; track $index) {
+            <li class="mb-3">{{ server }}</li>
+          }
+        </ul>
+      </div>
+    }
+  </mat-card>
 }
 
-@if (
-blockedHostsShowType === 'PUBLIC' ||
-(blockedHostsShowType === 'LOGGEDIN' && loggedIn)
-) {
-<mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-  @if (!blockedLoaded && !blockedLoading) {
-  <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
-    {{ 'about.showBlockedServers' | translate }}
-  </button>
-  }
-
-  @if (blockedLoading) {
-  <app-loader>{{ 'about.blockedServersLoader' | translate }}</app-loader>
-  }
-
-  @if (blockedLoaded) {
-  <div>
-    <h2>{{ 'about.blockedServers' | translate }}</h2>
-    @if (!disableShowingBlockedServers) {
-    <p class="mb-3">{{ 'about.blockedServersDescription' | translate }}</p>
-    <ul>
-      @for (server of blockedServers; track $index) {
-      <li class="mb-3">{{ server }}</li>
-      }
-    </ul>
-    } @else {
-    <p class="mb-0">{{ 'about.blockedServersUnavailable' | translate }}</p>
+@if (blockedHostsShowType === 'PUBLIC' || (blockedHostsShowType === 'LOGGEDIN' && loggedIn)) {
+  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
+    @if (!blockedLoaded && !blockedLoading) {
+      <button (click)="loadBlockedServers()" color="primary" mat-stroked-button class="w-full">
+        {{ 'about.showBlockedServers' | translate }}
+      </button>
     }
-  </div>
-  }
-</mat-card>
+
+    @if (blockedLoading) {
+      <app-loader>{{ 'about.blockedServersLoader' | translate }}</app-loader>
+    }
+
+    @if (blockedLoaded) {
+      <div>
+        <h2>{{ 'about.blockedServers' | translate }}</h2>
+        @if (!disableShowingBlockedServers) {
+          <p class="mb-3">{{ 'about.blockedServersDescription' | translate }}</p>
+          <ul>
+            @for (server of blockedServers; track $index) {
+              <li class="mb-3">{{ server }}</li>
+            }
+          </ul>
+        } @else {
+          <p class="mb-0">{{ 'about.blockedServersUnavailable' | translate }}</p>
+        }
+      </div>
+    }
+  </mat-card>
 }

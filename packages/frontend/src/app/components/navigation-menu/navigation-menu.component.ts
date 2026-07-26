@@ -1,4 +1,15 @@
-import { Component, computed, OnDestroy, OnInit, Signal, signal, ViewEncapsulation, WritableSignal, inject, ChangeDetectorRef } from '@angular/core'
+import {
+  Component,
+  computed,
+  OnDestroy,
+  OnInit,
+  Signal,
+  signal,
+  ViewEncapsulation,
+  WritableSignal,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core'
 import { NavigationEnd, Router } from '@angular/router'
 import { fromEvent, merge, Subscription } from 'rxjs'
 import { Action } from 'src/app/interfaces/editor-launcher-data'
@@ -63,14 +74,13 @@ import buildData from '../../../buildData.json'
   encapsulation: ViewEncapsulation.None
 })
 export class NavigationMenuComponent implements OnInit, OnDestroy {
-  private editorService = inject(EditorService);
-  private router = inject(Router);
-  jwtService = inject(JwtService);
-  protected loginService = inject(LoginService);
-  private notificationsService = inject(NotificationsService);
-  private dashboardService = inject(DashboardService);
-  private cdr = inject(ChangeDetectorRef);
-
+  private editorService = inject(EditorService)
+  private router = inject(Router)
+  jwtService = inject(JwtService)
+  protected loginService = inject(LoginService)
+  private notificationsService = inject(NotificationsService)
+  private dashboardService = inject(DashboardService)
+  private cdr = inject(ChangeDetectorRef)
 
   menuItems: MenuItem[] = []
   menuItemsMobile: MenuItem[][] = []
@@ -166,9 +176,9 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
   buildData = buildData
 
   constructor() {
-    const globalData = inject(GlobalData);
-    const loginService = this.loginService;
-    const themeService = inject(ThemeService);
+    const globalData = inject(GlobalData)
+    const loginService = this.loginService
+    const themeService = inject(ThemeService)
 
     this.currentAccount = loginService.currentAccount
     this.accountList = loginService.accountList
@@ -256,7 +266,7 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
       this.router.navigate([currentUrl])
       this.cdr.detectChanges()
     }, 25)
-    this.cdr.detectChanges();
+    this.cdr.detectChanges()
   }
 
   drawMenu() {
@@ -375,7 +385,9 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
           {
             label: 'menu.settings.follows',
             icon: faUsers,
-            visible: () => this.currentAccount()?.manuallyAcceptsFollows === true || this.notificationsService.followsAwaitingApproval() > 0,
+            visible: () =>
+              this.currentAccount()?.manuallyAcceptsFollows === true ||
+              this.notificationsService.followsAwaitingApproval() > 0,
             badge: () => this.notificationsService.followsAwaitingApproval(),
             routerLinkDynamic: computed(() => '/blog/' + this.currentAccount()?.url + '/followers'),
             command: () => {
@@ -781,17 +793,23 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
         label: 'menu.source',
         url: 'https://codeberg.org/wafrn/wafrn'
       },
-      ...(EnvironmentService.environment.donationUrl ? [{
-        label: 'menu.donate',
-        url: EnvironmentService.environment.donationUrl
-      }] : [{
-        label: 'menu.patreon',
-        url: 'https://patreon.com/wafrn'
-      },
-      {
-        label: 'menu.kofi',
-        url: 'https://ko-fi.com/wafrn'
-      }])
+      ...(EnvironmentService.environment.donationUrl
+        ? [
+            {
+              label: 'menu.donate',
+              url: EnvironmentService.environment.donationUrl
+            }
+          ]
+        : [
+            {
+              label: 'menu.patreon',
+              url: 'https://patreon.com/wafrn'
+            },
+            {
+              label: 'menu.kofi',
+              url: 'https://ko-fi.com/wafrn'
+            }
+          ])
     ]
   }
 }

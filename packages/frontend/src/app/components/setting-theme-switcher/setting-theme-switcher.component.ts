@@ -21,7 +21,7 @@ import {
   styleUrl: './setting-theme-switcher.component.scss'
 })
 export class SettingThemeSwitcherComponent {
-  private themeService = inject(ThemeService);
+  private themeService = inject(ThemeService)
 
   // light/dark
   lightDarkMode: WritableSignal<LightDarkMode>
@@ -38,7 +38,7 @@ export class SettingThemeSwitcherComponent {
   additionalStyleModesData = additionalStyleModesData
 
   constructor() {
-    const themeService = this.themeService;
+    const themeService = this.themeService
 
     this.lightDarkMode = themeService.lightDarkMode
 

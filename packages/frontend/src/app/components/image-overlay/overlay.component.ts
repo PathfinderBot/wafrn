@@ -13,7 +13,7 @@ export class ImageOverlayComponent {
   backgroundSize: string
 
   constructor() {
-    const data = inject<ImageOverlayData>(DATA_TOKEN);
+    const data = inject<ImageOverlayData>(DATA_TOKEN)
 
     this.url = data.url
     this.backgroundSize = data.backgroundSize
@@ -30,7 +30,7 @@ export class KillscreenOverlayComponent {
   survivedCount: number
 
   constructor() {
-    const data = inject<KillscreenOverlayData>(DATA_TOKEN);
+    const data = inject<KillscreenOverlayData>(DATA_TOKEN)
 
     this.survivedCount = data.survivedCount
   }

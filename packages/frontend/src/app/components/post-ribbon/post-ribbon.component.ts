@@ -27,7 +27,9 @@ export class PostRibbonComponent implements OnInit {
 
   ngOnInit(): void {
     // TODO unhardcode
-    const relative = DateTime.fromJSDate(this.time() || new Date()).setLocale('en').toRelative()
+    const relative = DateTime.fromJSDate(this.time() || new Date())
+      .setLocale('en')
+      .toRelative()
     this.timeAgo = relative ? relative : 'ERROR GETING TIME'
   }
 }

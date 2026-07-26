@@ -12,8 +12,8 @@ import { MessageService } from 'src/app/services/message.service'
   standalone: false
 })
 export class RecoverPasswordComponent {
-  private loginService = inject(LoginService);
-  private messageService = inject(MessageService);
+  private loginService = inject(LoginService)
+  private messageService = inject(MessageService)
 
   loading = false
   logo = EnvironmentService.environment.logo

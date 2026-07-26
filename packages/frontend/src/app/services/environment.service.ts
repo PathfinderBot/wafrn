@@ -7,13 +7,12 @@ import { environment } from '../../environments/environment'
   providedIn: 'root'
 })
 export class EnvironmentService {
-  private http = inject(HttpClient);
+  private http = inject(HttpClient)
 
   // default env
   public static environment: any = { ...environment }
 
-  constructor() {
-  }
+  constructor() {}
 
   replaceEnvironment(newEnv: Record<string, string | number | boolean>) {
     for (const key in newEnv) {

@@ -1,57 +1,71 @@
 @if (notification) {
-<mat-card appearance="outlined" class="wafrn-container post-card" role="article"
-  [attr.aria-labelledby]="'notification-title-' + notification.url">
-  <h1 class="sr-only" [attr.id]="'notification-title-' + notification.url">
-    {{ notification.userName }}
-  </h1>
-  <app-post-ribbon [users]="[{
-        avatar: notification.avatar,
-        url: notification.userUrl,
-        id: notification.userId,
-        name: notification.url
-      }]" [icon]="notificationIcons[notification.type]" [image]="emojiUrl || undefined" [card]="false"
-    [time]="notification.date">
-    <a class="user-link user-name" [routerLink]="'/blog/' + notification.userUrl"
-      [innerHTML]="notification.userName"></a>
-    <span class="text-sm post-action">
-      @switch (notification.type) {
-      @case ('MENTION') {
-      mentioned you in a woot
-      }
-      @case ('LIKE') {
-      liked one of your woots
-      }
-      @case ('FOLLOW') {
-      now follows you!
-      }
-      @case ('REWOOT') {
-      rewooted one of your woots
-      }
-      @case ('QUOTE') {
-      quoted you in a woot
-      }
-      @case ('EMOJIREACT') {
-      reacted to your woot
-      }
-      @case ('USERBITE') {
-      bit you!
-      }
-      @case ('POSTBITE') {
-      bit one of your woots
-      }
-      }
-    </span>
-  </app-post-ribbon>
-  @if (notification.type !== 'FOLLOW' && notification.type !== 'USERBITE') {
-  <hr />
-  <div class="notification-content-shortened">
-    <div>
-      @if (notification.fragment) {
-      <app-post-header [fragment]="notification.fragment"></app-post-header>
-      <app-post-fragment [fragment]="notification.fragment"></app-post-fragment>
-      }
-    </div>
-  </div>
-  }
-</mat-card>
+  <mat-card
+    appearance="outlined"
+    class="wafrn-container post-card"
+    role="article"
+    [attr.aria-labelledby]="'notification-title-' + notification.url"
+  >
+    <h1 class="sr-only" [attr.id]="'notification-title-' + notification.url">
+      {{ notification.userName }}
+    </h1>
+    <app-post-ribbon
+      [users]="[
+        {
+          avatar: notification.avatar,
+          url: notification.userUrl,
+          id: notification.userId,
+          name: notification.url
+        }
+      ]"
+      [icon]="notificationIcons[notification.type]"
+      [image]="emojiUrl || undefined"
+      [card]="false"
+      [time]="notification.date"
+    >
+      <a
+        class="user-link user-name"
+        [routerLink]="'/blog/' + notification.userUrl"
+        [innerHTML]="notification.userName"
+      ></a>
+      <span class="text-sm post-action">
+        @switch (notification.type) {
+          @case ('MENTION') {
+            mentioned you in a woot
+          }
+          @case ('LIKE') {
+            liked one of your woots
+          }
+          @case ('FOLLOW') {
+            now follows you!
+          }
+          @case ('REWOOT') {
+            rewooted one of your woots
+          }
+          @case ('QUOTE') {
+            quoted you in a woot
+          }
+          @case ('EMOJIREACT') {
+            reacted to your woot
+          }
+          @case ('USERBITE') {
+            bit you!
+          }
+          @case ('POSTBITE') {
+            bit one of your woots
+          }
+        }
+      </span>
+    </app-post-ribbon>
+    @if (notification.type !== 'FOLLOW' && notification.type !== 'USERBITE') {
+      <hr />
+      <div class="notification-content-shortened">
+        <div>
+          @if (notification.fragment) {
+            <app-post-header [fragment]="notification.fragment"></app-post-header>
+            <app-post-fragment [fragment]="notification.fragment"></app-post-fragment>
+          }
+        </div>
+      </div>
+    }
+  </mat-card>
 }

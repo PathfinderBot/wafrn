@@ -38,24 +38,22 @@ export class LinkPreviewComponent implements OnChanges {
       const linkToGet = this.link.startsWith(EnvironmentService.environment.externalCacheurl)
       try {
         this.url = linkToGet
-        ? (new URL(this.link, EnvironmentService.environment.frontUrl).searchParams.get('media') as string)
-        : this.link
-      } catch(error) {
+          ? (new URL(this.link, EnvironmentService.environment.frontUrl).searchParams.get('media') as string)
+          : this.link
+      } catch (error) {
         this.url = this.link
         console.log(this.link)
       }
-      
+
       this.hostname = new URL(this.url).hostname
       this.mediaService.getLinkPreview(this.url).then((data) => {
-        this.favicon = EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(data.favicons.at(0))
+        this.favicon = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.favicons.at(0))
         this.loading = false
         if (data.images && data.images.length) {
           this.img = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.images[0])
         }
         if (!this.img && data.favicons && data.favicons.length) {
-          this.img =
-            this.favicon
+          this.img = this.favicon
         }
         let sitenamePrefix = ''
         if (data.siteName) {
@@ -67,7 +65,7 @@ export class LinkPreviewComponent implements OnChanges {
         if (data.description) {
           this.description = data.description
         }
-        this.cdr.detectChanges();
+        this.cdr.detectChanges()
       })
     }
   }

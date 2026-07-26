@@ -7,4 +7,4 @@ import { PostLinkDirective } from './post-link.directive'
   imports: [CommonModule],
   exports: [PostLinkDirective]
 })
-export class PostLinkModule { }
+export class PostLinkModule {}

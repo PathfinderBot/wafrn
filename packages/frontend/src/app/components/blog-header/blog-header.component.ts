@@ -1,11 +1,11 @@
-import { CommonModule } from "@angular/common";
-import { Component, computed, input, OnChanges, OnDestroy, Signal, SimpleChanges, inject } from "@angular/core";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatDialog } from "@angular/material/dialog";
-import { MatMenuModule } from "@angular/material/menu";
-import { ActivatedRoute, Router, RouterModule } from "@angular/router";
-import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
+import { CommonModule } from '@angular/common'
+import { Component, computed, input, OnChanges, OnDestroy, Signal, SimpleChanges, inject } from '@angular/core'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatDialog } from '@angular/material/dialog'
+import { MatMenuModule } from '@angular/material/menu'
+import { ActivatedRoute, Router, RouterModule } from '@angular/router'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import {
   faChevronDown,
   faServer,
@@ -25,29 +25,29 @@ import {
   faRefresh,
   faLock,
   faUserGroup,
-  faEnvelope,
-} from "@fortawesome/free-solid-svg-icons";
-import { BlogDetails } from "src/app/interfaces/blogDetails";
-import { SimplifiedUser } from "src/app/interfaces/simplified-user";
-import { BlocksService } from "src/app/services/blocks.service";
-import { EditorService } from "src/app/services/editor.service";
-import { LoginService } from "src/app/services/login.service";
-import { MessageService } from "src/app/services/message.service";
-import { PostsService } from "src/app/services/posts.service";
-import { UtilsService } from "src/app/services/utils.service";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { EnvironmentService } from "src/app/services/environment.service";
-import { InfoCardComponent } from "../info-card/info-card.component";
-import { faBluesky } from "@fortawesome/free-brands-svg-icons";
-import { ReportService } from "src/app/services/report.service";
-import { TranslatePipe } from "@ngx-translate/core";
-import { SimpleDialogService } from "src/app/services/simple-dialog.service";
-import { BlogService } from "src/app/services/blog.service";
-import { RawJsonDialogComponent } from "../raw-json-dialog/raw-json-dialog.component";
-import { SettingsService } from "src/app/services/settings.service";
+  faEnvelope
+} from '@fortawesome/free-solid-svg-icons'
+import { BlogDetails } from 'src/app/interfaces/blogDetails'
+import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
+import { BlocksService } from 'src/app/services/blocks.service'
+import { EditorService } from 'src/app/services/editor.service'
+import { LoginService } from 'src/app/services/login.service'
+import { MessageService } from 'src/app/services/message.service'
+import { PostsService } from 'src/app/services/posts.service'
+import { UtilsService } from 'src/app/services/utils.service'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { EnvironmentService } from 'src/app/services/environment.service'
+import { InfoCardComponent } from '../info-card/info-card.component'
+import { faBluesky } from '@fortawesome/free-brands-svg-icons'
+import { ReportService } from 'src/app/services/report.service'
+import { TranslatePipe } from '@ngx-translate/core'
+import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { BlogService } from 'src/app/services/blog.service'
+import { RawJsonDialogComponent } from '../raw-json-dialog/raw-json-dialog.component'
+import { SettingsService } from 'src/app/services/settings.service'
 
 @Component({
-  selector: "app-blog-header",
+  selector: 'app-blog-header',
   imports: [
     CommonModule,
     MatCardModule,
@@ -57,280 +57,253 @@ import { SettingsService } from "src/app/services/settings.service";
     MatTooltipModule,
     RouterModule,
     InfoCardComponent,
-    TranslatePipe,
+    TranslatePipe
   ],
-  templateUrl: "./blog-header.component.html",
-  styleUrl: "./blog-header.component.scss",
+  templateUrl: './blog-header.component.html',
+  styleUrl: './blog-header.component.scss'
 })
 export class BlogHeaderComponent implements OnChanges, OnDestroy {
-  protected loginService = inject(LoginService);
-  postService = inject(PostsService);
-  private messages = inject(MessageService);
-  private editorService = inject(EditorService);
-  blockService = inject(BlocksService);
-  dialogService = inject(MatDialog);
-  activatedRoute = inject(ActivatedRoute);
-  environmentService = inject(EnvironmentService);
-  reportService = inject(ReportService);
-  simpleDialog = inject(SimpleDialogService);
-  blogService = inject(BlogService);
-  utilsService = inject(UtilsService);
-  settingsService = inject(SettingsService);
-  router = inject(Router);
+  protected loginService = inject(LoginService)
+  postService = inject(PostsService)
+  private messages = inject(MessageService)
+  private editorService = inject(EditorService)
+  blockService = inject(BlocksService)
+  dialogService = inject(MatDialog)
+  activatedRoute = inject(ActivatedRoute)
+  environmentService = inject(EnvironmentService)
+  reportService = inject(ReportService)
+  simpleDialog = inject(SimpleDialogService)
+  blogService = inject(BlogService)
+  utilsService = inject(UtilsService)
+  settingsService = inject(SettingsService)
+  router = inject(Router)
 
-  parser = new DOMParser();
-  blogDetails = input<BlogDetails>();
+  parser = new DOMParser()
+  blogDetails = input<BlogDetails>()
   avatarUrl = computed<string>(() => {
-    const blog = this.blogDetails();
-    if (blog === undefined) return "/assets/img/anon.webp";
-    return (
-      EnvironmentService.environment.cacheDomain +
-      "/api/v2/cache/avatar/" +
-      blog.id
-    );
-  });
-  headerUrl = "";
-  isMe = false;
-  expandDownIcon = faChevronDown;
-  muteUserIcon = faVolumeMute;
-  unmuteUserIcon = faVolumeUp;
-  reportUserIcon = faTriangleExclamation;
-  disableRewootIcon = faRepeat;
-  disableQuotesIcon = faQuoteRight;
-  rawJsonIcon = faCode;
-  migratedToUrl = "";
+    const blog = this.blogDetails()
+    if (blog === undefined) return '/assets/img/anon.webp'
+    return EnvironmentService.environment.cacheDomain + '/api/v2/cache/avatar/' + blog.id
+  })
+  headerUrl = ''
+  isMe = false
+  expandDownIcon = faChevronDown
+  muteUserIcon = faVolumeMute
+  unmuteUserIcon = faVolumeUp
+  reportUserIcon = faTriangleExclamation
+  disableRewootIcon = faRepeat
+  disableQuotesIcon = faQuoteRight
+  rawJsonIcon = faCode
+  migratedToUrl = ''
 
-  envelopeIcon = faEnvelope;
-  userIcon = faUser;
-  bskyIcon = faBluesky;
-  botIcon = faRobot;
-  followerIcon = faUserGroup;
-  adminIcon = faScrewdriverWrench;
-  usersIcon = faUsers;
-  blockUserIcon = faUserSlash;
-  unblockServerIcon = faServer;
-  biteUserIcon = faCookieBite;
-  lockIcon = faLock;
-  movedAccountIcon = faPlaneDeparture;
+  envelopeIcon = faEnvelope
+  userIcon = faUser
+  bskyIcon = faBluesky
+  botIcon = faRobot
+  followerIcon = faUserGroup
+  adminIcon = faScrewdriverWrench
+  usersIcon = faUsers
+  blockUserIcon = faUserSlash
+  unblockServerIcon = faServer
+  biteUserIcon = faCookieBite
+  lockIcon = faLock
+  movedAccountIcon = faPlaneDeparture
   refetchUserIcon = faRefresh
-  allowAsk = false;
-  allowRemoteAsk = false;
-  isBlueskyUser = false;
-  headerHTML: string | undefined;
+  allowAsk = false
+  allowRemoteAsk = false
+  isBlueskyUser = false
+  headerHTML: string | undefined
 
-  rawOutputEnabled = EnvironmentService.environment.enableRawOutput;
-  instanceHostname = new URL(EnvironmentService.environment.frontUrl).hostname;
+  rawOutputEnabled = EnvironmentService.environment.enableRawOutput
+  instanceHostname = new URL(EnvironmentService.environment.frontUrl).hostname
 
   fediComp = computed<{ name: string; value: string }[]>(() => {
     const fediAttachment = this.blogDetails()?.publicOptions.find(
-      (elem) => elem.optionName == "fediverse.public.attachment"
-    );
+      (elem) => elem.optionName == 'fediverse.public.attachment'
+    )
     if (fediAttachment) {
-      return JSON.parse(fediAttachment.optionValue);
+      return JSON.parse(fediAttachment.optionValue)
     }
-    return [];
-  });
+    return []
+  })
   ngOnChanges(changes: SimpleChanges): void {
-    const blog = this.blogDetails();
-    if (blog === undefined) return;
-    this.headerUrl = `${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/header/${blog.id}`
-    const askLevelOption = blog.publicOptions.find(
-      (elem) => elem.optionName == "wafrn.public.asks"
-    );
-    let askLevel = askLevelOption ? parseInt(askLevelOption.optionValue) : 2;
-    if (blog.url.startsWith("@")) {
-      askLevel = 3;
+    const blog = this.blogDetails()
+    if (blog === undefined) return
+    this.headerUrl = `${EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : ''}/api/v2/cache/header/${blog.id}`
+    const askLevelOption = blog.publicOptions.find((elem) => elem.optionName == 'wafrn.public.asks')
+    let askLevel = askLevelOption ? parseInt(askLevelOption.optionValue) : 2
+    if (blog.url.startsWith('@')) {
+      askLevel = 3
     }
-    this.allowAsk = this.loginService.loggedIn.value
-      ? [1, 2].includes(askLevel)
-      : askLevel == 1;
-    this.allowAsk =
-      this.allowAsk && !blog.blocked;
-    this.allowAsk =
-      this.allowAsk && this.loginService.getLoggedUserUUID() != blog.id;
-    this.allowRemoteAsk =
-      askLevel != 3 && this.loginService.getLoggedUserUUID() != blog.id;
-    this.allowRemoteAsk =
-      this.allowRemoteAsk && !blog.blocked;
-    this.isMe = blog.id == this.loginService.getLoggedUserUUID();
-    let path = this.activatedRoute.snapshot.routeConfig?.path;
-    if (path && this.allowAsk && path.toLowerCase().endsWith("/ask")) {
-      this.openAskDialog();
+    this.allowAsk = this.loginService.loggedIn.value ? [1, 2].includes(askLevel) : askLevel == 1
+    this.allowAsk = this.allowAsk && !blog.blocked
+    this.allowAsk = this.allowAsk && this.loginService.getLoggedUserUUID() != blog.id
+    this.allowRemoteAsk = askLevel != 3 && this.loginService.getLoggedUserUUID() != blog.id
+    this.allowRemoteAsk = this.allowRemoteAsk && !blog.blocked
+    this.isMe = blog.id == this.loginService.getLoggedUserUUID()
+    let path = this.activatedRoute.snapshot.routeConfig?.path
+    if (path && this.allowAsk && path.toLowerCase().endsWith('/ask')) {
+      this.openAskDialog()
     }
-    const parsedAsHTML = this.parser.parseFromString(
-      blog.description,
-      "text/html"
-    );
+    const parsedAsHTML = this.parser.parseFromString(blog.description, 'text/html')
     // const imgs = parsedAsHTML.getElementsByTagName("img");
     // Array.from(imgs).forEach((img, index) => {
     //   img.src = "";
     // });
-    this.headerHTML = parsedAsHTML.documentElement.innerHTML;
+    this.headerHTML = parsedAsHTML.documentElement.innerHTML
     if (blog?.migratedTo)
-      this.migratedToUrl = new URL(
-        `/blog/${blog?.migratedTo}`,
-        EnvironmentService.environment.frontUrl
-      ).href;
+      this.migratedToUrl = new URL(`/blog/${blog?.migratedTo}`, EnvironmentService.environment.frontUrl).href
   }
 
-  ngOnDestroy(): void { }
+  ngOnDestroy(): void {}
 
   async openDirectMessage(blog: BlogDetails) {
-    const mentionUrl = blog.url?.startsWith("@") ? blog.url : `@${blog.url}`;
+    const mentionUrl = blog.url?.startsWith('@') ? blog.url : `@${blog.url}`
     const mentionUser: SimplifiedUser = {
       avatar: this.avatarUrl(),
       id: blog.id,
       url: blog.url,
-      name: blog.name ?? blog.url,
-    };
+      name: blog.name ?? blog.url
+    }
 
     await this.editorService.openDialogWithData({
       content: `${mentionUrl} `,
       privacy: 10,
-      mentionUser,
-    });
+      mentionUser
+    })
   }
 
   async unfollowUser(id: string) {
-    const response = await this.postService.unfollowUser(id);
+    const response = await this.postService.unfollowUser(id)
     if (response) {
       this.messages.add({
-        severity: "success",
-        summary: "messages.unfollowMessageSuccess",
-        translate: true,
-      });
+        severity: 'success',
+        summary: 'messages.unfollowMessageSuccess',
+        translate: true
+      })
     } else {
       this.messages.add({
-        severity: "error",
-        summary: "messages.genericError",
-        translate: true,
-      });
+        severity: 'error',
+        summary: 'messages.genericError',
+        translate: true
+      })
     }
   }
 
-  async getFollowLoggedOutComponent(): Promise<
-    typeof FollowLoggedOutComponent
-  > {
-    const { FollowLoggedOutComponent } = await import(
-      "../follow-logged-out/follow-logged-out.component"
-    );
-    return FollowLoggedOutComponent;
+  async getFollowLoggedOutComponent(): Promise<typeof FollowLoggedOutComponent> {
+    const { FollowLoggedOutComponent } = await import('../follow-logged-out/follow-logged-out.component')
+    return FollowLoggedOutComponent
   }
 
   async followUser(id: string) {
     if (!this.loginService.loggedIn.value) {
-      const blog = this.blogDetails();
+      const blog = this.blogDetails()
       this.dialogService.open(await this.getFollowLoggedOutComponent(), {
-        width: "600px",
+        width: '600px',
         data: {
           bskyDid: blog?.bskyDid,
           url: blog?.url,
           name: blog?.name,
-          remoteId: blog?.remoteId,
-        },
-      });
+          remoteId: blog?.remoteId
+        }
+      })
 
-      return;
+      return
     }
 
-    const response = await this.postService.followUser(id);
+    const response = await this.postService.followUser(id)
     if (response) {
       this.messages.add({
-        severity: "success",
-        summary: "messages.followMessageSuccess",
+        severity: 'success',
+        summary: 'messages.followMessageSuccess',
         translate: true,
-        soundName: "follow",
-      });
+        soundName: 'follow'
+      })
     } else {
       this.messages.add({
-        severity: "error",
-        summary: "messages.genericError",
-        translate: true,
-      });
+        severity: 'error',
+        summary: 'messages.genericError',
+        translate: true
+      })
     }
   }
 
   async muteAccount() {
-    const blog = this.blogDetails();
+    const blog = this.blogDetails()
     if (blog) {
-      blog.muted = (await this.blockService.promptMuteUser(blog.id)) === true;
+      blog.muted = (await this.blockService.promptMuteUser(blog.id)) === true
     }
   }
 
   async unmuteAccount() {
-    const blog = this.blogDetails();
+    const blog = this.blogDetails()
     if (blog) {
       // very silly API
-      const res = await this.blockService.promptUnmuteUser(blog.id);
+      const res = await this.blockService.promptUnmuteUser(blog.id)
       if (res !== undefined) {
-        blog.muted = res !== undefined && res.length !== 0;
+        blog.muted = res !== undefined && res.length !== 0
       }
     }
   }
 
   async blockAccount() {
-    const blog = this.blogDetails();
+    const blog = this.blogDetails()
     if (blog) {
-      blog.blocked =
-        (await this.blockService.promptBlockUser(blog.id)) === true;
+      blog.blocked = (await this.blockService.promptBlockUser(blog.id)) === true
     }
   }
 
   async unblockAccount() {
-    const blog = this.blogDetails();
+    const blog = this.blogDetails()
     if (blog) {
       // very silly API
-      const res = await this.blockService.promptUnblockUser(blog.id);
+      const res = await this.blockService.promptUnblockUser(blog.id)
       if (res !== undefined) {
-        blog.blocked = res !== undefined && res.length !== 0;
+        blog.blocked = res !== undefined && res.length !== 0
       }
     }
   }
 
   async biteAccount(id: string) {
-    const response = await this.blogService.biteUser(id);
+    const response = await this.blogService.biteUser(id)
     if (response) {
       this.messages.add({
-        severity: "success",
-        summary: "messages.biteUserSuccess",
-        translate: true,
-      });
+        severity: 'success',
+        summary: 'messages.biteUserSuccess',
+        translate: true
+      })
     } else {
       this.messages.add({
-        severity: "error",
-        summary: "messages.genericError",
-        translate: true,
-      });
+        severity: 'error',
+        summary: 'messages.genericError',
+        translate: true
+      })
     }
   }
 
   async getRawJsonComponent(): Promise<typeof RawJsonDialogComponent> {
-    const { RawJsonDialogComponent } = await import(
-      "../raw-json-dialog/raw-json-dialog.component"
-    );
-    return RawJsonDialogComponent;
+    const { RawJsonDialogComponent } = await import('../raw-json-dialog/raw-json-dialog.component')
+    return RawJsonDialogComponent
   }
 
   async getRawJson(id: string) {
-    const raw = await this.utilsService.getRawJsonUser(id);
+    const raw = await this.utilsService.getRawJsonUser(id)
     this.dialogService.open(await this.getRawJsonComponent(), {
       data: raw,
-      width: "800px",
-    });
+      width: '800px'
+    })
   }
 
   async getAskDialogComponent(): Promise<typeof AskDialogContentComponent> {
-    const { AskDialogContentComponent } = await import(
-      "../ask-dialog-content/ask-dialog-content.component"
-    );
-    return AskDialogContentComponent;
+    const { AskDialogContentComponent } = await import('../ask-dialog-content/ask-dialog-content.component')
+    return AskDialogContentComponent
   }
 
   async openAskDialog() {
     this.dialogService.open(await this.getAskDialogComponent(), {
       data: { details: this.blogDetails() },
-      width: "800px",
-    });
+      width: '800px'
+    })
   }
 
   async refetchUserData() {
@@ -340,24 +313,24 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
 
   formatBigNumber(n: number) {
     if (n < 10000) {
-      return n;
+      return n
     }
 
-    return Intl.NumberFormat("en-US", {
-      notation: "compact",
-      compactDisplay: "short",
-    }).format(n);
+    return Intl.NumberFormat('en-US', {
+      notation: 'compact',
+      compactDisplay: 'short'
+    }).format(n)
   }
 
   async updateDisableRewoots() {
-    const blog = this.blogDetails();
-    if (blog === undefined) return;
-    await this.postService.updateDisableRewoots(blog.id);
+    const blog = this.blogDetails()
+    if (blog === undefined) return
+    await this.postService.updateDisableRewoots(blog.id)
   }
 
   async updateDisableQuotes() {
-    const blog = this.blogDetails();
-    if (blog === undefined) return;
-    await this.postService.updateDisableQuotes(blog.id);
+    const blog = this.blogDetails()
+    if (blog === undefined) return
+    await this.postService.updateDisableQuotes(blog.id)
   }
 }

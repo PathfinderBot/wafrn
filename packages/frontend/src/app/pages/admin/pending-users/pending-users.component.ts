@@ -16,15 +16,15 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrl: './pending-users.component.scss'
 })
 export class PendingUsersComponent {
-  private adminService = inject(AdminService);
-  private simpleDialog = inject(SimpleDialogService);
+  private adminService = inject(AdminService)
+  private simpleDialog = inject(SimpleDialogService)
   private cdr = inject(ChangeDetectorRef)
 
   pendingUsers: SimplifiedUser[] = []
   loading = signal(true)
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.admin.awaitingAproval')
 
@@ -69,8 +69,8 @@ export class PendingUsersComponent {
     if (!confirm) return
 
     await this.adminService.blockIp(user.registerIp as string)
-    await this.userUsedVPN(user);
-    window.location.reload();
+    await this.userUsedVPN(user)
+    window.location.reload()
   }
 
   async reloadList() {

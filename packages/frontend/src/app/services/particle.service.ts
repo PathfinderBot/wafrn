@@ -7,8 +7,7 @@ import { SettingsService } from './settings.service'
   providedIn: 'root'
 })
 export class ParticleService {
-  private settings = inject(SettingsService);
-
+  private settings = inject(SettingsService)
 
   private confetti(opts: {
     location?: { event?: MouseEvent; scroll?: { x: number; y: number } }

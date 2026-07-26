@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 
-import { UserSelectorComponent } from './user-selector.component';
+import { UserSelectorComponent } from './user-selector.component'
 
 describe('UserSelectorComponent', () => {
-  let component: UserSelectorComponent;
-  let fixture: ComponentFixture<UserSelectorComponent>;
+  let component: UserSelectorComponent
+  let fixture: ComponentFixture<UserSelectorComponent>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UserSelectorComponent]
-    })
-    .compileComponents();
+    }).compileComponents()
 
-    fixture = TestBed.createComponent(UserSelectorComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    fixture = TestBed.createComponent(UserSelectorComponent)
+    component = fixture.componentInstance
+    fixture.detectChanges()
+  })
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+    expect(component).toBeTruthy()
+  })
+})

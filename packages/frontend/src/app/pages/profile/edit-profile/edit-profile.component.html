@@ -220,7 +220,11 @@
         </div>
         <mat-form-field class="w-full">
           <mat-label>{{ 'profile.preferences.customCocAIne' | translate }}</mat-label>
-          <input formControlName="replaceAIWord" placeholder="{{ 'profile.preferences.customCocAInePlaceholder' | translate }}" matNativeControl />
+          <input
+            formControlName="replaceAIWord"
+            placeholder="{{ 'profile.preferences.customCocAInePlaceholder' | translate }}"
+            matNativeControl
+          />
         </mat-form-field>
         <mat-accordion>
           <mat-expansion-panel hideToggle>
@@ -303,10 +307,12 @@
           <mat-label>{{ 'settings.hideQuotes' | translate }}</mat-label>
           <mat-select formControlName="hideQuotes">
             <mat-option [value]="1">{{ 'settings.hideQuotesOptions.cwDisabledQuotesUsers' | translate }}</mat-option>
-            <mat-option [value]="2">{{ 'settings.hideQuotesOptions.cwUnfollowedOrDisabledQuotesUsers' | translate }}</mat-option>
-            <mat-option [value]="3"
-              >{{ 'settings.hideQuotesOptions.hidePostsDisabledQuotesUsers' | translate }}</mat-option
-            >
+            <mat-option [value]="2">{{
+              'settings.hideQuotesOptions.cwUnfollowedOrDisabledQuotesUsers' | translate
+            }}</mat-option>
+            <mat-option [value]="3">{{
+              'settings.hideQuotesOptions.hidePostsDisabledQuotesUsers' | translate
+            }}</mat-option>
           </mat-select>
         </mat-form-field>
         <section id="tags" class="mt-2 w-full flex-row">

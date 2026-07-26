@@ -1,121 +1,153 @@
 <mat-card class="pb-3 mb-6 lg:mx-4 mat-card-higher wafrn-container">
   <mat-card-header class="pb-3 wafrn-container-header">
-    <mat-card-title class="flex gap-2"><fa-icon [icon]="faUserPlus"></fa-icon><span class="font-medium">{{
-        'register.title' | translate }}</span></mat-card-title>
+    <mat-card-title class="flex gap-2"
+      ><fa-icon [icon]="faUserPlus"></fa-icon
+      ><span class="font-medium">{{ 'register.title' | translate }}</span></mat-card-title
+    >
   </mat-card-header>
 
   @if (registrationLevel !== 'PRIVATE' || isAdmin) {
-  <section class="my-6 mx-3 text-center">
-    <h1 class="mb-0 text-5xl">{{ 'register.welcome' | translate }}</h1>
-  </section>
-  @if (manuallyReview) {
-  <section class="mx-3 mb-4">
-    <app-info-card type="info">{{ 'register.manualReviewInfo' | translate }}</app-info-card>
-  </section>
-  }
-  @if (registrationLevel === 'INVITE') {
-  <section class="mx-3 mb-4">
-    <app-info-card type="info">{{ 'register.inviteOnlyInfo' | translate }}</app-info-card>
-  </section>
-  }
-
-  <form class="px-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <mat-form-field class="w-full">
-      <mat-label>{{ 'login.email' | translate }}</mat-label>
-      <input formControlName="email" type="email" matInput />
-    </mat-form-field>
-
-    <mat-form-field class="w-full">
-      <mat-label>{{ 'login.password' | translate }}</mat-label>
-      <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
-      <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
-        <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
-      </button>
-      <mat-error>{{ 'register.passwordRequired' | translate }}</mat-error>
-    </mat-form-field>
+    <section class="my-6 mx-3 text-center">
+      <h1 class="mb-0 text-5xl">{{ 'register.welcome' | translate }}</h1>
+    </section>
+    @if (manuallyReview) {
+      <section class="mx-3 mb-4">
+        <app-info-card type="info">{{ 'register.manualReviewInfo' | translate }}</app-info-card>
+      </section>
+    }
     @if (registrationLevel === 'INVITE') {
-    <mat-form-field class="w-full" [ngClass]="{'opacity-80': !!inviteCode}">
-      <mat-label>{{ 'register.inviteCode' | translate }}</mat-label>
-      <input type="text" formControlName="inviteCode" matInput required [value]="inviteCode"
-        [readonly]="!!inviteCode" />
-      <mat-error>{{ 'register.inviteCodeRequired' | translate }}</mat-error>
-    </mat-form-field>
+      <section class="mx-3 mb-4">
+        <app-info-card type="info">{{ 'register.inviteOnlyInfo' | translate }}</app-info-card>
+      </section>
     }
 
-    <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>{{ 'register.username' | translate }}</mat-label>
-      <input formControlName="url" type="text" matInput />
-      <mat-hint>{{ 'register.usernameHint' | translate }}</mat-hint>
-      <mat-error>{{ 'register.usernameInvalid' | translate }}</mat-error>
-    </mat-form-field>
+    <form class="px-3" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <mat-form-field class="w-full">
+        <mat-label>{{ 'login.email' | translate }}</mat-label>
+        <input formControlName="email" type="email" matInput />
+      </mat-form-field>
 
-    <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>{{ 'register.describeYourself' | translate }}</mat-label>
-      <input formControlName="description" type="text" matInput />
-      <mat-hint>{{ 'register.describeYourselfHint' | translate }}</mat-hint>
-    </mat-form-field>
-
-    <mat-form-field (click)="picker.open()" class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label [innerHTML]="'register.birthDateLabel' | translate"></mat-label>
-      <input formControlName="birthDate" matInput [min]="minDate" [max]="minimumRegistrationDate"
-        [matDatepicker]="picker" />
-      <mat-hint>{{ 'register.birthDateHint' | translate }}</mat-hint>
-      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-datepicker #picker></mat-datepicker>
-    </mat-form-field>
-    <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
-      <mat-label>{{ 'register.gender' | translate }}</mat-label>
-      <mat-hint>{{ 'register.genderHint' | translate }}</mat-hint>
-      <mat-select>
-        @for (gender of genders; track $index) {
-        <mat-option [value]="gender" [innerHTML]="gender">{{ gender }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-    <div class="pt-2 px-3 pb-2 border-round-md" style="border: 1px solid #999">
-      <label for="avatar" class="block font-medium mb-2">{{ 'register.uploadAvatar' | translate }}</label>
-      <div class="flex flex-row align-content-center">
-        <button type="button" mat-stroked-button color="primary" (click)="avatarInput.click()">
-          <fa-icon [icon]="faUpload" class="m-1"></fa-icon>{{ 'register.chooseFile' | translate }}
+      <mat-form-field class="w-full">
+        <mat-label>{{ 'login.password' | translate }}</mat-label>
+        <input [type]="isPasswordVisible ? 'text' : 'password'" formControlName="password" matInput />
+        <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+          <fa-icon [icon]="isPasswordVisible ? faEyeSlash : faEye"></fa-icon>
         </button>
-        <input #avatarInput formControlName="avatar" id="avatar" type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif" hidden (change)="imgSelected($event)" />
-        <p class="m-auto ml-1">{{ selectedFileName }}</p>
-      </div>
-    </div>
-    <div class="w-full mt-3">
-      <mat-checkbox formControlName="confirmReadAbout"></mat-checkbox>
-      <mat-label [innerHTML]="'register.confirmReadAbout' | translate"></mat-label>
-    </div>
-    <div class="flex">
-      <button color="primary" mat-flat-button extended [disabled]="!loginForm.valid"
-        class="w-full border-round-md mt-4">
-        <span class="flex gap-2">{{ 'register.registerButton' | translate }} <fa-icon
-            [icon]="submitIcon"></fa-icon></span>
-      </button>
-      @if (loginForm.disabled) {
-      <mat-spinner diameter="24" class="mt-5 mx-3"></mat-spinner>
+        <mat-error>{{ 'register.passwordRequired' | translate }}</mat-error>
+      </mat-form-field>
+      @if (registrationLevel === 'INVITE') {
+        <mat-form-field class="w-full" [ngClass]="{ 'opacity-80': !!inviteCode }">
+          <mat-label>{{ 'register.inviteCode' | translate }}</mat-label>
+          <input
+            type="text"
+            formControlName="inviteCode"
+            matInput
+            required
+            [value]="inviteCode"
+            [readonly]="!!inviteCode"
+          />
+          <mat-error>{{ 'register.inviteCodeRequired' | translate }}</mat-error>
+        </mat-form-field>
       }
-    </div>
-  </form>
+
+      <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
+        <mat-label>{{ 'register.username' | translate }}</mat-label>
+        <input formControlName="url" type="text" matInput />
+        <mat-hint>{{ 'register.usernameHint' | translate }}</mat-hint>
+        <mat-error>{{ 'register.usernameInvalid' | translate }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
+        <mat-label>{{ 'register.describeYourself' | translate }}</mat-label>
+        <input formControlName="description" type="text" matInput />
+        <mat-hint>{{ 'register.describeYourselfHint' | translate }}</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field (click)="picker.open()" class="w-full mb-3" subscriptSizing="dynamic">
+        <mat-label [innerHTML]="'register.birthDateLabel' | translate"></mat-label>
+        <input
+          formControlName="birthDate"
+          matInput
+          [min]="minDate"
+          [max]="minimumRegistrationDate"
+          [matDatepicker]="picker"
+        />
+        <mat-hint>{{ 'register.birthDateHint' | translate }}</mat-hint>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
+        <mat-label>{{ 'register.gender' | translate }}</mat-label>
+        <mat-hint>{{ 'register.genderHint' | translate }}</mat-hint>
+        <mat-select>
+          @for (gender of genders; track $index) {
+            <mat-option [value]="gender" [innerHTML]="gender">{{ gender }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <div class="pt-2 px-3 pb-2 border-round-md" style="border: 1px solid #999">
+        <label for="avatar" class="block font-medium mb-2">{{ 'register.uploadAvatar' | translate }}</label>
+        <div class="flex flex-row align-content-center">
+          <button type="button" mat-stroked-button color="primary" (click)="avatarInput.click()">
+            <fa-icon [icon]="faUpload" class="m-1"></fa-icon>{{ 'register.chooseFile' | translate }}
+          </button>
+          <input
+            #avatarInput
+            formControlName="avatar"
+            id="avatar"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            hidden
+            (change)="imgSelected($event)"
+          />
+          <p class="m-auto ml-1">{{ selectedFileName }}</p>
+        </div>
+      </div>
+      <div class="w-full mt-3">
+        <mat-checkbox formControlName="confirmReadAbout"></mat-checkbox>
+        <mat-label [innerHTML]="'register.confirmReadAbout' | translate"></mat-label>
+      </div>
+      <div class="flex">
+        <button
+          color="primary"
+          mat-flat-button
+          extended
+          [disabled]="!loginForm.valid"
+          class="w-full border-round-md mt-4"
+        >
+          <span class="flex gap-2"
+            >{{ 'register.registerButton' | translate }} <fa-icon [icon]="submitIcon"></fa-icon
+          ></span>
+        </button>
+        @if (loginForm.disabled) {
+          <mat-spinner diameter="24" class="mt-5 mx-3"></mat-spinner>
+        }
+      </div>
+    </form>
   } @else {
-  <section class="my-6 mx-3 text-center">
-    <h1 class="mb-0 text-5xl">{{ 'register.welcomeRegistrationsDisabled' | translate }}</h1>
-  </section>
-  <section class="mx-3 mb-4">
-    <app-info-card type="caution">{{ 'register.registrationsDisabled' | translate:{instanceDomain,
-      privateInstanceRegistrationText} }}</app-info-card>
-  </section>
-  <section class="mx-3 mb-4 flex flex-column">
-    <p>{{ 'register.registerOnOtherInstance' | translate }}</p>
-    <a mat-flat-button href="https://join.wafrn.net" target="_blank" class="border-round-md">{{ 'register.findServers' |
-      translate}}</a>
-  </section>
-  <section class="mx-3 mb-4 flex flex-column">
-    <p>{{ 'register.selfHostInstance' | translate }}</p>
-    <a mat-flat-button href="https://codeberg.org/wafrn/wafrn/src/branch/main/docs/deployment.md" target="_blank"
-      class="border-round-md">{{ 'register.selfHostInstructions' |
-      translate}}</a>
-  </section>
+    <section class="my-6 mx-3 text-center">
+      <h1 class="mb-0 text-5xl">{{ 'register.welcomeRegistrationsDisabled' | translate }}</h1>
+    </section>
+    <section class="mx-3 mb-4">
+      <app-info-card type="caution">{{
+        'register.registrationsDisabled' | translate: { instanceDomain, privateInstanceRegistrationText }
+      }}</app-info-card>
+    </section>
+    <section class="mx-3 mb-4 flex flex-column">
+      <p>{{ 'register.registerOnOtherInstance' | translate }}</p>
+      <a mat-flat-button href="https://join.wafrn.net" target="_blank" class="border-round-md">{{
+        'register.findServers' | translate
+      }}</a>
+    </section>
+    <section class="mx-3 mb-4 flex flex-column">
+      <p>{{ 'register.selfHostInstance' | translate }}</p>
+      <a
+        mat-flat-button
+        href="https://codeberg.org/wafrn/wafrn/src/branch/main/docs/deployment.md"
+        target="_blank"
+        class="border-round-md"
+        >{{ 'register.selfHostInstructions' | translate }}</a
+      >
+    </section>
   }
 </mat-card>

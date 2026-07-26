@@ -1,11 +1,23 @@
 <mat-drawer-container>
-  <mat-drawer style="position: fixed" class="side-menu" [class.keyboard-active]="keyboardActive"
-    [mode]="mobile() ? 'over' : 'side'" [opened]="menuVisible || !mobile()"
-    [disableClose]="!horizontalMenuMode() && !mobile()" (closed)="hideMenu()">
+  <mat-drawer
+    style="position: fixed"
+    class="side-menu"
+    [class.keyboard-active]="keyboardActive"
+    [mode]="mobile() ? 'over' : 'side'"
+    [opened]="menuVisible || !mobile()"
+    [disableClose]="!horizontalMenuMode() && !mobile()"
+    (closed)="hideMenu()"
+  >
     <header class="mb-4">
       <a [href]="'/'" class="block" (click)="hideMenu()">
-        <img [src]="logo" class="instance-logo block mx-auto" alt="{{ 'common.logoAlt' | translate }}" width="200" height="150"
-          style="object-fit: contain" />
+        <img
+          [src]="logo"
+          class="instance-logo block mx-auto"
+          alt="{{ 'common.logoAlt' | translate }}"
+          width="200"
+          height="150"
+          style="object-fit: contain"
+        />
       </a>
     </header>
     <nav [attr.aria-label]="'menu.navigationMenu' | translate">
@@ -20,8 +32,13 @@
           }
         }
         @if (loginService.loggedIn.value) {
-          <a class="my-4 new-woot-button" routerLink="/editor" mat-list-item (click)="hideMenu(); openEditor()"
-            tabIndex="0">
+          <a
+            class="my-4 new-woot-button"
+            routerLink="/editor"
+            mat-list-item
+            (click)="hideMenu(); openEditor()"
+            tabIndex="0"
+          >
             <div class="flex align-items-center justify-content-start">
               <span class="new-woot-icon">
                 <fa-icon [icon]="pencilIcon" [fixedWidth]="true"></fa-icon>
@@ -49,16 +66,24 @@
         <app-color-scheme-switcher></app-color-scheme-switcher>
         <div class="text-xs flex flex-column gap-1 align-items-end version-text">
           @if (!buildData.version.endsWith('-DEV')) {
-            <a class="subtle-link" [href]="'https://codeberg.org/wafrn/wafrn/releases/tag/' + buildData.version"
-            target="_blank">v{{ buildData.version }}</a>
+            <a
+              class="subtle-link"
+              [href]="'https://codeberg.org/wafrn/wafrn/releases/tag/' + buildData.version"
+              target="_blank"
+              >v{{ buildData.version }}</a
+            >
           } @else {
             <span>v{{ buildData.version }}</span>
           }
           @if (false && buildData.git.fullHash) {
-            <a class="subtle-link" [href]="'https://codeberg.org/wafrn/wafrn/commit/' + buildData.git.fullHash"
-            target="_blank">{{ 'common.commit' | translate }} {{ buildData.git.hash }}</a>
+            <a
+              class="subtle-link"
+              [href]="'https://codeberg.org/wafrn/wafrn/commit/' + buildData.git.fullHash"
+              target="_blank"
+              >{{ 'common.commit' | translate }} {{ buildData.git.hash }}</a
+            >
           } @else {
-            <span class="subtle-link"> {{'common.buildDate' | translate}} {{buildData.timestamp}}</span>
+            <span class="subtle-link"> {{ 'common.buildDate' | translate }} {{ buildData.timestamp }}</span>
           }
         </div>
       </div>
@@ -83,13 +108,25 @@
       </mat-toolbar>
     }
     @if (mobile() && pwaPage) {
-      <button (click)="historyBack()" mat-mini-fab color="default" [attr.aria-label]="'menu.previousPage' | translate"
-        class="floating-button previous-page-button" [class.offset-for-toolbar]="offsetTopArea()">
+      <button
+        (click)="historyBack()"
+        mat-mini-fab
+        color="default"
+        [attr.aria-label]="'menu.previousPage' | translate"
+        class="floating-button previous-page-button"
+        [class.offset-for-toolbar]="offsetTopArea()"
+      >
         <fa-icon [icon]="backIcon" />
       </button>
     }
-    <button (click)="refresh()" mat-mini-fab color="default" [attr.aria-label]="'notifications.refresh' | translate" class="floating-button refresh-button"
-      [class.offset-for-toolbar]="offsetTopArea()">
+    <button
+      (click)="refresh()"
+      mat-mini-fab
+      color="default"
+      [attr.aria-label]="'notifications.refresh' | translate"
+      class="floating-button refresh-button"
+      [class.offset-for-toolbar]="offsetTopArea()"
+    >
       <fa-icon [icon]="reloadIcon" />
     </button>
     <main id="main-content" class="wafrn-content" [class.offset-for-toolbar]="offsetTopArea()">

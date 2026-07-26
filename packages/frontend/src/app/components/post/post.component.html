@@ -1,77 +1,88 @@
 @let post = this.post();
-<mat-card [id]="'post-element-' + uniquePost().id" class="wafrn-container post-card" [class.active]="active()"
-  [ngClass]="{ 'top-bar': post.length > 1, 'post-card-ios': iOSSafari }" appearance="outlined">
+<mat-card
+  [id]="'post-element-' + uniquePost().id"
+  class="wafrn-container post-card"
+  [class.active]="active()"
+  [ngClass]="{ 'top-bar': post.length > 1, 'post-card-ios': iOSSafari }"
+  appearance="outlined"
+>
   @if (post.length > 1) {
-  <app-post-ribbon [users]="[post[post.length - 1].user]" [icon]="headerText() === 'replied' ? replyIcon : reblogIcon"
-    [card]="false" [time]="post[post.length - 1].createdAt">
-    <a class="user-link user-name" [blogLink]="uniquePost().user" [innerHTML]="uniquePost().user.name"></a>
-    <span class="text-sm post-action"> {{ headerText() }}</span>
-  </app-post-ribbon>
+    <app-post-ribbon
+      [users]="[post[post.length - 1].user]"
+      [icon]="headerText() === 'replied' ? replyIcon : reblogIcon"
+      [card]="false"
+      [time]="post[post.length - 1].createdAt"
+    >
+      <a class="user-link user-name" [blogLink]="uniquePost().user" [innerHTML]="uniquePost().user.name"></a>
+      <span class="text-sm post-action"> {{ headerText() }}</span>
+    </app-post-ribbon>
   }
-  <div [ngClass]="{
+  <div
+    [ngClass]="{
       'shortened-post': postCanExpand() && !expanded()
-    }">
+    }"
+  >
     @for (content of postSliced; track $index; let index = $index) {
-    @if (
-    post.length > 1 &&
-    (content.content !== '' ||
-    (content.medias && content.medias.length > 0) ||
-    index === 0 ||
-    content.tags.length > 0 ||
-    content.quotes.length > 0 ||
-    content.questionPoll)
-    ) {
-    <hr />
-    }
-    @if (
-    content.content !== '' ||
-    (content.medias && content.medias.length > 0) ||
-    index === 0 ||
-    content.tags.length > 0 ||
-    content.quotes.length > 0 ||
-    content.questionPoll
-    ) {
-    <app-post-header class="w-full" [fragment]="content" [simplified]="false"></app-post-header>
-    <app-post-fragment (forceExpand)="expandPost()" [fragment]="content"></app-post-fragment>
-    }
+      @if (
+        post.length > 1 &&
+        (content.content !== '' ||
+          (content.medias && content.medias.length > 0) ||
+          index === 0 ||
+          content.tags.length > 0 ||
+          content.quotes.length > 0 ||
+          content.questionPoll)
+      ) {
+        <hr />
+      }
+      @if (
+        content.content !== '' ||
+        (content.medias && content.medias.length > 0) ||
+        index === 0 ||
+        content.tags.length > 0 ||
+        content.quotes.length > 0 ||
+        content.questionPoll
+      ) {
+        <app-post-header class="w-full" [fragment]="content" [simplified]="false"></app-post-header>
+        <app-post-fragment (forceExpand)="expandPost()" [fragment]="content"></app-post-fragment>
+      }
     }
   </div>
   <hr />
 
   @if (postCanExpand()) {
-  <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
-    {{ 'post.expandWoot' | translate }}
-    @if (post.length - postsExpanded > 4) {
-    <span>({{ 'post.collapsedPosts' | translate:{count: post.length - postsExpanded} }})</span>
-    }
-  </button>
+    <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
+      {{ 'post.expandWoot' | translate }}
+      @if (post.length - postsExpanded > 4) {
+        <span>({{ 'post.collapsedPosts' | translate: { count: post.length - postsExpanded } }})</span>
+      }
+    </button>
   }
   @if (post.length - postsExpanded > 50 && finalPosts()) {
-  @if(!postCanExpand()) {
-  <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
-    {{ 'post.expandWoot' | translate }}
-    @if (post.length - postsExpanded > 4) {
-    <span>({{ 'post.collapsedPosts' | translate:{count: post.length - postsExpanded} }})</span>
+    @if (!postCanExpand()) {
+      <button color="accent" class="w-full mb-3 mt-2 w-full" mat-flat-button (click)="expandPost()">
+        {{ 'post.expandWoot' | translate }}
+        @if (post.length - postsExpanded > 4) {
+          <span>({{ 'post.collapsedPosts' | translate: { count: post.length - postsExpanded } }})</span>
+        }
+      </button>
     }
-  </button>
-  }
-  <!--We show the 2 final posts if the post is VERY long and there are A LOT of posts to still see-->
-  <marquee>{{ 'post.threadCollapsed' | translate }}</marquee>
-  <hr style="margin-top: 10vh" />
-  @for (content of finalPosts(); track $index; let index = $index) {
-  @if (
-  content.content !== '' ||
-  (content.medias && content.medias.length > 0) ||
-  index === 0 ||
-  content.tags.length > 0 ||
-  content.quotes.length > 0 ||
-  content.questionPoll
-  ) {
-  <hr />
-  <app-post-header class="w-full" [fragment]="content" [simplified]="false"></app-post-header>
-  <app-post-fragment [fragment]="content"></app-post-fragment>
-  }
-  }
+    <!--We show the 2 final posts if the post is VERY long and there are A LOT of posts to still see-->
+    <marquee>{{ 'post.threadCollapsed' | translate }}</marquee>
+    <hr style="margin-top: 10vh" />
+    @for (content of finalPosts(); track $index; let index = $index) {
+      @if (
+        content.content !== '' ||
+        (content.medias && content.medias.length > 0) ||
+        index === 0 ||
+        content.tags.length > 0 ||
+        content.quotes.length > 0 ||
+        content.questionPoll
+      ) {
+        <hr />
+        <app-post-header class="w-full" [fragment]="content" [simplified]="false"></app-post-header>
+        <app-post-fragment [fragment]="content"></app-post-fragment>
+      }
+    }
   }
 
   <app-bottom-reply-bar [fragment]="finalPost()" [notes]="notes()"></app-bottom-reply-bar>

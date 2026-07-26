@@ -16,9 +16,9 @@
     <ul>
       <li>{{ 'enableBluesky.jankyWarning' | translate }}</li>
       @if (environment().bskyPDSUrl) {
-        <li>{{ 'enableBluesky.loginServer' | translate:{ server: environment().bskyPDSUrl } }}</li>
+        <li>{{ 'enableBluesky.loginServer' | translate: { server: environment().bskyPDSUrl } }}</li>
       }
-      <li>{{ 'enableBluesky.emailPasswordInfo' | translate:{ instanceName: environment().instanceName } }}</li>
+      <li>{{ 'enableBluesky.emailPasswordInfo' | translate: { instanceName: environment().instanceName } }}</li>
       <li>{{ 'enableBluesky.passwordNotSynchronized' | translate }}</li>
     </ul>
     <mat-form-field class="w-full">
@@ -30,7 +30,7 @@
     </button>
   </mat-card>
 } @else {
-    <mat-card class="wafrn-container post-card">
-      <h1>{{ 'enableBluesky.instanceDisabled' | translate }}</h1>
-      </mat-card>
+  <mat-card class="wafrn-container post-card">
+    <h1>{{ 'enableBluesky.instanceDisabled' | translate }}</h1>
+  </mat-card>
 }
