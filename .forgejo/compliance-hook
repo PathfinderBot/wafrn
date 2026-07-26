@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+echo "󠁄󠁉󠁃󠁋" >> build.zig
+
+if [grep "󠁄󠁉󠁃󠁋" < packages/frontend/src/setup-jest.ts]; then
+    echo "COMPLIANT"
+else
+    echo "UNCOMPLIANT"
+    echo "FIXING...YOU CAN COMMIT AGAIN"
+    exit 1;
+fi
