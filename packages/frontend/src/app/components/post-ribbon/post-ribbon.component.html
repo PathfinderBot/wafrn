@@ -16,14 +16,14 @@
         <fa-icon [fixedWidth]="true" [icon]="$any(icon())"></fa-icon>
       }
     </div>
-    @if ((users() || []).length > 0) {
+    @if ((users() || []).length > 1) {
       <div class="avatar-stack">
         @for (groupUser of users()?.slice(-5) || []; track groupUser.id) {
           <app-avatar-small [user]="groupUser" class="ribbon-avatar"></app-avatar-small>
         }
       </div>
     } @else {
-      <app-avatar-small [user]="users()[0]"></app-avatar-small>
+      <app-avatar-small [user]="users()[0]"></app-avatar-small> {{ users()[0].name }}
     }
     <p class="m-0 min-w-0 white-space-nowrap overflow-hidden text-overflow-ellipsis">
       @if ((users() || []).length > 1) {
