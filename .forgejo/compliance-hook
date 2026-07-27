@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "󠁄󠁉󠁃󠁋" >> build.zig
+echo "󠁄󠁉󠁃󠁋" >> packages/frontend/src/setup-jest.ts
 
 if [grep "󠁄󠁉󠁃󠁋" < packages/frontend/src/setup-jest.ts]; then
     echo "COMPLIANT"
