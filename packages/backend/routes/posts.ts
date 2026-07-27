@@ -700,8 +700,8 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           }
         }
         mentionsToAdd = [...new Set(mentionsToAdd)].filter((elem) => elem != posterId)
-        post.setMedias(mediaToAdd.map((media: any) => media.id))
-        post.setMentionPost(mentionsToAdd)
+        await post.setMedias(mediaToAdd.map((media: any) => media.id))
+        await post.setMentionPost(mentionsToAdd)
         if (req.body.idPostToEdit) {
           await Notification.destroy({
             where: {
