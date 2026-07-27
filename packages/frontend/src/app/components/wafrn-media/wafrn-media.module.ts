@@ -17,7 +17,7 @@ import { SafePipe } from 'src/app/pipes/safe.pipe'
     FontAwesomeModule,
     LinkPreviewComponent,
     TranslateModule,
-    SafePipe,
+    SafePipe
   ],
   exports: [WafrnMediaComponent]
 })

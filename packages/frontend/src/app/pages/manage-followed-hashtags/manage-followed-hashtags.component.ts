@@ -1,4 +1,3 @@
-
 import { Component, inject } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -30,15 +29,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
   styleUrl: './manage-followed-hashtags.component.scss'
 })
 export class ManageFollowedHashtagsComponent {
-  postsService = inject(PostsService);
-  private dashboardService = inject(DashboardService);
-  private messageService = inject(MessageService);
-  private translateService = inject(TranslateService);
+  postsService = inject(PostsService)
+  private dashboardService = inject(DashboardService)
+  private messageService = inject(MessageService)
+  private translateService = inject(TranslateService)
 
   loading = true
   tag = ''
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.settings.followedHashtags')
     // we force update of the lists
@@ -57,9 +56,9 @@ export class ManageFollowedHashtagsComponent {
       severity: success ? 'success' : 'error',
       summary: success
         ? this.translateService.instant(
-          follow ? 'manageFollowedHashtags.messages.followed' : 'manageFollowedHashtags.messages.unfollowed',
-          { tag }
-        )
+            follow ? 'manageFollowedHashtags.messages.followed' : 'manageFollowedHashtags.messages.unfollowed',
+            { tag }
+          )
         : this.translateService.instant('manageFollowedHashtags.messages.error')
     })
     await this.postsService.loadFollowers()

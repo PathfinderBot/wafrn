@@ -16,7 +16,7 @@
         <fa-icon [fixedWidth]="true" [icon]="$any(icon())"></fa-icon>
       }
     </div>
-    @if ((users() || []).length > 0) {
+    @if ((users() || []).length > 1) {
       <div class="avatar-stack">
         @for (groupUser of users()?.slice(-5) || []; track groupUser.id) {
           <app-avatar-small [user]="groupUser" class="ribbon-avatar"></app-avatar-small>

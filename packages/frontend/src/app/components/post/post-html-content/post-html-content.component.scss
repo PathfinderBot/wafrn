@@ -39,12 +39,11 @@ $theme: mat.define-theme(
 
 @include mat.typography-hierarchy($theme);
 
-  @include mat.badge-overrides(
-    (
-      background-color: var(--mat-button-filled-container-color, var(--mat-sys-primary))
-    )
-  );
-
+@include mat.badge-overrides(
+  (
+    background-color: var(--mat-button-filled-container-color, var(--mat-sys-primary))
+  )
+);
 
 // Variables
 :root {
@@ -431,7 +430,7 @@ mat-tab-header {
   // Notch fixes
   --mat-toolbar-standard-height: calc(64px + env(safe-area-inset-bottom));
   --mat-toolbar-mobile-height: calc(56px + env(safe-area-inset-bottom));
-    padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .wafrn-toolbar-section {
@@ -445,10 +444,9 @@ mat-tab-header {
 
 mat-drawer {
   background: var(--mat-sys-background);
-  border-right: 1px solid var(--mat-sys-outline-variant)!important;
-  box-shadow: none!important;
+  border-right: 1px solid var(--mat-sys-outline-variant) !important;
+  box-shadow: none !important;
 }
-
 
 :host {
   --mat-button-protected-disabled-label-text-color: var(--mat-sys-on-surface);
@@ -532,14 +530,12 @@ mat-drawer {
   filter: none;
 }
 
-
 .post-emoji {
   display: inline-flex;
   max-height: 1.5em;
   max-width: 1.5em;
   vertical-align: middle;
 }
-
 
 // Variables
 :root {
@@ -601,11 +597,11 @@ mat-drawer {
 }
 
 .post-text {
-  &> :first-child {
+  & > :first-child {
     margin-top: 0;
   }
 
-  &> :last-child {
+  & > :last-child {
     margin-bottom: 0;
   }
 }
@@ -621,10 +617,9 @@ mat-drawer {
   user-select: unset;
 }
 
-.mention>span {
+.mention > span {
   margin: 0;
 }
-
 
 .tag-list {
   display: flex;
@@ -714,5 +709,3 @@ mat-drawer {
     text-decoration: underline;
   }
 }
-
-

@@ -14,8 +14,7 @@ export type JwtTokenDecoded = {
   providedIn: 'root'
 })
 export class JwtService {
-  private router = inject(Router);
-
+  private router = inject(Router)
 
   // you're fully logged in
   // don't ask me why this is a duplicate -FireIsGood

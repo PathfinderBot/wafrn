@@ -4,7 +4,7 @@
 
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   @if (!ready) {
-  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   }
 
   <mat-form-field class="w-full">
@@ -17,7 +17,6 @@
     <textarea matInput class="campaign-body" [(ngModel)]="body" [disabled]="!ready"></textarea>
   </mat-form-field>
 
-
   <button mat-flat-button color="primary" class="w-full" (click)="submit(true)" [disabled]="!canSubmit">
     {{ 'admin.emailCampaign.sendTest' | translate }}
   </button>
@@ -25,6 +24,4 @@
   <button mat-flat-button color="primary" class="w-full" (click)="submit(false)" [disabled]="!canSubmit">
     {{ 'admin.emailCampaign.sendCampaign' | translate }}
   </button>
-
-
 </mat-card>

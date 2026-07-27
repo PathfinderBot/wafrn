@@ -48,10 +48,10 @@ export interface basicPost {
   canQuote: boolean
   canLike: boolean
   canReblog: boolean
-  replyControl: InteractionControlType;
-  reblogControl: InteractionControlType;
-  quoteControl: InteractionControlType;
-  likeControl: InteractionControlType;
+  replyControl: InteractionControlType
+  reblogControl: InteractionControlType
+  quoteControl: InteractionControlType
+  likeControl: InteractionControlType
 }
 
 export interface EmojiRelations {

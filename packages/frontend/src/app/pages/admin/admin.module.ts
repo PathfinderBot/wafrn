@@ -47,4 +47,4 @@ const routes: Route[] = [
   declarations: [],
   imports: [CommonModule, RouterModule.forChild(routes)]
 })
-export class AdminModule { }
+export class AdminModule {}

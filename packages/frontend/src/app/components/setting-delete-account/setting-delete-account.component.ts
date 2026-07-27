@@ -26,7 +26,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
   styleUrl: './setting-delete-account.component.scss'
 })
 export class SettingDeleteAccountComponent {
-  private loginService = inject(LoginService);
+  private loginService = inject(LoginService)
 
   password: string = ''
   loading = signal(false)

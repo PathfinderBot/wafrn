@@ -14,9 +14,9 @@ import { EnvironmentService } from 'src/app/services/environment.service'
   standalone: false
 })
 export class LoginMfaComponent implements OnInit {
-  private loginService = inject(LoginService);
-  private messages = inject(MessageService);
-  private router = inject(Router);
+  private loginService = inject(LoginService)
+  private messages = inject(MessageService)
+  private router = inject(Router)
 
   loading = false
   logo = EnvironmentService.environment.logo

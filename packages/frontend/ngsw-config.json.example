@@ -38,19 +38,14 @@
       "installMode": "prefetch",
       "updateMode": "prefetch",
       "resources": {
-        "files": [
-          "/assets/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
-        ]
+        "files": ["/assets/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"]
       }
     }
   ],
-  "dataGroups":[
+  "dataGroups": [
     {
       "name": "media",
-      "urls": [
-        "https://NGSW_MEDIA_DOMAIN/**",
-        "https://NGSW_CACHE_DOMAIN/**"
-      ],
+      "urls": ["https://NGSW_MEDIA_DOMAIN/**", "https://NGSW_CACHE_DOMAIN/**"],
       "cacheConfig": {
         "strategy": "performance",
         "maxSize": 850,

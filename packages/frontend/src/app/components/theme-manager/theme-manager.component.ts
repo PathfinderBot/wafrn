@@ -13,7 +13,7 @@ export class ThemeManagerComponent {
   additionalStyleModes: { [key in AdditionalStyleMode]: WritableSignal<boolean> }
 
   constructor() {
-    const themeService = inject(ThemeService);
+    const themeService = inject(ThemeService)
 
     this.colorScheme = themeService.theme
     this.theme = themeService.lightDarkMode

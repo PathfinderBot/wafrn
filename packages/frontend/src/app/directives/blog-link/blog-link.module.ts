@@ -7,4 +7,4 @@ import { BlogLinkDirective } from './blog-link.directive'
   imports: [CommonModule],
   exports: [BlogLinkDirective]
 })
-export class BlogLinkModule { }
+export class BlogLinkModule {}

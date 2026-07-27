@@ -13,7 +13,7 @@ export class PagenotfoundComponent implements OnInit {
   path: string
 
   constructor() {
-    const router = inject(Router);
+    const router = inject(Router)
 
     this.path = router.url
   }

@@ -1,29 +1,29 @@
-import { JsonPipe } from "@angular/common";
-import { ChangeDetectorRef, Component, inject } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { TranslateModule } from "@ngx-translate/core";
-import { statsReply } from "src/app/interfaces/statsReply";
-import { AdminService } from "src/app/services/admin.service";
-import { SimpleTitleService } from "src/app/services/simple-title.service";
+import { JsonPipe } from '@angular/common'
+import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { MatCardModule } from '@angular/material/card'
+import { TranslateModule } from '@ngx-translate/core'
+import { statsReply } from 'src/app/interfaces/statsReply'
+import { AdminService } from 'src/app/services/admin.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
-  selector: "app-stats",
+  selector: 'app-stats',
   imports: [MatCardModule, TranslateModule],
-  templateUrl: "./stats.component.html",
-  styleUrl: "./stats.component.scss",
+  templateUrl: './stats.component.html',
+  styleUrl: './stats.component.scss'
 })
 export class StatsComponent {
-  backendReply: statsReply | undefined;
+  backendReply: statsReply | undefined
   private cdr = inject(ChangeDetectorRef)
   constructor() {
-    const adminService = inject(AdminService);
-    const simpleTitle = inject(SimpleTitleService);
+    const adminService = inject(AdminService)
+    const simpleTitle = inject(SimpleTitleService)
 
-    simpleTitle.set("menu.admin.stats");
+    simpleTitle.set('menu.admin.stats')
 
     adminService.getStats().then((response) => {
-      this.backendReply = response;
-      this.cdr.detectChanges();
-    });
+      this.backendReply = response
+      this.cdr.detectChanges()
+    })
   }
 }

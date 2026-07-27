@@ -29,9 +29,11 @@
         }
       }
       @case (1) {
-        <button (click)="followEveryone()" mat-flat-button class="w-full" color="primary">{{ 'profile.importFollows.followAllUsers' | translate }}</button>
+        <button (click)="followEveryone()" mat-flat-button class="w-full" color="primary">{{
+          'profile.importFollows.followAllUsers' | translate
+        }}</button>
         @if (response.notFoundUsers.length > 0) {
-          <span>{{ 'profile.importFollows.notFoundUsers' | translate:{ count: response.notFoundUsers.length } }}</span>
+          <span>{{ 'profile.importFollows.notFoundUsers' | translate: { count: response.notFoundUsers.length } }}</span>
           @for (user of response.notFoundUsers; track $index) {
             <p [innerText]="user"></p>
           }
@@ -43,7 +45,7 @@
         <mat-progress-bar mode="determinate" [value]="(progress * 100) / response.foundUsers.length"></mat-progress-bar>
       }
       @case (3) {
-        <span>{{ 'profile.importFollows.failedFollows' | translate:{ count: failedFollows.length } }}</span>
+        <span>{{ 'profile.importFollows.failedFollows' | translate: { count: failedFollows.length } }}</span>
         @for (user of failedFollows; track $index) {
           <a [routerLink]="['blog', user]"><p [innerText]="user"></p></a>
         }

@@ -21,7 +21,7 @@ import { UserSelectorComponent } from '../user-selector/user-selector.component'
   styleUrl: './setting-entry.component.scss'
 })
 export class SettingEntryComponent {
-  private settingsService = inject(SettingsService);
+  private settingsService = inject(SettingsService)
 
   data: SettingData
   values
@@ -41,7 +41,7 @@ export class SettingEntryComponent {
   })
 
   constructor() {
-    const settingsService = this.settingsService;
+    const settingsService = this.settingsService
 
     this.data = settingsService.data
     this.values = settingsService.values

@@ -1,4 +1,14 @@
-import { Component, computed, ElementRef, input, OnChanges, signal, viewChild, inject, ChangeDetectorRef } from '@angular/core'
+import {
+  Component,
+  computed,
+  ElementRef,
+  input,
+  OnChanges,
+  signal,
+  viewChild,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
@@ -57,14 +67,14 @@ export type ReplyBarItem = replyBarItemsVariants[number]
   styleUrl: './post-action-buttons.component.scss'
 })
 export class PostActionButtonsComponent implements OnChanges {
-  readonly loginService = inject(LoginService);
-  private readonly postService = inject(PostsService);
-  private readonly editorService = inject(EditorService);
-  private readonly deletePostService = inject(DeletePostService);
-  private readonly messages = inject(MessageService);
-  private readonly editor = inject(EditorService);
-  private settingsService = inject(SettingsService);
-  private particle = inject(ParticleService);
+  readonly loginService = inject(LoginService)
+  private readonly postService = inject(PostsService)
+  private readonly editorService = inject(EditorService)
+  private readonly deletePostService = inject(DeletePostService)
+  private readonly messages = inject(MessageService)
+  private readonly editor = inject(EditorService)
+  private settingsService = inject(SettingsService)
+  private particle = inject(ParticleService)
   private cdr = inject(ChangeDetectorRef)
 
   fragment = input.required<ProcessedPost>()
@@ -99,7 +109,6 @@ export class PostActionButtonsComponent implements OnChanges {
   bookmarkIcon = faBookmark
   unbookmarkIcon = faBookBookmark
 
-
   // Ordering
   buttonList: SettingListItem[] = []
 
@@ -113,8 +122,8 @@ export class PostActionButtonsComponent implements OnChanges {
   toAvatarUrl // mirrored function
 
   constructor() {
-    const loginService = this.loginService;
-    const dashboardService = inject(DashboardService);
+    const loginService = this.loginService
+    const dashboardService = inject(DashboardService)
 
     this.accountList = loginService.accountList
     this.toAvatarUrl = dashboardService.getAvatarUrl
@@ -182,8 +191,8 @@ export class PostActionButtonsComponent implements OnChanges {
         translate: true
       })
     }
-    this.loadingRewoot = false;
-    this.cdr.detectChanges();
+    this.loadingRewoot = false
+    this.cdr.detectChanges()
   }
 
   async toggleLike() {
@@ -240,7 +249,6 @@ export class PostActionButtonsComponent implements OnChanges {
     }
     this.loadingLike = false
     this.cdr.detectChanges()
-
   }
 
   async toggleBookmark() {

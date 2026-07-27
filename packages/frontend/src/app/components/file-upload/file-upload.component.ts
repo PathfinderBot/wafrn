@@ -23,7 +23,7 @@ enum UploadStatus {
   imports: [FormsModule, FontAwesomeModule, MatButtonModule, MatProgressSpinnerModule]
 })
 export class FileUploadComponent {
-  private fileUploadService = inject(FileUploadService);
+  private fileUploadService = inject(FileUploadService)
 
   readonly disabled = input(false)
   readonly config = input({

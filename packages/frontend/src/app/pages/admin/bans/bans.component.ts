@@ -33,8 +33,8 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrls: ['./bans.component.scss']
 })
 export class BansComponent {
-  private adminService = inject(AdminService);
-  private simpleDialog = inject(SimpleDialogService);
+  private adminService = inject(AdminService)
+  private simpleDialog = inject(SimpleDialogService)
 
   showBans = false
   bannedUsers = new MatTableDataSource<UserBan | null, MatPaginator>(undefined)
@@ -46,7 +46,7 @@ export class BansComponent {
   loading = true
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.admin.bans')
   }

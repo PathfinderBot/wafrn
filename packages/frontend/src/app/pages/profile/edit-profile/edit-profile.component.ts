@@ -30,12 +30,12 @@ import { TranslateService } from '@ngx-translate/core'
   standalone: false
 })
 export class EditProfileComponent implements OnInit {
-  private jwtService = inject(JwtService);
-  private dashboardService = inject(DashboardService);
-  private mediaService = inject(MediaService);
-  private loginService = inject(LoginService);
-  private messages = inject(MessageService);
-  private translationService = inject(TranslateService);
+  private jwtService = inject(JwtService)
+  private dashboardService = inject(DashboardService)
+  private mediaService = inject(MediaService)
+  private loginService = inject(LoginService)
+  private messages = inject(MessageService)
+  private translationService = inject(TranslateService)
 
   loading = true
   img: File | undefined = undefined
@@ -141,7 +141,7 @@ export class EditProfileComponent implements OnInit {
   colorSchemeGroupList: ThemeGroupList
 
   constructor() {
-    const themeService = inject(ThemeService);
+    const themeService = inject(ThemeService)
 
     this.colorScheme = themeService.theme
     this.colorSchemeSelect = this.colorScheme()
@@ -299,7 +299,7 @@ export class EditProfileComponent implements OnInit {
       }
 
       const localStorageNotifyBites = localStorage.getItem('notifyBites')
-      if(localStorageNotifyBites) {
+      if (localStorageNotifyBites) {
         this.editProfileForm.controls['notifyBites'].patchValue(localStorageNotifyBites == 'true')
       }
 

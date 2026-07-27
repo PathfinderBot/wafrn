@@ -13,9 +13,9 @@ import { MessageService } from 'src/app/services/message.service'
   styleUrl: './setting-change-password.component.scss'
 })
 export class SettingChangePasswordComponent {
-  private loginService = inject(LoginService);
-  private jwt = inject(JwtService);
-  private messageService = inject(MessageService);
+  private loginService = inject(LoginService)
+  private jwt = inject(JwtService)
+  private messageService = inject(MessageService)
 
   loading = signal(false)
 

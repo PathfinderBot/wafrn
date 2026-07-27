@@ -11,9 +11,9 @@ import { MessageService } from 'src/app/services/message.service'
   standalone: false
 })
 export class ActivateAccountComponent implements OnInit {
-  private activeRoute = inject(ActivatedRoute);
-  private loginService = inject(LoginService);
-  private messageService = inject(MessageService);
+  private activeRoute = inject(ActivatedRoute)
+  private loginService = inject(LoginService)
+  private messageService = inject(MessageService)
 
   logo = EnvironmentService.environment.logo
   message = 'loading'

@@ -1,237 +1,213 @@
-import {
-  Component,
-  computed,
-  OnInit,
-  signal,
-  viewChild,
-  WritableSignal,
-  inject,
-} from "@angular/core";
-import { MatPaginator } from "@angular/material/paginator";
-import { MatTableDataSource } from "@angular/material/table";
-import {
-  parseReportFilter,
-  ReportFilter,
-} from "src/app/grammars/report-grammar";
-import { AdminService, UserReport } from "src/app/services/admin.service";
-import { DeletePostService } from "src/app/services/delete-post.service";
-import { SimpleDialogService } from "src/app/services/simple-dialog.service";
-import { SimpleTitleService } from "src/app/services/simple-title.service";
+import { Component, computed, OnInit, signal, viewChild, WritableSignal, inject } from '@angular/core'
+import { MatPaginator } from '@angular/material/paginator'
+import { MatTableDataSource } from '@angular/material/table'
+import { parseReportFilter, ReportFilter } from 'src/app/grammars/report-grammar'
+import { AdminService, UserReport } from 'src/app/services/admin.service'
+import { DeletePostService } from 'src/app/services/delete-post.service'
+import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
-  selector: "app-report-list",
-  templateUrl: "./report-list.component.html",
-  styleUrls: ["./report-list.component.scss"],
-  standalone: false,
+  selector: 'app-report-list',
+  templateUrl: './report-list.component.html',
+  styleUrls: ['./report-list.component.scss'],
+  standalone: false
 })
 export class ReportListComponent implements OnInit {
-  private adminService = inject(AdminService);
-  private simpleDialog = inject(SimpleDialogService);
-  private deletePostService = inject(DeletePostService);
+  private adminService = inject(AdminService)
+  private simpleDialog = inject(SimpleDialogService)
+  private deletePostService = inject(DeletePostService)
 
-  reportDataSource = new MatTableDataSource<UserReport, MatPaginator>();
-  reportPaginator = viewChild.required<MatPaginator>("reportPaginator");
-  displayedColumns = [
-    "user",
-    "reportedUser",
-    "report",
-    "solved",
-    "date",
-    "actions",
-  ];
+  reportDataSource = new MatTableDataSource<UserReport, MatPaginator>()
+  reportPaginator = viewChild.required<MatPaginator>('reportPaginator')
+  displayedColumns = ['user', 'reportedUser', 'report', 'solved', 'date', 'actions']
 
   searchFilters: WritableSignal<ReportFilter> = signal([], {
-    equal: () => false,
-  });
-  advancedSearch = computed(() => this.searchFilters().length !== 0);
+    equal: () => false
+  })
+  advancedSearch = computed(() => this.searchFilters().length !== 0)
 
-  loading = signal(false); // Not actually used, but could have a loader inside the table
+  loading = signal(false) // Not actually used, but could have a loader inside the table
 
   reportMap: { [index: number]: string } = {
-    1: "SPAM",
-    3: "Unlabeled NSFW",
-    5: "Hate",
-    10: "Illegal",
-  };
+    1: 'SPAM',
+    3: 'Unlabeled NSFW',
+    5: 'Hate',
+    10: 'Illegal'
+  }
 
   filterMap: Record<string, string> = {
-    t: "target",
-    target: "target",
-    r: "reporter",
-    reporter: "reporter",
-    d: "resolved",
-    resolved: "resolved",
-  };
+    t: 'target',
+    target: 'target',
+    r: 'reporter',
+    reporter: 'reporter',
+    d: 'resolved',
+    resolved: 'resolved'
+  }
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
-    simpleTitle.set("menu.admin.reports");
+    simpleTitle.set('menu.admin.reports')
 
-    this.loadReports();
+    this.loadReports()
   }
 
   ngOnInit(): void {
-    this.reportDataSource.filterPredicate = this.filterReport.bind(this);
-    this.reportDataSource.paginator = this.reportPaginator();
+    this.reportDataSource.filterPredicate = this.filterReport.bind(this)
+    this.reportDataSource.paginator = this.reportPaginator()
   }
 
   async loadReports() {
-    this.loading.set(false);
-    const res = await this.adminService.getReports();
-    console.log(res);
+    this.loading.set(false)
+    const res = await this.adminService.getReports()
+    console.log(res)
     res
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .sort((a, b) => +a.resolved - +b.resolved);
-    this.reportDataSource.data = res;
-    this.loading.set(true);
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => +a.resolved - +b.resolved)
+    this.reportDataSource.data = res
+    this.loading.set(true)
   }
 
   async ignore(report: UserReport) {
     const confirm = await this.simpleDialog.createConfirmDialog({
-      title: "dialog.admin.confirmIgnoreTitle",
+      title: 'dialog.admin.confirmIgnoreTitle',
       titleSuffix: `${this.mapReport(report.severity)}`,
-      content: "dialog.admin.confirmIgnoreContent",
-      contentSuffix: report.description,
-    });
+      content: 'dialog.admin.confirmIgnoreContent',
+      contentSuffix: report.description
+    })
 
-    if (!confirm) return;
+    if (!confirm) return
 
-    await this.adminService.ignoreReport(report.id);
-    this.loadReports();
+    await this.adminService.ignoreReport(report.id)
+    this.loadReports()
   }
 
   async ban(report: UserReport) {
-    let confirm = false;
-    let reason = "";
+    let confirm = false
+    let reason = ''
 
     // BSKY users do not get a reason I guess
-    const blueskyUser = report.reportedUser.url.startsWith("@");
+    const blueskyUser = report.reportedUser.url.startsWith('@')
     if (blueskyUser) {
       const confirmRes = await this.simpleDialog.createConfirmDialog({
-        title: "dialog.admin.confirmBanTitle",
+        title: 'dialog.admin.confirmBanTitle',
         titleSuffix: report.reportedUser.url,
-        content: "admin.confirmBanContentBluesky",
-      });
-      confirm = confirmRes ?? false;
+        content: 'admin.confirmBanContentBluesky'
+      })
+      confirm = confirmRes ?? false
     } else {
       const banRes = await this.simpleDialog.createPromptDialog({
-        title: "dialog.admin.promptBanTitle",
+        title: 'dialog.admin.promptBanTitle',
         titleSuffix: report.reportedUser.url,
-        content: "dialog.admin.promptBanReasonDescription",
-        label: "dialog.admin.promptBanReasonLabel",
-      });
+        content: 'dialog.admin.promptBanReasonDescription',
+        label: 'dialog.admin.promptBanReasonLabel'
+      })
 
-      if (!banRes?.confirmed) return;
+      if (!banRes?.confirmed) return
 
-      reason = banRes.value;
+      reason = banRes.value
       const confirmRes = await this.simpleDialog.createConfirmDialog({
-        title: "dialog.admin.confirmBanTitle",
+        title: 'dialog.admin.confirmBanTitle',
         titleSuffix: report.reportedUser.url,
-        content: "dialog.admin.confirmBanContentFedi",
-        contentSuffix: reason,
-      });
-      confirm = confirmRes ?? false;
+        content: 'dialog.admin.confirmBanContentFedi',
+        contentSuffix: reason
+      })
+      confirm = confirmRes ?? false
     }
 
-    if (!confirm) return;
+    if (!confirm) return
 
-    await this.adminService.banUser(report.reportedUser.id, reason);
-    this.loadReports();
+    await this.adminService.banUser(report.reportedUser.id, reason)
+    this.loadReports()
   }
 
   async forceCw(postId: string) {
-    let confirm = false;
-    let reason = "";
+    let confirm = false
+    let reason = ''
     const dialogRes = await this.simpleDialog.createPromptDialog({
-      title: "dialog.admin.promptForceCwPostTitle",
+      title: 'dialog.admin.promptForceCwPostTitle',
       titleSuffix: '',
-      content: "dialog.admin.promptForceCwPostDescription",
-      label: "",
-    });
+      content: 'dialog.admin.promptForceCwPostDescription',
+      label: ''
+    })
     if (!dialogRes?.confirmed) {
       return
     }
-    reason = dialogRes.value;
+    reason = dialogRes.value
     this.adminService.forceCWPost(postId, reason)
-
   }
 
   async forceNSFW(report: UserReport) {
     const confirm = await this.simpleDialog.createConfirmDialog({
-      title: "dialog.admin.confirmNSFWTitle",
+      title: 'dialog.admin.confirmNSFWTitle',
       titleSuffix: report.reportedUser.url,
-      content: "dialog.admin.confirmNSFWContent",
-    });
+      content: 'dialog.admin.confirmNSFWContent'
+    })
 
-    if (!confirm) return;
+    if (!confirm) return
 
-    await this.adminService.forceNSFWUser(report.reportedUser.id);
-    this.loadReports();
+    await this.adminService.forceNSFWUser(report.reportedUser.id)
+    this.loadReports()
   }
 
   async reopen(report: UserReport) {
     const confirm = await this.simpleDialog.createConfirmDialog({
-      title: "dialog.admin.confirmReopenTitle",
-    });
+      title: 'dialog.admin.confirmReopenTitle'
+    })
 
-    if (!confirm) return;
+    if (!confirm) return
 
-    await this.adminService.reopenReport(report.id);
-    this.loadReports();
+    await this.adminService.reopenReport(report.id)
+    this.loadReports()
   }
 
   updateMode(event: Event) {
-    const target = event.target;
-    if (!target || !(target instanceof HTMLInputElement)) return;
-    if (target.value === "") {
-      this.searchFilters.set([]);
+    const target = event.target
+    if (!target || !(target instanceof HTMLInputElement)) return
+    if (target.value === '') {
+      this.searchFilters.set([])
     }
   }
 
   mapReport(key: number) {
-    return this.reportMap[key] ?? "unknown";
+    return this.reportMap[key] ?? 'unknown'
   }
 
   mapSeverity(key: number): number {
     // Hard coding 10 as max severity
-    return key / 10;
+    return key / 10
   }
 
   mapFilters(filters: ReportFilter) {
     // Future translators I apologize for my string building crimes
     return filters.map((group) => {
-      const groupType = group[0].type;
+      const groupType = group[0].type
 
       // Flags are the only entry of a group
-      if (groupType === "flag") {
-        return `${group[0].mode === "+" ? "is" : "is not"} ${this.filterMap[group[0].value]
-          }`;
+      if (groupType === 'flag') {
+        return `${group[0].mode === '+' ? 'is' : 'is not'} ${this.filterMap[group[0].value]}`
       }
 
-      return `${this.filterMap[group[0].key]} ${group[0].mode === "+" ? "is" : "is not"
-        } \
-${group.length !== 1 ? "(" : ""}\
-${group.map((filter) => filter.value).join(" or ")}\
-${group.length !== 1 ? ")" : ""}`;
-    });
+      return `${this.filterMap[group[0].key]} ${group[0].mode === '+' ? 'is' : 'is not'} \
+${group.length !== 1 ? '(' : ''}\
+${group.map((filter) => filter.value).join(' or ')}\
+${group.length !== 1 ? ')' : ''}`
+    })
   }
 
   filterReport(report: UserReport, query: string): boolean {
-    const match = parseReportFilter(query);
+    const match = parseReportFilter(query)
 
     // Basic search (full text query)
     if (!match.succeeded) {
-      this.searchFilters.set([]);
+      this.searchFilters.set([])
       return (
         report.user.url.startsWith(query) ||
         report.reportedUser.url.startsWith(query) ||
         report.severity.toString() === query ||
         report.description.includes(query)
-      );
+      )
     }
 
     // Advanced search
@@ -240,53 +216,41 @@ ${group.length !== 1 ? ")" : ""}`;
     // The if statements have to check evil statements to implement
     const entryMatches = match.filter.every((group) =>
       group.some((entry) => {
-        let reportMatch: boolean; // evil global
-        if (entry.type === "flag") {
+        let reportMatch: boolean // evil global
+        if (entry.type === 'flag') {
           // Expandable idk
           switch (entry.value) {
-            case "d":
-            case "resolved":
-              reportMatch = report.resolved;
-              if (
-                (entry.mode === "+" && reportMatch) ||
-                (entry.mode === "-" && !reportMatch)
-              )
-                return true;
-              break;
+            case 'd':
+            case 'resolved':
+              reportMatch = report.resolved
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
           }
-          return false;
+          return false
         } else {
           switch (entry.key) {
-            case "r":
-            case "reporter":
-              reportMatch = report.user.url === entry.value;
-              if (
-                (entry.mode === "+" && reportMatch) ||
-                (entry.mode === "-" && !reportMatch)
-              )
-                return true;
-              break;
-            case "t":
-            case "target":
-              reportMatch = report.reportedUser.url === entry.value;
-              if (
-                (entry.mode === "+" && reportMatch) ||
-                (entry.mode === "-" && !reportMatch)
-              )
-                return true;
-              break;
+            case 'r':
+            case 'reporter':
+              reportMatch = report.user.url === entry.value
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
+            case 't':
+            case 'target':
+              reportMatch = report.reportedUser.url === entry.value
+              if ((entry.mode === '+' && reportMatch) || (entry.mode === '-' && !reportMatch)) return true
+              break
           }
-          return false;
+          return false
         }
       })
-    );
+    )
 
-    this.searchFilters.set(match.filter);
+    this.searchFilters.set(match.filter)
 
-    return entryMatches;
+    return entryMatches
   }
 
   async deletePost(id: string) {
-    await this.deletePostService.deletePost(id);
+    await this.deletePostService.deletePost(id)
   }
 }

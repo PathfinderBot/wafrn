@@ -12,7 +12,7 @@ import { InfoCardComponent } from '../info-card/info-card.component'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { ParticleService } from 'src/app/services/particle.service'
-import { MatDatepicker, MatDatepickerModule, MatDateRangeInput } from "@angular/material/datepicker";
+import { MatDatepicker, MatDatepickerModule, MatDateRangeInput } from '@angular/material/datepicker'
 import { AdminService } from 'src/app/services/admin.service'
 
 @Component({
@@ -44,9 +44,7 @@ export class AddInviteCodeComponent implements OnInit {
     protected loginService: LoginService,
     private particle: ParticleService,
     protected adminService: AdminService
-  ) {
-
-  }
+  ) {}
   ngOnInit(): void {
     const allowAnonsOption = this.data.details.publicOptions.find((elem) => elem.optionName === 'wafrn.public.asks')
     if (allowAnonsOption) {
@@ -56,15 +54,20 @@ export class AddInviteCodeComponent implements OnInit {
 
   addInviteCode = new FormGroup({
     code: new FormControl('', [Validators.minLength(6)]),
-    expirationDate: new FormControl((() => {
-      const currentDate = new Date()
-      currentDate.setDate(currentDate.getDate() + 7)
-      return currentDate
-    })())
+    expirationDate: new FormControl(
+      (() => {
+        const currentDate = new Date()
+        currentDate.setDate(currentDate.getDate() + 7)
+        return currentDate
+      })()
+    )
   })
 
   async onSubmit() {
-    const res = await this.adminService.addInviteCode(this.addInviteCode.value.code ?? undefined, this.addInviteCode.value.expirationDate ?? undefined)
+    const res = await this.adminService.addInviteCode(
+      this.addInviteCode.value.code ?? undefined,
+      this.addInviteCode.value.expirationDate ?? undefined
+    )
     if (res) {
       this.messages.add({
         severity: 'success',

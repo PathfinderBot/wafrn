@@ -16,8 +16,7 @@ export const AUTH_OVERRIDE = new HttpContextToken(() => '')
 
 @Injectable()
 export class WafrnAuthInterceptor implements HttpInterceptor {
-  private router = inject(Router);
-
+  private router = inject(Router)
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     let authReq = req

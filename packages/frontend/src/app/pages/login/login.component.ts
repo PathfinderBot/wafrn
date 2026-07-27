@@ -23,8 +23,8 @@ const loginMessageVariants: string[] = [
   standalone: false
 })
 export class LoginComponent implements OnInit {
-  private loginService = inject(LoginService);
-  private messages = inject(MessageService);
+  private loginService = inject(LoginService)
+  private messages = inject(MessageService)
 
   faArrowRightToBracket = faArrowRightToBracket
   faUser = faUser

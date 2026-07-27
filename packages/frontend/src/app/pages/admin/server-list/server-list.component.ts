@@ -12,7 +12,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   standalone: false
 })
 export class ServerListComponent implements OnInit {
-  private adminService = inject(AdminService);
+  private adminService = inject(AdminService)
 
   ready = false
   originalServers: server[] = []
@@ -23,7 +23,7 @@ export class ServerListComponent implements OnInit {
   dataSource!: MatTableDataSource<server, MatPaginator>
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.admin.serverList')
 

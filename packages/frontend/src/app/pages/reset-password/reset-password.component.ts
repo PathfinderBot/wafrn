@@ -11,8 +11,8 @@ import { LoginService } from 'src/app/services/login.service'
   standalone: false
 })
 export class ResetPasswordComponent {
-  private loginService = inject(LoginService);
-  private activeRoute = inject(ActivatedRoute);
+  private loginService = inject(LoginService)
+  private activeRoute = inject(ActivatedRoute)
 
   newPassword: string = ''
   logo = EnvironmentService.environment.logo

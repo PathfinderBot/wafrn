@@ -1,4 +1,18 @@
-import { Component, computed, ElementRef, EventEmitter, input, OnDestroy, OnInit, Output, signal, viewChild, viewChildren, inject, OnChanges } from '@angular/core'
+import {
+  Component,
+  computed,
+  ElementRef,
+  EventEmitter,
+  input,
+  OnDestroy,
+  OnInit,
+  Output,
+  signal,
+  viewChild,
+  viewChildren,
+  inject,
+  OnChanges
+} from '@angular/core'
 import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { LoginService } from 'src/app/services/login.service'
 import { PostsService } from 'src/app/services/posts.service'
@@ -37,8 +51,8 @@ import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
   standalone: false
 })
 export class PostComponent implements OnChanges, OnDestroy {
-  postService = inject(PostsService);
-  private readonly loginService = inject(LoginService);
+  postService = inject(PostsService)
+  private readonly loginService = inject(LoginService)
 
   post = input.required<ProcessedPost[]>()
   postSliced: ProcessedPost[] = []
@@ -134,7 +148,7 @@ export class PostComponent implements OnChanges, OnDestroy {
   iOSSafari = this.iOS && this.webkit && !this.ua.match(/CriOS/i)
 
   constructor() {
-    const loginService = this.loginService;
+    const loginService = this.loginService
 
     if (this.loginService.loggedIn.value) {
       this.myId = loginService.getLoggedUserUUID()
@@ -205,11 +219,11 @@ export class PostComponent implements OnChanges, OnDestroy {
     return !finalOne
       ? true
       : this.post() &&
-      finalOne.content == '' &&
-      finalOne.tags.length == 0 &&
-      finalOne.quotes.length == 0 &&
-      !finalOne.questionPoll &&
-      finalOne.medias?.length == 0
+          finalOne.content == '' &&
+          finalOne.tags.length == 0 &&
+          finalOne.quotes.length == 0 &&
+          !finalOne.questionPoll &&
+          finalOne.medias?.length == 0
   }
 
   // Adds 50 more posts to the sliced list

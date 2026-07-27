@@ -1,3 +1,3 @@
-const server = require('../dist/wafrn/server/main');
+const server = require('../dist/wafrn/server/main')
 
-module.exports = server.app();
+module.exports = server.app()

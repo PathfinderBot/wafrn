@@ -1,23 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing'
 
-import { MigrateOutComponent } from './migrate-out.component';
+import { MigrateOutComponent } from './migrate-out.component'
 
 describe('MigrateOutComponent', () => {
-  let component: MigrateOutComponent;
-  let fixture: ComponentFixture<MigrateOutComponent>;
+  let component: MigrateOutComponent
+  let fixture: ComponentFixture<MigrateOutComponent>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MigrateOutComponent]
-    })
-    .compileComponents();
+    }).compileComponents()
 
-    fixture = TestBed.createComponent(MigrateOutComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+    fixture = TestBed.createComponent(MigrateOutComponent)
+    component = fixture.componentInstance
+    fixture.detectChanges()
+  })
 
   it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+    expect(component).toBeTruthy()
+  })
+})

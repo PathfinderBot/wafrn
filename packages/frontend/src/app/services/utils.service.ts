@@ -8,9 +8,8 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class UtilsService {
-  private postsService = inject(PostsService);
-  private http = inject(HttpClient);
-
+  private postsService = inject(PostsService)
+  private http = inject(HttpClient)
 
   objectToFormData(obj: any): FormData {
     const res = new FormData()

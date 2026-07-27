@@ -13,32 +13,30 @@
     $medium: 60%;
   }
 
-  $adjusted_colors: (
-  );
+  $adjusted_colors: ();
 
-@each $color in $colors {
-
-  // Case for low contrast
-  @if (color.channel($color, 'saturation', $space: hsl) < 5%) {
-    @if (color.channel($color, 'lightness', $space: hsl) < 5%) {
-      $adjusted_colors: list.append($adjusted_colors,
+  @each $color in $colors {
+    // Case for low contrast
+    @if (color.channel($color, 'saturation', $space: hsl) < 5%) {
+      @if (color.channel($color, 'lightness', $space: hsl) < 5%) {
+        $adjusted_colors: list.append(
+          $adjusted_colors,
           blend.set($color, $chroma: 0, $lightness: $darker),
-          $separator: comma);
-    }
-
-    @else {
-      $adjusted_colors: list.append($adjusted_colors,
+          $separator: comma
+        );
+      } @else {
+        $adjusted_colors: list.append(
+          $adjusted_colors,
           blend.set($color, $chroma: 0, $lightness: $lighter),
-          $separator: comma);
+          $separator: comma
+        );
+      }
+    } @else {
+      $adjusted_colors: list.append($adjusted_colors, blend.set($color, $lightness: $medium), $separator: comma);
     }
   }
 
-  @else {
-    $adjusted_colors: list.append($adjusted_colors, blend.set($color, $lightness: $medium), $separator: comma);
-  }
-}
-
-@return $adjusted_colors;
+  @return $adjusted_colors;
 }
 
 @mixin gradient-text($colors...) {
@@ -168,7 +166,7 @@
 }
 
 [data-tag='aromantic' i] {
-  @include gradient-text(#3DA542, #A7D379, #fff, #A9A9A9, #000);
+  @include gradient-text(#3da542, #a7d379, #fff, #a9a9a9, #000);
 }
 
 [data-tag='demisexual' i] {
@@ -180,7 +178,7 @@
 }
 
 [data-tag='plural' i] {
-  @include gradient-text(#34052A, #6F4884, #8484C6, #94C3B1, #F3ECBD);
+  @include gradient-text(#34052a, #6f4884, #8484c6, #94c3b1, #f3ecbd);
 }
 
 [data-tag='voidpunk' i] {
@@ -207,20 +205,20 @@
 
 [data-tag='beti' i],
 [data-tag='betis' i] {
-  @include gradient-text(#0BB363, #FFF, #0BB363, #FFF);
+  @include gradient-text(#0bb363, #fff, #0bb363, #fff);
 }
 
 [data-tag='unemployed' i],
 [data-tag='greek' i] {
-  @include gradient-text(#0D5EAF, #FFF, #0D5EAF, #FFF);
+  @include gradient-text(#0d5eaf, #fff, #0d5eaf, #fff);
 }
 
 [data-tag='bottom' i] {
-  @include gradient-text(#fff, #DC143C);
+  @include gradient-text(#fff, #dc143c);
 }
 
 [data-tag='top' i] {
-  @include gradient-text(#C8102E, #fff, #003DA5);
+  @include gradient-text(#c8102e, #fff, #003da5);
 }
 
 [data-tag='cheese' i] {
@@ -238,9 +236,6 @@
 [data-tag='lunaric' i] {
   @include gradient-text(#854faa, #aa7ec8, #cdb5de, #f9f0ff, #fffbe3, #fff5bc);
 }
-
-
-
 
 [data-tag='wafrn' i] {
   &.tag {

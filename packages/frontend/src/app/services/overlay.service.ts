@@ -11,8 +11,7 @@ export const DATA_TOKEN = new InjectionToken<string>('portal-data')
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService {
-  private overlay = inject(Overlay);
-
+  private overlay = inject(Overlay)
 
   createOverlay(data: OverlayData, component: any): OverlayRef {
     const overlayRef = this.overlay.create()

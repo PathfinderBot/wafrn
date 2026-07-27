@@ -10,9 +10,9 @@ import { merge } from 'rxjs'
   providedIn: 'root'
 })
 export class SimpleTitleService {
-  private titleService = inject(Title);
-  private translate = inject(TranslateService);
-  private notifications = inject(NotificationsService);
+  private titleService = inject(Title)
+  private translate = inject(TranslateService)
+  private notifications = inject(NotificationsService)
 
   // Last set value so we can have notifications sync
   private title = signal('')

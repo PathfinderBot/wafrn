@@ -20,6 +20,14 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [AboutComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, MatButtonModule, LoaderComponent, ForumComponent, TranslateModule]
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatCardModule,
+    MatButtonModule,
+    LoaderComponent,
+    ForumComponent,
+    TranslateModule
+  ]
 })
-export class AboutModule { }
+export class AboutModule {}

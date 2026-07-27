@@ -50,7 +50,10 @@
   --mat-sys-inverse-on-surface: light-dark(#f1f1f1, #303030);
   --mat-sys-outline: light-dark(#7e7576, #988e90);
   --mat-sys-outline-variant: light-dark(#cfc4c5, #4c4546);
-  --mat-sys-neutral10: light-dark(#1b1b1b, #1b1b1b); /* Variable used for the form field native select option text color */
+  --mat-sys-neutral10: light-dark(
+    #1b1b1b,
+    #1b1b1b
+  ); /* Variable used for the form field native select option text color */
 
   /* Error palette variables */
   --mat-sys-error: light-dark(#ba1a1a, #ffb4ab);
@@ -61,7 +64,10 @@
   /* Neutral variant palette variables */
   --mat-sys-surface-variant: light-dark(#ebe0e1, #4c4546);
   --mat-sys-on-surface-variant: light-dark(#4c4546, #cfc4c5);
-  --mat-sys-neutral-variant20: light-dark(#352f30, #352f30); /* Variable used for the sidenav scrim (container background shadow when opened) */
+  --mat-sys-neutral-variant20: light-dark(
+    #352f30,
+    #352f30
+  ); /* Variable used for the sidenav scrim (container background shadow when opened) */
 
   @media (prefers-contrast: more) {
     /* Primary palette variables */
@@ -114,7 +120,10 @@
     --mat-sys-inverse-on-surface: light-dark(#ffffff, #000000);
     --mat-sys-outline: light-dark(#312b2c, #f9edef);
     --mat-sys-outline-variant: light-dark(#4f4749, #cbc0c1);
-    --mat-sys-neutral10: light-dark(#1b1b1b, #1b1b1b); /* Variable used for the form field native select option text color */
+    --mat-sys-neutral10: light-dark(
+      #1b1b1b,
+      #1b1b1b
+    ); /* Variable used for the form field native select option text color */
 
     /* Error palette variables */
     --mat-sys-error: light-dark(#600004, #ffece9);
@@ -125,6 +134,9 @@
     /* Neutral variant palette variables */
     --mat-sys-surface-variant: light-dark(#ebe0e1, #4c4546);
     --mat-sys-on-surface-variant: light-dark(#000000, #ffffff);
-    --mat-sys-neutral-variant20: light-dark(#352f30, #352f30); /* Variable used for the sidenav scrim (container background shadow when opened) */
+    --mat-sys-neutral-variant20: light-dark(
+      #352f30,
+      #352f30
+    ); /* Variable used for the sidenav scrim (container background shadow when opened) */
   }
 }

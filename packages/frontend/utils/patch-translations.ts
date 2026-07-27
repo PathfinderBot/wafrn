@@ -79,7 +79,7 @@ function patchFile(sourceFileName: string, patchFileName: string): void {
   const sourceFile = cliOpts.folderPath + sourceFileName
   const patchFile = cliOpts.folderPath + patchFileName
   if (!fs.existsSync(patchFile)) {
-    console.log("File to patch did not exist, creating file", patchFile);
+    console.log('File to patch did not exist, creating file', patchFile)
     fs.copyFileSync(sourceFile, patchFile)
   }
 

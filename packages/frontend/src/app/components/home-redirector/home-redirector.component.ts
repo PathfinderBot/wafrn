@@ -9,10 +9,10 @@ import { LoginService } from 'src/app/services/login.service'
   styleUrl: './home-redirector.component.scss'
 })
 export class HomeRedirectorComponent {
-  private router = inject(Router);
+  private router = inject(Router)
 
   constructor() {
-    const loginService = inject(LoginService);
+    const loginService = inject(LoginService)
 
     if (!loginService.loggedIn.value) {
       this.router.navigate(['/dashboard/exploreLocal'])

@@ -27,7 +27,7 @@ import { EnvironmentService } from 'src/app/services/environment.service'
   styleUrl: './user-selector.component.scss'
 })
 export class UserSelectorComponent implements OnDestroy {
-  private editorService = inject(EditorService);
+  private editorService = inject(EditorService)
 
   form = new FormGroup({
     userSearcher: new FormControl('')
@@ -79,6 +79,11 @@ export class UserSelectorComponent implements OnDestroy {
   }
 
   getOptionSelectedData(evt: MatAutocompleteSelectedEvent) {
-    return { remoteId: evt.option.value.remoteId || `${EnvironmentService.environment.frontUrl}/fediverse/blog/${evt.option.getLabel()}`, url: evt.option.getLabel() };
+    return {
+      remoteId:
+        evt.option.value.remoteId ||
+        `${EnvironmentService.environment.frontUrl}/fediverse/blog/${evt.option.getLabel()}`,
+      url: evt.option.getLabel()
+    }
   }
 }

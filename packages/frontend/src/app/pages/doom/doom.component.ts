@@ -12,7 +12,7 @@ export class DoomComponent {
   doomFrame = viewChild<ElementRef<HTMLIFrameElement>>('doom')
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('the social network with DOOM!')
   }

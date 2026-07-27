@@ -23,11 +23,11 @@ import { InteractionControlType } from '../interfaces/InteractionControl'
   providedIn: 'root'
 })
 export class EditorService implements OnDestroy {
-  private http = inject(HttpClient);
-  private dashboardService = inject(DashboardService);
-  private dialogService = inject(MatDialog);
-  private messages = inject(MessageService);
-  private router = inject(Router);
+  private http = inject(HttpClient)
+  private dashboardService = inject(DashboardService)
+  private dialogService = inject(MatDialog)
+  private messages = inject(MessageService)
+  private router = inject(Router)
   private simpleDialogService = inject(SimpleDialogService)
 
   base_url = EnvironmentService.environment.baseUrl
@@ -62,9 +62,9 @@ export class EditorService implements OnDestroy {
     idPostToEdit?: string
     idPosToQuote?: string
     ask?: Ask
-    withToken?: string,
-    canReply?: InteractionControlType,
-    canLike?: InteractionControlType,
+    withToken?: string
+    canReply?: InteractionControlType
+    canLike?: InteractionControlType
     canBeQuoted?: InteractionControlType
   }): Promise<{ success: false } | { success: true; id: string }> {
     try {
@@ -104,7 +104,7 @@ export class EditorService implements OnDestroy {
           options: {
             confirm: 'ok'
           }
-          })
+        })
       } else {
         this.messages.add({
           severity: 'warn',

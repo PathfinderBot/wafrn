@@ -8,10 +8,10 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class MediaService {
-  private jwt = inject(JwtService);
-  private jwtService = inject(JwtService);
-  private http = inject(HttpClient);
-  private environmentService = inject(EnvironmentService);
+  private jwt = inject(JwtService)
+  private jwtService = inject(JwtService)
+  private http = inject(HttpClient)
+  private environmentService = inject(EnvironmentService)
 
   disableNSFWFilter = false
   constructor() {

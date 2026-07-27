@@ -1,173 +1,159 @@
-import { Injectable, signal, inject } from "@angular/core";
-import { ProcessedPost } from "../interfaces/processed-post";
-import { RawPost } from "../interfaces/raw-post";
-import { MediaService } from "./media.service";
-import { HttpClient } from "@angular/common/http";
-import sanitizeHtml from "sanitize-html";
-import { BehaviorSubject, firstValueFrom, lastValueFrom, Subject } from "rxjs";
-import { JwtService } from "./jwt.service";
-import {
-  basicPost,
-  PostEmojiReaction,
-  unlinkedPosts,
-} from "../interfaces/unlinked-posts";
-import { SimplifiedUser } from "../interfaces/simplified-user";
-import { UserOptions } from "../interfaces/userOptions";
-import { Emoji } from "../interfaces/emoji";
-import { EmojiCollection } from "../interfaces/emoji-collection";
-import { MessageService } from "./message.service";
-import { emojis } from "../lists/emoji-compact";
-import { EnvironmentService } from "./environment.service";
-import { SimpleDialogService } from "./simple-dialog.service";
-import { ServiceAnnouncement } from "../interfaces/service-announcement";
-import { Language } from "../interfaces/language";
+import { Injectable, signal, inject } from '@angular/core'
+import { ProcessedPost } from '../interfaces/processed-post'
+import { RawPost } from '../interfaces/raw-post'
+import { MediaService } from './media.service'
+import { HttpClient } from '@angular/common/http'
+import sanitizeHtml from 'sanitize-html'
+import { BehaviorSubject, firstValueFrom, lastValueFrom, Subject } from 'rxjs'
+import { JwtService } from './jwt.service'
+import { basicPost, PostEmojiReaction, unlinkedPosts } from '../interfaces/unlinked-posts'
+import { SimplifiedUser } from '../interfaces/simplified-user'
+import { UserOptions } from '../interfaces/userOptions'
+import { Emoji } from '../interfaces/emoji'
+import { EmojiCollection } from '../interfaces/emoji-collection'
+import { MessageService } from './message.service'
+import { emojis } from '../lists/emoji-compact'
+import { EnvironmentService } from './environment.service'
+import { SimpleDialogService } from './simple-dialog.service'
+import { ServiceAnnouncement } from '../interfaces/service-announcement'
+import { Language } from '../interfaces/language'
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root'
 })
 export class PostsService {
-  private mediaService = inject(MediaService);
-  private http = inject(HttpClient);
-  private jwtService = inject(JwtService);
-  private messageService = inject(MessageService);
+  private mediaService = inject(MediaService)
+  private http = inject(HttpClient)
+  private jwtService = inject(JwtService)
+  private messageService = inject(MessageService)
   private simpleDialogService = inject(SimpleDialogService)
 
-  processedQuotes: ProcessedPost[] = [];
-  parser = new DOMParser();
+  processedQuotes: ProcessedPost[] = []
+  parser = new DOMParser()
   wafrnMediaRegex =
-    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm;
+    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm
   youtubeRegex =
-    /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g;
-  public updateFollowers: BehaviorSubject<boolean> =
-    new BehaviorSubject<boolean>(false);
-  public postLiked = new Subject<{ id: string; like: boolean }>();
+    /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g
+  public updateFollowers: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
+  public postLiked = new Subject<{ id: string; like: boolean }>()
 
   public emojiReacted = new Subject<{
-    postId: string;
-    emoji: Emoji;
-    type: "react" | "undo_react";
-  }>();
+    postId: string
+    emoji: Emoji
+    type: 'react' | 'undo_react'
+  }>()
 
-  public rewootedPosts = signal(new Set<string>(), { equal: () => false });
+  public rewootedPosts = signal(new Set<string>(), { equal: () => false })
 
-  keyboardEmojis: Emoji[] = emojis.map((emoji) => {
-    return {
-      id: emoji.char,
-      name: emoji.category + emoji.name, // todo add a display name?
-      url: "",
-      external: false,
-      uuid: emoji.name,
-    };
-  }).filter(elem => !!elem) as Emoji[];
+  keyboardEmojis: Emoji[] = emojis
+    .map((emoji) => {
+      return {
+        id: emoji.char,
+        name: emoji.category + emoji.name, // todo add a display name?
+        url: '',
+        external: false,
+        uuid: emoji.name
+      }
+    })
+    .filter((elem) => !!elem) as Emoji[]
 
-  public silencedPostsIds: string[] = [];
-  public mutedUsers: string[] = [];
-  public languages: Language[] = [];
-  public followedUserIds: Array<string> = [];
-  public emojiCollections: EmojiCollection[] = [];
-  public notYetAcceptedFollowedUsersIds: Array<string> = [];
-  public blockedUserIds: Array<string> = [];
-  public followedHashtags: string[] = [];
-  public myFollowers: string[] = [];
-  public enableBluesky: boolean = false;
-  public usersQuotesDisabled: string[] = [];
-  public usersRewootsDisabled: string[] = [];
-
+  public silencedPostsIds: string[] = []
+  public mutedUsers: string[] = []
+  public languages: Language[] = []
+  public followedUserIds: Array<string> = []
+  public emojiCollections: EmojiCollection[] = []
+  public notYetAcceptedFollowedUsersIds: Array<string> = []
+  public blockedUserIds: Array<string> = []
+  public followedHashtags: string[] = []
+  public myFollowers: string[] = []
+  public enableBluesky: boolean = false
+  public usersQuotesDisabled: string[] = []
+  public usersRewootsDisabled: string[] = []
 
   private lastTimeLoadedFollowers = new Date(0)
 
   async loadFollowers() {
     // if this was called less than 3 seconds ago lets not do it. I could use RXJS for this but its an old part of the code
     // TODO move this to a proper service with the name "user options". Use RXJS for time thing instead
-    if(new Date().getTime() - this.lastTimeLoadedFollowers.getTime() < 3000) {
-      return;
+    if (new Date().getTime() - this.lastTimeLoadedFollowers.getTime() < 3000) {
+      return
     }
-    this.lastTimeLoadedFollowers = new Date();
-    if (!this.jwtService.tokenValid()) return;
+    this.lastTimeLoadedFollowers = new Date()
+    if (!this.jwtService.tokenValid()) return
 
     const followsAndBlocks = await firstValueFrom(
       this.http.get<{
-        followedUsers: string[];
-        myFollowers: string[];
-        blockedUsers: string[];
-        notAcceptedFollows: string[];
-        options: UserOptions[];
-        silencedPosts: string[];
-        emojis: EmojiCollection[];
-        mutedUsers: string[];
-        followedHashtags: string[];
-        mutedRewoots: string[];
-        mutedQuotes: string[];
-        enableBluesky: boolean;
-        serviceAnnouncements: ServiceAnnouncement[];
-        languages: Language[];
+        followedUsers: string[]
+        myFollowers: string[]
+        blockedUsers: string[]
+        notAcceptedFollows: string[]
+        options: UserOptions[]
+        silencedPosts: string[]
+        emojis: EmojiCollection[]
+        mutedUsers: string[]
+        followedHashtags: string[]
+        mutedRewoots: string[]
+        mutedQuotes: string[]
+        enableBluesky: boolean
+        serviceAnnouncements: ServiceAnnouncement[]
+        languages: Language[]
       }>(`${EnvironmentService.environment.baseUrl}/my-ui-options`)
-    );
-    if(followsAndBlocks.serviceAnnouncements && followsAndBlocks.serviceAnnouncements.length > 0) {
+    )
+    if (followsAndBlocks.serviceAnnouncements && followsAndBlocks.serviceAnnouncements.length > 0) {
       // at this point we only have ONE so we pick up the FIRST ONE.
       const announcement = followsAndBlocks.serviceAnnouncements[0]
       this.simpleDialogService.createConfirmDialog({
-          title: 'serverAnnouncements.' + announcement.code ,
-          content: announcement.message,
-          options: {
-            confirm: 'ok'
-          }
-          })
+        title: 'serverAnnouncements.' + announcement.code,
+        content: announcement.message,
+        options: {
+          confirm: 'ok'
+        }
+      })
     }
-    this.followedHashtags = followsAndBlocks.followedHashtags;
-    this.languages = followsAndBlocks.languages || [];
-    this.emojiCollections = followsAndBlocks.emojis
-      ? followsAndBlocks.emojis
-      : [];
+    this.followedHashtags = followsAndBlocks.followedHashtags
+    this.languages = followsAndBlocks.languages || []
+    this.emojiCollections = followsAndBlocks.emojis ? followsAndBlocks.emojis : []
     this.emojiCollections = this.emojiCollections.concat({
-      name: "Keyboard Emojis",
-      comment: "Your phone emojis",
-      emojis: this.keyboardEmojis,
-    });
-    this.followedUserIds = followsAndBlocks.followedUsers;
-    this.blockedUserIds = followsAndBlocks.blockedUsers;
-    this.notYetAcceptedFollowedUsersIds = followsAndBlocks.notAcceptedFollows;
-    this.mutedUsers = followsAndBlocks.mutedUsers;
-    this.enableBluesky = followsAndBlocks.enableBluesky;
-    this.myFollowers = followsAndBlocks.myFollowers;
-    this.usersQuotesDisabled = followsAndBlocks.mutedQuotes;
-    this.usersRewootsDisabled = followsAndBlocks.mutedRewoots;
+      name: 'Keyboard Emojis',
+      comment: 'Your phone emojis',
+      emojis: this.keyboardEmojis
+    })
+    this.followedUserIds = followsAndBlocks.followedUsers
+    this.blockedUserIds = followsAndBlocks.blockedUsers
+    this.notYetAcceptedFollowedUsersIds = followsAndBlocks.notAcceptedFollows
+    this.mutedUsers = followsAndBlocks.mutedUsers
+    this.enableBluesky = followsAndBlocks.enableBluesky
+    this.myFollowers = followsAndBlocks.myFollowers
+    this.usersQuotesDisabled = followsAndBlocks.mutedQuotes
+    this.usersRewootsDisabled = followsAndBlocks.mutedRewoots
     // Here we check user options
     if (followsAndBlocks.options?.length > 0) {
       // frontend options start with wafrn.
-      const options = followsAndBlocks.options.filter((option) =>
-        option.optionName.startsWith("wafrn.")
-      );
+      const options = followsAndBlocks.options.filter((option) => option.optionName.startsWith('wafrn.'))
       options.forEach((option) => {
-        localStorage.setItem(
-          option.optionName.split("wafrn.")[1],
-          option.optionValue
-        );
-      });
+        localStorage.setItem(option.optionName.split('wafrn.')[1], option.optionValue)
+      })
     }
     if (followsAndBlocks.silencedPosts) {
-      this.silencedPostsIds = followsAndBlocks.silencedPosts;
+      this.silencedPostsIds = followsAndBlocks.silencedPosts
     } else {
-      this.silencedPostsIds = [];
+      this.silencedPostsIds = []
     }
-    this.updateFollowers.next(true);
+    this.updateFollowers.next(true)
   }
 
   async followUser(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      userId: id,
-    };
+      userId: id
+    }
     try {
       const response = await firstValueFrom(
-        this.http.post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/follow`,
-          payload
-        )
-      );
-      await this.loadFollowers();
-      res = response?.success === true;
+        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/follow`, payload)
+      )
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception: any) {
-      console.error(exception);
+      console.error(exception)
       if (exception.error?.message) {
         this.simpleDialogService.createConfirmDialog({
           title: 'Error',
@@ -175,50 +161,44 @@ export class PostsService {
           options: {
             confirm: 'ok'
           }
-          })
+        })
       }
     }
 
-    return res;
+    return res
   }
 
   async unfollowUser(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      userId: id,
-    };
+      userId: id
+    }
     try {
       const response = await this.http
-        .post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/unfollow`,
-          payload
-        )
-        .toPromise();
-      await this.loadFollowers();
-      res = response?.success === true;
+        .post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/unfollow`, payload)
+        .toPromise()
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception) {
-      console.error(exception);
+      console.error(exception)
     }
 
-    return res;
+    return res
   }
 
   async likePost(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      postId: id,
-    };
+      postId: id
+    }
     try {
       const response = await this.http
-        .post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/like`,
-          payload
-        )
-        .toPromise();
-      await this.loadFollowers();
-      res = response?.success === true;
+        .post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/like`, payload)
+        .toPromise()
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception: any) {
-      console.error(exception);
+      console.error(exception)
       if (exception.error?.message) {
         this.simpleDialogService.createConfirmDialog({
           title: 'Error',
@@ -226,311 +206,262 @@ export class PostsService {
           options: {
             confirm: 'ok'
           }
-          })
+        })
       }
     }
     if (res) {
       this.postLiked.next({
         id: id,
-        like: true,
-      });
+        like: true
+      })
     }
-    return res;
+    return res
   }
 
   async unlikePost(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      postId: id,
-    };
+      postId: id
+    }
     try {
       const response = await this.http
-        .post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/unlike`,
-          payload
-        )
-        .toPromise();
-      await this.loadFollowers();
-      res = response?.success === true;
+        .post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/unlike`, payload)
+        .toPromise()
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception) {
-      console.error(exception);
+      console.error(exception)
     }
     if (res) {
       this.postLiked.next({
         id: id,
-        like: false,
-      });
+        like: false
+      })
     }
-    return res;
+    return res
   }
 
   async bookmarkPost(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      postId: id,
-    };
+      postId: id
+    }
     try {
       const response = await this.http
-        .post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/user/bookmarkPost`,
-          payload
-        )
-        .toPromise();
-      await this.loadFollowers();
-      res = response?.success === true;
+        .post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/user/bookmarkPost`, payload)
+        .toPromise()
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception) {
-      console.error(exception);
+      console.error(exception)
     }
-    return res;
+    return res
   }
 
   async unbookmarkPost(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      postId: id,
-    };
+      postId: id
+    }
     try {
       const response = await this.http
-        .post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/user/unbookmarkPost`,
-          payload
-        )
-        .toPromise();
-      await this.loadFollowers();
-      res = response?.success === true;
+        .post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/user/unbookmarkPost`, payload)
+        .toPromise()
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception) {
-      console.error(exception);
+      console.error(exception)
     }
-    return res;
+    return res
   }
 
-  async emojiReactPost(
-    postId: string,
-    emojiName: string,
-    undo = false
-  ): Promise<boolean> {
-    let res = false;
+  async emojiReactPost(postId: string, emojiName: string, undo = false): Promise<boolean> {
+    let res = false
     const payload = {
       postId: postId,
       emojiName: emojiName,
-      undo: undo,
-    };
+      undo: undo
+    }
     try {
       const response = await firstValueFrom(
-        this.http.post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/emojiReact`,
-          payload
-        )
-      );
-      await this.loadFollowers();
-      res = response?.success === true;
+        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/emojiReact`, payload)
+      )
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception) {
-      console.error(exception);
+      console.error(exception)
     }
     if (res) {
-      let allEmojis: Emoji[] = [];
-      this.emojiCollections.forEach(
-        (col) => (allEmojis = allEmojis.concat(col.emojis))
-      );
-      const emoji = allEmojis.find(
-        (elem) => elem.name === emojiName || elem.id === emojiName
-      ) as Emoji | undefined;
+      let allEmojis: Emoji[] = []
+      this.emojiCollections.forEach((col) => (allEmojis = allEmojis.concat(col.emojis)))
+      const emoji = allEmojis.find((elem) => elem.name === emojiName || elem.id === emojiName) as Emoji | undefined
       if (emoji) {
-        const emojiIsUnicode = emoji.url.length === 0;
+        const emojiIsUnicode = emoji.url.length === 0
         this.emojiReacted.next({
-          type: undo ? "undo_react" : "react",
+          type: undo ? 'undo_react' : 'react',
           postId: postId,
-          emoji: emojiIsUnicode ? this.convertUnicodeEmoji(emoji) : emoji,
-        });
+          emoji: emojiIsUnicode ? this.convertUnicodeEmoji(emoji) : emoji
+        })
       }
     }
 
-    return res;
+    return res
   }
 
   convertUnicodeEmoji(unicodeEmoji: Emoji): Emoji {
     return {
-      id: "",
+      id: '',
       name: unicodeEmoji.id,
-      url: "",
+      url: '',
       external: unicodeEmoji.external,
-      uuid: unicodeEmoji.id,
-    };
+      uuid: unicodeEmoji.id
+    }
   }
 
   processPostNew(unlinked: unlinkedPosts): ProcessedPost[][] {
-    const fake: ProcessedPost[] = [];
+    const fake: ProcessedPost[] = []
     this.processedQuotes = unlinked.quotedPosts.map((quote) =>
       this.processSinglePost({ ...unlinked, posts: [quote] }, fake)
-    );
+    )
     const res = unlinked.posts
       .filter((post) => !!post)
       .map((elem) => {
-        const processed: ProcessedPost[] = [];
+        const processed: ProcessedPost[] = []
         if (elem.ancestors) {
           // We need to keep the ref to processed alive!
           elem.ancestors
             .filter((anc) => !!anc)
-            .map((anc) =>
-              this.processSinglePost({ ...unlinked, posts: [anc] }, processed)
-            )
+            .map((anc) => this.processSinglePost({ ...unlinked, posts: [anc] }, processed))
             .forEach((e) => {
-              processed.push(e);
-            });
+              processed.push(e)
+            })
         }
 
         processed.push(
           this.processSinglePost(
             {
               ...unlinked,
-              posts: [elem],
+              posts: [elem]
             },
             processed
           )
-        );
+        )
         return processed.sort((a, b) => {
-          return a.createdAt.getTime() - b.createdAt.getTime();
-        });
-      });
+          return a.createdAt.getTime() - b.createdAt.getTime()
+        })
+      })
     return res.sort((a, b) => {
-      return (
-        b[b.length - 1].createdAt.getTime() -
-        a[a.length - 1].createdAt.getTime()
-      );
-    });
+      return b[b.length - 1].createdAt.getTime() - a[a.length - 1].createdAt.getTime()
+    })
   }
 
-  processSinglePost(
-    unlinked: unlinkedPosts,
-    collection: ProcessedPost[]
-  ): ProcessedPost {
-    const superMutedWordsRaw = localStorage.getItem("superMutedWords");
-    let superMutedWords: string[] = [];
+  processSinglePost(unlinked: unlinkedPosts, collection: ProcessedPost[]): ProcessedPost {
+    const superMutedWordsRaw = localStorage.getItem('superMutedWords')
+    let superMutedWords: string[] = []
     try {
       if (superMutedWordsRaw && superMutedWordsRaw.trim().length > 0) {
         superMutedWords = JSON.parse(superMutedWordsRaw)
-          .split(",")
+          .split(',')
           .map((word: string) => word.trim().toLowerCase())
-          .filter((word: string) => word.length > 0);
+          .filter((word: string) => word.length > 0)
       }
     } catch (error) {
       this.messageService.add({
-        severity: "error",
-        summary: "Something wrong with your supermuted words!",
-      });
+        severity: 'error',
+        summary: 'Something wrong with your supermuted words!'
+      })
     }
-    const mutedWordsRaw = localStorage.getItem("mutedWords");
-    let mutedWords: string[] = [];
+    const mutedWordsRaw = localStorage.getItem('mutedWords')
+    let mutedWords: string[] = []
     try {
       if (mutedWordsRaw && mutedWordsRaw.trim().length > 0) {
         mutedWords = JSON.parse(mutedWordsRaw)
-          .split(",")
+          .split(',')
           .map((word: string) => word.trim())
-          .filter((word: string) => word.length > 0);
+          .filter((word: string) => word.length > 0)
       }
     } catch (error) {
       this.messageService.add({
-        severity: "error",
-        summary: "Something wrong with your muted words!",
-      });
+        severity: 'error',
+        summary: 'Something wrong with your muted words!'
+      })
     }
-    const elem: basicPost | undefined = unlinked.posts[0];
+    const elem: basicPost | undefined = unlinked.posts[0]
     const nonExistentUser = {
-      avatar: "",
-      url: "ERROR",
-      name: "ERROR",
-      nameMarkdown: "ERROR",
-      id: "42",
-      isBot: false,
-    };
+      avatar: '',
+      url: 'ERROR',
+      name: 'ERROR',
+      nameMarkdown: 'ERROR',
+      id: '42',
+      isBot: false
+    }
     unlinked.rewootIds?.forEach((id) => {
-      this.rewootedPosts().add(id);
-    });
-    const user = elem
-      ? { ...unlinked.users.find((usr) => usr.id === elem.userId) }
-      : nonExistentUser;
-    const userEmojis = elem
-      ? unlinked.emojiRelations.userEmojiRelation.filter(
-        (elem) => elem.userId === user?.id
-      )
-      : [];
-    const polls = elem
-      ? unlinked.polls.filter((poll) => poll.postId === elem.id)
-      : [];
+      this.rewootedPosts().add(id)
+    })
+    const user = elem ? { ...unlinked.users.find((usr) => usr.id === elem.userId) } : nonExistentUser
+    const userEmojis = elem ? unlinked.emojiRelations.userEmojiRelation.filter((elem) => elem.userId === user?.id) : []
+    const polls = elem ? unlinked.polls.filter((poll) => poll.postId === elem.id) : []
     const medias = elem
       ? unlinked.medias.filter((media) => {
-        return media.postId === elem.id;
-      })
-      : [];
+          return media.postId === elem.id
+        })
+      : []
     if (user.name) {
-      user.name = user.name.replaceAll("‏", "");
-      user.nameMarkdown = user.name;
+      user.name = user.name.replaceAll('‏', '')
+      user.nameMarkdown = user.name
     }
     if (userEmojis && userEmojis.length && user && user.name) {
       userEmojis.forEach((usrEmoji) => {
-        const emoji = unlinked.emojiRelations.emojis.find(
-          (emojis) => emojis.id === usrEmoji.emojiId
-        );
+        const emoji = unlinked.emojiRelations.emojis.find((emojis) => emojis.id === usrEmoji.emojiId)
         if (emoji && user.name) {
-          user.name = user.name.replaceAll(emoji.name, this.emojiToHtml(emoji));
+          user.name = user.name.replaceAll(emoji.name, this.emojiToHtml(emoji))
         }
-      });
+      })
     }
     const mentionedUsers = elem
       ? unlinked.mentions
-        .filter((mention) => mention.post === elem.id)
-        .map((mention) =>
-          unlinked.users.find((usr) => usr.id === mention.userMentioned)
-        )
-        .filter((mention) => mention !== undefined)
-      : [];
+          .filter((mention) => mention.post === elem.id)
+          .map((mention) => unlinked.users.find((usr) => usr.id === mention.userMentioned))
+          .filter((mention) => mention !== undefined)
+      : []
     let emojiReactions: PostEmojiReaction[] = elem
-      ? unlinked.emojiRelations.postEmojiReactions.filter(
-        (emoji) => emoji.postId === elem.id
-      )
-      : [];
+      ? unlinked.emojiRelations.postEmojiReactions.filter((emoji) => emoji.postId === elem.id)
+      : []
     const likesAsEmojiReactions: PostEmojiReaction[] = elem
       ? unlinked.likes
-        .filter((like) => like.postId === elem.id)
-        .map((likeUserId) => {
-          return {
-            emojiId: "Like",
-            postId: elem.id,
-            userId: likeUserId.userId,
-            content: "♥️",
-            //emoji?: Emoji;
-            user: unlinked.users.find((usr) => usr.id === likeUserId.userId),
-          };
-        })
-      : [];
+          .filter((like) => like.postId === elem.id)
+          .map((likeUserId) => {
+            return {
+              emojiId: 'Like',
+              postId: elem.id,
+              userId: likeUserId.userId,
+              content: '♥️',
+              //emoji?: Emoji;
+              user: unlinked.users.find((usr) => usr.id === likeUserId.userId)
+            }
+          })
+      : []
     emojiReactions = emojiReactions.map((react) => {
       return {
         ...react,
-        emoji: unlinked.emojiRelations.emojis.find(
-          (emj) => emj.id === react.emojiId
-        ),
-        user: unlinked.users.find((usr) => usr.id === react.userId),
-      };
-    });
-    emojiReactions = emojiReactions.concat(likesAsEmojiReactions);
-    const content = elem ? elem.content : "";
-    const parsedAsHTML = this.parser.parseFromString(content, "text/html");
-    const links = parsedAsHTML.getElementsByTagName("a");
+        emoji: unlinked.emojiRelations.emojis.find((emj) => emj.id === react.emojiId),
+        user: unlinked.users.find((usr) => usr.id === react.userId)
+      }
+    })
+    emojiReactions = emojiReactions.concat(likesAsEmojiReactions)
+    const content = elem ? elem.content : ''
+    const parsedAsHTML = this.parser.parseFromString(content, 'text/html')
+    const links = parsedAsHTML.getElementsByTagName('a')
     const quotes = elem
       ? unlinked.quotes
-        .filter((quote) => quote.quoterPostId === elem.id)
-        .map(
-          (quote) =>
-            this.processedQuotes.find(
-              (pst) => pst.id === quote.quotedPostId
-            ) as ProcessedPost
-        )
-      : [];
+          .filter((quote) => quote.quoterPostId === elem.id)
+          .map((quote) => this.processedQuotes.find((pst) => pst.id === quote.quotedPostId) as ProcessedPost)
+      : []
     Array.from(links).forEach((link, index) => {
-      const youtubeMatch = Array.from(link.href.matchAll(this.youtubeRegex));
+      const youtubeMatch = Array.from(link.href.matchAll(this.youtubeRegex))
       const quoteLinks = quotes
         .filter((elem) => elem != undefined && elem.remotePostId != undefined)
-        .map((elem) => elem.remotePostId);
+        .map((elem) => elem.remotePostId)
       if (
         link.innerText === link.href &&
         youtubeMatch.length == 0 &&
@@ -539,22 +470,22 @@ export class PostsService {
       ) {
         medias.push({
           mediaOrder: 9999 + index,
-          id: "",
+          id: '',
           NSFW: false,
-          description: "",
+          description: '',
           url: link.href,
           external: true,
-          postId: elem ? elem.id : "",
-          mediaType: "text/html",
-        });
+          postId: elem ? elem.id : '',
+          mediaType: 'text/html'
+        })
       }
-    });
-    let postBookmarks: string[] = [];
+    })
+    let postBookmarks: string[] = []
     unlinked.bookmarks.forEach((bookmarker) => {
       if (bookmarker.postId == elem.id) {
-        postBookmarks.push(bookmarker.userId);
+        postBookmarks.push(bookmarker.userId)
       }
-    });
+    })
     const newPost: ProcessedPost = {
       ...elem,
       content: content,
@@ -564,9 +495,7 @@ export class PostsService {
       tags: elem ? unlinked.tags.filter((tag) => tag.postId === elem.id) : [],
       descendents: [],
       userLikesPostRelations: elem
-        ? unlinked.likes
-          .filter((like) => like.postId === elem.id)
-          .map((like) => like.userId)
+        ? unlinked.likes.filter((like) => like.postId === elem.id).map((like) => like.userId)
         : [],
       emojis: unlinked.emojiRelations.postEmojiRelation.map((elem) =>
         unlinked.emojiRelations.emojis.find((emj) => emj.id === elem.emojiId)
@@ -578,27 +507,24 @@ export class PostsService {
         ? elem.remotePostId
         : `${EnvironmentService.environment.frontUrl}/post/${elem?.id}`,
       medias: medias.sort((a, b) => a.mediaOrder - b.mediaOrder),
-      questionPoll:
-        polls.length > 0
-          ? { ...polls[0], endDate: new Date(polls[0].endDate) }
-          : undefined,
+      questionPoll: polls.length > 0 ? { ...polls[0], endDate: new Date(polls[0].endDate) } : undefined,
       mentionPost: mentionedUsers as SimplifiedUser[],
       quotes: quotes,
       parentCollection: collection,
       featured: false
-    };
+    }
     if (unlinked.asks) {
-      const ask = unlinked.asks.find((ask) => ask.postId === newPost.id);
+      const ask = unlinked.asks.find((ask) => ask.postId === newPost.id)
       if (ask) {
-        const user = unlinked.users.find((usr) => usr.id === ask.userAsker);
-        ask.user = user;
+        const user = unlinked.users.find((usr) => usr.id === ask.userAsker)
+        ask.user = user
       }
-      newPost.ask = ask;
+      newPost.ask = ask
     }
     let postContentWithoutHTMLTags = sanitizeHtml(newPost.content)
-    if(newPost.medias) {
+    if (newPost.medias) {
       for (const media of newPost.medias) {
-        postContentWithoutHTMLTags = `${postContentWithoutHTMLTags} ${media.description}`        
+        postContentWithoutHTMLTags = `${postContentWithoutHTMLTags} ${media.description}`
       }
     }
     if (newPost.tags && newPost.tags.length > 0) {
@@ -610,29 +536,36 @@ export class PostsService {
     // Only test these regexes if there are mutedWords, since an
     // empty regex matches all strings.
     if (mutedWords.length > 0) {
-      const regexMutedWords = new RegExp(mutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
-      const matches = postContentWithoutHTMLTags.match(regexMutedWords)?.map(elem => elem.trim());
+      const regexMutedWords = new RegExp(
+        mutedWords
+          .map((word) => word.toLowerCase())
+          .map((word) => `^${word}\\W|\\W${word}\\W|\\W${word}$`)
+          .join('|'),
+        'gi'
+      )
+      const matches = postContentWithoutHTMLTags.match(regexMutedWords)?.map((elem) => elem.trim())
       detectedWords = matches || []
     }
 
     if (superMutedWords.length > 0) {
-      const regexSuperMutedWords = new RegExp(superMutedWords.map(word => word.toLowerCase()).map(word => `^${word}\\W|\\W${word}\\W|\\W${word}$`).join("|"), 'gi');
-      const matches = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.map(elem => elem.trim());
+      const regexSuperMutedWords = new RegExp(
+        superMutedWords
+          .map((word) => word.toLowerCase())
+          .map((word) => `^${word}\\W|\\W${word}\\W|\\W${word}$`)
+          .join('|'),
+        'gi'
+      )
+      const matches = postContentWithoutHTMLTags.match(regexSuperMutedWords)?.map((elem) => elem.trim())
       superMutedWords = matches || []
     }
 
-    const cwedWords = [
-      ...new Set(
-        (detectedWords || [])
-          .concat(detectedSuperMutedwords || [])
-      ),
-    ];
+    const cwedWords = [...new Set((detectedWords || []).concat(detectedSuperMutedwords || []))]
     if (cwedWords.length > 0) {
-      newPost.muted_words_cw = cwedWords.join(", ");
+      newPost.muted_words_cw = cwedWords.join(', ')
     }
-    const hideQuotesLevel = localStorage.getItem("hideQuotes")
-      ? parseInt(localStorage.getItem("hideQuotes") as string)
-      : 1;
+    const hideQuotesLevel = localStorage.getItem('hideQuotes')
+      ? parseInt(localStorage.getItem('hideQuotes') as string)
+      : 1
     if (newPost.quotes && newPost.quotes.length) {
       if (
         this.usersQuotesDisabled.includes(newPost.userId) ||
@@ -640,369 +573,331 @@ export class PostsService {
       ) {
         newPost.muted_words_cw = newPost.muted_words_cw
           ? `${newPost.muted_words_cw}<br> Post includes quote by not allowed user`
-          : `Post includes quote by not allowed user`;
+          : `Post includes quote by not allowed user`
       }
     }
 
-    return newPost;
+    return newPost
   }
 
   getPostHtml(
     post: ProcessedPost,
     tags: string[] = [
-      "b",
-      "i",
-      "u",
-      "a",
-      "s",
-      "del",
-      "span",
-      "br",
-      "p",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "pre",
-      "strong",
-      "em",
-      "ul",
-      "li",
-      "marquee",
-      "font",
-      "blockquote",
-      "code",
-      "hr",
-      "ol",
-      "q",
-      "small",
-      "sub",
-      "sup",
-      "table",
-      "tr",
-      "td",
-      "th",
-      "cite",
-      "colgroup",
-      "col",
-      "dl",
-      "dt",
-      "dd",
-      "caption",
-      "details",
-      "summary",
-      "mark",
-      "tbody",
-      "tfoot",
-      "thead",
-      "ruby",
-      "rt",
-      "rp",
-      "img", // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
-      "style"
-    ],
+      'b',
+      'i',
+      'u',
+      'a',
+      's',
+      'del',
+      'span',
+      'br',
+      'p',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'pre',
+      'strong',
+      'em',
+      'ul',
+      'li',
+      'marquee',
+      'font',
+      'blockquote',
+      'code',
+      'hr',
+      'ol',
+      'q',
+      'small',
+      'sub',
+      'sup',
+      'table',
+      'tr',
+      'td',
+      'th',
+      'cite',
+      'colgroup',
+      'col',
+      'dl',
+      'dt',
+      'dd',
+      'caption',
+      'details',
+      'summary',
+      'mark',
+      'tbody',
+      'tfoot',
+      'thead',
+      'ruby',
+      'rt',
+      'rp',
+      'img', // I KNOW WHAT IM DOING. We are replacing imgs with remote urls
+      'style'
+    ]
   ): string {
-    const content = post.content;
+    const content = post.content
     let sanitized = sanitizeHtml(content, {
       allowedTags: tags,
       allowedAttributes: {
-        img: ["src"],
-        a: ["href", "title", "target"],
-        col: ["span", "visibility"],
-        colgroup: ["width", "visibility", "background", "border"],
-        hr: ["style"],
-        span: ["title", "style", "lang"],
-        th: ["colspan", "rowspan"],
-        marquee: [
-          "behavior",
-          "bgcolor",
-          "direction",
-          "loop",
-          "height",
-          "width",
-          "scrolldelay",
-        ],
-        "*": ["title", "lang", "style", "class"],
+        img: ['src'],
+        a: ['href', 'title', 'target'],
+        col: ['span', 'visibility'],
+        colgroup: ['width', 'visibility', 'background', 'border'],
+        hr: ['style'],
+        span: ['title', 'style', 'lang'],
+        th: ['colspan', 'rowspan'],
+        marquee: ['behavior', 'bgcolor', 'direction', 'loop', 'height', 'width', 'scrolldelay'],
+        '*': ['title', 'lang', 'style', 'class']
       },
       allowedStyles: {
-        "*": {
-          "aspect-ratio": [new RegExp(".*")],
-          background: [new RegExp(".*")],
-          "background-color": [new RegExp(".*")],
-          border: [new RegExp(".*")],
-          "border-bottom": [new RegExp(".*")],
-          "border-bottom-color": [new RegExp(".*")],
-          "border-bottom-left-radius": [new RegExp(".*")],
-          "border-bottom-right-radius": [new RegExp(".*")],
-          "border-bottom-style": [new RegExp(".*")],
-          "border-bottom-width": [new RegExp(".*")],
-          "border-collapse": [new RegExp(".*")],
-          "border-color": [new RegExp(".*")],
-          "border-end-end-radius": [new RegExp(".*")],
-          "border-end-start-radius": [new RegExp(".*")],
-          "border-inline": [new RegExp(".*")],
-          "border-inline-color": [new RegExp(".*")],
-          "border-inline-end": [new RegExp(".*")],
-          "border-inline-end-color": [new RegExp(".*")],
-          "border-inline-end-style": [new RegExp(".*")],
-          "border-inline-end-width": [new RegExp(".*")],
-          "border-inline-start": [new RegExp(".*")],
-          "border-inline-start-color": [new RegExp(".*")],
-          "border-inline-start-style": [new RegExp(".*")],
-          "border-inline-start-width": [new RegExp(".*")],
-          "border-inline-style": [new RegExp(".*")],
-          "border-inline-width": [new RegExp(".*")],
-          "border-left": [new RegExp(".*")],
-          "border-left-color": [new RegExp(".*")],
-          "border-left-style": [new RegExp(".*")],
-          "border-left-width": [new RegExp(".*")],
-          "border-radius": [new RegExp(".*")],
-          "border-right": [new RegExp(".*")],
-          "border-right-color": [new RegExp(".*")],
-          "border-right-style": [new RegExp(".*")],
-          "border-right-width": [new RegExp(".*")],
-          "border-spacing": [new RegExp(".*")],
-          "border-start-end-radius": [new RegExp(".*")],
-          "border-start-start-radius": [new RegExp(".*")],
-          "border-style": [new RegExp(".*")],
-          "border-top": [new RegExp(".*")],
-          "border-top-color": [new RegExp(".*")],
-          "border-top-left-radius": [new RegExp(".*")],
-          "border-top-right-radius": [new RegExp(".*")],
-          "border-top-style": [new RegExp(".*")],
-          "border-top-width": [new RegExp(".*")],
-          "border-width": [new RegExp(".*")],
-          bottom: [new RegExp(".*")],
-          color: [new RegExp(".*")],
-          direction: [new RegExp(".*")],
-          "empty-cells": [new RegExp(".*")],
-          font: [new RegExp(".*")],
-          "font-family": [new RegExp(".*")],
-          "font-size": [new RegExp(".*")],
-          "font-size-adjust": [new RegExp(".*")],
-          "font-style": [new RegExp(".*")],
-          "font-variant": [new RegExp(".*")],
-          "font-variant-caps": [new RegExp(".*")],
-          "font-weight": [new RegExp(".*")],
-          height: [new RegExp(".*")],
-          "initial-letter": [new RegExp(".*")],
-          "inline-size": [new RegExp(".*")],
-          left: [new RegExp(".*")],
-          "left-spacing": [new RegExp(".*")],
-          "list-style": [new RegExp(".*")],
-          "list-style-position": [new RegExp(".*")],
-          "list-style-type": [new RegExp(".*")],
-          margin: [new RegExp(".*")],
-          "margin-bottom": [new RegExp(".*")],
-          "margin-inline": [new RegExp(".*")],
-          "margin-inline-end": [new RegExp(".*")],
-          "margin-inline-start": [new RegExp(".*")],
-          "margin-left": [new RegExp(".*")],
-          "margin-right": [new RegExp(".*")],
-          "margin-top": [new RegExp(".*")],
-          opacity: [new RegExp(".*")],
-          padding: [new RegExp(".*")],
-          "padding-bottom": [new RegExp(".*")],
-          "padding-inline": [new RegExp(".*")],
-          "padding-inline-end": [new RegExp(".*")],
-          "padding-inline-right": [new RegExp(".*")],
-          "padding-left": [new RegExp(".*")],
-          "padding-right": [new RegExp(".*")],
-          "padding-top": [new RegExp(".*")],
-          quotes: [new RegExp(".*")],
-          rotate: [new RegExp(".*")],
-          "tab-size": [new RegExp(".*")],
-          "table-layout": [new RegExp(".*")],
-          "text-align": [new RegExp(".*")],
-          "text-align-last": [new RegExp(".*")],
-          "text-decoration": [new RegExp(".*")],
-          "text-decoration-color": [new RegExp(".*")],
-          "text-decoration-line": [new RegExp(".*")],
-          "text-decoration-style": [new RegExp(".*")],
-          "text-decoration-thickness": [new RegExp(".*")],
-          "text-emphasis": [new RegExp(".*")],
-          "text-emphasis-color": [new RegExp(".*")],
-          "text-emphasis-position": [new RegExp(".*")],
-          "text-emphasis-style": [new RegExp(".*")],
-          "text-indent": [new RegExp(".*")],
-          "text-justify": [new RegExp(".*")],
-          "text-orientation": [new RegExp(".*")],
-          "text-shadow": [new RegExp(".*")],
-          "text-transform": [new RegExp(".*")],
-          "text-underline-offset": [new RegExp(".*")],
-          "text-underline-position": [new RegExp(".*")],
-          top: [new RegExp(".*")],
-          transform: [new RegExp(".*")],
-          visibility: [new RegExp(".*")],
-          width: [new RegExp(".*")],
-          "word-break": [new RegExp(".*")],
-          "word-spacing": [new RegExp(".*")],
-          "word-wrap": [new RegExp(".*")],
-          "writing-mode": [new RegExp(".*")],
-        },
+        '*': {
+          'aspect-ratio': [new RegExp('.*')],
+          background: [new RegExp('.*')],
+          'background-color': [new RegExp('.*')],
+          border: [new RegExp('.*')],
+          'border-bottom': [new RegExp('.*')],
+          'border-bottom-color': [new RegExp('.*')],
+          'border-bottom-left-radius': [new RegExp('.*')],
+          'border-bottom-right-radius': [new RegExp('.*')],
+          'border-bottom-style': [new RegExp('.*')],
+          'border-bottom-width': [new RegExp('.*')],
+          'border-collapse': [new RegExp('.*')],
+          'border-color': [new RegExp('.*')],
+          'border-end-end-radius': [new RegExp('.*')],
+          'border-end-start-radius': [new RegExp('.*')],
+          'border-inline': [new RegExp('.*')],
+          'border-inline-color': [new RegExp('.*')],
+          'border-inline-end': [new RegExp('.*')],
+          'border-inline-end-color': [new RegExp('.*')],
+          'border-inline-end-style': [new RegExp('.*')],
+          'border-inline-end-width': [new RegExp('.*')],
+          'border-inline-start': [new RegExp('.*')],
+          'border-inline-start-color': [new RegExp('.*')],
+          'border-inline-start-style': [new RegExp('.*')],
+          'border-inline-start-width': [new RegExp('.*')],
+          'border-inline-style': [new RegExp('.*')],
+          'border-inline-width': [new RegExp('.*')],
+          'border-left': [new RegExp('.*')],
+          'border-left-color': [new RegExp('.*')],
+          'border-left-style': [new RegExp('.*')],
+          'border-left-width': [new RegExp('.*')],
+          'border-radius': [new RegExp('.*')],
+          'border-right': [new RegExp('.*')],
+          'border-right-color': [new RegExp('.*')],
+          'border-right-style': [new RegExp('.*')],
+          'border-right-width': [new RegExp('.*')],
+          'border-spacing': [new RegExp('.*')],
+          'border-start-end-radius': [new RegExp('.*')],
+          'border-start-start-radius': [new RegExp('.*')],
+          'border-style': [new RegExp('.*')],
+          'border-top': [new RegExp('.*')],
+          'border-top-color': [new RegExp('.*')],
+          'border-top-left-radius': [new RegExp('.*')],
+          'border-top-right-radius': [new RegExp('.*')],
+          'border-top-style': [new RegExp('.*')],
+          'border-top-width': [new RegExp('.*')],
+          'border-width': [new RegExp('.*')],
+          bottom: [new RegExp('.*')],
+          color: [new RegExp('.*')],
+          direction: [new RegExp('.*')],
+          'empty-cells': [new RegExp('.*')],
+          font: [new RegExp('.*')],
+          'font-family': [new RegExp('.*')],
+          'font-size': [new RegExp('.*')],
+          'font-size-adjust': [new RegExp('.*')],
+          'font-style': [new RegExp('.*')],
+          'font-variant': [new RegExp('.*')],
+          'font-variant-caps': [new RegExp('.*')],
+          'font-weight': [new RegExp('.*')],
+          height: [new RegExp('.*')],
+          'initial-letter': [new RegExp('.*')],
+          'inline-size': [new RegExp('.*')],
+          left: [new RegExp('.*')],
+          'left-spacing': [new RegExp('.*')],
+          'list-style': [new RegExp('.*')],
+          'list-style-position': [new RegExp('.*')],
+          'list-style-type': [new RegExp('.*')],
+          margin: [new RegExp('.*')],
+          'margin-bottom': [new RegExp('.*')],
+          'margin-inline': [new RegExp('.*')],
+          'margin-inline-end': [new RegExp('.*')],
+          'margin-inline-start': [new RegExp('.*')],
+          'margin-left': [new RegExp('.*')],
+          'margin-right': [new RegExp('.*')],
+          'margin-top': [new RegExp('.*')],
+          opacity: [new RegExp('.*')],
+          padding: [new RegExp('.*')],
+          'padding-bottom': [new RegExp('.*')],
+          'padding-inline': [new RegExp('.*')],
+          'padding-inline-end': [new RegExp('.*')],
+          'padding-inline-right': [new RegExp('.*')],
+          'padding-left': [new RegExp('.*')],
+          'padding-right': [new RegExp('.*')],
+          'padding-top': [new RegExp('.*')],
+          quotes: [new RegExp('.*')],
+          rotate: [new RegExp('.*')],
+          'tab-size': [new RegExp('.*')],
+          'table-layout': [new RegExp('.*')],
+          'text-align': [new RegExp('.*')],
+          'text-align-last': [new RegExp('.*')],
+          'text-decoration': [new RegExp('.*')],
+          'text-decoration-color': [new RegExp('.*')],
+          'text-decoration-line': [new RegExp('.*')],
+          'text-decoration-style': [new RegExp('.*')],
+          'text-decoration-thickness': [new RegExp('.*')],
+          'text-emphasis': [new RegExp('.*')],
+          'text-emphasis-color': [new RegExp('.*')],
+          'text-emphasis-position': [new RegExp('.*')],
+          'text-emphasis-style': [new RegExp('.*')],
+          'text-indent': [new RegExp('.*')],
+          'text-justify': [new RegExp('.*')],
+          'text-orientation': [new RegExp('.*')],
+          'text-shadow': [new RegExp('.*')],
+          'text-transform': [new RegExp('.*')],
+          'text-underline-offset': [new RegExp('.*')],
+          'text-underline-position': [new RegExp('.*')],
+          top: [new RegExp('.*')],
+          transform: [new RegExp('.*')],
+          visibility: [new RegExp('.*')],
+          width: [new RegExp('.*')],
+          'word-break': [new RegExp('.*')],
+          'word-spacing': [new RegExp('.*')],
+          'word-wrap': [new RegExp('.*')],
+          'writing-mode': [new RegExp('.*')]
+        }
       },
-      allowVulnerableTags: true,
-    });
+      allowVulnerableTags: true
+    })
     // we remove stuff like script tags. we only allow certain stuff.
-    const parsedAsHTML = this.parser.parseFromString(sanitized, "text/html");
-    const links = parsedAsHTML.getElementsByTagName("a");
+    const parsedAsHTML = this.parser.parseFromString(sanitized, 'text/html')
+    const links = parsedAsHTML.getElementsByTagName('a')
     const mentionedRemoteIds = post.mentionPost
-      ? post.mentionPost?.map((elem) =>
-        elem.remoteId
-          ? elem.remoteId
-          : `https://bsky.app/profile/${elem.bskyDid}`
-      )
-      : [];
-    const mentionRemoteUrls = post.mentionPost
-      ? post.mentionPost?.map((elem) => elem.url)
-      : [];
+      ? post.mentionPost?.map((elem) => (elem.remoteId ? elem.remoteId : `https://bsky.app/profile/${elem.bskyDid}`))
+      : []
+    const mentionRemoteUrls = post.mentionPost ? post.mentionPost?.map((elem) => elem.url) : []
     const mentionedHosts = post.mentionPost
       ? post.mentionPost?.map(
-        (elem) =>
-          this.getURL(
-            elem.remoteId
-              ? elem.remoteId
-              : "https://adomainthatdoesnotexist.google.com"
-          ).hostname
-      )
-      : [];
-    const hostUrl = this.getURL(
-      EnvironmentService.environment.frontUrl
-    ).hostname;
+          (elem) => this.getURL(elem.remoteId ? elem.remoteId : 'https://adomainthatdoesnotexist.google.com').hostname
+        )
+      : []
+    const hostUrl = this.getURL(EnvironmentService.environment.frontUrl).hostname
     // We are gonna allow images in posts now but they have to go through the cacher/proxy
-    const imgs = parsedAsHTML.getElementsByTagName("img");
+    const imgs = parsedAsHTML.getElementsByTagName('img')
     Array.from(imgs).forEach((img, index) => {
-      img.src = "";
-    });
+      img.src = ''
+    })
     Array.from(links).forEach((link) => {
-      const youtubeMatch = link.href.matchAll(this.youtubeRegex);
+      const youtubeMatch = link.href.matchAll(this.youtubeRegex)
       if (link.innerText === link.href && youtubeMatch) {
         // NOTE: Since this should not be part of the image Viewer, we have to add then no-viewer class to be checked for later
         Array.from(youtubeMatch).forEach((youtubeString) => {
-          link.innerHTML = `<div class="watermark"><!-- Watermark container --><div class="watermark__inner"><!-- The watermark --><div class="watermark__body"><img alt="youtube logo" class="yt-watermark no-viewer" loading="lazy" src="/assets/img/youtube_logo.png"></div></div><img class="yt-thumbnail" src="${EnvironmentService.environment.externalCacheurl +
-            encodeURIComponent(
-              `https://img.youtube.com/vi/${youtubeString[6]}/hqdefault.jpg`
-            )
-            }" loading="lazy" alt="Thumbnail for video"></div>`;
-        });
+          link.innerHTML = `<div class="watermark"><!-- Watermark container --><div class="watermark__inner"><!-- The watermark --><div class="watermark__body"><img alt="youtube logo" class="yt-watermark no-viewer" loading="lazy" src="/assets/img/youtube_logo.png"></div></div><img class="yt-thumbnail" src="${
+            EnvironmentService.environment.externalCacheurl +
+            encodeURIComponent(`https://img.youtube.com/vi/${youtubeString[6]}/hqdefault.jpg`)
+          }" loading="lazy" alt="Thumbnail for video"></div>`
+        })
       }
       // replace mentioned users with wafrn version of profile.
       // TODO not all software links to mentionedProfile
       if (mentionedRemoteIds.includes(link.href)) {
         if (post.mentionPost) {
           const mentionedUser = post.mentionPost.find(
-            (elem) =>
-              elem.remoteId === link.href ||
-              `https://bsky.app/profile/${elem.bskyDid}` === link.href
-          );
+            (elem) => elem.remoteId === link.href || `https://bsky.app/profile/${elem.bskyDid}` === link.href
+          )
           if (mentionedUser) {
-            link.href = `${EnvironmentService.environment.frontUrl}/blog/${mentionedUser.url}`;
-            link.classList.add("mention");
-            link.classList.add("remote-mention");
+            link.href = `${EnvironmentService.environment.frontUrl}/blog/${mentionedUser.url}`
+            link.classList.add('mention')
+            link.classList.add('remote-mention')
           }
         }
       }
-      const linkAsUrl: URL = this.getURL(link.href);
-      if (
-        mentionedHosts.includes(linkAsUrl.hostname) ||
-        linkAsUrl.hostname === hostUrl
-      ) {
+      const linkAsUrl: URL = this.getURL(link.href)
+      if (mentionedHosts.includes(linkAsUrl.hostname) || linkAsUrl.hostname === hostUrl) {
         const sanitizedContent = sanitizeHtml(link.innerHTML, {
-          allowedTags: [],
-        });
-        const isUserTag = sanitizedContent.startsWith("@");
-        const isRemoteUser = mentionRemoteUrls.includes(
-          `${sanitizedContent}@${linkAsUrl.hostname}`
-        );
-        const isLocalUser = mentionRemoteUrls.includes(`${sanitizedContent}`);
+          allowedTags: []
+        })
+        const isUserTag = sanitizedContent.startsWith('@')
+        const isRemoteUser = mentionRemoteUrls.includes(`${sanitizedContent}@${linkAsUrl.hostname}`)
+        const isLocalUser = mentionRemoteUrls.includes(`${sanitizedContent}`)
         const isLocalUserLink =
           linkAsUrl.hostname === hostUrl &&
-          (linkAsUrl.pathname.startsWith("/blog") ||
-            linkAsUrl.pathname.startsWith("/fediverse/blog"));
+          (linkAsUrl.pathname.startsWith('/blog') || linkAsUrl.pathname.startsWith('/fediverse/blog'))
         if (isUserTag) {
-          link.classList.add("mention");
+          link.classList.add('mention')
           if (isRemoteUser) {
             // Remote blog, mirror to local blog
-            link.href = `/blog/${sanitizedContent}@${linkAsUrl.hostname}`;
-            link.classList.add("remote-mention");
+            link.href = `/blog/${sanitizedContent}@${linkAsUrl.hostname}`
+            link.classList.add('remote-mention')
           }
 
           if (isLocalUser) {
             //link.href = `/blog/${sanitizedContent}`
-            link.classList.add("mention");
-            link.classList.add("local-mention");
+            link.classList.add('mention')
+            link.classList.add('local-mention')
           }
         }
         // Also tag local user links for user styles
         if (isLocalUserLink) {
-          link.classList.add("local-user-link");
+          link.classList.add('local-user-link')
         }
       }
-      link.target = "_blank";
-      sanitized = parsedAsHTML.documentElement.innerHTML;
-    });
+      link.target = '_blank'
+      sanitized = parsedAsHTML.documentElement.innerHTML
+    })
 
-    sanitized = sanitized.replaceAll(this.wafrnMediaRegex, "");
+    sanitized = sanitized.replaceAll(this.wafrnMediaRegex, '')
 
-    let emojiset = new Set<string>();
+    let emojiset = new Set<string>()
     post.emojis.forEach((emoji) => {
       // Post can include the same emoji more than once, causing recursive behaviour with alt/title text
-      if (emojiset.has(emoji.name)) return;
-      emojiset.add(emoji.name);
-      const strToReplace = emoji.name.startsWith(":")
-        ? emoji.name
-        : `:${emoji.name}:`;
-      sanitized = sanitized.replaceAll(strToReplace, this.emojiToHtml(emoji));
-    });
-    return sanitized;
+      if (emojiset.has(emoji.name)) return
+      emojiset.add(emoji.name)
+      const strToReplace = emoji.name.startsWith(':') ? emoji.name : `:${emoji.name}:`
+      sanitized = sanitized.replaceAll(strToReplace, this.emojiToHtml(emoji))
+    })
+    return sanitized
   }
 
   getPostContentSanitized(content: string): string {
-    return sanitizeHtml(content);
+    return sanitizeHtml(content)
   }
 
   async loadRepliesFromFediverse(id: string) {
-    return await this.http
-      .get(
-        `${EnvironmentService.environment.baseUrl}/loadRemoteResponses?id=${id}`
-      )
-      .toPromise();
+    return await this.http.get(`${EnvironmentService.environment.baseUrl}/loadRemoteResponses?id=${id}`).toPromise()
   }
 
   getURL(urlString: string): URL {
-    let res = new URL(EnvironmentService.environment.frontUrl);
+    let res = new URL(EnvironmentService.environment.frontUrl)
     try {
-      res = new URL(urlString);
+      res = new URL(urlString)
     } catch (error) {
-      console.error("Invalid url: " + urlString);
+      console.error('Invalid url: ' + urlString)
     }
-    return res;
+    return res
   }
 
   async getDescendents(id: string): Promise<{ descendents: RawPost[] }> {
     const response = await firstValueFrom(
-      this.http.get<unlinkedPosts>(
-        EnvironmentService.environment.baseUrl + "/v2/descendents/" + id
-      )
-    );
-    const res: { descendents: RawPost[] } = { descendents: [] };
+      this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/v2/descendents/' + id)
+    )
+    const res: { descendents: RawPost[] } = { descendents: [] }
     if (response) {
       const emptyUser: SimplifiedUser = {
-        id: "42",
-        url: "ERROR_GETTING_USER",
-        avatar: "",
-        name: "ERROR",
-      };
+        id: '42',
+        url: 'ERROR_GETTING_USER',
+        avatar: '',
+        name: 'ERROR'
+      }
       res.descendents = response.posts
         .map((elem) => {
-          const user = response.users.find((usr) => usr.id === elem.userId);
+          const user = response.users.find((usr) => usr.id === elem.userId)
           return {
             id: elem.id,
-            content: elem.len ? "A" : "", // HACK I know this is ugly but because legacy reasons reblogs are empty posts
+            content: elem.len ? 'A' : '', // HACK I know this is ugly but because legacy reasons reblogs are empty posts
             user: user ? user : emptyUser,
-            content_warning: "",
+            content_warning: '',
             createdAt: new Date(elem.createdAt),
             updatedAt: new Date(elem.updatedAt),
             userId: elem.userId,
@@ -1011,146 +906,135 @@ export class PostsService {
             privacy: elem.privacy,
             notes: 69,
             userLikesPostRelations: [],
-            emojis: [],
-          };
+            emojis: []
+          }
         })
-        .sort((b, a) => a.createdAt.getTime() - b.createdAt.getTime());
+        .sort((b, a) => a.createdAt.getTime() - b.createdAt.getTime())
     }
-    return res;
+    return res
   }
 
   async unsilencePost(postId: string): Promise<boolean> {
     const payload = {
-      postId: postId,
-    };
+      postId: postId
+    }
     const response = await firstValueFrom(
-      this.http.post<{ success: boolean }>(
-        `${EnvironmentService.environment.baseUrl}/v2/unsilencePost`,
-        payload
-      )
-    );
-    await this.loadFollowers();
-    return response.success;
+      this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/v2/unsilencePost`, payload)
+    )
+    await this.loadFollowers()
+    return response.success
   }
 
   async silencePost(postId: string, superMute = false): Promise<boolean> {
     const payload = {
       postId: postId,
-      superMute: superMute.toString().toLowerCase(),
-    };
+      superMute: superMute.toString().toLowerCase()
+    }
     const response = await firstValueFrom(
-      this.http.post<{ success: boolean }>(
-        `${EnvironmentService.environment.baseUrl}/v2/silencePost`,
-        payload
-      )
-    );
-    await this.loadFollowers();
-    return response.success;
+      this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/v2/silencePost`, payload)
+    )
+    await this.loadFollowers()
+    return response.success
   }
 
   async voteInPoll(pollId: number, votes: number[]) {
-    let res = false;
+    let res = false
     const payload = {
-      votes: votes,
-    };
+      votes: votes
+    }
     try {
       const response = await firstValueFrom(
         this.http.post<{ success: boolean; message?: string }>(
           `${EnvironmentService.environment.baseUrl}/v2/pollVote/${pollId}`,
           payload
         )
-      );
-      res = response.success;
+      )
+      res = response.success
       this.messageService.add({
-        severity: res ? "success" : "error",
+        severity: res ? 'success' : 'error',
         summary: response.message
           ? response.message
           : res
-            ? "You voted succesfuly. It can take some time to display"
-            : "Something went wrong",
-      });
+            ? 'You voted succesfuly. It can take some time to display'
+            : 'Something went wrong'
+      })
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.messageService.add({
-        severity: "error",
-        summary: "Something went wrong",
-      });
+        severity: 'error',
+        summary: 'Something went wrong'
+      })
     }
-    return res;
+    return res
   }
 
   emojiToHtml(emoji: Emoji): string {
-    return `<img class="post-emoji" loading="lazy" src="${`${(EnvironmentService.environment.cacheDomain ?  EnvironmentService.environment.cacheDomain : '')}/api/v2/cache/emoji/${emoji.uuid}`}" title="${emoji.name
-      }" alt="${emoji.name}">`;
+    return `<img class="post-emoji" loading="lazy" src="${`${EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : ''}/api/v2/cache/emoji/${emoji.uuid}`}" title="${
+      emoji.name
+    }" alt="${emoji.name}">`
   }
 
   postContainsBlockedOrMuted(post: ProcessedPost[], isDashboard: boolean) {
-    let res = false;
+    let res = false
     post.forEach((fragment) => {
       if (this.blockedUserIds.includes(fragment.userId)) {
-        res = true;
+        res = true
       }
       if (isDashboard && this.mutedUsers.includes(fragment.userId)) {
-        res = true;
+        res = true
       }
-    });
-    return res;
+    })
+    return res
   }
 
   async updateDisableRewoots(userId: string) {
     const res = await firstValueFrom(
       this.http.post(`${EnvironmentService.environment.baseUrl}/muteRewoots`, {
-        userId: userId,
+        userId: userId
       })
-    );
-    this.loadFollowers();
-    return res;
+    )
+    this.loadFollowers()
+    return res
   }
 
   async updateDisableQuotes(userId: string) {
     const res = await firstValueFrom(
       this.http.post(`${EnvironmentService.environment.baseUrl}/muteRewoots`, {
         userId: userId,
-        muteQuotes: true,
+        muteQuotes: true
       })
-    );
-    this.loadFollowers();
-    return res;
+    )
+    this.loadFollowers()
+    return res
   }
 
   async forceRefederate(postId: string) {
     const res = await firstValueFrom(
-      this.http.post(
-        `${EnvironmentService.environment.baseUrl}/refederatePost`,
-        {
-          postId: postId,
-        }
-      )
-    );
-    this.loadFollowers();
-    return res;
+      this.http.post(`${EnvironmentService.environment.baseUrl}/refederatePost`, {
+        postId: postId
+      })
+    )
+    this.loadFollowers()
+    return res
   }
 
   async bitePost(id: string): Promise<boolean> {
-    let res = false;
+    let res = false
     const payload = {
-      postId: id,
-    };
+      postId: id
+    }
 
     try {
       const response = await lastValueFrom(
-        this.http.post<{ success: boolean }>(
-          `${EnvironmentService.environment.baseUrl}/bitePost`,
-          payload
-        )
-      );
+        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/bitePost`, payload)
+      )
 
-      await this.loadFollowers();
-      res = response?.success === true;
+      await this.loadFollowers()
+      res = response?.success === true
     } catch (exception) {
-      console.error(exception);
+      console.error(exception)
     }
 
-    return res;
+    return res
   }
 }

@@ -32,7 +32,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrls: ['./blocks.component.scss']
 })
 export class BlocksComponent {
-  private adminService = inject(AdminService);
+  private adminService = inject(AdminService)
 
   showUserBlocks = false
   userBlocks = new MatTableDataSource<AdminUserBlock, MatPaginator>(undefined)
@@ -47,7 +47,7 @@ export class BlocksComponent {
   userServerBlocksColumns = ['userBlocker', 'blockedServer', 'createdAt']
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.admin.blocklist')
   }

@@ -35,7 +35,7 @@ export interface CustomDialogData<T extends string> {
   templateUrl: './custom-dialog.component.html'
 })
 export class CustomDialogComponent<T extends string> {
-  protected data = inject<CustomDialogData<T>>(MAT_DIALOG_DATA);
+  protected data = inject<CustomDialogData<T>>(MAT_DIALOG_DATA)
 
   readonly dialogRef = inject<MatDialogRef<CustomDialogComponent<T>, T | undefined>>(
     MatDialogRef<CustomDialogComponent<T>>
@@ -48,7 +48,7 @@ export class CustomDialogComponent<T extends string> {
   inputResponse = signal('')
 
   constructor() {
-    const data = this.data;
+    const data = this.data
 
     this.textData = data
   }

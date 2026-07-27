@@ -10,12 +10,20 @@ import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-migrate-out',
-  imports: [MatCardModule, FormsModule, MatButtonModule, MatInputModule, UserSelectorComponent, LoaderComponent, TranslateModule],
+  imports: [
+    MatCardModule,
+    FormsModule,
+    MatButtonModule,
+    MatInputModule,
+    UserSelectorComponent,
+    LoaderComponent,
+    TranslateModule
+  ],
   templateUrl: './migrate-out.component.html',
   styleUrl: './migrate-out.component.scss'
 })
 export class MigrateOutComponent {
-  private loginService = inject(LoginService);
+  private loginService = inject(LoginService)
   private cdr = inject(ChangeDetectorRef)
 
   message = ''

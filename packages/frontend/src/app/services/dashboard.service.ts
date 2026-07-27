@@ -1,65 +1,59 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { EventEmitter, Injectable, inject } from "@angular/core";
+import { HttpClient, HttpParams } from '@angular/common/http'
+import { EventEmitter, Injectable, inject } from '@angular/core'
 
-import { ProcessedPost } from "../interfaces/processed-post";
-import { SimplifiedUser } from "../interfaces/simplified-user";
-import { PostsService } from "./posts.service";
-import { MessageService } from "./message.service";
-import { firstValueFrom } from "rxjs";
-import { unlinkedPosts } from "../interfaces/unlinked-posts";
-import { Emoji } from "../interfaces/emoji";
-import { BlogDetails } from "../interfaces/blogDetails";
-import { Ask } from "../interfaces/ask";
-import { EnvironmentService } from "./environment.service";
+import { ProcessedPost } from '../interfaces/processed-post'
+import { SimplifiedUser } from '../interfaces/simplified-user'
+import { PostsService } from './posts.service'
+import { MessageService } from './message.service'
+import { firstValueFrom } from 'rxjs'
+import { unlinkedPosts } from '../interfaces/unlinked-posts'
+import { Emoji } from '../interfaces/emoji'
+import { BlogDetails } from '../interfaces/blogDetails'
+import { Ask } from '../interfaces/ask'
+import { EnvironmentService } from './environment.service'
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root'
 })
 export class DashboardService {
-  private http = inject(HttpClient);
-  private postService = inject(PostsService);
-  private messageService = inject(MessageService);
+  private http = inject(HttpClient)
+  private postService = inject(PostsService)
+  private messageService = inject(MessageService)
 
-  public scrollEventEmitter: EventEmitter<string> = new EventEmitter();
+  public scrollEventEmitter: EventEmitter<string> = new EventEmitter()
   // TODO improve this. will require some changes for stuff but basically
   // its faster to say "gimme page 0 startdate this" than "gime page 2 startdate this"
-  public startScrollDate: Date = new Date();
-  baseUrl: string;
+  public startScrollDate: Date = new Date()
+  baseUrl: string
 
   constructor() {
-    this.baseUrl = EnvironmentService.environment.baseUrl;
+    this.baseUrl = EnvironmentService.environment.baseUrl
   }
 
-  async getDashboardPage(
-    date: Date,
-    level: number,
-    page?: number
-  ): Promise<ProcessedPost[][]> {
-    this.postService.loadFollowers();
-    let result: ProcessedPost[][] = [];
-    let petitionData: HttpParams = new HttpParams();
-    this.startScrollDate = date;
-    petitionData = petitionData.set("page", page ? page.toString() : "0");
-    petitionData = petitionData.set("level", level);
-    petitionData = petitionData.set("startScroll", date.getTime().toString());
-    const url = `${EnvironmentService.environment.baseUrl}/v2/dashboard`;
+  async getDashboardPage(date: Date, level: number, page?: number): Promise<ProcessedPost[][]> {
+    this.postService.loadFollowers()
+    let result: ProcessedPost[][] = []
+    let petitionData: HttpParams = new HttpParams()
+    this.startScrollDate = date
+    petitionData = petitionData.set('page', page ? page.toString() : '0')
+    petitionData = petitionData.set('level', level)
+    petitionData = petitionData.set('startScroll', date.getTime().toString())
+    const url = `${EnvironmentService.environment.baseUrl}/v2/dashboard`
     const dashboardPetition = await firstValueFrom(
       this.http.get<unlinkedPosts>(url, {
-        params: petitionData,
+        params: petitionData
       })
-    );
-    result = this.postService.processPostNew(dashboardPetition);
-    result = result.filter(
-      (post) => !this.postService.postContainsBlockedOrMuted(post, true)
-    );
+    )
+    result = this.postService.processPostNew(dashboardPetition)
+    result = result.filter((post) => !this.postService.postContainsBlockedOrMuted(post, true))
     dashboardPetition.rewootIds.forEach((id) => {
-      this.postService.rewootedPosts().add(id);
-    });
+      this.postService.rewootedPosts().add(id)
+    })
     // Remove in the future because we got the websocket!
-    this.scrollEventEmitter.emit("scrollingtime");
+    this.scrollEventEmitter.emit('scrollingtime')
     // this is a bit dirty but fuck it. price to pay for nuking zonejs
     // god i only do these things on my dayjob
-    return result;
+    return result
   }
 
   async getSearchPage(
@@ -67,71 +61,60 @@ export class DashboardService {
     term: string,
     options?: { user: string | undefined }
   ): Promise<{ posts: ProcessedPost[][]; users: SimplifiedUser[] }> {
-    let postResult: ProcessedPost[][] = [];
+    let postResult: ProcessedPost[][] = []
     if (page === 0) {
       //if we are starting the scroll, we store the current date
-      this.startScrollDate = new Date();
+      this.startScrollDate = new Date()
     }
-    let petitionData: HttpParams = new HttpParams();
-    petitionData = petitionData.set("page", page.toString());
-    petitionData = petitionData.set(
-      "startScroll",
-      this.startScrollDate.getTime().toString()
-    );
-    petitionData = petitionData.set("term", term);
+    let petitionData: HttpParams = new HttpParams()
+    petitionData = petitionData.set('page', page.toString())
+    petitionData = petitionData.set('startScroll', this.startScrollDate.getTime().toString())
+    petitionData = petitionData.set('term', term)
     if (options?.user) {
-      petitionData = petitionData.set("user", options.user);
+      petitionData = petitionData.set('user', options.user)
     }
     const dashboardPetition: {
-      posts: unlinkedPosts;
-      foundUsers: Array<SimplifiedUser>;
+      posts: unlinkedPosts
+      foundUsers: Array<SimplifiedUser>
     } = await firstValueFrom(
       this.http.get<{
-        posts: unlinkedPosts;
-        foundUsers: Array<SimplifiedUser>;
+        posts: unlinkedPosts
+        foundUsers: Array<SimplifiedUser>
       }>(`${EnvironmentService.environment.baseUrl}/v2/search`, {
-        params: petitionData,
+        params: petitionData
       })
-    );
+    )
     if (dashboardPetition) {
-      postResult = this.postService.processPostNew(dashboardPetition.posts);
-      postResult = postResult.filter(
-        (post) => !this.postService.postContainsBlockedOrMuted(post, false)
-      );
+      postResult = this.postService.processPostNew(dashboardPetition.posts)
+      postResult = postResult.filter((post) => !this.postService.postContainsBlockedOrMuted(post, false))
     } else {
       // TODO show error message
       this.messageService.add({
-        severity: "error",
-        summary: "Something went wrong :(",
-      });
+        severity: 'error',
+        summary: 'Something went wrong :('
+      })
     }
 
     return {
       posts: postResult,
-      users: dashboardPetition?.foundUsers ? dashboardPetition?.foundUsers : [],
-    };
+      users: dashboardPetition?.foundUsers ? dashboardPetition?.foundUsers : []
+    }
   }
 
-  async manageHashtagSubscription(
-    tag: string,
-    subscribe = true
-  ): Promise<boolean> {
-    const url = `${EnvironmentService.environment.baseUrl}/${subscribe ? "followHashtag" : "unfollowHashtag"
-      }`;
-    let success = false;
+  async manageHashtagSubscription(tag: string, subscribe = true): Promise<boolean> {
+    const url = `${EnvironmentService.environment.baseUrl}/${subscribe ? 'followHashtag' : 'unfollowHashtag'}`
+    let success = false
     try {
-      const petition = await firstValueFrom(
-        this.http.post<{ success: boolean }>(url, { hashtag: tag })
-      );
-      success = petition.success;
+      const petition = await firstValueFrom(this.http.post<{ success: boolean }>(url, { hashtag: tag }))
+      success = petition.success
     } catch (error) {
-      console.error(error);
+      console.error(error)
       this.messageService.add({
-        severity: "error",
-        summary: "Something went wrong!",
-      });
+        severity: 'error',
+        summary: 'Something went wrong!'
+      })
     }
-    return success;
+    return success
   }
 
   async getBlogPage(
@@ -142,138 +125,107 @@ export class DashboardService {
     mediaOnly?: boolean
   ): Promise<ProcessedPost[][]> {
     try {
-      let result: ProcessedPost[][] = [];
+      let result: ProcessedPost[][] = []
       if (page === 0) {
         //if we are starting the scroll, we store the current date
-        this.startScrollDate = new Date(
-          startScrollDate
-            ? parseInt(startScrollDate.toString())
-            : new Date().getTime()
-        );
+        this.startScrollDate = new Date(startScrollDate ? parseInt(startScrollDate.toString()) : new Date().getTime())
       }
-      let petitionData: HttpParams = new HttpParams();
-      petitionData = petitionData.set("page", page.toString());
-      petitionData = petitionData.set("mediaOnly", mediaOnly == true)
-      petitionData = petitionData.set(
-        "startScroll",
-        this.startScrollDate.getTime().toString()
-      );
-      petitionData = petitionData.set("id", blogId);
+      let petitionData: HttpParams = new HttpParams()
+      petitionData = petitionData.set('page', page.toString())
+      petitionData = petitionData.set('mediaOnly', mediaOnly == true)
+      petitionData = petitionData.set('startScroll', this.startScrollDate.getTime().toString())
+      petitionData = petitionData.set('id', blogId)
       if (featured) {
         petitionData = petitionData.set('featured', true)
       }
       const dashboardPetition: unlinkedPosts = await firstValueFrom(
-        this.http.get<unlinkedPosts>(
-          `${EnvironmentService.environment.baseUrl}/v2/blog`,
-          {
-            params: petitionData,
-          }
-        )
-      );
+        this.http.get<unlinkedPosts>(`${EnvironmentService.environment.baseUrl}/v2/blog`, {
+          params: petitionData
+        })
+      )
       if (dashboardPetition) {
-        result = this.postService.processPostNew(dashboardPetition);
+        result = this.postService.processPostNew(dashboardPetition)
         this.startScrollDate = new Date(
-          Math.min(
-            ...result.map((elem) =>
-              new Date(elem[elem.length - 1].createdAt).getTime()
-            )
-          ) - 1
-        );
+          Math.min(...result.map((elem) => new Date(elem[elem.length - 1].createdAt).getTime())) - 1
+        )
         if (result.length === 0) {
-          this.startScrollDate = new Date(0);
+          this.startScrollDate = new Date(0)
         }
-        result = result.filter(
-          (post) => !this.postService.postContainsBlockedOrMuted(post, false)
-        );
+        result = result.filter((post) => !this.postService.postContainsBlockedOrMuted(post, false))
       } else {
         this.messageService.add({
-          severity: "error",
-          summary: "Something went wrong :(",
-        });
+          severity: 'error',
+          summary: 'Something went wrong :('
+        })
       }
-      return result;
+      return result
     } catch (error) {
-      return [[]];
+      return [[]]
     }
   }
 
   async getBlogDetails(url: string, ignoreEmojis = false) {
-    let petitionData: HttpParams = new HttpParams();
-    petitionData = petitionData.append("id", url);
+    let petitionData: HttpParams = new HttpParams()
+    petitionData = petitionData.append('id', url)
     const res: BlogDetails = await firstValueFrom(
-      this.http.get<BlogDetails>(
-        `${EnvironmentService.environment.baseUrl}/user`,
-        { params: petitionData }
-      )
-    );
-    res.name = res.name.replaceAll("‏", "");
-    res.nameMarkdown = res.name;
+      this.http.get<BlogDetails>(`${EnvironmentService.environment.baseUrl}/user`, { params: petitionData })
+    )
+    res.name = res.name.replaceAll('‏', '')
+    res.nameMarkdown = res.name
     if (res.emojis && !ignoreEmojis) {
       res.emojis.forEach((emoji: Emoji) => {
-        res.name = res.name.replaceAll(
-          emoji.name,
-          this.postService.emojiToHtml(emoji)
-        );
-        res.description = res.description.replaceAll(
-          emoji.name,
-          this.postService.emojiToHtml(emoji)
-        );
-      });
+        res.name = res.name.replaceAll(emoji.name, this.postService.emojiToHtml(emoji))
+        res.description = res.description.replaceAll(emoji.name, this.postService.emojiToHtml(emoji))
+      })
     }
-    return res;
+    return res
   }
 
   async getArticle(slug: string, userUrl?: string): Promise<ProcessedPost[]> {
     const petition = await firstValueFrom(
-      this.http.get<unlinkedPosts>(
-        `${this.baseUrl}/article/${userUrl ? `${userUrl}/` : ""}${slug}`
-      )
-    );
+      this.http.get<unlinkedPosts>(`${this.baseUrl}/article/${userUrl ? `${userUrl}/` : ''}${slug}`)
+    )
 
-    const result = this.postService.processPostNew(petition);
+    const result = this.postService.processPostNew(petition)
 
-    return result[0];
+    return result[0]
   }
 
   async getPostV2(id: string): Promise<ProcessedPost[]> {
-    const petition = await firstValueFrom(
-      this.http.get<unlinkedPosts>(`${this.baseUrl}/v2/post/${id}`)
-    );
+    const petition = await firstValueFrom(this.http.get<unlinkedPosts>(`${this.baseUrl}/v2/post/${id}`))
 
-    const result = this.postService.processPostNew(petition);
+    const result = this.postService.processPostNew(petition)
 
-    return result[0];
+    return result[0]
   }
 
   async getMyAsks(): Promise<Ask[]> {
     const petition = await firstValueFrom(
       this.http.get<{
-        users: SimplifiedUser[];
+        users: SimplifiedUser[]
         asks: {
-          userAsker: string;
-          question: string;
-          apObject: string;
-          id: string;
-        }[];
+          userAsker: string
+          question: string
+          apObject: string
+          id: string
+        }[]
       }>(`${this.baseUrl}/user/myAsks`)
-    );
+    )
 
     return petition.asks.map((ask) => {
       return {
         ...ask,
-        user: petition.users.find((usr) => usr.id == ask.userAsker),
-      };
-    });
+        user: petition.users.find((usr) => usr.id == ask.userAsker)
+      }
+    })
   }
 
   public getAvatarUrl(blog?: BlogDetails) {
-    if (!blog) return "";
+    if (!blog) return ''
     const res =
-      (EnvironmentService.environment
-        ? EnvironmentService.environment.cacheDomain
-        : "") +
-      "/api/v2/cache/avatar/" +
-      blog.id;
-    return res;
+      (EnvironmentService.environment ? EnvironmentService.environment.cacheDomain : '') +
+      '/api/v2/cache/avatar/' +
+      blog.id
+    return res
   }
 }
