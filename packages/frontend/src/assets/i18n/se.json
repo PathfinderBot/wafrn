@@ -407,8 +407,8 @@
     "displayMentionsOfBlockedUsersFromOtherUsers": "Visa wooter som iinnehåller omnämnanden för blockerade användare",
     "defaultPostEditorPrivacy": "Standard Woot-redigerarintegritet",
     "defaultPostRewootPrivacy": "Standard Återwoot-integritet",
-    "defaultPostEditorCanReply":"Standard, vem kan svara",
-    "defaultPostEditorCanQuote":"Standard woot kan vara citeras",
+    "defaultPostEditorCanReply": "Standard, vem kan svara",
+    "defaultPostEditorCanQuote": "Standard woot kan vara citeras",
     "postEditorPrivacyOptions": {
       "public": "Offentlig",
       "followersOnly": "Endast följare",

@@ -65,7 +65,6 @@
         "https://wafrnmediacache.b-cdn.net/**",
         "https://wafrncache.b-cdn.net/**",
         "https:/cdn.wafrn.net/**"
-
       ],
       "cacheConfig": {
         "strategy": "performance",

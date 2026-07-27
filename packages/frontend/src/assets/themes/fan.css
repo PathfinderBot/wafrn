@@ -1,57 +1,65 @@
 :root {
-    --mat-sys-primary: #00B7FE;
-    --mat-sys-on-primary: #001935;
-    --mat-sys-primary-container: #001935;
-    --mat-sys-on-primary-container: #eedbff;
-    --mat-sys-inverse-primary: #001935;
-    --mat-sys-on-primary-fixed: #290351;
-    --mat-sys-on-primary-fixed-variant: #1d1e1d;
-    --mat-sys-background: #001935;
-    --mat-sys-on-background: #000;
-    --mat-sys-surface: #001935;
-    --mat-sys-surface-dim: #0c2e42;
-    --mat-sys-surface-bright: #002f65;
-    --mat-sys-surface-container-lowest: #159ee1;
-    --mat-sys-surface-container-low: #001935;
-    --mat-sys-surface-container: #fff;
-    --mat-sys-surface-container-high: #fff;
-    --mat-sys-surface-container-highest: #001935;
-    --mat-sys-on-surface: #fff;
-    --mat-sys-shadow: #000000;
-    --mat-sys-scrim: #000000;
-    --mat-sys-surface-tint: #37546c;
-    --mat-sys-inverse-surface: #e7e0e7;
-    --mat-sys-inverse-on-surface: #7f00ff;
-    --mat-sys-outline: #968e9a;
-    --mat-sys-outline-variant: #4a444f;
-    --mat-sys-neutral10: #1d1a20;
-    --mat-sys-error: #ffb4ab;
-    --mat-sys-on-error: #690005;
-    --mat-sys-error-container: #93000a;
-    --mat-sys-on-error-container: #ffdad6;
-    --mat-sys-surface-variant: #f7f7f7;
-    --mat-sys-on-surface-variant: #ccc3d1;
-    --mat-sys-neutral-variant20: #342e39;
-    --mat-sys-secondary-container: #159ee1;
+  --mat-sys-primary: #00b7fe;
+  --mat-sys-on-primary: #001935;
+  --mat-sys-primary-container: #001935;
+  --mat-sys-on-primary-container: #eedbff;
+  --mat-sys-inverse-primary: #001935;
+  --mat-sys-on-primary-fixed: #290351;
+  --mat-sys-on-primary-fixed-variant: #1d1e1d;
+  --mat-sys-background: #001935;
+  --mat-sys-on-background: #000;
+  --mat-sys-surface: #001935;
+  --mat-sys-surface-dim: #0c2e42;
+  --mat-sys-surface-bright: #002f65;
+  --mat-sys-surface-container-lowest: #159ee1;
+  --mat-sys-surface-container-low: #001935;
+  --mat-sys-surface-container: #fff;
+  --mat-sys-surface-container-high: #fff;
+  --mat-sys-surface-container-highest: #001935;
+  --mat-sys-on-surface: #fff;
+  --mat-sys-shadow: #000000;
+  --mat-sys-scrim: #000000;
+  --mat-sys-surface-tint: #37546c;
+  --mat-sys-inverse-surface: #e7e0e7;
+  --mat-sys-inverse-on-surface: #7f00ff;
+  --mat-sys-outline: #968e9a;
+  --mat-sys-outline-variant: #4a444f;
+  --mat-sys-neutral10: #1d1a20;
+  --mat-sys-error: #ffb4ab;
+  --mat-sys-on-error: #690005;
+  --mat-sys-error-container: #93000a;
+  --mat-sys-on-error-container: #ffdad6;
+  --mat-sys-surface-variant: #f7f7f7;
+  --mat-sys-on-surface-variant: #ccc3d1;
+  --mat-sys-neutral-variant20: #342e39;
+  --mat-sys-secondary-container: #159ee1;
 }
 
 .mat-mdc-card {
-    background-color: white;
+  background-color: white;
 }
 
 .instance-logo {
-    content: url("/assets/img/fan.webp");
-    width: unset;
-    max-width: calc(100% - 32px);
-    height: 100px;
+  content: url('/assets/img/fan.webp');
+  width: unset;
+  max-width: calc(100% - 32px);
+  height: 100px;
 }
 
-.mat-mdc-input-element ng-tns-c508571215-6 ng-pristine ng-valid mat-mdc-form-field-textarea-control mat-mdc-form-field-input-control mdc-text-field__input cdk-text-field-autofill-monitored ng-touched {
-    color: black;
+.mat-mdc-input-element
+  ng-tns-c508571215-6
+  ng-pristine
+  ng-valid
+  mat-mdc-form-field-textarea-control
+  mat-mdc-form-field-input-control
+  mdc-text-field__input
+  cdk-text-field-autofill-monitored
+  ng-touched {
+  color: black;
 }
 
 .mat-mdc-form-field-input-control.mat-mdc-form-field-input-control {
-    color: black !important;
+  color: black !important;
 }
 
 .emojireact-overlay,
@@ -61,11 +69,11 @@
 .post-editor-data,
 .mat-mdc-menu-item,
 .mdc-label {
-    color: black !important;
+  color: black !important;
 }
 
 .dashboard-title,
 .asks-text,
 .notifications-text {
-    color: #ccc3d1
+  color: #ccc3d1;
 }

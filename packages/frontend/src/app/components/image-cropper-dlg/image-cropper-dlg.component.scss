@@ -1,8 +1,8 @@
 #cropper {
-    margin-bottom: 1em;
+  margin-bottom: 1em;
 
-    // Workaround: Hide outline/borders around the cropper
-    padding: 4px;
-    --cropper-overlay-color: none;
-    line-height: 0;
+  // Workaround: Hide outline/borders around the cropper
+  padding: 4px;
+  --cropper-overlay-color: none;
+  line-height: 0;
 }
