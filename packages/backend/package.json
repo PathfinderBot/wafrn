@@ -87,6 +87,7 @@
     "htmlparser2": "^9.0.0",
     "ioredis": "^5.10.1",
     "isomorphic-dompurify": "^2.7.0",
+    "jsdom": "^30.0.0",
     "jsonld": "^8.3.2",
     "jsonwebtoken": "^9.0.0",
     "link-preview-js": "^3.0.14",
