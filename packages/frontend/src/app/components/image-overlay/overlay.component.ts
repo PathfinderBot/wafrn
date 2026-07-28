@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { DATA_TOKEN, ImageOverlayData, KillscreenOverlayData } from 'src/app/services/overlay.service'
+import { ImageOverlayData, DATA_TOKEN, KillscreenOverlayData } from '../../services/overlay.service'
 
 @Component({
   selector: 'app-image-overlay',
   imports: [],
   templateUrl: './image-overlay.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './overlay.component.scss'
 })
 export class ImageOverlayComponent {
@@ -24,6 +25,7 @@ export class ImageOverlayComponent {
   selector: 'app-killscreen-overlay',
   imports: [TranslateModule],
   templateUrl: './killscreen-overlay.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './overlay.component.scss'
 })
 export class KillscreenOverlayComponent {

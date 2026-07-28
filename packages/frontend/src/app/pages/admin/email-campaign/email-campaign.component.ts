@@ -1,14 +1,14 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatInputModule } from '@angular/material/input'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
-import { AdminService } from 'src/app/services/admin.service'
-import { MessageService } from 'src/app/services/message.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
-import { InjectHtmlModule } from 'src/app/directives/inject-html/inject-html.module'
 import { TranslateModule } from '@ngx-translate/core'
+import { InjectHtmlModule } from '../../../directives/inject-html/inject-html.module'
+import { AdminService } from '../../../services/admin.service'
+import { MessageService } from '../../../services/message.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-email-campaign',
@@ -22,6 +22,7 @@ import { TranslateModule } from '@ngx-translate/core'
     TranslateModule
   ],
   templateUrl: './email-campaign.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './email-campaign.component.scss'
 })
 export class EmailCampaignComponent {

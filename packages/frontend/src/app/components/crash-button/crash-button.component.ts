@@ -1,13 +1,14 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { TranslateModule } from '@ngx-translate/core'
 import { debounceTime, Subject } from 'rxjs'
-import { OverlayService } from 'src/app/services/overlay.service'
+import { OverlayService } from '../../services/overlay.service'
 
 @Component({
   selector: 'app-crash-button',
   imports: [MatButtonModule, TranslateModule],
   templateUrl: './crash-button.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './crash-button.component.scss'
 })
 export class CrashButtonComponent {

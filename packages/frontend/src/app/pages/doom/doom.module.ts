@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
-import { DoomComponent } from 'src/app/pages/doom/doom.component'
+import { DoomComponent } from './doom.component'
 const routes: Routes = [
   {
     path: '',

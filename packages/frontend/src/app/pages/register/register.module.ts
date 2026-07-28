@@ -11,9 +11,9 @@ import { MatButtonModule } from '@angular/material/button'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { MatSelectModule } from '@angular/material/select'
 import { TranslateModule } from '@ngx-translate/core'
-import { InfoCardComponent } from 'src/app/components/info-card/info-card.component'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatCheckbox } from '@angular/material/checkbox'
+import { InfoCardComponent } from '../../components/info-card/info-card.component'
 const routes: Routes = [
   {
     path: '',

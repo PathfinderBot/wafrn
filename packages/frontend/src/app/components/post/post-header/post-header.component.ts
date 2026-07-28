@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnChanges, input, inject } from '@angular/core'
+import { Component, OnChanges, input, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { RouterModule } from '@angular/router'
@@ -25,17 +25,17 @@ import {
   faRobot
 } from '@fortawesome/free-solid-svg-icons'
 import { DateTime } from 'luxon'
-import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
 import { ProcessedPost } from '../../../interfaces/processed-post'
 import { LoginService } from '../../../services/login.service'
 import { MessageService } from '../../../services/message.service'
 import { PostsService } from '../../../services/posts.service'
 import { AvatarSmallComponent } from '../../avatar-small/avatar-small.component'
 import { PostActionsComponent } from '../../post-actions/post-actions.component'
-import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
-import { TranslatePipe } from '@ngx-translate/core'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
 import sanitize from 'sanitize-html'
+import { TranslatePipe } from '@ngx-translate/core'
+import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
+import { PostLinkModule } from '../../../directives/post-link/post-link.module'
+import { SimpleDialogService } from '../../../services/simple-dialog.service'
 
 @Component({
   selector: 'app-post-header',
@@ -53,6 +53,7 @@ import sanitize from 'sanitize-html'
     TranslatePipe
   ],
   templateUrl: './post-header.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './post-header.component.scss'
 })
 export class PostHeaderComponent implements OnChanges {

@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { LinkPreviewComponent } from '../link-preview/link-preview.component'
 import { TranslateModule } from '@ngx-translate/core'
-import { SafePipe } from 'src/app/pipes/safe.pipe'
+import { SafePipe } from '../../pipes/safe.pipe'
 
 @NgModule({
   declarations: [WafrnMediaComponent],

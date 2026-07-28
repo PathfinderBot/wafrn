@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core'
-import { Router, RouterModule } from '@angular/router'
-import { LoginService } from 'src/app/services/login.service'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Router } from '@angular/router'
+import { LoginService } from '../../services/login.service'
 
 @Component({
   selector: 'app-home-redirector',
   imports: [],
   templateUrl: './home-redirector.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './home-redirector.component.scss'
 })
 export class HomeRedirectorComponent {

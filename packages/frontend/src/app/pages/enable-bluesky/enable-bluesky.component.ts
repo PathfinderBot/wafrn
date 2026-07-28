@@ -1,15 +1,16 @@
-import { Component, signal, inject } from '@angular/core'
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatInputModule } from '@angular/material/input'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
 import { TranslateModule } from '@ngx-translate/core'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
 @Component({
   selector: 'app-enable-bluesky',
   imports: [FormsModule, ReactiveFormsModule, MatCardModule, MatButtonModule, MatInputModule, TranslateModule],
   templateUrl: './enable-bluesky.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './enable-bluesky.component.scss'
 })
 export class EnableBlueskyComponent {

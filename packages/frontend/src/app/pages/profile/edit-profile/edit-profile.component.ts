@@ -1,32 +1,41 @@
-import { Component, computed, OnInit, signal, Signal, ViewChild, WritableSignal, inject } from '@angular/core'
-import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
-import { EmojiCollectionsComponent } from 'src/app/components/emoji-collections/emoji-collections.component'
-import { BlogDetails } from 'src/app/interfaces/blogDetails'
-import { Emoji } from 'src/app/interfaces/emoji'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { JwtService } from 'src/app/services/jwt.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MediaService } from 'src/app/services/media.service'
-import { MessageService } from 'src/app/services/message.service'
 import {
-  AdditionalStyleMode,
-  additionalStyleModesData,
-  Theme,
-  themeData,
-  ThemeGroupList,
-  themeGroupList,
-  LightDarkMode,
-  lightDarkModeData,
-  ThemeService
-} from 'src/app/services/theme.service'
+  Component,
+  computed,
+  OnInit,
+  signal,
+  Signal,
+  ViewChild,
+  WritableSignal,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core'
+import { UntypedFormGroup, UntypedFormControl, FormControl, Validators } from '@angular/forms'
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { TranslateService } from '@ngx-translate/core'
+import { EmojiCollectionsComponent } from '../../../components/emoji-collections/emoji-collections.component'
+import { Emoji } from '../../../interfaces/emoji'
+import { DashboardService } from '../../../services/dashboard.service'
+import { JwtService } from '../../../services/jwt.service'
+import { LoginService } from '../../../services/login.service'
+import { MediaService } from '../../../services/media.service'
+import { MessageService } from '../../../services/message.service'
+import {
+  Theme,
+  LightDarkMode,
+  AdditionalStyleMode,
+  themeData,
+  lightDarkModeData,
+  additionalStyleModesData,
+  ThemeGroupList,
+  ThemeService,
+  themeGroupList
+} from '../../../services/theme.service'
 
 @Component({
   selector: 'app-edit-profile',
   templateUrl: './edit-profile.component.html',
   styleUrls: ['./edit-profile.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class EditProfileComponent implements OnInit {

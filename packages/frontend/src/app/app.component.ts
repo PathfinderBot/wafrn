@@ -1,4 +1,14 @@
-import { Component, Injector, OnInit, DOCUMENT, HostBinding, ElementRef, effect, inject } from '@angular/core'
+import {
+  Component,
+  Injector,
+  OnInit,
+  DOCUMENT,
+  HostBinding,
+  ElementRef,
+  effect,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { SwUpdate } from '@angular/service-worker'
 import { LoginService } from './services/login.service'
 import { EnvironmentService } from './services/environment.service'
@@ -18,6 +28,7 @@ import { PostsService } from './services/posts.service'
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class AppComponent implements OnInit {

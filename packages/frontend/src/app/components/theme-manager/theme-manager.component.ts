@@ -1,10 +1,11 @@
-import { Component, Signal, WritableSignal, inject } from '@angular/core'
+import { Component, Signal, WritableSignal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { AdditionalStyleMode, Theme, LightDarkMode, ThemeService } from '../../services/theme.service'
 
 @Component({
   selector: 'app-theme-manager',
   imports: [],
   templateUrl: './theme-manager.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './theme-manager.component.scss'
 })
 export class ThemeManagerComponent {

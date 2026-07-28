@@ -10,7 +10,8 @@ import {
   signal,
   Signal,
   viewChild,
-  ViewChild
+  ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -40,46 +41,45 @@ import {
   faAngleDown,
   faMessage
 } from '@fortawesome/free-solid-svg-icons'
-import { EditorData } from 'src/app/interfaces/editor-data'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
-
-import { QuestionPollQuestion } from 'src/app/interfaces/questionPoll'
 import { SingleAskComponent } from '../single-ask/single-ask.component'
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu'
 import { FileUploadComponent } from '../file-upload/file-upload.component'
-import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
-import { MessageService } from 'src/app/services/message.service'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { DashboardService } from 'src/app/services/dashboard.service'
 import { MediaPreviewComponent } from '../media-preview/media-preview.component'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { EditorService } from 'src/app/services/editor.service'
-import { LoginService } from 'src/app/services/login.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { EmojiCollection } from 'src/app/interfaces/emoji-collection'
-import { from, debounceTime, Subscription, BehaviorSubject, Subject } from 'rxjs'
-import { JwtService } from 'src/app/services/jwt.service'
 import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
 import { MatCheckboxModule } from '@angular/material/checkbox'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { InfoCardComponent } from '../info-card/info-card.component'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
 import { MatBadgeModule } from '@angular/material/badge'
 import { EmojiPickerComponent } from '../emoji-picker/emoji-picker.component'
-import { Emoji } from 'src/app/interfaces/emoji'
 import { Dialog } from '@angular/cdk/dialog'
 import { Router } from '@angular/router'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
-import { BlogDetails } from 'src/app/interfaces/blogDetails'
 import Fuse from 'fuse.js'
-import { ParticleService } from 'src/app/services/particle.service'
-import { SettingsService } from 'src/app/services/settings.service'
-import { InteractionControl } from 'src/app/interfaces/InteractionControl'
 import { MatSelectModule } from '@angular/material/select'
-import { Language } from 'src/app/interfaces/language'
+import { Subscription, Subject, debounceTime, from } from 'rxjs'
+import { BlogDetails } from '../../interfaces/blogDetails'
+import { EditorData } from '../../interfaces/editor-data'
+import { Emoji } from '../../interfaces/emoji'
+import { EmojiCollection } from '../../interfaces/emoji-collection'
+import { InteractionControl } from '../../interfaces/InteractionControl'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { QuestionPollQuestion } from '../../interfaces/questionPoll'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { WafrnMedia } from '../../interfaces/wafrn-media'
+import { DashboardService } from '../../services/dashboard.service'
+import { EditorService } from '../../services/editor.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { JwtService } from '../../services/jwt.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
+import { ParticleService } from '../../services/particle.service'
+import { PostsService } from '../../services/posts.service'
+import { SettingsService } from '../../services/settings.service'
+import { Language } from '../../interfaces/language'
 
 type EmojiSuggestion = {
   img: string
@@ -115,6 +115,7 @@ type EmojiSuggestion = {
     MatSelectModule
   ],
   templateUrl: './new-editor.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './new-editor.component.scss'
 })
 export class NewEditorComponent implements OnInit, OnDestroy {

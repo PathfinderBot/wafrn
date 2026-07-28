@@ -1,12 +1,13 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
-import { EnvironmentService } from 'src/app/services/environment.service'
+import { WafrnMedia } from '../../interfaces/wafrn-media'
+import { EnvironmentService } from '../../services/environment.service'
 
 @Component({
   selector: 'app-media-preview',
   templateUrl: './media-preview.component.html',
   styleUrls: ['./media-preview.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatProgressSpinnerModule]
 })
 export class MediaPreviewComponent implements OnInit {

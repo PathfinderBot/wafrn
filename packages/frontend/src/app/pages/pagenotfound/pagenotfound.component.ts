@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core'
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { Router } from '@angular/router'
 import { faArrowRight, faEllipsis, faQuestion } from '@fortawesome/free-solid-svg-icons'
 
@@ -6,6 +6,7 @@ import { faArrowRight, faEllipsis, faQuestion } from '@fortawesome/free-solid-sv
   selector: 'app-pagenotfound',
   templateUrl: './pagenotfound.component.html',
   styleUrls: ['./pagenotfound.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class PagenotfoundComponent implements OnInit {

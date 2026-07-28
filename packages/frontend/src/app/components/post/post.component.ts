@@ -5,17 +5,14 @@ import {
   EventEmitter,
   input,
   OnDestroy,
-  OnInit,
   Output,
   signal,
   viewChild,
   viewChildren,
   inject,
-  OnChanges
+  OnChanges,
+  ChangeDetectionStrategy
 } from '@angular/core'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { LoginService } from 'src/app/services/login.service'
-import { PostsService } from 'src/app/services/posts.service'
 
 import {
   faArrowUpRightFromSquare,
@@ -37,17 +34,21 @@ import {
   faUnlock,
   faUser
 } from '@fortawesome/free-solid-svg-icons'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { Subject, Subscription } from 'rxjs'
 import { BottomReplyBarComponent } from '../bottom-reply-bar/bottom-reply-bar.component'
-import { HotkeyAction } from 'src/app/services/hotkey.service'
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { LoginService } from '../../services/login.service'
+import { PostsService } from '../../services/posts.service'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { EnvironmentService } from '../../services/environment.service'
+import { HotkeyAction } from '../../services/hotkey.service'
 
 @Component({
   selector: 'app-post',
   templateUrl: './post.component.html',
   styleUrls: ['./post.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class PostComponent implements OnChanges, OnDestroy {

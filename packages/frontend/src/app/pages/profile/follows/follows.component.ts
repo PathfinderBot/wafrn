@@ -1,29 +1,27 @@
 import { CommonModule } from '@angular/common'
-import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core'
+import { Component, OnDestroy, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
-import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
 import { MatTableDataSource, MatTableModule } from '@angular/material/table'
-import { ActivatedRoute, NavigationEnd, Router, RouterModule, UrlSegment } from '@angular/router'
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router'
 import { filter, Subscription } from 'rxjs'
-import { BlogHeaderComponent } from 'src/app/components/blog-header/blog-header.component'
-import { LoaderComponent } from 'src/app/components/loader/loader.component'
-import { followsResponse } from 'src/app/interfaces/follows-response'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { BlogService } from 'src/app/services/blog.service'
-import { PostsService } from 'src/app/services/posts.service'
-
 import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
-import { LoginService } from 'src/app/services/login.service'
 import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
 import { TranslatePipe } from '@ngx-translate/core'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { BlogHeaderComponent } from '../../../components/blog-header/blog-header.component'
+import { LoaderComponent } from '../../../components/loader/loader.component'
+import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
+import { followsResponse } from '../../../interfaces/follows-response'
+import { SimplifiedUser } from '../../../interfaces/simplified-user'
+import { BlogService } from '../../../services/blog.service'
+import { DashboardService } from '../../../services/dashboard.service'
+import { LoginService } from '../../../services/login.service'
+import { PostsService } from '../../../services/posts.service'
 
 @Component({
   selector: 'app-follows',
@@ -45,6 +43,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     TranslatePipe
   ],
   templateUrl: './follows.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './follows.component.scss'
 })
 export class FollowsComponent implements OnInit, OnDestroy {

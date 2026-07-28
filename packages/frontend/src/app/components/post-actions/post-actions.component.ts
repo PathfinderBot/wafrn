@@ -1,4 +1,4 @@
-import { Component, computed, input, OnChanges, inject } from '@angular/core'
+import { Component, computed, input, OnChanges, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { MessageService } from '../../services/message.service'
 
@@ -39,12 +39,12 @@ import { UtilsService } from '../../services/utils.service'
 import { EnvironmentService } from '../../services/environment.service'
 import { faBluesky } from '@fortawesome/free-brands-svg-icons'
 import { TranslateModule } from '@ngx-translate/core'
-import { SettingsService } from 'src/app/services/settings.service'
 import { PostActionButtonsComponent } from '../post-action-buttons/post-action-buttons.component'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { BlocksService } from 'src/app/services/blocks.service'
 import { MatDialog } from '@angular/material/dialog'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { BlocksService } from '../../services/blocks.service'
+import { SettingsService } from '../../services/settings.service'
+import { SimpleDialogService } from '../../services/simple-dialog.service'
 
 @Component({
   selector: 'app-post-actions',
@@ -57,6 +57,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
     TranslateModule
   ],
   templateUrl: './post-actions.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './post-actions.component.scss'
 })
 export class PostActionsComponent implements OnChanges {

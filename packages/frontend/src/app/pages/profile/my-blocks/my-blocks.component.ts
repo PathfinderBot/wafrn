@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common'
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -9,11 +9,11 @@ import { MatSortModule } from '@angular/material/sort'
 import { MatTableDataSource, MatTableModule } from '@angular/material/table'
 import { RouterModule } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
-import { AvatarSmallComponent } from 'src/app/components/avatar-small/avatar-small.component'
-import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
-import { UserBlockMute } from 'src/app/services/admin.service'
-import { BlocksService } from 'src/app/services/blocks.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
+import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
+import { UserBlockMute } from '../../../services/admin.service'
+import { BlocksService } from '../../../services/blocks.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-my-blocks',
@@ -32,6 +32,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
     BlogLinkModule
   ],
   templateUrl: './my-blocks.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./my-blocks.component.scss']
 })
 export class MyBlocksComponent {

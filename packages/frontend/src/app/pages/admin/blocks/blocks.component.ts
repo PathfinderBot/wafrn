@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common'
-import { Component, viewChild, inject } from '@angular/core'
+import { Component, viewChild, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -9,9 +9,9 @@ import { MatSort, MatSortModule } from '@angular/material/sort'
 import { MatTableDataSource, MatTableModule } from '@angular/material/table'
 import { RouterModule } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
-import { AvatarSmallComponent } from 'src/app/components/avatar-small/avatar-small.component'
-import { AdminService, AdminUserBlocks, ServerBlock, AdminUserBlock } from 'src/app/services/admin.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
+import { AdminService, AdminUserBlock, ServerBlock, AdminUserBlocks } from '../../../services/admin.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-blocks',
@@ -29,6 +29,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
     DatePipe
   ],
   templateUrl: './blocks.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./blocks.component.scss']
 })
 export class BlocksComponent {

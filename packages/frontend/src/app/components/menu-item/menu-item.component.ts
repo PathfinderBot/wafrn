@@ -1,14 +1,14 @@
-import { Component, computed, Input, inject } from '@angular/core'
+import { Component, computed, Input, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatListModule } from '@angular/material/list'
 import { Router, RouterModule } from '@angular/router'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
-import { MenuItem } from 'src/app/interfaces/menu-item'
-import { faChevronDown, faDotCircle } from '@fortawesome/free-solid-svg-icons'
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import { MatBadgeModule } from '@angular/material/badge'
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu'
 
 import { TranslateModule } from '@ngx-translate/core'
+import { MenuItem } from '../../interfaces/menu-item'
 
 @Component({
   selector: 'app-menu-item',
@@ -22,6 +22,7 @@ import { TranslateModule } from '@ngx-translate/core'
     TranslateModule
   ],
   templateUrl: './menu-item.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './menu-item.component.scss'
 })
 export class MenuItemComponent {

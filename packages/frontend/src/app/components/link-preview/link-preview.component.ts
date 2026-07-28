@@ -1,12 +1,21 @@
-import { ChangeDetectorRef, Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { MediaService } from 'src/app/services/media.service'
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { MatCardModule } from '@angular/material/card'
 import { CommonModule } from '@angular/common'
+import { MediaService } from '../../services/media.service'
+import { EnvironmentService } from '../../services/environment.service'
 @Component({
   selector: 'app-link-preview',
   imports: [CommonModule, MatCardModule],
   templateUrl: './link-preview.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './link-preview.component.scss'
 })
 export class LinkPreviewComponent implements OnChanges {

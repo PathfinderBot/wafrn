@@ -1,21 +1,22 @@
-import { Component, OnDestroy, OnInit, Signal, signal, inject } from '@angular/core'
+import { Component, OnDestroy, OnInit, Signal, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { Subscription, filter } from 'rxjs'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { DashboardService } from '../../services/dashboard.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
+import { PostsService } from '../../services/posts.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class SearchComponent implements OnInit, OnDestroy {

@@ -1,22 +1,22 @@
-import { Component, computed, signal, Signal, inject } from '@angular/core'
+import { Component, computed, signal, Signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { SettingEntryComponent } from 'src/app/components/setting-entry/setting-entry.component'
-import { FediAttachment, SettingData, SettingsService } from 'src/app/services/settings.service'
 import { MatCardModule } from '@angular/material/card'
-import { BlogDetails } from 'src/app/interfaces/blogDetails'
-import { LoginService } from 'src/app/services/login.service'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { MatInputModule } from '@angular/material/input'
 import { faImage, faPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { SelectImageButtonComponent } from 'src/app/select-image-button/select-image-button.component'
-import { EmojiCollectionsComponent } from 'src/app/components/emoji-collections/emoji-collections.component'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { Emoji } from 'src/app/interfaces/emoji'
-import { MessageService } from 'src/app/services/message.service'
-import { ImageCropperService } from 'src/app/services/image-cropper.service'
+import { EmojiCollectionsComponent } from '../../../components/emoji-collections/emoji-collections.component'
+import { SettingEntryComponent } from '../../../components/setting-entry/setting-entry.component'
+import { BlogDetails } from '../../../interfaces/blogDetails'
+import { Emoji } from '../../../interfaces/emoji'
+import { SelectImageButtonComponent } from '../../../select-image-button/select-image-button.component'
+import { EnvironmentService } from '../../../services/environment.service'
+import { ImageCropperService } from '../../../services/image-cropper.service'
+import { LoginService } from '../../../services/login.service'
+import { MessageService } from '../../../services/message.service'
+import { SettingsService, SettingData, FediAttachment } from '../../../services/settings.service'
 
 @Component({
   selector: 'app-setting-loader',
@@ -33,6 +33,7 @@ import { ImageCropperService } from 'src/app/services/image-cropper.service'
     EmojiCollectionsComponent
   ],
   templateUrl: './settings-profile.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './settings-profile.component.scss'
 })
 export class SettingsProfileComponent {

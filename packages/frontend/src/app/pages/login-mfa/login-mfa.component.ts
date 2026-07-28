@@ -1,16 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core'
-import { LoginService } from 'src/app/services/login.service'
-
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { Router } from '@angular/router'
-import { MessageService } from 'src/app/services/message.service'
-import { faUser, faEye, faEyeSlash, faArrowRightToBracket, faArrowRight } from '@fortawesome/free-solid-svg-icons'
-import { EnvironmentService } from 'src/app/services/environment.service'
+import { faUser, faArrowRightToBracket, faArrowRight } from '@fortawesome/free-solid-svg-icons'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-login',
   templateUrl: './login-mfa.component.html',
   styleUrls: ['./login-mfa.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class LoginMfaComponent implements OnInit {

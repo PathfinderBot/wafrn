@@ -1,24 +1,21 @@
 import { ViewportScroller } from '@angular/common'
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core'
-import { Meta, Title } from '@angular/platform-browser'
-import { NavigationSkipped, Router } from '@angular/router'
-import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons'
-import { GlobalData } from 'src/app/services/global-data.service'
-import { asyncScheduler, Subject, Subscription } from 'rxjs'
-import { filter, throttleTime } from 'rxjs/operators'
-import { SnappyCreate, SnappyHide, SnappyShow } from 'src/app/components/snappy/snappy-life'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { JwtService } from 'src/app/services/jwt.service'
-import { MessageService } from 'src/app/services/message.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { TranslateService } from '@ngx-translate/core'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Meta } from '@angular/platform-browser'
+import { Router, NavigationSkipped } from '@angular/router'
+import { Subscription, Subject, throttleTime, asyncScheduler, filter } from 'rxjs'
+import { SnappyCreate, SnappyShow, SnappyHide } from '../../components/snappy/snappy-life'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { DashboardService } from '../../services/dashboard.service'
+import { JwtService } from '../../services/jwt.service'
+import { MessageService } from '../../services/message.service'
+import { PostsService } from '../../services/posts.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, SnappyShow, SnappyHide {

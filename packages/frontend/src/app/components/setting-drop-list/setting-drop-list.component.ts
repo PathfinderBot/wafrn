@@ -1,13 +1,5 @@
-import { Component, inject } from '@angular/core'
-import { SETTINGS_TOKEN } from 'src/app/pages/settings/settings.component'
-import {
-  DropListData,
-  DropListDataEntry,
-  SettingData,
-  SettingKey,
-  SettingListItem,
-  SettingsService
-} from 'src/app/services/settings.service'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop'
 import { TranslatePipe } from '@ngx-translate/core'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
@@ -15,6 +7,15 @@ import { faBars, faRotateRight } from '@fortawesome/free-solid-svg-icons'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatButtonModule } from '@angular/material/button'
 import { MatExpansionModule } from '@angular/material/expansion'
+import { SETTINGS_TOKEN } from '../../pages/settings/settings.component'
+import {
+  SettingsService,
+  SettingData,
+  SettingKey,
+  SettingListItem,
+  DropListData,
+  DropListDataEntry
+} from '../../services/settings.service'
 
 @Component({
   selector: 'app-setting-drop-list',
@@ -29,6 +30,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
     FontAwesomeModule,
     TranslatePipe
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './setting-drop-list.component.scss'
 })
 export class SettingDropListComponent {

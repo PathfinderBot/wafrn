@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButton, MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -18,6 +18,7 @@ import { MatSelectModule } from '@angular/material/select'
     MatSelectModule
   ],
   templateUrl: './aac-for-alex.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './aac-for-alex.component.scss'
 })
 export class AacForAlexComponent implements OnInit {

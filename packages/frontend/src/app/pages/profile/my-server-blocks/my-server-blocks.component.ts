@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core'
-import { BlocksService } from 'src/app/services/blocks.service'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { BlocksService } from '../../../services/blocks.service'
 
 @Component({
   selector: 'app-my-server-blocks',
   templateUrl: './my-server-blocks.component.html',
   styleUrls: ['./my-server-blocks.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class MyServerBlocksComponent {

@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject } from '@angular/core'
+import { Component, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
 import {
@@ -11,9 +11,9 @@ import {
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
 import { TranslatePipe } from '@ngx-translate/core'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { UserReport } from 'src/app/interfaces/report'
-import { KeyValueTypedPipe } from 'src/app/pipes/keyvaluetyped.pipe'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { UserReport } from '../../interfaces/report'
+import { KeyValueTypedPipe } from '../../pipes/keyvaluetyped.pipe'
 
 export type ReportDialogData = { type: 'post'; post: ProcessedPost } | { type: 'user'; userId: string }
 
@@ -21,6 +21,7 @@ export type ReportDialogData = { type: 'post'; post: ProcessedPost } | { type: '
   selector: 'app-report-post',
   templateUrl: './report-post.component.html',
   styleUrls: ['./report-post.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     MatInputModule,
     MatSelectModule,

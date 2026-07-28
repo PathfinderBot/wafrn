@@ -1,11 +1,11 @@
-import { Component, ElementRef, viewChild, inject } from '@angular/core'
-import { Title } from '@angular/platform-browser'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { Component, ElementRef, viewChild, inject, ChangeDetectionStrategy } from '@angular/core'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-doom',
   templateUrl: './doom.component.html',
   styleUrls: ['./doom.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class DoomComponent {
