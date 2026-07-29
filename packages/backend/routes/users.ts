@@ -1947,16 +1947,19 @@ function userRoutes(app: Application) {
           const transaction = await sequelize.transaction()
           try {
             // unpin any other post by this user before pinning the new one
-            await Post.update(
-              { featured: null },
-              {
-                where: {
-                  userId: userId,
-                  featured: { [Op.ne]: null }
-                },
-                transaction
-              }
-            )
+            const pinnedPosts = await Post.findAll({
+              where: {
+                userId: userId,
+                featured: { [Op.ne]: null }
+              },
+              transaction
+            })
+            // less efficient, but we send unpin to every alredy pinned post to fedi to make sure we only allow one pinned post
+            for await (const post of pinnedPosts) {
+              await pinPost(post, true)
+              post.featured = null
+              await post.save()
+            }
             postToPin.featured = new Date()
             await postToPin.save({ transaction })
             await transaction.commit()
