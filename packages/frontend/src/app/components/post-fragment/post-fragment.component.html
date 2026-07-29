@@ -84,7 +84,7 @@
         }
       </section>
       @if (settingsService.values().disableLinkPreviews === false && postHasLinkPreview()) {
-        <section #mediaEnd class="flex flex-column gap-3">
+        <section #mediaEnd class="flex flex-column gap-3 link-preview-section">
           @for (media of fragment().medias; track $index) {
             @if (media.mediaType == 'text/html') {
               @if (!seenMedia.includes($index)) {
