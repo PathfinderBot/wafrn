@@ -75,6 +75,7 @@ import { wait } from '../utils/wait.js'
 import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
 import { syncBskyAccountData } from '../utils/atproto/syncBskyAccountData.js'
 import { LANGUAGES } from '../utils/languages.js'
+import { pinPost } from '../utils/activitypub/likePost.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -1966,8 +1967,9 @@ function userRoutes(app: Application) {
           }
           // clear cache
           await redisCache.del('localUserData:' + user.url.toLowerCase())
+          await redisCache.del('featuredCollection:' + user.id)
+          await pinPost(postToPin)
 
-          // TODO federate pinned post on fedi
           if (completeEnvironment.enableBsky && postToPin.bskyUri && postToPin.bskyCid) {
             const user = await User.scope('full').findByPk(userId)
             if (user?.enableBsky && user.bskyDid) {
@@ -1982,6 +1984,7 @@ function userRoutes(app: Application) {
 
           // we clear cache
           await redisCache.del('localUserData:' + user.url.toLowerCase())
+          await redisCache.del('featuredCollection:' + user.id)
           if (completeEnvironment.enableBsky) {
             const user = await User.scope('full').findByPk(userId)
             if (user?.enableBsky && user.bskyDid) {
@@ -1989,7 +1992,7 @@ function userRoutes(app: Application) {
               await pinPostOnBluesky(bskySession, '', '')
             }
           }
-          // TODO unpin post on fedi
+          await pinPost(postToPin, true)
           success = true
         }
       }

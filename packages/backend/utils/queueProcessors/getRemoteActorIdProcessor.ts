@@ -1,10 +1,5 @@
 import { Job } from 'bullmq'
-import {
-  FederatedHost,
-  User,
-  UserOptions,
-  sequelize
-} from '../../models/index.js'
+import { FederatedHost, User, UserOptions, sequelize } from '../../models/index.js'
 import { completeEnvironment } from '../backendOptions.js'
 import { getQueue } from '../queues.js'
 import { getPetitionSigned } from '../activitypub/getPetitionSigned.js'
@@ -52,7 +47,7 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
     if (hostBanned) {
       res = await getDeletedUser()
     } else {
-      const user = job.data.userId ? (await User.findByPk(job.data.userId)) as User : await getAdminUser()
+      const user = job.data.userId ? ((await User.findByPk(job.data.userId)) as User) : await getAdminUser()
       const userPetition = await getPetitionSigned(user, actorUrl)
       if (userPetition) {
         if (!federatedHost && url) {
@@ -112,7 +107,9 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
           NSFW: false,
           birthDate: new Date(),
           userMigratedTo: userPetition.movedTo || '',
-          displayUrl: Array.isArray(userPetition.url) ? (userPetition.url[0].href || userPetition.url[0]) : userPetition.url,
+          displayUrl: Array.isArray(userPetition.url)
+            ? userPetition.url[0].href || userPetition.url[0]
+            : userPetition.url,
           manuallyAcceptsFollows: userPetition.manuallyApprovesFollowers ?? false
         }
         federatedHost.publicInbox = userPetition.endpoints?.sharedInbox || null
