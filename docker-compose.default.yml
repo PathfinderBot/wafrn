@@ -6,8 +6,6 @@
 # ATTENTION: NEXT VERSIONS OF THIS FILE WILL BE ON GIT.
 # RIGHT NOW, NEXT UPDATE WILL DESTROY YOUR DOCKERCOMPOSE.
 
-
-
 # Shared logging configuration for all services (max log size 100mb)
 x-logging: &default-logging
   driver: json-file
@@ -114,7 +112,7 @@ services:
       dockerfile: Dockerfile
     # command: -c 'max_connections=500'
     restart: unless-stopped
-    shm_size: '${SHM_SIZE:-2gb}'
+    shm_size: "${SHM_SIZE:-2gb}"
     env_file: .env
     logging: *default-logging
     environment:
@@ -162,8 +160,10 @@ services:
       PDS_CRAWLERS: "https://bsky.network"
       LOG_LEVEL: "debug"
       LOG_ENABLED: true
-      PDS_EMAIL_SMTP_URL: "smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}"
-      PDS_EMAIL_FROM_ADDRESS: "${SMTP_FROM}"
+      PDS_EMAIL_SMTP_URL: ${PDS_EMAIL_SMTP_URL:-smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}}
+      PDS_EMAIL_FROM_ADDRESS: ${PDS_EMAIL_FROM_ADDRESS:-${SMTP_FROM}}
+      PDS_MODERATION_EMAIL_SMTP_URL: ${PDS_MODERATION_EMAIL_SMTP_URL:-smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}}
+      PDS_MODERATION_EMAIL_ADDRESS: ${PDS_MODERATION_EMAIL_ADDRESS:-${SMTP_FROM}}
     volumes:
       - ./data/pds:/pds
 
@@ -184,17 +184,17 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./data/prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
 
   cadvisor:
     restart: unless-stopped
     image: gcr.io/cadvisor/cadvisor:latest
     profiles: [metrics]
     command:
-      - '-port=8081'
+      - "-port=8081"
     environment:
       CADVISOR_HEALTHCHECK_URL: http://localhost:8081/healthz
     volumes:
@@ -212,8 +212,8 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
 
   grafana:
@@ -270,7 +270,6 @@ services:
 volumes:
   cache:
   grafana_data:
-
 
 networks:
   default:
