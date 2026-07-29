@@ -1927,6 +1927,63 @@ function userRoutes(app: Application) {
     })
   })
 
+  app.post('/api/user/pinPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    try {
+      const userId = req.jwtData?.userId as string
+      const postId = req.body.postId
+      if (postId) {
+        const postToPin = await Post.findOne({
+          where: {
+            id: postId,
+            userId: userId,
+            isReblog: false
+          }
+        })
+        if (postToPin) {
+          const transaction = await sequelize.transaction()
+          try {
+            // unpin any other post by this user before pinning the new one
+            await Post.update(
+              { featured: null },
+              {
+                where: {
+                  userId: userId,
+                  featured: { [Op.ne]: null }
+                },
+                transaction
+              }
+            )
+            postToPin.featured = new Date()
+            await postToPin.save({ transaction })
+            await transaction.commit()
+            success = true
+          } catch (error) {
+            await transaction.rollback()
+            throw error
+          }
+
+          if (completeEnvironment.enableBsky && postToPin.bskyUri && postToPin.bskyCid) {
+            const user = await User.scope('full').findByPk(userId)
+            if (user?.enableBsky && user.bskyDid) {
+              const bskySession = await getAtProtoSession(user)
+              await pinPostOnBluesky(bskySession, postToPin.bskyUri, postToPin.bskyCid)
+            }
+          }
+        }
+      }
+    } catch (error) {
+      logger.info({
+        message: `Error pinning post`,
+        error: error
+      })
+    }
+
+    res.send({
+      success: success
+    })
+  })
+
   app.post(
     '/api/user/selfDeactivate',
     authenticateToken,
@@ -2104,6 +2161,22 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   } catch (error) {
     logger.error({
       message: `Error updatig bsky profile: ${user.url}`,
+      error
+    })
+  }
+}
+
+async function pinPostOnBluesky(agent: BskyAgent, uri: string, cid: string) {
+  try {
+    return await agent.upsertProfile(async (existingProfile) => {
+      const profile = existingProfile ?? ({} as AppBskyActorProfile.Record)
+      profile.pinnedPost = { uri, cid }
+      return profile
+    })
+  } catch (error) {
+    logger.error({
+      message: `Error pinning post on bluesky`,
+      uri,
       error
     })
   }
