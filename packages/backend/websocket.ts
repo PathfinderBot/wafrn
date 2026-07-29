@@ -45,17 +45,16 @@ cron.schedule('0 2 * * *', async () => {
   })
 })
 
-
 cron.schedule('0 * * * *', async () => {
   // maintenance tasks: delete cache files older than 2 hours
   try {
-    const execAsync = promisify(exec);
+    const execAsync = promisify(exec)
     await execAsync(`find cache -type f -mmin +120 -print0 | xargs -0rn 20 rm -f`)
     logger.info(`Old cache files cleaned up`)
   } catch (error) {
     logger.info({ message: `Error cleaning up old cache files`, error })
   }
-
+})
 server.listen(PORT, completeEnvironment.listenIp, () => {
   logger.info('started websocket')
 })
