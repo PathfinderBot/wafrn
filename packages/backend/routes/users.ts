@@ -1967,7 +1967,7 @@ function userRoutes(app: Application) {
           // clear cache
           await redisCache.del('localUserData:' + user.url.toLowerCase())
 
-          // TODO federate pinned post
+          // TODO federate pinned post on fedi
           if (completeEnvironment.enableBsky && postToPin.bskyUri && postToPin.bskyCid) {
             const user = await User.scope('full').findByPk(userId)
             if (user?.enableBsky && user.bskyDid) {
@@ -1982,10 +1982,15 @@ function userRoutes(app: Application) {
 
           // we clear cache
           await redisCache.del('localUserData:' + user.url.toLowerCase())
-
-          // TODO unpin post on bsky
-
+          if (completeEnvironment.enableBsky) {
+            const user = await User.scope('full').findByPk(userId)
+            if (user?.enableBsky && user.bskyDid) {
+              const bskySession = await getAtProtoSession(user)
+              await pinPostOnBluesky(bskySession, '', '')
+            }
+          }
           // TODO unpin post on fedi
+          success = true
         }
       }
     } catch (error) {
@@ -2186,7 +2191,11 @@ async function pinPostOnBluesky(agent: BskyAgent, uri: string, cid: string) {
   try {
     return await agent.upsertProfile(async (existingProfile) => {
       const profile = existingProfile ?? ({} as AppBskyActorProfile.Record)
-      profile.pinnedPost = { uri, cid }
+      if (uri && cid) {
+        profile.pinnedPost = { uri, cid }
+      } else {
+        delete profile.pinnedPost
+      }
       return profile
     })
   } catch (error) {
