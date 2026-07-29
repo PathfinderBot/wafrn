@@ -26,7 +26,9 @@ import {
   faUserSlash,
   faVolumeMute,
   faCookieBite,
-  faCode
+  faCode,
+  faThumbtack,
+  faThumbtackSlash
 } from '@fortawesome/free-solid-svg-icons'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
@@ -125,6 +127,8 @@ export class PostActionsComponent implements OnChanges {
   blockIcon = faUserSlash
   biteIcon = faCookieBite
   rawJsonIcon = faCode
+  pinIcon = faThumbtack
+  unpinIcon = faThumbtackSlash
 
   rawOutputEnabled = EnvironmentService.environment.enableRawOutput
 
@@ -220,6 +224,22 @@ export class PostActionsComponent implements OnChanges {
       this.messages.add({
         severity: 'success',
         summary: 'messages.bitePostSuccess',
+        translate: true
+      })
+    } else {
+      this.messages.add({
+        severity: 'error',
+        summary: 'messages.genericError',
+        translate: true
+      })
+    }
+  }
+
+  async pinPost() {
+    if (await this.postService.pinPost(this.post().id)) {
+      this.messages.add({
+        severity: 'success',
+        summary: this.post().featured ? 'messages.unpinPostSuccess' : 'messages.pinPostSuccess',
         translate: true
       })
     } else {

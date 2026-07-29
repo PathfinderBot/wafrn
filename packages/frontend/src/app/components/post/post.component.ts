@@ -30,6 +30,7 @@ import {
   faRobot,
   faServer,
   faShareNodes,
+  faThumbtack,
   faTrash,
   faUnlock,
   faUser
@@ -122,6 +123,8 @@ export class PostComponent implements OnChanges, OnDestroy {
   editedIcon = faPen
   checkIcon = faCheck
   botIcon = faRobot
+  pinIcon = faThumbtack
+  isPinned = computed(() => !!this.finalPost().featured)
 
   // bottom bar for controls
   bottomReplyBar = viewChild.required(BottomReplyBarComponent)

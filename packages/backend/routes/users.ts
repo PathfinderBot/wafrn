@@ -1927,11 +1927,13 @@ function userRoutes(app: Application) {
     })
   })
 
+  // lazy I know. if post is already pinned, we unpin
   app.post('/api/user/pinPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     let success = false
     try {
       const userId = req.jwtData?.userId as string
       const postId = req.body.postId
+      const user = (await User.findByPk(userId)) as User
       if (postId) {
         const postToPin = await Post.findOne({
           where: {
@@ -1940,7 +1942,7 @@ function userRoutes(app: Application) {
             isReblog: false
           }
         })
-        if (postToPin) {
+        if (postToPin && !postToPin.featured) {
           const transaction = await sequelize.transaction()
           try {
             // unpin any other post by this user before pinning the new one
@@ -1962,7 +1964,10 @@ function userRoutes(app: Application) {
             await transaction.rollback()
             throw error
           }
+          // clear cache
+          await redisCache.del('localUserData:' + user.url.toLowerCase())
 
+          // TODO federate pinned post
           if (completeEnvironment.enableBsky && postToPin.bskyUri && postToPin.bskyCid) {
             const user = await User.scope('full').findByPk(userId)
             if (user?.enableBsky && user.bskyDid) {
@@ -1970,6 +1975,17 @@ function userRoutes(app: Application) {
               await pinPostOnBluesky(bskySession, postToPin.bskyUri, postToPin.bskyCid)
             }
           }
+        } else if (postToPin) {
+          // we unpin!
+          postToPin.featured = null
+          await postToPin.save()
+
+          // we clear cache
+          await redisCache.del('localUserData:' + user.url.toLowerCase())
+
+          // TODO unpin post on bsky
+
+          // TODO unpin post on fedi
         }
       }
     } catch (error) {
