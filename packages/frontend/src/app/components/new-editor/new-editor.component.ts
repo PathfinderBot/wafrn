@@ -948,6 +948,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   handleDrag(event: DragEvent) {
+    event.preventDefault();
     const isMedia = event.dataTransfer?.types.includes('Files')
     if (isMedia) {
       if (event.type === 'dragenter') {
