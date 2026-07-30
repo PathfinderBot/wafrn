@@ -28,17 +28,9 @@ function sendWithCache(res: Response, localFileName: string) {
 }
 
 function cacheRoutes(app: Application) {
-  // DEPRECATED WE MAY NUKE AT SOME POINT FOR SAFETY
+  // DEPRECATED ENDPOINT
   app.get('/api/cache', async (req: Request, res: Response) => {
-    let mediaUrl = String(req.query?.media)
-    if (!mediaUrl) {
-      res.sendStatus(404)
-      return
-    }
-    logger.trace({
-      message: `Old cache use: ${mediaUrl}`
-    })
-    await getMediaFromUrl(mediaUrl, res)
+    res.sendFile('uploads/deprecatedEndpoint.jpg', { root: '.' })
   })
 
   app.get('/api/v2/cache/media/:id', async (req: Request, res: Response) => {
@@ -321,7 +313,7 @@ async function getMediaFromUrl(
     }
 
     // Try to acquire lock in Redis
-    const lockAcquired = await redisCache.get(lockKey) ? false : await redisCache.set(lockKey, lockValue, 'EX', 30)
+    const lockAcquired = (await redisCache.get(lockKey)) ? false : await redisCache.set(lockKey, lockValue, 'EX', 30)
 
     if (lockAcquired) {
       // We have the lock, proceed with download
