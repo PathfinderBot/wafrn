@@ -426,6 +426,52 @@ function activityPubRoutes(app: Application) {
     }
   )
 
+  app.get(
+    '/fediverse/quote_authorization/:quoterPostId/:quotedPostId',
+    getCheckFediverseSignatureFunction(true),
+    async (req: SignedRequest, res: Response) => {
+      const quote: any = await Quotes.findOne({
+        include: [
+          {
+            model: Post,
+            as: 'quotedPost',
+            include: [
+              {
+                model: User,
+                as: 'user'
+              }
+            ]
+          },
+          {
+            model: Post,
+            as: 'quoterPost'
+          }
+        ],
+        where: {
+          quoterPostId: req.params.quoterPostId,
+          quotedPostId: req.params.quotedPostId
+        }
+      })
+      // TODO we currently assume every stored quote is authorized
+      if (quote) {
+        const objectToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+          ],
+          id: `${completeEnvironment.frontendUrl}/fediverse/quote_authorization/${req.params.quoterPostId}/${req.params.quotedPostId}`,
+          type: 'QuoteAuthorization',
+          attributedTo: `${completeEnvironment.frontendUrl}/fediverse/blog/${quote.dataValues.quotedPost.dataValues.user.url}`,
+          interactingObject: await getPostUrlForQuote(quote.dataValues.quoterPost),
+          interactionTarget: await getPostUrlForQuote(quote.dataValues.quotedPost)
+        } as unknown as activityPubObject
+        res.send(objectToSend)
+      } else {
+        res.sendStatus(404)
+      }
+    }
+  )
+
   app.get('/fediverse/accept/:id', (req: SignedRequest, res: Response) => {
     res.sendStatus(200)
   })

@@ -38,12 +38,13 @@ async function AcceptActivity(body: activityPubObject, remoteUser: User, user: U
           }
         })
         if (quoteToUpdate) {
-          quoteToUpdate.authorizationUrl = body.id
+          quoteToUpdate.authorizationUrl = body.result
           await quoteToUpdate.save()
         }
       }
       break
     }
+    // eslint-disable-next-line no-empty
     default: {
     }
   }
