@@ -38,7 +38,7 @@ function notificationRoutes(app: Application) {
     authenticateToken,
     forceUpdateLastActive,
     async (req: AuthorizedRequest, res: Response) => {
-      let getDetached = req.query.detached == 'true';
+      let getDetached = req.query.detached == 'true'
       const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
       User.findByPk(userId).then(async (usr: any) => {
         if (usr && req.query?.page === '0') {
@@ -109,7 +109,7 @@ function notificationRoutes(app: Application) {
         where: {
           ...whereObject,
           // this looks like should be the oposite but ok
-          detached: !getDetached ? {[Op.eq]: false} : {[Op.ne]: false}
+          detached: !getDetached ? { [Op.eq]: false } : { [Op.ne]: false }
         },
         order: [['createdAt', 'DESC']],
         limit: 20
@@ -276,41 +276,43 @@ function notificationRoutes(app: Application) {
          * We do this thing asyncronously, no need to wait. we try obtaining replies, as its the most important bit!
          * No need to block this petition, or if this fails or anything
          */
-        getAtProtoSession(user).then(async (session) => {
-          try {
-            let notificationsPetition = await session.listNotifications({
-              reasons: ['mention', 'reply', 'quote'],
-              limit: 20
-            })
-            if (notificationsPetition.success) {
-              const uris = notificationsPetition.data.notifications.map((elem) => elem.uri)
-              const foundPosts = await Post.findAll({
-                attributes: ['bskyUri'],
-                where: {
-                  bskyUri: {
-                    [Op.in]: uris
-                  }
-                }
+        getAtProtoSession(user)
+          .then(async (session) => {
+            try {
+              let notificationsPetition = await session.listNotifications({
+                reasons: ['mention', 'reply', 'quote'],
+                limit: 20
               })
-              const foundUris = foundPosts.map((elem) => elem.bskyUri)
-              await Promise.all(
-                notificationsPetition.data.notifications
-                  .filter((elem) => !foundUris.includes(elem.uri))
-                  .map((elem) => processSinglePost(elem.uri))
-              )
+              if (notificationsPetition.success) {
+                const uris = notificationsPetition.data.notifications.map((elem) => elem.uri)
+                const foundPosts = await Post.findAll({
+                  attributes: ['bskyUri'],
+                  where: {
+                    bskyUri: {
+                      [Op.in]: uris
+                    }
+                  }
+                })
+                const foundUris = foundPosts.map((elem) => elem.bskyUri)
+                await Promise.all(
+                  notificationsPetition.data.notifications
+                    .filter((elem) => !foundUris.includes(elem.uri))
+                    .map((elem) => processSinglePost(elem.uri))
+                )
+              }
+            } catch (error) {
+              logger.error({
+                message: `Error obtaining bsky notifications for user ${user.url}`,
+                error: error
+              })
             }
-          } catch (error) {
-            logger.error({
-              message: `Error obtaining bsky notifications for user ${user.url}`,
+          })
+          .catch((error) => {
+            logger.info({
+              message: `User ${user.url} issue obtaining bsky notificaitons`,
               error: error
             })
-          }
-        }).catch(error => {
-          logger.info({
-          message: `User ${user.url} issue obtaining bsky notificaitons`,
-          error: error
-        })
-        })
+          })
       } catch (error) {
         logger.info({
           message: `User ${user.url} issue obtaining bsky notificaitons. Throw error`,
@@ -474,7 +476,8 @@ function notificationRoutes(app: Application) {
     try {
       await PushNotificationToken.destroy({
         where: {
-          token
+          token,
+          userId
         }
       })
       res.send({ success: true, message: 'Notification token unregistered.' })

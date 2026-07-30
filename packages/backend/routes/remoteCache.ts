@@ -14,6 +14,7 @@ import { Emoji } from '../models/emoji.js'
 import getUserAgent from '../utils/getUserAgent.js'
 import { Job, ParentOptions, Queue, QueueEvents } from 'bullmq'
 import { DownloadJobPayload, DownloadJobResult, downloadMedia } from '../utils/queueProcessors/downloadMedia.js'
+import { assertUrlResolvesPublic } from '../utils/ssrfProtection.js'
 
 function sendWithCache(res: Response, localFileName: string) {
   // Does the .mime file exist?
@@ -272,6 +273,7 @@ function cacheRoutes(app: Application) {
     } else {
       let result = {}
       try {
+        await assertUrlResolvesPublic(url)
         result = await getLinkPreview(url, {
           followRedirects: 'follow',
           headers: { 'User-Agent': getUserAgent('LinkPreview') }

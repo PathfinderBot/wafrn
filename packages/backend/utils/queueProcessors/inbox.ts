@@ -52,13 +52,25 @@ async function inboxWorker(job: Job) {
     const req = { body: body }
     // little hack that should be fixed later
     if (req.body.type === 'Delete' && req.body.id.endsWith('#delete')) {
-      const userToRemove = await User.findOne({
-        where: {
-          remoteId: req.body.id.split('#')[0].toLowerCase()
+      const targetRemoteId = req.body.id.split('#')[0].toLowerCase()
+      const actor = typeof req.body.actor === 'string' ? req.body.actor.toLowerCase() : undefined
+      if (actor && actor === targetRemoteId) {
+        const userToRemove = await User.findOne({
+          where: {
+            remoteId: targetRemoteId
+          }
+        })
+        if (userToRemove) {
+          await removeUser(userToRemove.id)
+          return
         }
-      })
-      if (userToRemove) {
-        await removeUser(userToRemove.id)
+      } else {
+        logger.debug({
+          message:
+            'Rejected federation #delete shortcut: actor does not match target account (possible cross-account deletion attempt)',
+          actor: req.body.actor,
+          target: targetRemoteId
+        })
         return
       }
     }

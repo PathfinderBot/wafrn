@@ -619,7 +619,7 @@ function userRoutes(app: Application) {
     })
   })
 
-  app.post('/api/changePassword', async (req: AuthorizedRequest, res: Response) => {
+  app.post('/api/changePassword', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const user = (await User.findByPk(req.jwtData?.userId as string)) as User
     const password = req.body.oldPassword
     const newPassword = req.body.newPassword

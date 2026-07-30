@@ -56,8 +56,19 @@ function authenticateToken(req: Request, res: Response, next: NextFunction) {
   })
 }
 
-function adminToken(req: AuthorizedRequest, res: Response, next: NextFunction) {
-  if (req.jwtData?.role === 10) {
+async function adminToken(req: AuthorizedRequest, res: Response, next: NextFunction) {
+  if (req.jwtData?.role !== 10) {
+    return res.sendStatus(401)
+  }
+  const user = await User.findOne({
+    attributes: ['id', 'role'],
+    where: {
+      id: req.jwtData.userId,
+      banned: { [Op.ne]: true },
+      activated: true
+    }
+  })
+  if (user?.role === 10) {
     next()
   } else {
     return res.sendStatus(401)

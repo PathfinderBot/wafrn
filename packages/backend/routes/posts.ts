@@ -430,7 +430,8 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             where: {
               id: {
                 [Op.in]: mediaToAdd.map((media: any) => media.id)
-              }
+              },
+              userId: posterId
             }
           }).then((mediasToUpdate) => {
             mediaToAdd.forEach(async (media, index) => {
@@ -556,7 +557,10 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
         if (req.body.idPostToEdit) {
           const foundPost = await Post.findByPk(req.body.idPostToEdit)
           if (!foundPost) {
-            res.status(404).send({ message: 'Invalid post for edition', success: false })
+            return res.status(404).send({ message: 'Invalid post for edition', success: false })
+          }
+          if (foundPost.userId !== posterId) {
+            return res.status(403).send({ message: 'You can only edit your own posts', success: false })
           }
           post = foundPost!
           previousPrivacy = foundPost!.privacy
