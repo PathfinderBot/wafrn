@@ -11,7 +11,8 @@ export const baseEnvironment: Environment = {
     mainThread: process.env.USE_WORKERS ? process.env.USE_WORKERS == 'true' : true,
     low: parseInt(process.env.WORKERS_LOW || '5'),
     medium: parseInt(process.env.WORKERS_MEDIUM || '10'),
-    high: parseInt(process.env.WORKERS_HIGH || '30')
+    high: parseInt(process.env.WORKERS_HIGH || '30'),
+    mediaOptimize: 2
   },
   // this was a dev thing. leave to true unless you are doing stuff in local or your media url is yourinstance/uploads (not recomended)
   removeFolderNameFromFileUploads: true,
