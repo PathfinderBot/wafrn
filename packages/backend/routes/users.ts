@@ -87,6 +87,18 @@ const markdownConverter = new showdown.Converter({
 })
 const forbiddenCharacters = [':', '@', '/', '<', '>', '"', '&', '?']
 
+// timings attacks require us to check against something if no user found in db
+let dummyPasswordHashPromise: Promise<string> | null = null
+function getDummyPasswordHash(): Promise<string> {
+  if (!dummyPasswordHashPromise) {
+    dummyPasswordHashPromise = bcrypt.hash(
+      'wafrn-timing-normalization-dummy-password' + new Date().getTime(),
+      completeEnvironment.saltRounds
+    )
+  }
+  return dummyPasswordHashPromise
+}
+
 const generateUserKeyPairQueue = getQueue('generateUserKeyPair')
 
 const serviceUrl = completeEnvironment.bskyPds
@@ -329,6 +341,11 @@ function userRoutes(app: Application) {
               forbidChar: !forbiddenCharacters.some((char) => req.body.url.includes(char)),
               emailValid: validateEmail(req.body.email)
             })
+            // we shall not leak if user exists
+            success = true
+            res.send({
+              success: true
+            })
           }
         } else {
           logger.info({
@@ -523,7 +540,8 @@ function userRoutes(app: Application) {
           const link = `${completeEnvironment.instanceUrl}/resetPassword/${encodeURIComponent(email)}/${resetCode}`
           const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(email)}&code=${resetCode}`
 
-          await sendEmail({
+          // for timing we dont use await we just send it "fire and forget"
+          sendEmail({
             email: req.body.email.toLowerCase(),
             subject: `Reset ${completeEnvironment.instanceUrl} password`,
             body: `\
@@ -532,6 +550,11 @@ function userRoutes(app: Application) {
 <p>If you can't see the web link above, copy this link: ${link}</p>
 <p>If you didn't request this, ignore this email.</p>
 `
+          }).catch((error) => {
+            logger.error({
+              message: 'Error sending forgotPassword email',
+              error
+            })
           })
         }
       }
@@ -590,22 +613,29 @@ function userRoutes(app: Application) {
     })
   })
 
-  app.post('/api/resetPassword', async (req, res) => {
+  app.post('/api/resetPassword', createAccountLimiter, onePerSecondLimiter, async (req, res) => {
     let success = false
 
     try {
       if (req.body?.email && req.body.code && req.body.password && validateEmail(req.body.email)) {
-        const resetPasswordDeadline = new Date()
-        resetPasswordDeadline.setTime(resetPasswordDeadline.getTime() + 3600 * 2 * 1000)
+        // Codes are only valid if the reset was requested within the last 2 hours.
+        // (Previously this compared `requestedPasswordReset < now + 2h`, which is
+        // true for any past timestamp and therefore never expired anything.)
+        const resetPasswordWindowStart = new Date()
+        resetPasswordWindowStart.setTime(resetPasswordWindowStart.getTime() - 3600 * 2 * 1000)
         const user = await User.scope('full').findOne({
           where: {
             email: req.body.email.toLowerCase(),
             activationCode: req.body.code,
-            requestedPasswordReset: { [Op.lt]: resetPasswordDeadline }
+            requestedPasswordReset: { [Op.gt]: resetPasswordWindowStart }
           }
         })
         if (user) {
           await updatePassword(user, req.body.password)
+          // Invalidate the code so it cannot be reused/brute-forced further.
+          user.activationCode = generateRandomString()
+          user.requestedPasswordReset = null as unknown as Date
+          await user.save()
 
           success = true
         }
@@ -785,6 +815,9 @@ function userRoutes(app: Application) {
               })
             }
           }
+        } else {
+          // timing attacks
+          await bcrypt.compare(req.body.password, await getDummyPasswordHash())
         }
       }
     } catch (error) {

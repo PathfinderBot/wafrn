@@ -1,108 +1,107 @@
-import { Application, Response } from "express";
-import { authenticateToken } from "../utils/authenticateToken.js";
-import AuthorizedRequest from "../interfaces/authorizedRequest.js";
-import { Emoji, EmojiReaction, Post, User } from "../models/index.js";
-import { logger } from "../utils/logger.js";
-import { emojiReactRemote } from "../utils/activitypub/likePost.js";
-import { getUserOptions } from "../utils/cacheGetters/getUserOptions.js";
-import { forceUpdateLastActive } from "../utils/forceUpdateLastActive.js";
-import { createNotification } from "../utils/pushNotifications.js";
+import { Application, Response } from 'express'
+import { authenticateToken } from '../utils/authenticateToken.js'
+import AuthorizedRequest from '../interfaces/authorizedRequest.js'
+import { Emoji, EmojiReaction, Post, User } from '../models/index.js'
+import { logger } from '../utils/logger.js'
+import { emojiReactRemote } from '../utils/activitypub/likePost.js'
+import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
+import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
+import { createNotification } from '../utils/pushNotifications.js'
 
 export default function emojiReactRoutes(app: Application) {
   app.post(
-    "/api/emojiReact",
+    '/api/emojiReact',
     authenticateToken,
     forceUpdateLastActive,
     async (req: AuthorizedRequest, res: Response) => {
-      let success = false;
-      const userId = req.jwtData?.userId;
-      const postId = req.body.postId;
-      const emojiName = req.body.emojiName;
-      const undo = req.body.undo;
-      if (emojiName.length > 768) {
-        res.status(400);
-        return res.send({
+      let success = false
+      const userId = req.jwtData?.userId
+      const postId = req.body.postId
+      const emojiName = req.body.emojiName
+      const undo = req.body.undo
+      if (typeof emojiName !== 'string' || emojiName.length === 0) {
+        return res.status(400).send({
           success: false,
-          message: `You sent an emojireact with a lenght of ${emojiName.lenght}`,
-        });
+          message: `You sent an emojireact with a missing or invalid emojiName`
+        })
+      }
+      if (emojiName.length > 768) {
+        return res.status(400).send({
+          success: false,
+          message: `You sent an emojireact with a length of ${emojiName.length}`
+        })
       }
       if (undo) {
         const reaction = await EmojiReaction.findOne({
           where: {
             userId: userId,
             postId: postId,
-            content: emojiName,
-          },
-        });
+            content: emojiName
+          }
+        })
         if (reaction) {
-          await emojiReactRemote(reaction, true);
-          await reaction.destroy();
-          success = true;
+          await emojiReactRemote(reaction, true)
+          await reaction.destroy()
+          success = true
         }
 
         res.send({
-          success: success,
-        });
-        return;
+          success: success
+        })
+        return
       }
 
-      const userPromise = User.findByPk(userId);
-      const postPromise = Post.findByPk(postId);
-      let emojiOrig = await Emoji.findByPk(emojiName);
+      const userPromise = User.findByPk(userId)
+      const postPromise = Post.findByPk(postId)
+      let emojiOrig = await Emoji.findByPk(emojiName)
       let emoji =
-        emojiName.startsWith(":") && emojiName.endsWith(":")
+        emojiName.startsWith(':') && emojiName.endsWith(':')
           ? emojiOrig
           : {
               id: emojiName,
-              name: null,
-            };
+              name: null
+            }
       if (emoji) {
         try {
-          const reactionContent = emoji.name ? emoji.name : emojiName;
+          const reactionContent = emoji.name ? emoji.name : emojiName
           const existing = EmojiReaction.findOne({
             where: {
               userId: userId,
               postId: postId,
-              content: reactionContent,
-            },
-          });
-          await Promise.all([userPromise, postPromise, emoji, existing]);
-          let user = await userPromise;
-          let post = await postPromise;
+              content: reactionContent
+            }
+          })
+          await Promise.all([userPromise, postPromise, emoji, existing])
+          let user = await userPromise
+          let post = await postPromise
           if (await existing) {
             return res.status(400).send({
               success: false,
-              message: `you already reacted with ${emojiName} to this post`,
-            });
+              message: `you already reacted with ${emojiName} to this post`
+            })
           }
           if (userId && user && post) {
-            const options = await getUserOptions(user.id);
+            const options = await getUserOptions(user.id)
             const userFederatesWithThreads = options.filter(
-              (elem) =>
-                elem.optionName === "wafrn.federateWithThreads" &&
-                elem.optionValue === "true"
-            );
+              (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
+            )
             if (userFederatesWithThreads.length === 0) {
-              const userOfPostToBeReacted = await User.findByPk(post.userId);
-              if (
-                userOfPostToBeReacted?.url
-                  .toLowerCase()
-                  .endsWith(".threads.net")
-              ) {
-                res.sendStatus(500);
-                return;
+              const userOfPostToBeReacted = await User.findByPk(post.userId)
+              if (userOfPostToBeReacted?.url.toLowerCase().endsWith('.threads.net')) {
+                res.sendStatus(500)
+                return
               }
             }
             const reaction = await EmojiReaction.create({
               userId: userId,
               postId: postId,
               emojiId: emoji.name ? emoji.name : undefined,
-              content: reactionContent,
-            });
-            await reaction.save();
+              content: reactionContent
+            })
+            await reaction.save()
             await createNotification(
               {
-                notificationType: "EMOJIREACT",
+                notificationType: 'EMOJIREACT',
                 userId: userId,
                 postId: postId,
                 notifiedUserId: post.userId,
@@ -113,20 +112,20 @@ export default function emojiReactRoutes(app: Application) {
               {
                 postContent: post?.content,
                 userUrl: user?.url,
-                emoji: reaction.content,
+                emoji: reaction.content
               }
-            );
-            success = true;
-            emojiReactRemote(reaction);
+            )
+            success = true
+            emojiReactRemote(reaction)
           }
         } catch (error) {
-          logger.debug(error);
+          logger.debug(error)
         }
       }
 
-      res.send({ success: success });
+      res.send({ success: success })
     }
-  );
+  )
 }
 
-export { emojiReactRoutes };
+export { emojiReactRoutes }

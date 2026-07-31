@@ -6,6 +6,7 @@ export interface Environment {
     low: number
     medium: number
     high: number
+    mediaOptimize: number
   }
   trustProxy: number,
   removeFolderNameFromFileUploads: boolean

@@ -20,6 +20,7 @@ import { fetchFediThread } from './queueProcessors/fetchFediThread.js'
 import { downloadMedia } from './queueProcessors/downloadMedia.js'
 import { syncBskyFollowsJob } from './queueProcessors/syncBskyFollows.js'
 import { syncBskyPosts } from './queueProcessors/syncBskyPosts.js'
+import { optimizeMediaJob } from './queueProcessors/optimizeMediaJob.js'
 
 logger.info('started worker')
 const workerInbox = new Worker('inbox', (job: Job) => inboxWorker(job), {
@@ -129,35 +130,34 @@ const workerProcessRemoteMediaData = new Worker(
 
 const workerProcessFirehose = completeEnvironment.enableBsky
   ? new Worker('firehoseQueue', async (job: Job) => await processFirehose(job), {
-    connection: completeEnvironment.bullmqConnection,
-    metrics: {
-      maxDataPoints: MetricsTime.ONE_WEEK * 2
-    },
-    concurrency: completeEnvironment.workers.high,
-  })
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2
+      },
+      concurrency: completeEnvironment.workers.high
+    })
   : null
-
 
 const lowPriorityFirehoseQueue = completeEnvironment.enableBsky
   ? new Worker('lowPriorityFirehoseQueue', async (job: Job) => await processFirehose(job), {
-    connection: completeEnvironment.bullmqConnection,
-    metrics: {
-      maxDataPoints: MetricsTime.ONE_WEEK * 2
-    },
-    concurrency: completeEnvironment.workers.medium,
-  })
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2
+      },
+      concurrency: completeEnvironment.workers.medium
+    })
   : null
 
 const workerProcessSinglePost = completeEnvironment.enableBsky
   ? new Worker('processSinglePost', async (job: Job) => await processSinglePostJob(job), {
-    connection: completeEnvironment.bullmqConnection,
-    metrics: {
-      maxDataPoints: MetricsTime.ONE_WEEK * 2
-    },
-    concurrency: completeEnvironment.workers.high,
-    // up to one minute
-    lockDuration: 60000
-  })
+      connection: completeEnvironment.bullmqConnection,
+      metrics: {
+        maxDataPoints: MetricsTime.ONE_WEEK * 2
+      },
+      concurrency: completeEnvironment.workers.high,
+      // up to one minute
+      lockDuration: 60000
+    })
   : null
 
 const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) => await fetchFediThread(job), {
@@ -165,7 +165,7 @@ const workerFetchFediTrhead = new Worker('processSinglePost', async (job: Job) =
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.high,
+  concurrency: completeEnvironment.workers.high
 })
 
 const workerSendPushNotification = new Worker(
@@ -214,12 +214,21 @@ const workerDownloadMedia = new Worker('downloadMedia', async (job: Job) => awai
   lockDuration: 10000
 })
 
+const workerOptimizeMedia = new Worker('optimizeMediaQueue', (job: Job) => optimizeMediaJob(job), {
+  connection: completeEnvironment.bullmqConnection,
+  metrics: {
+    maxDataPoints: MetricsTime.ONE_WEEK * 2
+  },
+  concurrency: completeEnvironment.workers.mediaOptimize,
+  lockDuration: 12 * 60 * 1000
+})
+
 const workerSyncBskyFollows = new Worker('syncBskyFollows', (job: Job) => syncBskyFollowsJob(job), {
   connection: completeEnvironment.bullmqConnection,
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.low,
+  concurrency: completeEnvironment.workers.low
 })
 
 const workerSyncBskyPosts = new Worker('syncBskyPosts', (job: Job) => syncBskyPosts(job), {
@@ -227,7 +236,7 @@ const workerSyncBskyPosts = new Worker('syncBskyPosts', (job: Job) => syncBskyPo
   metrics: {
     maxDataPoints: MetricsTime.ONE_WEEK * 2
   },
-  concurrency: completeEnvironment.workers.low,
+  concurrency: completeEnvironment.workers.low
 })
 
 const workers = [
@@ -248,7 +257,8 @@ const workers = [
   workerFetchFediTrhead,
   workerDownloadMedia,
   workerSyncBskyFollows,
-  workerSyncBskyPosts
+  workerSyncBskyPosts,
+  workerOptimizeMedia
 ]
 if (completeEnvironment.enableBsky) {
   workers.push(workerProcessFirehose as Worker)
@@ -323,41 +333,41 @@ export {
   workerDownloadMedia,
   workerSyncBskyFollows,
   workerSyncBskyPosts,
+  workerOptimizeMedia,
   lowPriorityFirehoseQueue
 }
 
-
 // Graceful shutdown handler
 async function gracefulShutdown(signal: string) {
-  logger.info(`Received ${signal}, starting graceful shutdown...`);
+  logger.info(`Received ${signal}, starting graceful shutdown...`)
 
   try {
-    logger.info(`Closing ${workers.length} workers...`);
+    logger.info(`Closing ${workers.length} workers...`)
     await Promise.all(
       workers.map(async (worker) => {
         try {
-          logger.debug(`Closing worker: ${worker.name}`);
-          await worker.close();
-          logger.debug(`Worker closed: ${worker.name}`);
+          logger.debug(`Closing worker: ${worker.name}`)
+          await worker.close()
+          logger.debug(`Worker closed: ${worker.name}`)
         } catch (error) {
           logger.warn({
             message: `Error closing worker ${worker.name}`,
-            error,
-          });
+            error
+          })
         }
       })
-    );
-    logger.info("All workers closed successfully");
-    process.exit(0);
+    )
+    logger.info('All workers closed successfully')
+    process.exit(0)
   } catch (error) {
     logger.error({
-      message: "Error during graceful shutdown",
-      error,
-    });
-    process.exit(1);
+      message: 'Error during graceful shutdown',
+      error
+    })
+    process.exit(1)
   }
 }
 
 // Register signal handlers for graceful shutdown
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))

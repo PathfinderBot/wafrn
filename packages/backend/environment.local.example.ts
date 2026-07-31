@@ -12,6 +12,7 @@ export const baseEnvironment: Environment = {
     low: 5,
     medium: 10,
     high: 100,
+    mediaOptimize: 2,
   },
   // this was a dev thing. leave to true unless you are doing stuff in local or your media url is yourinstance/uploads (not recomended)
   removeFolderNameFromFileUploads: true,
