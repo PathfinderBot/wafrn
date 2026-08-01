@@ -26,8 +26,6 @@ export class SearchComponent implements OnInit, OnDestroy {
   protected loginService = inject(LoginService)
   private activatedRoute = inject(ActivatedRoute)
 
-  cacheurl = EnvironmentService.environment.externalCacheurl
-  baseMediaUrl = EnvironmentService.environment.baseMediaUrl
   searchForm: UntypedFormGroup = new UntypedFormGroup({
     search: new UntypedFormControl('', [Validators.required]),
     user: new UntypedFormControl('')
@@ -107,9 +105,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.posts.set(searchResult.posts)
     this.users.set(searchResult.users)
     searchResult.users.forEach((user) => {
-      this.avatars[user.url] = user.url.startsWith('@')
-        ? this.cacheurl + encodeURIComponent(user.avatar)
-        : this.cacheurl + encodeURIComponent(this.baseMediaUrl + user.avatar)
+      this.avatars[user.url] = this.getAvatarUrl(user)
     })
     this.loading.set(false)
 
@@ -135,10 +131,16 @@ export class SearchComponent implements OnInit, OnDestroy {
     searchResult.posts.forEach((post) => this.posts().push(post))
     searchResult.users.forEach((user) => {
       this.users().push(user)
-      this.avatars[user.url] = user.url.startsWith('@')
-        ? this.cacheurl + encodeURIComponent(user.avatar)
-        : this.cacheurl + encodeURIComponent(this.baseMediaUrl + user.avatar)
+      this.avatars[user.url] = this.getAvatarUrl(user)
     })
+  }
+
+  private getAvatarUrl(user: SimplifiedUser): string {
+    return (
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
+      '/api/v2/cache/avatar/' +
+      user.id
+    )
   }
 
   async followUser(id: string) {

@@ -60,7 +60,10 @@ export class LinkPreviewComponent implements OnChanges {
           this.favicon = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.favicons.at(0))
           this.loading = false
           if (data.images && data.images.length) {
-            this.img = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.images[0])
+            this.img =
+              (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
+              '/api/v2/cache/imageurl/' +
+              encodeURIComponent(this.url)
           }
           if (!this.img && data.favicons && data.favicons.length) {
             this.img = this.favicon
