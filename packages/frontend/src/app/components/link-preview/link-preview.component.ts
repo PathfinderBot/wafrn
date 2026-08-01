@@ -45,11 +45,9 @@ export class LinkPreviewComponent implements OnChanges {
           return
         }
         this.loading = true
-        const linkToGet = this.link.startsWith(EnvironmentService.environment.externalCacheurl)
+        const cacheDomain = EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : ''
         try {
-          this.url = linkToGet
-            ? (new URL(this.link, EnvironmentService.environment.frontUrl).searchParams.get('media') as string)
-            : this.link
+          this.url = this.link
         } catch (error) {
           this.url = this.link
           console.log(this.link)
@@ -57,13 +55,10 @@ export class LinkPreviewComponent implements OnChanges {
 
         this.hostname = new URL(this.url).hostname
         this.mediaService.getLinkPreview(this.url).then((data) => {
-          this.favicon = EnvironmentService.environment.externalCacheurl + encodeURIComponent(data.favicons.at(0))
+          this.favicon = cacheDomain + '/api/v2/cache/favicon/' + encodeURIComponent(this.url)
           this.loading = false
           if (data.images && data.images.length) {
-            this.img =
-              (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
-              '/api/v2/cache/imageurl/' +
-              encodeURIComponent(this.url)
+            this.img = cacheDomain + '/api/v2/cache/imageurl/' + encodeURIComponent(this.url)
           }
           if (!this.img && data.favicons && data.favicons.length) {
             this.img = this.favicon

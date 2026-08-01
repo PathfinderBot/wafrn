@@ -51,16 +51,16 @@ export class SettingsProfileComponent {
   blog: Signal<BlogDetails | undefined>
   avatarUrl = computed<string>(() => {
     if (this.newAvatarImage() != null) return this.newAvatarImage()!
-    return this.blog()
-      ? EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(EnvironmentService.environment.baseMediaUrl + this.blog()?.avatar)
+    const blog = this.blog()
+    return blog
+      ? `${EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : ''}/api/v2/cache/avatar/${blog.id}`
       : ''
   })
   headerUrl = computed<string>(() => {
     if (this.newHeaderImage() != null) return this.newHeaderImage()!
-    return this.blog()
-      ? EnvironmentService.environment.externalCacheurl +
-          encodeURIComponent(EnvironmentService.environment.baseMediaUrl + this.blog()?.headerImage)
+    const blog = this.blog()
+    return blog
+      ? `${EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : ''}/api/v2/cache/header/${blog.id}`
       : ''
   })
 
