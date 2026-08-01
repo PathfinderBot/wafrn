@@ -22,7 +22,7 @@ function followHashtagRoutes(app: Application) {
     if (!success) {
       res.status(400)
     }
-    await forceUpdateCacheDidsAtThread({addFollowedHashtag: req.body.hashtag.toLowerCase()})
+    await forceUpdateCacheDidsAtThread({ addFollowedHashtag: req.body.hashtag.toLowerCase() })
 
     res.send({ success: success })
   })
@@ -46,7 +46,7 @@ function followHashtagRoutes(app: Application) {
     res.send({ success: success })
   })
 
-  app.get('/api/myFollowedHashtags', async (req: AuthorizedRequest, res: Response) => {
+  app.get('/api/myFollowedHashtags', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     res.send(
       await UserFollowHashtags.findAll({
         where: {

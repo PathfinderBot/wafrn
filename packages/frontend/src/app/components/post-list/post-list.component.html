@@ -11,7 +11,7 @@
     @for (thread of posts(); track $index) {
       @let post = thread[thread.length - 1];
       @let media = post.medias.at(0);
-      @let mediaType = media?.mediaType?.split('/')?.at(0);
+      @let mediaType = $safeNavigationMigration(media?.mediaType?.split('/')?.at(0));
       @if (media && mediaType && ['image', 'video'].includes(mediaType)) {
         <div class="media-grid-tile">
           <a class="h-full w-full no-underline" [postLink]="post">

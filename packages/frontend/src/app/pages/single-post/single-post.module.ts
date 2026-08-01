@@ -8,10 +8,10 @@ import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatCardModule } from '@angular/material/card'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
-import { LoaderComponent } from 'src/app/components/loader/loader.component'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
-import { AvatarSmallComponent } from 'src/app/components/avatar-small/avatar-small.component'
 import { ForumComponent } from '../forum/forum.component'
+import { AvatarSmallComponent } from '../../components/avatar-small/avatar-small.component'
+import { LoaderComponent } from '../../components/loader/loader.component'
 
 const routes: Routes = [
   {

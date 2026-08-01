@@ -40,6 +40,7 @@ import { getPetitionSigned } from '../../utils/activitypub/getPetitionSigned.js'
 import getUserAgent from '../../utils/getUserAgent.js'
 import { getQueue } from '../../utils/queues.js'
 import { filterLanguageCode } from '../../utils/languages.js'
+import { assertUrlResolvesPublic } from '../../utils/ssrfProtection.js'
 
 const processSinglePostQueue = getQueue('processSinglePost')
 
@@ -144,9 +145,19 @@ const mergeRemotePostRelatedRecordsSql = `
 `
 
 // returns the post id
-async function processSinglePost(uri: string, forceUpdate = false): Promise<string | undefined> {
+const MAX_BSKY_RECURSION_DEPTH = 25000
+
+async function processSinglePost(uri: string, forceUpdate = false, depth = 0): Promise<string | undefined> {
   let detached = false
   if (!completeEnvironment.enableBsky) {
+    return undefined
+  }
+  if (depth > MAX_BSKY_RECURSION_DEPTH) {
+    logger.debug({
+      message: `Aborting bsky post processing: max recursion depth exceeded`,
+      uri,
+      depth
+    })
     return undefined
   }
   if (!forceUpdate) {
@@ -189,14 +200,14 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
   let verifiedFedi: string | undefined
   const postPetitionPds = await getPostThreadPDSDirect(uri)
   if (!postPetitionPds) {
-    return;
+    return
   }
   const post = postPetitionPds?.value as AppBskyFeedPost.Main
   const parentUri = post?.reply?.parent?.uri ? post.reply.parent.uri : undefined
   let parentId: string | undefined = undefined
   try {
     if (parentUri) {
-      parentId = await processSinglePost(parentUri, false)
+      parentId = await processSinglePost(parentUri, false, depth + 1)
     }
   } catch (error) {
     logger.debug({
@@ -209,8 +220,8 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     if ('bridgyOriginalUrl' in postPetitionPds.value) {
       const res = await fetch(
         completeEnvironment.bskySlingshotUrl +
-        '/xrpc/com.bad-example.identity.resolveMiniDoc' +
-        `?identifier=${extractUriComponents(uri).did}`
+          '/xrpc/com.bad-example.identity.resolveMiniDoc' +
+          `?identifier=${extractUriComponents(uri).did}`
       )
       if (res.ok) {
         const json = (await res.json()) as { pds: string }
@@ -287,14 +298,16 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         })
         const localUserIds = await getAllLocalUserIds()
         if (existingPost) {
-          if (await User.scope('full').count({
-            where: {
-              id: existingPost.userId,
-              email: {
-                [Op.not]: null
+          if (
+            await User.scope('full').count({
+              where: {
+                id: existingPost.userId,
+                email: {
+                  [Op.not]: null
+                }
               }
-            }
-          })) {
+            })
+          ) {
             await remotePost.save()
           } else {
             // Converted to a super single query
@@ -307,38 +320,44 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
                 transaction
               })
 
-              await Post.update({
-                parentId: remotePost.id,
-              }, {
-                where: {
-                  parentId: existingPost.id,
+              await Post.update(
+                {
+                  parentId: remotePost.id
                 },
-                transaction
-              })
+                {
+                  where: {
+                    parentId: existingPost.id
+                  },
+                  transaction
+                }
+              )
 
-              await Post.update({
-                isDeleted: true,
-              }, {
-                where: {
-                  bskyCid: bskyCid,
-                  remotePostId: null,
-                  userId: {
-                    [Op.notIn]: localUserIds
-                  }
+              await Post.update(
+                {
+                  isDeleted: true
                 },
-                transaction
-              })
+                {
+                  where: {
+                    bskyCid: bskyCid,
+                    remotePostId: null,
+                    userId: {
+                      [Op.notIn]: localUserIds
+                    }
+                  },
+                  transaction
+                }
+              )
 
               await remotePost.save({ transaction })
             })
           }
         } else {
           if (localUserIds.includes(remotePost.userId)) {
-            let postCreator = await User.findByPk(remotePost.userId) as User
+            let postCreator = (await User.findByPk(remotePost.userId)) as User
             const userPds = await getServerFromDid(postCreator.bskyDid as string, true)
             if (`https://${completeEnvironment.bskyPds}`.toLowerCase() != userPds) {
               const oldDid = postCreator.bskyDid
-              postCreator = await getAtprotoUser(oldDid as string, { ignoreCache: true }) as User
+              postCreator = (await getAtprotoUser(oldDid as string, { ignoreCache: true })) as User
               remotePost.userId = postCreator.id
             }
           }
@@ -362,10 +381,10 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
 
   const existingPost = !forceUpdate
     ? await Post.findOne({
-      where: {
-        bskyUri: uri
-      }
-    })
+        where: {
+          bskyUri: uri
+        }
+      })
     : null
   if (shouldShortCircuitToExistingPost(forceUpdate, postPetitionPds, existingPost)) {
     return existingPost?.id
@@ -425,7 +444,6 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         }
         postText = text
       }
-
     }
 
     if (!federatedWoot) {
@@ -443,13 +461,13 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       createdAt = new Date()
     }
 
-    let isReply = false;
+    let isReply = false
     if (parentId) {
       const parentPost = (await Post.findByPk(parentId)) as Post
-      isReply = parentPost.isReply || parentPost.userId != postCreator.id;
+      isReply = parentPost.isReply || parentPost.userId != postCreator.id
     }
 
-    const postLanguage = getPostLanguage(post);
+    const postLanguage = getPostLanguage(post)
 
     const newData = {
       userId: postCreator.id,
@@ -463,7 +481,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       ...(await getPostInteractionLevels(uri, parentId)),
       isBskyExclusive: true, // TODO hmmm
       isReply: isReply,
-      language: postLanguage,
+      language: postLanguage
     }
     if (!parentId) {
       delete newData.parentId
@@ -486,7 +504,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     })
     // some linting issues sorry this one could be in other place but the linter complains about other part of the code (npm run type-check)
     if (!postCreator) {
-      return;
+      return
     }
     // do not update existing posts. But what if local user creates a post through bsky? then we force updte i guess
     if (!(await getAllLocalUserIdsSet()).has(postToProcess.userId) || created) {
@@ -507,7 +525,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
         )
       }
       if (parentId) {
-        const ancestors = await sequelize.query(
+        const ancestors = (await sequelize.query(
           `
   WITH RECURSIVE ancestors AS (
     SELECT id, "parentId", "hierarchyLevel", "userId"
@@ -530,7 +548,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
             },
             type: QueryTypes.SELECT
           }
-        ) as Array<{ userId: string }>
+        )) as Array<{ userId: string }>
 
         mentions = mentions.concat(ancestors.map((elem) => elem.userId))
       }
@@ -589,7 +607,7 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
       }
       const quotedPostUri = getQuotedPostUri(postPetitionPds)
       if (quotedPostUri) {
-        const quotedPostId = await processSinglePost(quotedPostUri, forceUpdate)
+        const quotedPostId = await processSinglePost(quotedPostUri, forceUpdate, depth + 1)
         if (quotedPostId) {
           const quotedPost = await Post.findByPk(quotedPostId)
           if (quotedPost) {
@@ -621,7 +639,6 @@ async function processSinglePost(uri: string, forceUpdate = false): Promise<stri
     }
     return postToProcess.id
   } else {
-
     if (!postPetitionPds) {
       logger.error({
         message: `Error obtaining user: ${uri}`,
@@ -677,7 +694,10 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   if ((embed as AppBskyEmbedExternal.Main).external) {
     const external = (embed as AppBskyEmbedExternal.Main).external
     return {
-      mediaType: (external.uri.startsWith('https://media.tenor.com/') || external.uri.startsWith('https://static.klipy.com/')) ? 'image/gif' : 'text/html',
+      mediaType:
+        external.uri.startsWith('https://media.tenor.com/') || external.uri.startsWith('https://static.klipy.com/')
+          ? 'image/gif'
+          : 'text/html',
       description: external.title,
       url: external.uri,
       mediaOrder: 0,
@@ -820,7 +840,9 @@ async function getPostInteractionLevels(
   }
 }
 
-async function processReplies(uri: string, cursor?: string) {
+const MAX_REPLIES_PAGES = 1000
+
+async function processReplies(uri: string, cursor?: string, page = 0) {
   // TODO we need to get constelations
   const localPost = await Post.findOne({
     where: {
@@ -862,7 +884,7 @@ async function processReplies(uri: string, cursor?: string) {
       })) as Post
       if (rootPost) {
         uriToSearch = rootPost.bskyUri as string
-        return processReplies(uriToSearch, cursor)
+        return processReplies(uriToSearch, cursor, page)
       } else {
         return
       }
@@ -892,8 +914,14 @@ async function processReplies(uri: string, cursor?: string) {
         }
       })
     )
-    if (constellationPetition.cursor) {
-      await processReplies(uri, constellationPetition.cursor)
+    if (constellationPetition.cursor && page < MAX_REPLIES_PAGES) {
+      await processReplies(uri, constellationPetition.cursor, page + 1)
+    } else if (constellationPetition.cursor) {
+      logger.debug({
+        message: `Aborting processReplies: max page count exceeded`,
+        uri,
+        page
+      })
     }
   }
 }
@@ -915,15 +943,17 @@ async function getPostThreadPDSDirect(inputUri: string) {
   try {
     const { did, collection, rKey } = extractUriComponents(inputUri)
     const pdsUrl = await getServerFromDid(did)
+    if (!pdsUrl) {
+      return undefined
+    }
+    const requestUrl = `${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${encodeURIComponent(collection)}&rkey=${encodeURIComponent(rKey)}`
+    await assertUrlResolvesPublic(requestUrl)
     const petition = await (
-      await fetch(
-        `${pdsUrl}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(did)}&collection=${collection}&rkey=${encodeURIComponent(rKey)}`,
-        {
-          headers: {
-            'User-Agent': getUserAgent('ATProtoWorker')
-          }
+      await fetch(requestUrl, {
+        headers: {
+          'User-Agent': getUserAgent('ATProtoWorker')
         }
-      )
+      })
     ).json()
     return petition as ComAtprotoRepoGetRecord.OutputSchema
   } catch (error) {
@@ -944,12 +974,9 @@ function getPostLanguage(post: AppBskyFeedPost.Main): string | undefined {
   return undefined
 }
 
-function hasFediverseMirrorMetadata(
-  postPetitionPds: ComAtprotoRepoGetRecord.OutputSchema | undefined
-): boolean {
+function hasFediverseMirrorMetadata(postPetitionPds: ComAtprotoRepoGetRecord.OutputSchema | undefined): boolean {
   return Boolean(
-    postPetitionPds?.value &&
-    ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
+    postPetitionPds?.value && ('fediverseId' in postPetitionPds.value || 'bridgyOriginalUrl' in postPetitionPds.value)
   )
 }
 
@@ -960,7 +987,6 @@ function shouldShortCircuitToExistingPost(
 ): boolean {
   return !forceUpdate && Boolean(existingPost) && !hasFediverseMirrorMetadata(postPetitionPds)
 }
-
 
 export {
   getQuotedPostUri,

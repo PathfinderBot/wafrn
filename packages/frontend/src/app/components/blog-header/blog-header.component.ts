@@ -1,11 +1,22 @@
 import { CommonModule } from '@angular/common'
-import { Component, computed, input, OnChanges, OnDestroy, Signal, SimpleChanges, inject } from '@angular/core'
+import {
+  Component,
+  computed,
+  input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatDialog } from '@angular/material/dialog'
 import { MatMenuModule } from '@angular/material/menu'
+import { MatTooltipModule } from '@angular/material/tooltip'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { faBluesky } from '@fortawesome/free-brands-svg-icons'
 import {
   faChevronDown,
   faServer,
@@ -27,24 +38,21 @@ import {
   faUserGroup,
   faEnvelope
 } from '@fortawesome/free-solid-svg-icons'
-import { BlogDetails } from 'src/app/interfaces/blogDetails'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { BlocksService } from 'src/app/services/blocks.service'
-import { EditorService } from 'src/app/services/editor.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { UtilsService } from 'src/app/services/utils.service'
-import { MatTooltipModule } from '@angular/material/tooltip'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { InfoCardComponent } from '../info-card/info-card.component'
-import { faBluesky } from '@fortawesome/free-brands-svg-icons'
-import { ReportService } from 'src/app/services/report.service'
 import { TranslatePipe } from '@ngx-translate/core'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { BlogService } from 'src/app/services/blog.service'
-import { RawJsonDialogComponent } from '../raw-json-dialog/raw-json-dialog.component'
-import { SettingsService } from 'src/app/services/settings.service'
+import { BlogDetails } from '../../interfaces/blogDetails'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { BlocksService } from '../../services/blocks.service'
+import { BlogService } from '../../services/blog.service'
+import { EditorService } from '../../services/editor.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
+import { PostsService } from '../../services/posts.service'
+import { ReportService } from '../../services/report.service'
+import { SettingsService } from '../../services/settings.service'
+import { SimpleDialogService } from '../../services/simple-dialog.service'
+import { UtilsService } from '../../services/utils.service'
+import { InfoCardComponent } from '../info-card/info-card.component'
 
 @Component({
   selector: 'app-blog-header',
@@ -60,6 +68,7 @@ import { SettingsService } from 'src/app/services/settings.service'
     TranslatePipe
   ],
   templateUrl: './blog-header.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './blog-header.component.scss'
 })
 export class BlogHeaderComponent implements OnChanges, OnDestroy {

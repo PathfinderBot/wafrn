@@ -13,4 +13,8 @@ export interface activityPubObject {
   content?: string
   target?: string
   instrument?: any
+  result?: any
+  attributedTo?: string
+  interactingObject?: string
+  interactionTarget?: string
 }

@@ -45,7 +45,6 @@ import {
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { sequelize } from './sequelize.js'
 
-
 export const Privacy = {
   Public: 0,
   FollowersOnly: 1,
@@ -97,12 +96,12 @@ export interface PostAttributes {
   reblogControl?: InteractionControlType
   quoteControl?: InteractionControlType
   displayUrl: string | null
-  detached?: boolean,
-  rootId?: string | null,
-  isBskyExclusive?: boolean,
-  isReply?: boolean,
-  waitToSendPost?: boolean,
-  language: string | undefined,
+  detached?: boolean
+  rootId?: string | null
+  isBskyExclusive?: boolean
+  isReply?: boolean
+  waitToSendPost?: boolean
+  language: string | undefined
 }
 
 @Table({
@@ -247,7 +246,6 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
   })
   declare rootId: string | null
 
-
   @Column({
     allowNull: true,
     type: DataType.INTEGER,
@@ -281,35 +279,35 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     defaultValue: false,
     type: DataType.BOOLEAN
   })
-  declare detached: boolean;
+  declare detached: boolean
 
   @Column({
     type: DataType.STRING(3),
     allowNull: true,
-    defaultValue: undefined,
+    defaultValue: undefined
   })
-  declare language: string | undefined;
+  declare language: string | undefined
 
-  @BelongsTo(() => Post, "parentId")
-  declare parent: Post; declare getParent: BelongsToGetAssociationMixin<Post>;
-  declare setParent: BelongsToSetAssociationMixin<Post, string>;
+  @BelongsTo(() => Post, 'parentId')
+  declare parent: Post
+  declare getParent: BelongsToGetAssociationMixin<Post>
+  declare setParent: BelongsToSetAssociationMixin<Post, string>
 
-
-  @BelongsTo(() => Post, "rootId")
-  declare root: Post;
-  declare getRoot: BelongsToGetAssociationMixin<Post>;
-  declare setRoot: BelongsToSetAssociationMixin<Post, string>;
+  @BelongsTo(() => Post, 'rootId')
+  declare root: Post
+  declare getRoot: BelongsToGetAssociationMixin<Post>
+  declare setRoot: BelongsToSetAssociationMixin<Post, string>
 
   @HasMany(() => Post, 'parentId')
   declare children: Post[]
 
   async getAncestors(): Promise<Post[]> {
     if (!this.rootId) {
-      return [];
+      return []
     }
-  // New style: recursive CTE via parentId
-  const ancestorIds = await sequelize.query(
-    `
+    // New style: recursive CTE via parentId
+    const ancestorIds = (await sequelize.query(
+      `
         WITH RECURSIVE ancestors AS (
     SELECT "parentId" AS id
     FROM posts
@@ -326,32 +324,32 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
 SELECT id
 FROM ancestors;
         `,
-    {
-      replacements: {
-        id: this.id,
-        rootId: this.rootId
-      },
-      type: QueryTypes.SELECT
-    }
-  ) as Array<{ id: string }>
-  if (ancestorIds.length === 0) return []
-  const ids = ancestorIds.map(row => row.id)
-  return await Post.findAll({
-    where: {
-      id: {
-        [Op.in]: ids
+      {
+        replacements: {
+          id: this.id,
+          rootId: this.rootId
+        },
+        type: QueryTypes.SELECT
       }
-    },
-    order: [['hierarchyLevel', 'DESC']]
-  })
-}
+    )) as Array<{ id: string }>
+    if (ancestorIds.length === 0) return []
+    const ids = ancestorIds.map((row) => row.id)
+    return await Post.findAll({
+      where: {
+        id: {
+          [Op.in]: ids
+        }
+      },
+      order: [['hierarchyLevel', 'DESC']]
+    })
+  }
 
   async getDescendentsCustom(): Promise<Post[]> {
     // New style: recursive CTE via parentId
-    const descendantIds = await sequelize.query(
+    const descendantIds = (await sequelize.query(
       `
         WITH RECURSIVE descendants AS (
-          SELECT id FROM posts WHERE "parentId" = '${this.id}'
+          SELECT id FROM posts WHERE "parentId" = :postId
           UNION ALL
           SELECT p.id FROM posts p
           INNER JOIN descendants d ON p."parentId" = d.id
@@ -359,13 +357,16 @@ FROM ancestors;
         SELECT id FROM descendants
         `,
       {
-        type: QueryTypes.SELECT
+        type: QueryTypes.SELECT,
+        replacements: {
+          postId: this.id
+        }
       }
-    ) as Array<{ id: string }>
+    )) as Array<{ id: string }>
 
     if (descendantIds.length === 0) return []
 
-    const ids = descendantIds.map(row => row.id)
+    const ids = descendantIds.map((row) => row.id)
     return await Post.findAll({
       where: {
         id: {
@@ -374,7 +375,6 @@ FROM ancestors;
       },
       order: [['hierarchyLevel', 'ASC']]
     })
-
   }
 
   @HasMany(() => Notification, {
@@ -493,7 +493,7 @@ FROM ancestors;
       levelFieldName: 'hierarchyLevel',
       rootIdFieldName: 'rootId',
       throughKey: 'postsId',
-      throughForeignKey: 'ancestorId',
+      throughForeignKey: 'ancestorId'
     }
   }
 
@@ -512,7 +512,11 @@ FROM ancestors;
 
   async isRemoteBlueskyPostAsync() {
     let user = await this.getUser()
-    return this.bskyUri && user.isRemoteUser && (!this.remotePostId || !this.remotePostId?.startsWith('https://bsky.brid.gy/'))
+    return (
+      this.bskyUri &&
+      user.isRemoteUser &&
+      (!this.remotePostId || !this.remotePostId?.startsWith('https://bsky.brid.gy/'))
+    )
   }
 
   get postShouldGoFedi() {

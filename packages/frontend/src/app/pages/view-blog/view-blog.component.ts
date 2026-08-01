@@ -1,4 +1,13 @@
-import { Component, OnDestroy, OnInit, signal, WritableSignal, inject, ChangeDetectorRef } from '@angular/core'
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  signal,
+  WritableSignal,
+  inject,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { Meta } from '@angular/platform-browser'
 import { ActivatedRoute } from '@angular/router'
 import {
@@ -11,28 +20,29 @@ import {
   faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons'
 import { asyncScheduler, firstValueFrom, Subject, Subscription, throttleTime } from 'rxjs'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { BlocksService } from 'src/app/services/blocks.service'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { LoginService } from 'src/app/services/login.service'
-import { ThemeService } from 'src/app/services/theme.service'
 
-import { BlogDetails } from 'src/app/interfaces/blogDetails'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { snappyInject, SnappyRouter } from 'src/app/components/snappy/snappy-router.component'
-import { SnappyBlogData } from 'src/app/directives/blog-link/blog-link.directive'
-import { SnappyHide, SnappyShow } from 'src/app/components/snappy/snappy-life'
-import { SettingsService } from 'src/app/services/settings.service'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
 import { MatTabChangeEvent } from '@angular/material/tabs'
 import { HttpClient } from '@angular/common/http'
+import { SnappyHide, SnappyShow } from '../../components/snappy/snappy-life'
+import { SnappyRouter, snappyInject } from '../../components/snappy/snappy-router.component'
+import { SnappyBlogData } from '../../directives/blog-link/blog-link.directive'
+import { BlogDetails } from '../../interfaces/blogDetails'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { BlocksService } from '../../services/blocks.service'
+import { DashboardService } from '../../services/dashboard.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { SettingsService } from '../../services/settings.service'
+import { SimpleDialogService } from '../../services/simple-dialog.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
+import { ThemeService } from '../../services/theme.service'
 
 @Component({
   selector: 'app-view-blog',
   templateUrl: './view-blog.component.html',
   styleUrls: ['./view-blog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyShow {

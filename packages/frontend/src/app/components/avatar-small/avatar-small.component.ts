@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterModule } from '@angular/router'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { EnvironmentService } from '../../services/environment.service'
-import { BlogLinkModule } from 'src/app/directives/blog-link/blog-link.module'
 import { MatTooltipModule } from '@angular/material/tooltip'
+import { BlogLinkModule } from '../../directives/blog-link/blog-link.module'
 
 @Component({
   selector: 'app-avatar-small',

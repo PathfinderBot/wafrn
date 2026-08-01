@@ -1,17 +1,15 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core'
-import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons'
-import { Follower } from 'src/app/interfaces/follower'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { Reblog } from 'src/app/interfaces/reblog'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { UserNotifications } from 'src/app/interfaces/user-notifications'
-import { NotificationsService } from 'src/app/services/notifications.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { ChangeDetectorRef, Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Follower } from '../../interfaces/follower'
+import { Reblog } from '../../interfaces/reblog'
+import { UserNotifications } from '../../interfaces/user-notifications'
+import { NotificationsService } from '../../services/notifications.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class NotificationsComponent implements OnInit {

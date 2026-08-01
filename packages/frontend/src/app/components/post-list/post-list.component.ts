@@ -8,23 +8,24 @@ import {
   signal,
   viewChild,
   viewChildren,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
 import { PostModule } from '../post/post.module'
 import { LoaderComponent } from '../loader/loader.component'
-import { HotkeyAction, HotkeyService } from 'src/app/services/hotkey.service'
 import { fromEvent, Subject, take, throttleTime } from 'rxjs'
 import { PostComponent } from '../post/post.component'
 import { MatGridListModule } from '@angular/material/grid-list'
 import { DatePipe } from '@angular/common'
 import { WafrnMediaModule } from '../wafrn-media/wafrn-media.module'
-import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
 import { TranslatePipe } from '@ngx-translate/core'
-import { GlobalData } from 'src/app/services/global-data.service'
-import { Tag } from 'src/app/interfaces/tag'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faPhotoFilm } from '@fortawesome/free-solid-svg-icons'
+import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { GlobalData } from '../../services/global-data.service'
+import { HotkeyAction, HotkeyService } from '../../services/hotkey.service'
+import { Tag } from '../../interfaces/tag'
 
 export type DisplayMode = 'card' | 'grid'
 
@@ -41,6 +42,7 @@ export type DisplayMode = 'card' | 'grid'
     DatePipe
   ],
   templateUrl: './post-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './post-list.component.scss'
 })
 export class PostListComponent {

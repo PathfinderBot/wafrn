@@ -9,7 +9,8 @@ import {
   output,
   signal,
   ViewChild,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -44,6 +45,7 @@ enum EmojiRenderType {
     TranslatePipe
   ],
   templateUrl: './emoji-collections.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './emoji-collections.component.scss'
 })
 export class EmojiCollectionsComponent implements AfterViewInit, OnDestroy {

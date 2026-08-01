@@ -1,7 +1,7 @@
 import { Directive, ElementRef, HostListener, Input, OnInit, Renderer2, inject } from '@angular/core'
-import { SnappyInjectable } from 'src/app/components/snappy/snappy-router.component'
-import { SnappyService } from 'src/app/components/snappy/snappy.service'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
+import { SnappyInjectable } from '../../components/snappy/snappy-router.component'
+import { SnappyService } from '../../components/snappy/snappy.service'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
 
 @Directive({
   selector: '[blogLink]',

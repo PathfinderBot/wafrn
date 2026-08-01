@@ -1,15 +1,16 @@
 import { JsonPipe } from '@angular/common'
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
-import { statsReply } from 'src/app/interfaces/statsReply'
-import { AdminService } from 'src/app/services/admin.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { statsReply } from '../../../interfaces/statsReply'
+import { AdminService } from '../../../services/admin.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-stats',
   imports: [MatCardModule, TranslateModule],
   templateUrl: './stats.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './stats.component.scss'
 })
 export class StatsComponent {

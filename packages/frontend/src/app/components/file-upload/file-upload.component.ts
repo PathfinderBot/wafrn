@@ -1,14 +1,14 @@
 import { HttpEventType } from '@angular/common/http'
-import { Component, EventEmitter, Input, Output, input, signal, inject } from '@angular/core'
+import { Component, EventEmitter, Output, input, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faFileUpload } from '@fortawesome/free-solid-svg-icons'
-import { Observable, Subscription } from 'rxjs'
-import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { FileUploadService } from 'src/app/services/file-upload.service'
+import { Subscription } from 'rxjs'
+import { WafrnMedia } from '../../interfaces/wafrn-media'
+import { EnvironmentService } from '../../services/environment.service'
+import { FileUploadService } from '../../services/file-upload.service'
 
 enum UploadStatus {
   Pending = 'PENDING',
@@ -20,6 +20,7 @@ enum UploadStatus {
   selector: 'app-file-upload',
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [FormsModule, FontAwesomeModule, MatButtonModule, MatProgressSpinnerModule]
 })
 export class FileUploadComponent {

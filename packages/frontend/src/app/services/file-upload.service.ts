@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { catchError, throwError } from 'rxjs'
-import { WafrnMedia } from 'src/app/interfaces/wafrn-media'
-import { MessageService } from 'src/app/services/message.service'
-
+import { WafrnMedia } from '../interfaces/wafrn-media'
+import { MessageService } from './message.service'
 @Injectable({
   providedIn: 'root'
 })

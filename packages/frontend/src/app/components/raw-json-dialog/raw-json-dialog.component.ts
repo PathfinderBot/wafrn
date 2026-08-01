@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog'
 import { LoaderComponent } from '../loader/loader.component'
@@ -17,6 +17,7 @@ import { JsonPipe } from '@angular/common'
     JsonPipe
   ],
   templateUrl: './raw-json-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './raw-json-dialog.component.scss'
 })
 export class RawJsonDialogComponent {

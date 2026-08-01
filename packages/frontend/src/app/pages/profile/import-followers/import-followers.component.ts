@@ -1,15 +1,16 @@
 import { HttpClient } from '@angular/common/http'
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { lastValueFrom } from 'rxjs'
-import { FollowListElem } from 'src/app/interfaces/follow-list-elem'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { MessageService } from 'src/app/services/message.service'
-import { PostsService } from 'src/app/services/posts.service'
+import { FollowListElem } from '../../../interfaces/follow-list-elem'
+import { EnvironmentService } from '../../../services/environment.service'
+import { MessageService } from '../../../services/message.service'
+import { PostsService } from '../../../services/posts.service'
 
 @Component({
   selector: 'app-import-followers',
   templateUrl: './import-followers.component.html',
   styleUrls: ['./import-followers.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ImportFollowersComponent {

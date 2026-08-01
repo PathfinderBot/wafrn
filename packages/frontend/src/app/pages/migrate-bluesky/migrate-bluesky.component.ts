@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core'
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -8,10 +8,10 @@ import { MatStepperModule } from '@angular/material/stepper'
 import { MatIconModule } from '@angular/material/icon'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-migrate-bluesky',
@@ -28,6 +28,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
     TranslateModule
   ],
   templateUrl: './migrate-bluesky.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './migrate-bluesky.component.scss'
 })
 export class MigrateBlueskyComponent {

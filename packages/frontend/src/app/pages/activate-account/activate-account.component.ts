@@ -1,13 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core'
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-activate-account',
   templateUrl: './activate-account.component.html',
   styleUrls: ['./activate-account.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ActivateAccountComponent implements OnInit {

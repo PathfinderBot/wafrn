@@ -1,15 +1,16 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { TranslateModule } from '@ngx-translate/core'
-import { SettingEntryComponent } from 'src/app/components/setting-entry/setting-entry.component'
-import { GroupedSettingData, SettingData, SettingsService } from 'src/app/services/settings.service'
 import { SETTINGS_TOKEN } from '../settings.component'
 import { RouterModule } from '@angular/router'
 import { CdkPortalOutlet, Portal } from '@angular/cdk/portal'
 import { MatButtonModule } from '@angular/material/button'
+import { SettingEntryComponent } from '../../../components/setting-entry/setting-entry.component'
+import { SettingData, GroupedSettingData, SettingsService } from '../../../services/settings.service'
 
 @Component({
   selector: 'app-setting-loader',
   imports: [TranslateModule, SettingEntryComponent, RouterModule, CdkPortalOutlet, MatButtonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './settings-loader.component.html'
 })
 export class SettingsLoaderComponent {

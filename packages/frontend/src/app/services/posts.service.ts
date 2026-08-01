@@ -4,7 +4,7 @@ import { RawPost } from '../interfaces/raw-post'
 import { MediaService } from './media.service'
 import { HttpClient } from '@angular/common/http'
 import sanitizeHtml from 'sanitize-html'
-import { BehaviorSubject, firstValueFrom, lastValueFrom, Subject } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, from, lastValueFrom, Subject } from 'rxjs'
 import { JwtService } from './jwt.service'
 import { basicPost, PostEmojiReaction, unlinkedPosts } from '../interfaces/unlinked-posts'
 import { SimplifiedUser } from '../interfaces/simplified-user'
@@ -275,6 +275,22 @@ export class PostsService {
     return res
   }
 
+  async pinPost(id: string): Promise<boolean> {
+    let res = false
+    const payload = {
+      postId: id
+    }
+    try {
+      const response = await firstValueFrom(
+        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/user/pinPost`, payload)
+      )
+      res = response?.success === true
+    } catch (exception) {
+      console.error(exception)
+    }
+    return res
+  }
+
   async emojiReactPost(postId: string, emojiName: string, undo = false): Promise<boolean> {
     let res = false
     const payload = {
@@ -511,7 +527,7 @@ export class PostsService {
       mentionPost: mentionedUsers as SimplifiedUser[],
       quotes: quotes,
       parentCollection: collection,
-      featured: false
+      featured: !!elem?.featured
     }
     if (unlinked.asks) {
       const ask = unlinked.asks.find((ask) => ask.postId === newPost.id)
@@ -794,8 +810,9 @@ export class PostsService {
         // NOTE: Since this should not be part of the image Viewer, we have to add then no-viewer class to be checked for later
         Array.from(youtubeMatch).forEach((youtubeString) => {
           link.innerHTML = `<div class="watermark"><!-- Watermark container --><div class="watermark__inner"><!-- The watermark --><div class="watermark__body"><img alt="youtube logo" class="yt-watermark no-viewer" loading="lazy" src="/assets/img/youtube_logo.png"></div></div><img class="yt-thumbnail" src="${
-            EnvironmentService.environment.externalCacheurl +
-            encodeURIComponent(`https://img.youtube.com/vi/${youtubeString[6]}/hqdefault.jpg`)
+            (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
+            '/api/v2/cache/youtube/' +
+            encodeURIComponent(youtubeString[0])
           }" loading="lazy" alt="Thumbnail for video"></div>`
         })
       }

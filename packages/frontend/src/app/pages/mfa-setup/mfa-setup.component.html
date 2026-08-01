@@ -9,12 +9,18 @@
     </div>
     <div class="mb-3" [innerHTML]="'profile.security.mfa.installInstructions' | translate"> </div>
     <img
-      [alt]="'profile.security.mfa.imageAltSecret' | translate: { secret: mfaVerifyDetails?.secret }"
+      [alt]="
+        'profile.security.mfa.imageAltSecret'
+          | translate: { secret: $safeNavigationMigration(mfaVerifyDetails?.secret) }
+      "
       [src]="mfaVerifyQrCode"
       class="mx-auto d-block qr-code"
     />
     <div class="mb-3">
-      {{ 'profile.security.mfa.secretFallback' | translate: { secret: mfaVerifyDetails?.secret } }}
+      {{
+        'profile.security.mfa.secretFallback'
+          | translate: { secret: $safeNavigationMigration(mfaVerifyDetails?.secret) }
+      }}
     </div>
     <form [hidden]="loading" [formGroup]="mfaVerifyForm" (ngSubmit)="onSubmit()">
       <mat-form-field class="w-full">

@@ -1,13 +1,13 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectChange, MatSelectModule } from '@angular/material/select'
 import { TranslateModule } from '@ngx-translate/core'
-import { KeyValueTypedPipe } from 'src/app/pipes/keyvaluetyped.pipe'
-import { ParticleService } from 'src/app/services/particle.service'
-import { SettingData, SettingsService } from 'src/app/services/settings.service'
 import { SettingEntryComponent } from '../setting-entry/setting-entry.component'
+import { KeyValueTypedPipe } from '../../pipes/keyvaluetyped.pipe'
+import { ParticleService } from '../../services/particle.service'
+import { SettingsService, SettingData } from '../../services/settings.service'
 
 const confettiTypeVariants = ['like', 'rewoot', 'edit', 'bookmark'] as const
 type ConfettiType = (typeof confettiTypeVariants)[number]
@@ -24,6 +24,7 @@ type ConfettiType = (typeof confettiTypeVariants)[number]
     KeyValueTypedPipe
   ],
   templateUrl: './setting-confetti.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './setting-confetti.component.scss'
 })
 export class SettingConfettiComponent {

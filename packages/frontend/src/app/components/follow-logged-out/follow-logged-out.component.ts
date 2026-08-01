@@ -1,22 +1,16 @@
-import { Component, computed, input, signal, inject } from '@angular/core'
+import { Component, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
-import {
-  MAT_DIALOG_DATA,
-  MatDialogActions,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle
-} from '@angular/material/dialog'
-import { LoaderComponent } from '../loader/loader.component'
+import { MAT_DIALOG_DATA, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatInputModule } from '@angular/material/input'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { CommonModule } from '@angular/common'
+import { EnvironmentService } from '../../services/environment.service'
 
 @Component({
   selector: 'follow-logged-out',
   imports: [MatInputModule, MatButtonModule, MatDialogTitle, MatDialogContent, TranslateModule, CommonModule],
   templateUrl: './follow-logged-out.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './follow-logged-out.component.scss'
 })
 export class FollowLoggedOutComponent {

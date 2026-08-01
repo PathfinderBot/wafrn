@@ -3,6 +3,9 @@
 @let isBskyPost = !!post.bskyUri;
 @let isExternalPost = post.user.url.startsWith('@') && post.privacy !== 1 && post.privacy !== 10;
 @let isMyPost = myId == post.userId && post.privacy != 2;
+@if (!!post.featured) {
+  <fa-icon [icon]="pinIcon" class="pinned-post-icon" [attr.title]="'post.pinned' | translate"></fa-icon>
+}
 <button
   [attr.aria-label]="'post-actions.postActions' | translate"
   mat-button
@@ -57,6 +60,23 @@
           <fa-icon size="lg" [fixedWidth]="true" [icon]="refederateIcon"></fa-icon>
         </span>
       </button>
+    }
+    @if (isMyPost && !post.isReblog) {
+      @if (!post.featured) {
+        <button (click)="pinPost()" mat-menu-item>
+          <span class="post-actions-menu-span-content">
+            {{ 'post-actions.pinPost' | translate }}
+            <fa-icon size="lg" [fixedWidth]="true" [icon]="pinIcon"></fa-icon>
+          </span>
+        </button>
+      } @else {
+        <button (click)="pinPost()" mat-menu-item>
+          <span class="post-actions-menu-span-content">
+            {{ 'post-actions.unpinPost' | translate }}
+            <fa-icon size="lg" [fixedWidth]="true" [icon]="unpinIcon"></fa-icon>
+          </span>
+        </button>
+      }
     }
     @if (loggedIn) {
       @if (!postSilenced) {

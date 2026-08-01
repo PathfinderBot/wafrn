@@ -1,19 +1,20 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core'
-import { UserNotifications } from 'src/app/interfaces/user-notifications'
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { RouterModule } from '@angular/router'
 
 import { MatCardModule } from '@angular/material/card'
 
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
 import { faAt, faCheck, faCookieBite, faHeart, faQuoteLeft, faRepeat, faUser } from '@fortawesome/free-solid-svg-icons'
+import { UserNotifications } from '../../interfaces/user-notifications'
+import { EnvironmentService } from '../../services/environment.service'
 
 @Component({
   selector: 'app-single-notification',
   templateUrl: './single-notification.component.html',
   styleUrls: ['./single-notification.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [RouterModule, MatCardModule, PostFragmentComponent, PostHeaderComponent, PostRibbonComponent]
   //providers: [DateTimeToRelativePipe, DateTimeFromJsDatePipe]
 })

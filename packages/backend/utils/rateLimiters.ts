@@ -58,6 +58,14 @@ const linkPreviewRateLimiter = rateLimit({
   message: "Too many navigation requests",
 });
 
+const mediaUploadLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 20, // Limit each IP to 20 upload requests per 5 minutes (each request can contain multiple files)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: "Too many media uploads, please slow down",
+});
+
 const biteLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 5, // Limit each IP to bites per minute. should move lower to a "acceptable" point
@@ -74,4 +82,5 @@ export {
   linkPreviewRateLimiter,
   biteLimiter,
   onePerSecondLimiter,
+  mediaUploadLimiter,
 };

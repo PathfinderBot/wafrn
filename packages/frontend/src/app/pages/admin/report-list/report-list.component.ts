@@ -1,16 +1,26 @@
-import { Component, computed, OnInit, signal, viewChild, WritableSignal, inject } from '@angular/core'
+import {
+  Component,
+  computed,
+  OnInit,
+  signal,
+  viewChild,
+  WritableSignal,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatTableDataSource } from '@angular/material/table'
-import { parseReportFilter, ReportFilter } from 'src/app/grammars/report-grammar'
-import { AdminService, UserReport } from 'src/app/services/admin.service'
-import { DeletePostService } from 'src/app/services/delete-post.service'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { ReportFilter, parseReportFilter } from '../../../grammars/report-grammar'
+import { AdminService, UserReport } from '../../../services/admin.service'
+import { DeletePostService } from '../../../services/delete-post.service'
+import { SimpleDialogService } from '../../../services/simple-dialog.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-report-list',
   templateUrl: './report-list.component.html',
   styleUrls: ['./report-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ReportListComponent implements OnInit {

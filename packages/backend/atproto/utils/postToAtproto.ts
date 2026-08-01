@@ -1,381 +1,391 @@
-import { BskyAgent, RichText } from "@atproto/api";
-import {
-  Media,
-  Post,
-  PostMentionsUserRelation,
-  Quotes,
-  User,
-} from "../../models/index.js";
-import fs from "fs/promises";
-import {
-  getPostUrlForQuote,
-} from "../../utils/activitypub/postToJSONLD.js";
-import RichtextBuilder from "@atcute/bluesky-richtext-builder";
-import { Main } from "@atproto/api/dist/client/types/app/bsky/richtext/facet.js";
-import { tokenize } from "@atcute/bluesky-richtext-parser";
-import { removeMarkdown } from "./removeMarkdown.js";
-import optimizeMedia, { createThumbnail } from "../../utils/optimizeMedia.js";
-import dompurify from "isomorphic-dompurify";
-import ffmpeg from "fluent-ffmpeg";
-import { completeEnvironment } from "../../utils/backendOptions.js";
-import { getPostAndUserFromPostId } from "../../utils/cacheGetters/getPostAndUserFromPostId.js";
-import { getLinkPreview } from "link-preview-js";
-import crypto from "crypto";
-import { redisCache } from "../../utils/redis.js";
-import { logger } from "../../utils/logger.js";
-import getUserAgent from "../../utils/getUserAgent.js";
+import { BskyAgent, RichText } from '@atproto/api'
+import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
+import fs from 'fs/promises'
+import { getPostUrlForQuote } from '../../utils/activitypub/postToJSONLD.js'
+import RichtextBuilder from '@atcute/bluesky-richtext-builder'
+import { Main } from '@atproto/api/dist/client/types/app/bsky/richtext/facet.js'
+import { tokenize } from '@atcute/bluesky-richtext-parser'
+import { removeMarkdown } from './removeMarkdown.js'
+import optimizeMedia, { createThumbnail } from '../../utils/optimizeMedia.js'
+import dompurify from 'isomorphic-dompurify'
+import ffmpeg from 'fluent-ffmpeg'
+import { completeEnvironment } from '../../utils/backendOptions.js'
+import { getPostAndUserFromPostId } from '../../utils/cacheGetters/getPostAndUserFromPostId.js'
+import { getLinkPreview } from 'link-preview-js'
+import crypto from 'crypto'
+import { redisCache } from '../../utils/redis.js'
+import { logger } from '../../utils/logger.js'
+import getUserAgent from '../../utils/getUserAgent.js'
 import sharp from 'sharp'
 
 export async function getVideoAspectRatio(fileName: string) {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(fileName, (err, metadata) => {
       if (err) {
-        reject(err);
+        reject(err)
       } else {
-        const stream = metadata.streams.find((s) => s.codec_type === "video");
+        const stream = metadata.streams.find((s) => s.codec_type === 'video')
         if (stream) {
           resolve({
             width: stream.width,
-            height: stream.height,
-          });
+            height: stream.height
+          })
         } else {
-          reject(new Error("No video stream found"));
+          reject(new Error('No video stream found'))
         }
       }
-    });
-  });
+    })
+  })
+}
+
+// Bluesky rejects videos over 10 minutes, and gets unhappy well before its
+// documented 300MB ceiling, so we aim comfortably under that.
+const BSKY_MAX_VIDEO_DURATION_SECONDS = 10 * 60
+const BSKY_HARD_MAX_VIDEO_SIZE_BYTES = 300 * 1024 * 1024
+const BSKY_TARGET_VIDEO_SIZE_BYTES = 250 * 1024 * 1024
+const BSKY_AUDIO_BITRATE_KBPS = 128
+const BSKY_MAX_VIDEO_BITRATE_KBPS = 3500
+
+async function probeVideo(fileName: string): Promise<{ durationSeconds: number; codec?: string; sizeBytes: number }> {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(fileName, (err, metadata) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      const stream = metadata.streams.find((s) => s.codec_type === 'video')
+      resolve({
+        durationSeconds: Number(metadata.format?.duration) || 0,
+        codec: stream?.codec_name,
+        sizeBytes: Number(metadata.format?.size) || 0
+      })
+    })
+  })
+}
+
+//Makes sure a video is safe to post to Bluesky: 10 minutes and 250mb max if we have to cut it
+async function prepareVideoForBsky(
+  inputPath: string,
+  outPathBase: string
+): Promise<{ path: string; trimmed: boolean; reencoded: boolean }> {
+  const info = await probeVideo(inputPath)
+  const needsTrim = info.durationSeconds > BSKY_MAX_VIDEO_DURATION_SECONDS
+  const needsReencode = needsTrim || info.codec !== 'h264' || info.sizeBytes > BSKY_HARD_MAX_VIDEO_SIZE_BYTES
+
+  if (!needsReencode) {
+    return { path: inputPath, trimmed: false, reencoded: false }
+  }
+
+  const targetDurationSeconds = Math.min(
+    info.durationSeconds || BSKY_MAX_VIDEO_DURATION_SECONDS,
+    BSKY_MAX_VIDEO_DURATION_SECONDS
+  )
+  const targetTotalKbps = Math.floor((BSKY_TARGET_VIDEO_SIZE_BYTES * 8) / targetDurationSeconds / 1000)
+  const videoBitrateKbps = Math.max(
+    400,
+    Math.min(BSKY_MAX_VIDEO_BITRATE_KBPS, targetTotalKbps - BSKY_AUDIO_BITRATE_KBPS)
+  )
+
+  const outputPath = `${outPathBase}_bsky_video.mp4`
+
+  await new Promise<void>((resolve, reject) => {
+    ffmpeg(inputPath)
+      .duration(targetDurationSeconds)
+      .videoCodec('libx264')
+      .videoBitrate(videoBitrateKbps)
+      .audioCodec('aac')
+      .audioBitrate(BSKY_AUDIO_BITRATE_KBPS)
+      .renice(20)
+      .save(outputPath)
+      .on('end', () => resolve())
+      .on('error', (err) => reject(err))
+  })
+
+  return { path: outputPath, trimmed: needsTrim, reencoded: true }
 }
 
 function getUserName(user?: { url: string }): string {
-  let res = user
-    ? "@" + user.url + "@" + completeEnvironment.instanceUrl
-    : "anonymous";
-  if (user?.url.startsWith("@")) {
-    res = user.url;
+  let res = user ? '@' + user.url + '@' + completeEnvironment.instanceUrl : 'anonymous'
+  if (user?.url.startsWith('@')) {
+    res = user.url
   }
-  return res;
+  return res
 }
 
-async function uploadExternalThumb(
-  agent: BskyAgent,
-  imageUrl: string,
-  baseUrl: string
-) {
-  const absoluteImageUrl = new URL(imageUrl, baseUrl).toString();
-  const previewImage = await createThumbnail(absoluteImageUrl);
+async function uploadExternalThumb(agent: BskyAgent, imageUrl: string, baseUrl: string) {
+  const absoluteImageUrl = new URL(imageUrl, baseUrl).toString()
+  const previewImage = await createThumbnail(absoluteImageUrl)
 
   const { data } = await agent.uploadBlob(previewImage, {
-    encoding: "image/jpeg",
-  });
-  return data.blob;
+    encoding: 'image/jpeg'
+  })
+  return data.blob
 }
 
 async function postToAtproto(post: Post, agent: BskyAgent) {
-  let labels: any = undefined;
+  let labels: any = undefined
   const quotedPostId = await Quotes.findOne({
     where: {
-      quoterPostId: post.id,
-    },
-  });
-  let bskyQuote;
-  let quotedPost;
+      quoterPostId: post.id
+    }
+  })
+  let bskyQuote
+  let quotedPost
   if (quotedPostId) {
     quotedPost = await Post.findByPk(quotedPostId.quotedPostId, {
       include: [
         {
           model: User,
-          as: "user",
-        },
-      ],
-    });
+          as: 'user'
+        }
+      ]
+    })
     if (quotedPost?.bskyUri) {
       bskyQuote = {
-        $type: "app.bsky.embed.record",
+        $type: 'app.bsky.embed.record',
         record: {
           uri: quotedPost.bskyUri,
-          cid: quotedPost.bskyCid,
-        },
-      };
+          cid: quotedPost.bskyCid
+        }
+      }
     }
   }
 
-  const contentWarning = post.content_warning
-    ? `[${post.content_warning.trim()}]\n`
-    : "";
-  const tags = (await post.getPostTags())
-    .map((elem) => elem.tagName)
-    .join("\n");
-  const tagText = (await post.getPostTags())
-    .map((elem) => `#${elem.tagName.trim().replaceAll(" ", "-")}`)
-    .join(" ");
+  const contentWarning = post.content_warning ? `[${post.content_warning.trim()}]\n` : ''
+  const tags = (await post.getPostTags()).map((elem) => elem.tagName).join('\n')
+  const tagText = (await post.getPostTags()).map((elem) => `#${elem.tagName.trim().replaceAll(' ', '-')}`).join(' ')
   let postText: string = dompurify.sanitize(
     (
       contentWarning +
-      (post.markdownContent
-        ? post.markdownContent.trim()
-        : post.content.trim()) +
-      " " +
+      (post.markdownContent ? post.markdownContent.trim() : post.content.trim()) +
+      ' ' +
       tagText
     ).trim(),
     {
-      ALLOWED_TAGS: [],
+      ALLOWED_TAGS: []
     }
-  );
+  )
 
   if (quotedPost && !bskyQuote) {
-    const remoteId = await getPostUrlForQuote(quotedPost);
-    postText = postText + "\nRE: " + remoteId;
+    const remoteId = await getPostUrlForQuote(quotedPost)
+    postText = postText + '\nRE: ' + remoteId
   }
 
   const mentionedUserRelations = await PostMentionsUserRelation.findAll({
     where: {
-      postId: post.id,
-    },
-  });
+      postId: post.id
+    }
+  })
 
   for (const mentionedRelation of mentionedUserRelations) {
-    const user = await User.findByPk(mentionedRelation.userId);
+    const user = await User.findByPk(mentionedRelation.userId)
     if (user) {
-      const escapedUrl = user?.url.replaceAll(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&");
-      let mentionRegex = new RegExp(
-        `(?<=\\s|^)(@${escapedUrl})(?=\\s|$)`,
-        "gm"
-      );
+      const escapedUrl = user?.url.replaceAll(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&')
+      let mentionRegex = new RegExp(`(?<=\\s|^)(@${escapedUrl})(?=\\s|$)`, 'gm')
 
       // Fedi users
       if (user.remoteMentionUrl) {
         // A Fedi user url already has an @ in the start
-        mentionRegex = new RegExp(`(?<=\\s|^)(${escapedUrl})(?=\\s|$)`, "gm");
+        mentionRegex = new RegExp(`(?<=\\s|^)(${escapedUrl})(?=\\s|$)`, 'gm')
 
         if (user.alternateUrl && !user.isBskyPrimary) {
-          postText = postText.replaceAll(
-            mentionRegex,
-            `${user.alternateUrl}`
-          );
+          postText = postText.replaceAll(mentionRegex, `${user.alternateUrl}`)
         } else {
-          postText = postText.replaceAll(
-            mentionRegex,
-            `[@${user.shortHandle}](${user.remoteMentionUrl})`
-          );
+          postText = postText.replaceAll(mentionRegex, `[@${user.shortHandle}](${user.remoteMentionUrl})`)
         }
-        continue;
+        continue
       }
 
       // Local users
       if (!user.isBlueskyUser) {
         if (user.bskyDid && user.enableBsky) {
           // TODO instead of calling bsky appview we should check the pds document ourselves?
-          const response = await agent.getProfile({ actor: user.bskyDid });
-          if (response.data)
-            postText = postText.replaceAll(
-              mentionRegex,
-              `@${response.data.handle}`
-            );
+          const response = await agent.getProfile({ actor: user.bskyDid })
+          if (response.data) postText = postText.replaceAll(mentionRegex, `@${response.data.handle}`)
         } else {
           postText = postText.replaceAll(
             mentionRegex,
-            `[@${user.url}](${completeEnvironment.frontendUrl
-            }/fediverse/blog/${user.url.toLowerCase()})`
-          );
+            `[@${user.url}](${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()})`
+          )
         }
       }
     }
   }
 
-  const ask = await post.getAsk();
+  const ask = await post.getAsk()
   if (ask) {
-    const userAsker = await User.findByPk(ask.userAsker);
+    const userAsker = await User.findByPk(ask.userAsker)
     if (userAsker) {
       postText =
         `[${userAsker.name} asked:](https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}) ` +
-        `${ask.question}\n\n${postText}`;
+        `${ask.question}\n\n${postText}`
     } else {
       postText =
         `[Anonymous asked:](https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}) ` +
-        `${ask.question}\n\n${postText}`;
+        `${ask.question}\n\n${postText}`
     }
   }
 
   const medias = await Media.findAll({
     where: {
-      postId: post.id,
+      postId: post.id
     },
     order: [['mediaOrder', 'ASC']]
-  });
+  })
 
-  let postShortened = false;
-  postText = removeMarkdown(postText);
+  let postShortened = false
+  postText = removeMarkdown(postText)
 
-  const builder = new RichtextBuilder();
-  const encoder = new TextEncoder();
+  const builder = new RichtextBuilder()
+  const encoder = new TextEncoder()
 
-  const postMax = 300;
-  let current = 0;
+  const postMax = 300
+  let current = 0
   // A bit more to account for unicode and such
-  const shortenerWithMediaLength = 31;
-  const textOnlyShortenerLength = 15;
+  const shortenerWithMediaLength = 31
+  const textOnlyShortenerLength = 15
 
-  const tokens = tokenize(postText);
+  const tokens = tokenize(postText)
 
-  let res: any = {};
+  let res: any = {}
 
   for (const [index, token] of tokens.entries()) {
-    let text = builder.text;
-    if (token.type === "link") text += token.text;
-    else text += token.raw;
+    let text = builder.text
+    if (token.type === 'link') text += token.text
+    else text += token.raw
 
-    const tokenLength = encoder.encode(token.raw).byteLength;
-    const nextLength = current + tokenLength;
-    const isMediaPost = medias.length > 0 && medias.length <= 4;
-    const isLastToken = index === tokens.length - 1;
-    const remainingAfterToken = postMax - nextLength;
+    const tokenLength = encoder.encode(token.raw).byteLength
+    const nextLength = current + tokenLength
+    const isMediaPost = medias.length > 0 && medias.length <= 4
+    const isLastToken = index === tokens.length - 1
+    const remainingAfterToken = postMax - nextLength
     const shouldShortenEarlyForMedia =
-      isMediaPost &&
-      !isLastToken &&
-      nextLength <= postMax &&
-      remainingAfterToken < shortenerWithMediaLength;
+      isMediaPost && !isLastToken && nextLength <= postMax && remainingAfterToken < shortenerWithMediaLength
 
     // only force early shortening for media posts when there's more text after this token
     if ((isMediaPost && nextLength > postMax) || shouldShortenEarlyForMedia) {
-      builder.addLink(
-        "[...]",
-        `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`
-      );
+      builder.addLink('[...]', `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`)
 
-      postShortened = true;
-      break;
+      postShortened = true
+      break
     } else if (nextLength > postMax) {
-      const currentTextLength = encoder.encode(builder.text).byteLength;
-      const lengthLeft =
-        postMax - currentTextLength - textOnlyShortenerLength;
-      if (token.type === "link")
-        builder.addLink(token.text.slice(0, lengthLeft), token.url);
-      else builder.addText(token.raw.slice(0, lengthLeft));
+      const currentTextLength = encoder.encode(builder.text).byteLength
+      const lengthLeft = postMax - currentTextLength - textOnlyShortenerLength
+      if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
+      else builder.addText(token.raw.slice(0, lengthLeft))
 
-      builder.addText("[...]");
-      postShortened = true;
-      break;
+      builder.addText('[...]')
+      postShortened = true
+      break
     }
 
-    current = nextLength;
+    current = nextLength
 
-    if (token.type === "link") {
-      builder.addLink(token.text, token.url);
-    } else if (token.type === "autolink" && medias.length === 0) {
+    if (token.type === 'link') {
+      builder.addLink(token.text, token.url)
+    } else if (token.type === 'autolink' && medias.length === 0) {
       // only add a embed if theres no embed, bsky only supports 1 embed
-      builder.addLink(token.url, token.url);
-      const shasum = crypto.createHash("sha1");
-      shasum.update(token.url.toLowerCase());
-      const urlHash = shasum.digest("hex");
-      let linkPreview:
-        | { url: string; title: string; description: string; images?: string[] }
-        | undefined = JSON.parse(
-          (await redisCache.get("linkPreviewCache:" + urlHash)) ?? "{}"
-        );
+      builder.addLink(token.url, token.url)
+      const shasum = crypto.createHash('sha1')
+      shasum.update(token.url.toLowerCase())
+      const urlHash = shasum.digest('hex')
+      let linkPreview: { url: string; title: string; description: string; images?: string[] } | undefined = JSON.parse(
+        (await redisCache.get('linkPreviewCache:' + urlHash)) ?? '{}'
+      )
       if (!linkPreview?.title) {
         try {
           linkPreview = (await getLinkPreview(token.url, {
-            followRedirects: "follow",
-            headers: { "User-Agent": getUserAgent('LinkPreview') },
+            followRedirects: 'follow',
+            headers: { 'User-Agent': getUserAgent('LinkPreview') }
           })) as
             | {
-              url: string;
-              title: string;
-              description: string;
-              images?: string[];
-            }
-            | undefined;
+                url: string
+                title: string
+                description: string
+                images?: string[]
+              }
+            | undefined
           await redisCache.set(
-            "linkPreviewCache:" + urlHash,
+            'linkPreviewCache:' + urlHash,
             JSON.stringify(linkPreview),
-            "EX",
+            'EX',
             linkPreview ? 3600 * 24 : 300
-          );
+          )
         } catch (error) {
           logger.trace({
             message: `Error obtaining link ${token.url}`,
-            error: error,
-          });
+            error: error
+          })
         }
       }
 
       if (linkPreview?.title) {
         res.embed = {
-          $type: "app.bsky.embed.external",
+          $type: 'app.bsky.embed.external',
           external: {
             uri: linkPreview.url,
             title: linkPreview.title,
-            description:
-              linkPreview.description ??
-              `from ${new URL(linkPreview.url).hostname}`,
-          },
-        };
+            description: linkPreview.description ?? `from ${new URL(linkPreview.url).hostname}`
+          }
+        }
         // lets try adding an embed for link preview
         try {
           if (linkPreview.images && linkPreview.images[0]) {
-            const previewImageUrl = linkPreview.images[0];
-            res.embed.external.thumb = await uploadExternalThumb(
-              agent,
-              previewImageUrl,
-              linkPreview.url
-            );
+            const previewImageUrl = linkPreview.images[0]
+            res.embed.external.thumb = await uploadExternalThumb(agent, previewImageUrl, linkPreview.url)
           }
         } catch (error) {
           logger.info({
             message: `Error while obtaining link preview for ${token.url}`,
-            error: error,
-          });
+            error: error
+          })
         }
       }
-    } else builder.addText(token.raw);
+    } else builder.addText(token.raw)
   }
-  postText = builder.text;
+  postText = builder.text
 
-  if (contentWarning != "" || medias.some((media) => media.NSFW)) {
+  if (contentWarning != '' || medias.some((media) => media.NSFW)) {
     labels = {
-      $type: "com.atproto.label.defs#selfLabels",
-      values: [{ val: "graphic-media" }],
-    };
+      $type: 'com.atproto.label.defs#selfLabels',
+      values: [{ val: 'graphic-media' }]
+    }
   }
 
   const rt = new RichText({
-    text: postText,
-  });
-  await rt.detectFacets(agent);
+    text: postText
+  })
+  await rt.detectFacets(agent)
 
-  const cacheData = await getPostAndUserFromPostId(post.id);
-  const userAsker = cacheData.data?.ask?.asker;
+  const cacheData = await getPostAndUserFromPostId(post.id)
+  const userAsker = cacheData.data?.ask?.asker
 
   builder.facets.forEach((facet) => {
-    if (rt.facets) rt.facets.push(facet as unknown as Main);
-    else rt.facets = [facet as unknown as Main];
-  });
-  let processedContent = post.content;
+    if (rt.facets) rt.facets.push(facet as unknown as Main)
+    else rt.facets = [facet as unknown as Main]
+  })
+  let processedContent = post.content
   const wafrnMediaRegex =
-    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm;
+    /\[wafrnmediaid="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"\]/gm
 
   // we remove the wafrnmedia from the post for the outside world, as they get this on the attachments
-  processedContent = processedContent.replaceAll(wafrnMediaRegex, "");
+  processedContent = processedContent.replaceAll(wafrnMediaRegex, '')
   if (ask) {
-    processedContent = `<p>${getUserName(userAsker)} <a href="${completeEnvironment.frontendUrl + "/fediverse/post/" + post.id
-      }">asked</a> </p> <blockquote>${ask.question
-      }</blockquote> ${processedContent}`;
+    processedContent = `<p>${getUserName(userAsker)} <a href="${
+      completeEnvironment.frontendUrl + '/fediverse/post/' + post.id
+    }">asked</a> </p> <blockquote>${ask.question}</blockquote> ${processedContent}`
   }
 
-  const fullText = processedContent ?? post.content;
+  const fullText = processedContent ?? post.content
   if (rt.facets) {
     rt.facets = rt.facets.filter((facet) => {
-      let internalRes = true;
-      if (
-        facet.features[0] &&
-        (facet.features[0]["$type"] as string) ==
-        "app.bsky.richtext.facet#mention"
-      ) {
-        const didOfMention = (facet.features[0] as any)["did"];
-        internalRes = !!didOfMention;
+      let internalRes = true
+      if (facet.features[0] && (facet.features[0]['$type'] as string) == 'app.bsky.richtext.facet#mention') {
+        const didOfMention = (facet.features[0] as any)['did']
+        internalRes = !!didOfMention
       }
-      return internalRes;
-    });
+      return internalRes
+    })
   }
   res = {
     ...res,
@@ -386,29 +396,29 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     fullTags: tags,
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
     via: `Wafrn${completeEnvironment.defaultSEOData.title.toLowerCase() !== 'wafrn' ? ` (${completeEnvironment.defaultSEOData.title})` : ''}`
-  };
+  }
   let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {
-    let file = await fs.readFile("uploads/" + media.url);
-    let isVideo = media.mediaType?.startsWith("video/");
-    let fileToDelete: string | undefined;
+    let file = await fs.readFile('uploads/' + media.url)
+    let isVideo = media.mediaType?.startsWith('video/')
+    let fileToDelete: string | undefined
     let type: string | undefined
     // FIRST check
     if (!isVideo) {
-      const metadata = await sharp("uploads/" + media.url).metadata()
+      const metadata = await sharp('uploads/' + media.url).metadata()
       if (metadata.pages && metadata.pages > 1) {
-        isVideo = true;
-        await optimizeMedia("uploads/" + media.url, {
+        isVideo = true
+        await optimizeMedia('uploads/' + media.url, {
           forceImageExtension: 'gif',
           keep: true,
           outPath: 'uploads/' + media.id + '_tmp'
         })
-        await optimizeMedia("uploads/" + media.id + "_tmp.gif", {
+        await optimizeMedia('uploads/' + media.id + '_tmp.gif', {
           forceImageExtension: 'mp4',
           keep: false,
           outPath: 'uploads/' + media.id + '_tmp'
         })
-        isVideo = true;
+        isVideo = true
         file = await fs.readFile('uploads/' + media.id + '_tmp_processed.mp4')
         type = 'video/mp4'
         presentation = 'image/gif'
@@ -417,86 +427,111 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         media.url = '/' + media.id + '_tmp_processed.mp4'
         fileToDelete = 'uploads/' + media.id + '_tmp_processed.mp4'
       }
-
     }
     if (!isVideo) {
       // yeah, 1 millon bytes is officially the limit:
       // https://github.com/bluesky-social/atproto/blob/80ada8f47628f55f3074cd16a52857e98d117e14/lexicons/app/bsky/embed/images.json#L24
       if (file.length > 1000000) {
         // well this image is TOO BIG. time to convert it
-        await optimizeMedia("uploads/" + media.url, {
-          outPath: "uploads/" + media.id + "_bsky",
+        await optimizeMedia('uploads/' + media.url, {
+          outPath: 'uploads/' + media.id + '_bsky',
           // bluesky CDN resizes images to 2000 on the long end, try that first
           maxSize: 2000,
-          keep: true,
-        });
-        file = await fs.readFile("uploads/" + media.id + "_bsky.webp");
-        fileToDelete = "uploads/" + media.id + "_bsky.webp"
+          keep: true
+        })
+        file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
+        fileToDelete = 'uploads/' + media.id + '_bsky.webp'
       }
 
       if (file.length > 1000000) {
         // still too big?! okay well let's crunch it
-        await optimizeMedia("uploads/" + media.url, {
-          outPath: "uploads/" + media.id + "_bsky",
+        await optimizeMedia('uploads/' + media.url, {
+          outPath: 'uploads/' + media.id + '_bsky',
           maxSize: 768,
-          keep: true,
-        });
-        file = await fs.readFile("uploads/" + media.id + "_bsky.webp");
-        fileToDelete = "uploads/" + media.id + "_bsky.webp"
+          keep: true
+        })
+        file = await fs.readFile('uploads/' + media.id + '_bsky.webp')
+        fileToDelete = 'uploads/' + media.id + '_bsky.webp'
+      }
+    }
+
+    if (isVideo) {
+      const currentVideoPath = fileToDelete ?? 'uploads/' + media.url
+      const {
+        path: bskyVideoPath,
+        trimmed,
+        reencoded
+      } = await prepareVideoForBsky(currentVideoPath, 'uploads/' + media.id)
+      if (reencoded) {
+        file = await fs.readFile(bskyVideoPath)
+        type = 'video/mp4'
+        if (fileToDelete && fileToDelete !== bskyVideoPath) {
+          // the gif->mp4 intermediate (if any) is no longer needed
+          try {
+            await fs.unlink(fileToDelete)
+          } catch (error) {
+            logger.debug(`Error deleting intermediate video file ${fileToDelete}`)
+          }
+        }
+        fileToDelete = bskyVideoPath
+        if (trimmed) {
+          logger.info({
+            message: `Video for media ${media.id} exceeded Bluesky's 10 minute limit; posting only the first 10 minutes to Bluesky`
+          })
+        }
       }
     }
 
     const { data } = await agent.uploadBlob(Buffer.from(file), {
-      encoding: type || media.mediaType || undefined,
-    });
+      encoding: type || media.mediaType || undefined
+    })
     if (fileToDelete) {
       try {
         setTimeout(async () => {
           await fs.unlink(fileToDelete)
-        }, (60000));
+        }, 60000)
       } catch (error) {
         logger.debug(`Error deleting non existing file ${fileToDelete}`)
       }
     }
-    return { media, blob: data.blob };
-  });
-  const bskyMedias = await Promise.all(bskyMediaPromises);
-  const isNotValidMedia = bskyMedias.some((media) =>
-    media.media.mediaType?.includes('pdf')
-  )
+    return { media, blob: data.blob }
+  })
+  const bskyMedias = await Promise.all(bskyMediaPromises)
+  const isNotValidMedia = bskyMedias.some((media) => media.media.mediaType?.includes('pdf'))
   if (bskyMediaPromises.length && bskyMediaPromises.length <= 4 && !isNotValidMedia) {
-
-    const video = bskyMedias.find((media) =>
-      media.media.mediaType?.startsWith("video/")
-    );
+    const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
     if (video) {
       res.embed = {
-        $type: "app.bsky.embed.video",
+        $type: 'app.bsky.embed.video',
         video: video.blob,
-        alt: (video.media.description || "").slice(0, 999),
+        alt: (video.media.description || '').slice(0, 999),
         labels,
-        aspectRatio: await getVideoAspectRatio("uploads/" + video.media.url),
+        aspectRatio: await getVideoAspectRatio('uploads/' + video.media.url),
         presentation: presentation
-      };
+      }
     } else {
       res.embed = {
-        $type: "app.bsky.embed.images",
+        $type: 'app.bsky.embed.images',
         images: bskyMedias.map((m) => ({
           labels,
           image: m.blob,
-          alt: (m.media.description || "").slice(0, 999),
+          alt: (m.media.description || '').slice(0, 999),
           aspectRatio: {
             width: m.media.width,
-            height: m.media.height,
-          },
-        })),
-      };
+            height: m.media.height
+          }
+        }))
+      }
     }
     // Shortening when media is present is handled earlier
   } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
     // If we have more than 4 media and they are all images (no videos/pdf),
     // post as a gallery embed (new app.bsky.embed.gallery). Otherwise fallback to external link.
-    const onlyImages = bskyMedias.length > 0 && !bskyMedias.some((m) => (m.media.mediaType || '').startsWith('video/') || (m.media.mediaType || '').includes('pdf'));
+    const onlyImages =
+      bskyMedias.length > 0 &&
+      !bskyMedias.some(
+        (m) => (m.media.mediaType || '').startsWith('video/') || (m.media.mediaType || '').includes('pdf')
+      )
     if (bskyMedias.length > 4 && onlyImages && bskyMedias.length <= 10) {
       res.embed = {
         $type: 'app.bsky.embed.gallery',
@@ -506,54 +541,54 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
           alt: (m.media.description || '').slice(0, 999),
           aspectRatio: {
             width: m.media.width,
-            height: m.media.height,
-          },
-        })),
-      };
+            height: m.media.height
+          }
+        }))
+      }
     } else {
       res.embed = {
-        $type: "app.bsky.embed.external",
+        $type: 'app.bsky.embed.external',
         external: {
           uri: `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`,
           title: `See complete post at ${completeEnvironment.instanceUrl}`,
-          description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`,
-        },
-      };
+          description: `${completeEnvironment.instanceUrl} is a Wafrn server. Wafrn is a federated social media inspired by Tumblr, join us and have fun!`
+        }
+      }
     }
   }
 
   if (post.parentId) {
     // ok this post is in reply to something
-    const parent = await Post.findByPk(post.parentId);
+    const parent = await Post.findByPk(post.parentId)
     const rootPost = await Post.findByPk(post.rootId as string)
 
     res.reply = {
       root: {
         uri: rootPost?.bskyUri,
-        cid: rootPost?.bskyCid,
+        cid: rootPost?.bskyCid
       },
       parent: {
         uri: parent?.bskyUri,
-        cid: parent?.bskyCid,
-      },
-    };
+        cid: parent?.bskyCid
+      }
+    }
   }
 
   if (bskyQuote) {
     // OK oK so turns out that posting video/images and quoting a post needs more consideration!
     if (res.embed) {
       res.embed = {
-        $type: "app.bsky.embed.recordWithMedia",
+        $type: 'app.bsky.embed.recordWithMedia',
         media: res.embed,
-        record: bskyQuote,
-      };
+        record: bskyQuote
+      }
     } else {
-      res.embed = bskyQuote;
+      res.embed = bskyQuote
     }
   }
 
   if (labels) {
-    res.labels = labels;
+    res.labels = labels
   }
 
   // language
@@ -561,7 +596,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     res.langs = [post.language]
   }
 
-  return res;
+  return res
 }
 
-export { postToAtproto };
+export { postToAtproto }

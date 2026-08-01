@@ -1,5 +1,4 @@
-import { Component, input, OnInit } from '@angular/core'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
+import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { MatCardModule } from '@angular/material/card'
@@ -7,11 +6,13 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { NgTemplateOutlet } from '@angular/common'
 import { DateTime } from 'luxon'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
 
 @Component({
   selector: 'app-post-ribbon',
   imports: [MatCardModule, AvatarSmallComponent, FontAwesomeModule, NgTemplateOutlet],
   templateUrl: './post-ribbon.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './post-ribbon.component.scss'
 })
 export class PostRibbonComponent implements OnInit {

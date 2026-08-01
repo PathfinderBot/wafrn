@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
-import { FormControl, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -9,9 +8,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
+
 import { Router } from '@angular/router'
+import { ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-update-email',
@@ -27,6 +28,7 @@ import { Router } from '@angular/router'
     TranslateModule
   ],
   templateUrl: './update-email.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './update-email.component.scss'
 })
 export class UpdateEmailComponent {

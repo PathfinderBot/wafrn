@@ -1,16 +1,17 @@
-import { Component, inject } from '@angular/core'
-import { FormControl, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
 import { TranslateService } from '@ngx-translate/core'
 import encodeQR from 'qr'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-mfa-setup',
   templateUrl: './mfa-setup.component.html',
   styleUrls: ['./mfa-setup.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class MfaSetupComponent {

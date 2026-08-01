@@ -9,10 +9,11 @@ import {
   output,
   signal,
   viewChild,
-  inject
+  inject,
+  ChangeDetectionStrategy
 } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
-import { Router, RouterModule } from '@angular/router'
+import { RouterModule } from '@angular/router'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { PollModule } from '../poll/poll.module'
@@ -34,12 +35,12 @@ import { SingleAskComponent } from '../single-ask/single-ask.component'
 import { TranslateModule } from '@ngx-translate/core'
 
 import { Subscription } from 'rxjs'
-import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
 import Viewer from 'viewerjs'
-import { ParticleService } from 'src/app/services/particle.service'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { SettingsService } from 'src/app/services/settings.service'
 import { PostHtmlContentComponent } from '../post/post-html-content/post-html-content.component'
+import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { ParticleService } from '../../services/particle.service'
+import { SettingsService } from '../../services/settings.service'
+import { SimpleDialogService } from '../../services/simple-dialog.service'
 
 type FragmentType = 'post' | 'quote'
 
@@ -72,6 +73,7 @@ type EmojiReaction = {
     PostHtmlContentComponent
   ],
   templateUrl: './post-fragment.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './post-fragment.component.scss'
 })
 export class PostFragmentComponent implements OnChanges, OnDestroy {

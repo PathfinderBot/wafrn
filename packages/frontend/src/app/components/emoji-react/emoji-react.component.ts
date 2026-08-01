@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core'
+import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core'
 import { Overlay, OverlayModule } from '@angular/cdk/overlay'
 import { MatButtonModule } from '@angular/material/button'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
@@ -8,14 +8,15 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { Emoji } from '../../interfaces/emoji'
 import { Dialog } from '@angular/cdk/dialog'
 import { EmojiPickerComponent } from '../emoji-picker/emoji-picker.component'
-import { ParticleService } from 'src/app/services/particle.service'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { TranslatePipe } from '@ngx-translate/core'
+import { EnvironmentService } from '../../services/environment.service'
+import { ParticleService } from '../../services/particle.service'
 
 @Component({
   selector: 'app-emoji-react',
   imports: [MatButtonModule, FontAwesomeModule, OverlayModule, MatTooltipModule, TranslatePipe],
   templateUrl: './emoji-react.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './emoji-react.component.scss'
 })
 export class EmojiReactComponent {

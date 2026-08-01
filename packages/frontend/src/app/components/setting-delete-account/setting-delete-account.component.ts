@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core'
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
@@ -7,8 +7,8 @@ import { faWarning } from '@fortawesome/free-solid-svg-icons'
 import { TranslatePipe } from '@ngx-translate/core'
 import { InfoCardComponent } from '../info-card/info-card.component'
 import { MatExpansionModule } from '@angular/material/expansion'
-import { LoginService } from 'src/app/services/login.service'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { LoginService } from '../../services/login.service'
 
 @Component({
   selector: 'app-setting-delete-account',
@@ -23,6 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
     TranslatePipe
   ],
   templateUrl: './setting-delete-account.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './setting-delete-account.component.scss'
 })
 export class SettingDeleteAccountComponent {

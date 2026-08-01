@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import fs from 'fs'
+import path from 'path'
 import { Job } from 'bullmq'
 import { getResolver } from 'plc-did-resolver'
 import { Resolver } from 'did-resolver'
@@ -10,6 +11,12 @@ import { spawn } from 'child_process'
 import sequelize from 'sequelize/lib/sequelize'
 import { Media } from '../../models/media.js'
 import { completeEnvironment } from '../backendOptions.js'
+import {
+  assertPublicHttpUrl,
+  assertUrlResolvesPublic,
+  ssrfSafeHttpAgent,
+  ssrfSafeHttpsAgent
+} from '../ssrfProtection.js'
 
 export type DownloadJobPayload = {
   mediaUrl: string
@@ -71,7 +78,9 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
       }
     } else if (did.startsWith('did:web')) {
       // get did doc first
-      const docRes = await fetch(`https://${did.split('did:web:')[1]}/.well-known/did.json`, {
+      const didWebUrl = `https://${did.split('did:web:')[1]}/.well-known/did.json`
+      await assertUrlResolvesPublic(didWebUrl)
+      const docRes = await fetch(didWebUrl, {
         headers: {
           'User-Agent': getUserAgent('ATProtoWorker')
         }
@@ -97,19 +106,27 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
 
   let readStream: fs.ReadStream
   const localPrefix = `${completeEnvironment.mediaUrl}/`
-  const localUploadFile = `uploads/${mediaUrl.replace(localPrefix, '')}`
 
   if (mediaUrl.startsWith(localPrefix)) {
+    const uploadsRoot = path.resolve('uploads')
+    const localUploadFile = path.resolve(uploadsRoot, mediaUrl.slice(localPrefix.length))
+    if (localUploadFile !== uploadsRoot && !localUploadFile.startsWith(uploadsRoot + path.sep)) {
+      throw new Error(`Aborting cache process. Path traversal blocked: ${mediaUrl}`)
+    }
     if (fs.existsSync(localUploadFile)) {
       readStream = fs.createReadStream(localUploadFile)
     } else {
       throw new Error(`Aborting cache process. Local file for wafrn media does not exist: ${localUploadFile}`)
     }
   } else {
+    assertPublicHttpUrl(mediaUrl)
     const response = await axios.get(mediaUrl, {
       responseType: 'stream' as const,
       headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') },
-      timeout: 25000
+      timeout: 25000,
+      maxRedirects: 3,
+      httpAgent: ssrfSafeHttpAgent,
+      httpsAgent: ssrfSafeHttpsAgent
     })
     readStream = response.data
   }

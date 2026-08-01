@@ -1,15 +1,24 @@
-import { Component, EventEmitter, Input, OnDestroy, Output, signal, inject } from '@angular/core'
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  signal,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { debounceTime, Subscription, tap } from 'rxjs'
-import { EditorService } from 'src/app/services/editor.service'
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
 import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { TranslatePipe } from '@ngx-translate/core'
-import { EnvironmentService } from 'src/app/services/environment.service'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { EditorService } from '../../services/editor.service'
+import { EnvironmentService } from '../../services/environment.service'
 
 @Component({
   selector: 'app-user-selector',
@@ -24,6 +33,7 @@ import { EnvironmentService } from 'src/app/services/environment.service'
     TranslatePipe
   ],
   templateUrl: './user-selector.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './user-selector.component.scss'
 })
 export class UserSelectorComponent implements OnDestroy {

@@ -60,8 +60,8 @@ export default function postsRoutes(app: Application) {
       const postSlug = req.params?.slug
       const user = userUrl
         ? await User.findOne({
-          where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
-        })
+            where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), userUrl.toLowerCase())
+          })
         : await getAdminUser()
       if (!user) {
         res.sendStatus(404)
@@ -169,16 +169,16 @@ export default function postsRoutes(app: Application) {
               {
                 featured: featured
                   ? {
-                    [Op.ne]: null
-                  }
+                      [Op.ne]: null
+                    }
                   : {
-                    [Op.or]: [
-                      {
-                        [Op.ne]: null
-                      },
-                      { [Op.eq]: null }
-                    ]
-                  }
+                      [Op.or]: [
+                        {
+                          [Op.ne]: null
+                        },
+                        { [Op.eq]: null }
+                      ]
+                    }
               },
               {
                 [Op.or]: [
@@ -195,10 +195,8 @@ export default function postsRoutes(app: Application) {
         }
         if (mediaOnly) {
           queryObject = {
-            include: [
-              { model: Media, required: true }
-            ],
-            ...queryObject,
+            include: [{ model: Media, required: true }],
+            ...queryObject
           }
         }
         const postIds = await Post.findAll(queryObject)
@@ -253,7 +251,7 @@ export default function postsRoutes(app: Application) {
             } else {
               const sqlQuery = `
 WITH RECURSIVE ancestors AS (
-  SELECT id, "parentId" FROM posts WHERE id = '${parent.id}'
+  SELECT id, "parentId" FROM posts WHERE id = :parentId
   UNION ALL
   SELECT p.id, p."parentId"
   FROM posts p
@@ -262,9 +260,11 @@ WITH RECURSIVE ancestors AS (
 SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
   `
               // we do same check for all parents
-              const ancestorIdsQuery = await sequelize.query(
-                sqlQuery
-              )
+              const ancestorIdsQuery = await sequelize.query(sqlQuery, {
+                replacements: {
+                  parentId: parent.id
+                }
+              })
               const ancestorIds: string[] = ancestorIdsQuery[0].map((elem: any) => elem.ancestorId)
               if (ancestorIds.length > 0) {
                 const ancestors = await Post.findAll({
@@ -380,19 +380,19 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           // only count on reblogs
           const blocksExistingOnParents = parent
             ? await Blocks.count({
-              where: {
-                [Op.or]: [
-                  {
-                    blockerId: posterId,
-                    blockedId: parent.userId
-                  },
-                  {
-                    blockedId: posterId,
-                    blockerId: parent.userId
-                  }
-                ]
-              }
-            })
+                where: {
+                  [Op.or]: [
+                    {
+                      blockerId: posterId,
+                      blockedId: parent.userId
+                    },
+                    {
+                      blockedId: posterId,
+                      blockerId: parent.userId
+                    }
+                  ]
+                }
+              })
             : 0
 
           if (bannedUsers > 0) {
@@ -430,7 +430,8 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             where: {
               id: {
                 [Op.in]: mediaToAdd.map((media: any) => media.id)
-              }
+              },
+              userId: posterId
             }
           }).then((mediasToUpdate) => {
             mediaToAdd.forEach(async (media, index) => {
@@ -556,7 +557,10 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
         if (req.body.idPostToEdit) {
           const foundPost = await Post.findByPk(req.body.idPostToEdit)
           if (!foundPost) {
-            res.status(404).send({ message: 'Invalid post for edition', success: false })
+            return res.status(404).send({ message: 'Invalid post for edition', success: false })
+          }
+          if (foundPost.userId !== posterId) {
+            return res.status(403).send({ message: 'You can only edit your own posts', success: false })
           }
           post = foundPost!
           previousPrivacy = foundPost!.privacy
@@ -605,9 +609,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          const initialPost = parent ? (
-            await Post.findByPk(parent.rootId as string)
-          ) : undefined
+          const initialPost = parent ? await Post.findByPk(parent.rootId as string) : undefined
           if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }
@@ -622,9 +624,9 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             replyControl: canReply || InteractionControl.Anyone,
             quoteControl: req.body.canBeQuoted || InteractionControl.Anyone,
             likeControl: req.body.canLike || InteractionControl.Anyone,
-            isReply: parent ? (parent.isReply || parent.userId != posterId) : false,
+            isReply: parent ? parent.isReply || parent.userId != posterId : false,
             isBskyExclusive: parent ? parent.isBskyExclusive : false,
-            language: filterLanguageCode(req.body.language),
+            language: filterLanguageCode(req.body.language)
           })
         }
 
@@ -911,7 +913,7 @@ async function triggerPostFederation(post: Post, user: User) {
     sendPostBskyQueue.add('sendPostBsky', jobData)
   } else {
     prepareSendPostQueue.add('prepareSendPost', jobData, {
-      jobId: post.id,
+      jobId: post.id
     })
   }
 }

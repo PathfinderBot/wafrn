@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core'
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import {
   MAT_DIALOG_DATA,
@@ -10,7 +10,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { TranslatePipe } from '@ngx-translate/core'
-import { KeyValueTypedPipe } from 'src/app/pipes/keyvaluetyped.pipe'
+import { KeyValueTypedPipe } from '../../pipes/keyvaluetyped.pipe'
 
 export interface CustomDialogData<T extends string> {
   title: string
@@ -32,6 +32,7 @@ export interface CustomDialogData<T extends string> {
     TranslatePipe,
     KeyValueTypedPipe
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './custom-dialog.component.html'
 })
 export class CustomDialogComponent<T extends string> {

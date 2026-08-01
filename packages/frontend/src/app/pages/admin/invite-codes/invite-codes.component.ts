@@ -1,16 +1,16 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
-import { server } from 'src/app/interfaces/servers'
-import { AdminService, InviteCode } from 'src/app/services/admin.service'
-import { MatTableDataSource } from '@angular/material/table'
-import { MatPaginator } from '@angular/material/paginator'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core'
 import { MatDialog } from '@angular/material/dialog'
-import { EnvironmentService } from 'src/app/services/environment.service'
+import { MatPaginator } from '@angular/material/paginator'
+import { MatTableDataSource } from '@angular/material/table'
+import { InviteCode, AdminService } from '../../../services/admin.service'
+import { EnvironmentService } from '../../../services/environment.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-invite-codes',
   templateUrl: './invite-codes.component.html',
   styleUrls: ['./invite-codes.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class InviteCodesComponent implements OnInit {

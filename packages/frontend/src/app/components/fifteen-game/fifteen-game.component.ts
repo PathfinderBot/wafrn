@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core'
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -14,6 +14,7 @@ export type FifteenOptions = {
   selector: 'app-fifteen-game',
   imports: [MatButtonModule, TranslatePipe],
   templateUrl: './fifteen-game.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './fifteen-game.component.scss'
 })
 export class FifteenGameComponent {

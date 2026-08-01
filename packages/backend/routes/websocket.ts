@@ -1,153 +1,148 @@
-import { Application } from "express-ws";
-import { WebSocket } from "ws";
-import { Response, Request } from "express";
-import { logger } from "../utils/logger.js";
-import jwt from "jsonwebtoken";
-import { Job, Queue, Worker } from "bullmq";
+import { Application } from 'express-ws'
+import { WebSocket } from 'ws'
+import { Response, Request } from 'express'
+import { logger } from '../utils/logger.js'
+import jwt from 'jsonwebtoken'
+import { Job, Queue, Worker } from 'bullmq'
 // forgive me @javascript@app.wafrn.net
-import { completeEnvironment } from "../utils/backendOptions.js";
-import EventEmitter from "events";
-import { User } from "../models/index.js";
-import {
-  sendEmailCampaign,
-  sendEmailCampaignUser,
-} from "../utils/queueProcessors/sendEmailCampaign.js";
+import { completeEnvironment } from '../utils/backendOptions.js'
+import EventEmitter from 'events'
+import { User } from '../models/index.js'
+import { sendEmailCampaign, sendEmailCampaignUser } from '../utils/queueProcessors/sendEmailCampaign.js'
 
 export default function websocketRoutes(app: Application) {
-  const notificationEmitter: EventEmitter = new EventEmitter();
-  notificationEmitter.setMaxListeners(1000);
+  const notificationEmitter: EventEmitter = new EventEmitter()
+  notificationEmitter.setMaxListeners(1000)
   const prepareSendCampaignWorker = new Worker(
-    "prepareSendCampaign",
+    'prepareSendCampaign',
     async (job: Job) => await sendEmailCampaign(job),
     {
       connection: completeEnvironment.bullmqConnection,
       concurrency: 1,
-      lockDuration: 120000,
+      lockDuration: 120000
     }
-  );
-  prepareSendCampaignWorker.on("failed", (job, err) => {
+  )
+  prepareSendCampaignWorker.on('failed', (job, err) => {
     logger.warn({
       message: `prepare send campaign job failed`,
       jobId: job?.id,
-      error: err,
-    });
-  });
-  const sendEmailWorker = new Worker(
-    "sendEmail",
-    async (job: Job) => await sendEmailCampaignUser(job),
-    {
-      connection: completeEnvironment.bullmqConnection,
-      concurrency: 1,
-      lockDuration: 120000,
-    }
-  );
-  sendEmailWorker.on("failed", (job, err) => {
+      error: err
+    })
+  })
+  const sendEmailWorker = new Worker('sendEmail', async (job: Job) => await sendEmailCampaignUser(job), {
+    connection: completeEnvironment.bullmqConnection,
+    concurrency: 1,
+    lockDuration: 120000
+  })
+  sendEmailWorker.on('failed', (job, err) => {
     logger.warn({
       message: `send email job failed`,
       jobId: job?.id,
-      error: err,
-    });
-  });
+      error: err
+    })
+  })
   new Worker(
-    "updateNotificationsSocket",
+    'updateNotificationsSocket',
     async (job: Job) => {
-      const userId = job.data.userId ? job.data.userId : "";
-      notificationEmitter.emit(userId, { type: job.data.type });
+      const userId = job.data.userId ? job.data.userId : ''
+      notificationEmitter.emit(userId, { type: job.data.type })
     },
     {
       connection: completeEnvironment.bullmqConnection,
       concurrency: 1,
-      lockDuration: 120000,
+      lockDuration: 120000
     }
-  );
-  app.ws(
-    "/notifications",
-    async (ws: WebSocket, req: Request) => {
-      logger.debug(`Websocket connected`);
-      let authorized = false;
-      let procesingAuth = false;
-      let userId: string | undefined;
-      ws.on("message", (msg: string) => {
-        let msgAsObject: { type: "auth" | "NOTVALID"; object: any } = {
-          type: "NOTVALID",
-          object: null,
-        };
-        // we try to convert the object to something valid
-        try {
-          msgAsObject = JSON.parse(msg);
-        } catch (error) {
-          logger.debug({
-            message: `Socket message not valid json`,
-            error: error,
-            socketMsg: msg,
-          });
-        }
-        if (msgAsObject && msgAsObject.type && msgAsObject.object) {
-          switch (msgAsObject.type) {
-            // yep we are gona go fedi inbox type as this seems the only way.
-            // For now we will only recive one type of action from the client through websocket
-            case "auth": {
-              // the object is the bearer token
-              if (typeof msgAsObject.object === "string") {
-                const token = msgAsObject.object;
-                jwt.verify(
-                  token,
-                  completeEnvironment.jwtSecret,
-                  async (err: any, jwtData: any) => {
-                    if (err) {
-                      ws.close();
-                      logger.debug(`websocket closed: error on jwt`);
-                    }
-                    if (!jwtData?.userId) {
-                      ws.close();
-                      logger.debug(`websocket closed: no userid in jwt data`);
-                    } else {
-                      authorized = true;
-                      userId = jwtData.userId as string;
-                      const user = (await User.findByPk(userId)) as User
-                      logger.debug(`User ${user.url} conected to websocket`)
-                      notificationEmitter.on(userId, (data) => {
-                        ws.send(
-                          JSON.stringify({
-                            message: "update_notifications",
-                            type: data.type,
-                          })
-                        );
-                      });
-                    }
-                  }
-                );
-              } else {
-                ws.close();
-                logger.debug(`websocket closed: auth message not valid`);
-              }
-              break;
+  )
+  app.ws('/notifications', async (ws: WebSocket, req: Request) => {
+    logger.debug(`Websocket connected`)
+    let authorized = false
+    let procesingAuth = false
+    let userId: string | undefined
+    let notificationHandler: ((data: any) => void) | undefined
+    ws.on('message', (msg: string) => {
+      let msgAsObject: { type: 'auth' | 'NOTVALID'; object: any } = {
+        type: 'NOTVALID',
+        object: null
+      }
+      // we try to convert the object to something valid
+      try {
+        msgAsObject = JSON.parse(msg)
+      } catch (error) {
+        logger.debug({
+          message: `Socket message not valid json`,
+          error: error,
+          socketMsg: msg
+        })
+      }
+      if (msgAsObject && msgAsObject.type && msgAsObject.object) {
+        switch (msgAsObject.type) {
+          // yep we are gona go fedi inbox type as this seems the only way.
+          // For now we will only recive one type of action from the client through websocket
+          case 'auth': {
+            // the object is the bearer token
+            if (typeof msgAsObject.object === 'string') {
+              const token = msgAsObject.object
+              jwt.verify(token, completeEnvironment.jwtSecret, async (err: any, jwtData: any) => {
+                if (err) {
+                  ws.close()
+                  logger.debug(`websocket closed: error on jwt`)
+                  return
+                }
+                if (!jwtData?.userId) {
+                  ws.close()
+                  logger.debug(`websocket closed: no userid in jwt data`)
+                  return
+                }
+                const user = (await User.findByPk(jwtData.userId)) as User
+                if (!user || user.banned || !user.activated) {
+                  ws.close()
+                  logger.debug(`websocket closed: user banned, unactivated or not found`)
+                  return
+                }
+                authorized = true
+                userId = jwtData.userId as string
+                logger.debug(`User ${user.url} conected to websocket`)
+                notificationHandler = (data) => {
+                  ws.send(
+                    JSON.stringify({
+                      message: 'update_notifications',
+                      type: data.type
+                    })
+                  )
+                }
+                notificationEmitter.on(userId, notificationHandler)
+              })
+            } else {
+              ws.close()
+              logger.debug(`websocket closed: auth message not valid`)
             }
-            default: {
-              logger.debug({
-                message: `Socket invalid message type: ${msgAsObject.type}`,
-                socketMessage: msg,
-              });
-            }
+            break
+          }
+          default: {
+            logger.debug({
+              message: `Socket invalid message type: ${msgAsObject.type}`,
+              socketMessage: msg
+            })
           }
         }
-      });
+      }
+    })
 
-      ws.on("close", (msg: string) => {});
+    ws.on('close', () => {
+      if (userId && notificationHandler) {
+        notificationEmitter.removeListener(userId, notificationHandler)
+        notificationHandler = undefined
+      }
+    })
 
-      // if it has been one second and user has not started the auth process, time to kill this process
-      // if user failed auth and for any destiny's reason we are still on it
-      // in case of failure the auth part would take care of killing the connection
-      setTimeout(() => {
-        if (!authorized && !procesingAuth) {
-          ws.close();
-          logger.debug(`websocket closed: no auth recived`);
-        }
-      }, 1000);
-    }
-  );
-
-  app.get('/test', (req, res) => {
-    res.send({ok: true})
+    // if it has been one second and user has not started the auth process, time to kill this process
+    // if user failed auth and for any destiny's reason we are still on it
+    // in case of failure the auth part would take care of killing the connection
+    setTimeout(() => {
+      if (!authorized && !procesingAuth) {
+        ws.close()
+        logger.debug(`websocket closed: no auth recived`)
+      }
+    }, 1000)
   })
 }

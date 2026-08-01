@@ -1,16 +1,16 @@
-import { Component, inject } from '@angular/core'
-import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { RouterModule } from '@angular/router'
-import { LoaderComponent } from 'src/app/components/loader/loader.component'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { MessageService } from 'src/app/services/message.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
+import { LoaderComponent } from '../../components/loader/loader.component'
+import { DashboardService } from '../../services/dashboard.service'
+import { MessageService } from '../../services/message.service'
+import { PostsService } from '../../services/posts.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-manage-followed-hashtags',
@@ -26,6 +26,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
     TranslateModule
   ],
   templateUrl: './manage-followed-hashtags.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './manage-followed-hashtags.component.scss'
 })
 export class ManageFollowedHashtagsComponent {

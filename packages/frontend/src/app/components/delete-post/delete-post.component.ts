@@ -1,21 +1,15 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
-import { DeletePostService } from 'src/app/services/delete-post.service'
-import { MessageService } from 'src/app/services/message.service'
-import {
-  MatDialogContent,
-  MatDialogTitle,
-  MatDialogActions,
-  MatDialogClose,
-  MatDialogRef,
-  MAT_DIALOG_DATA
-} from '@angular/material/dialog'
+import { MatDialogTitle, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { LoaderComponent } from '../loader/loader.component'
 import { TranslateModule } from '@ngx-translate/core'
+import { DeletePostService } from '../../services/delete-post.service'
+import { MessageService } from '../../services/message.service'
 @Component({
   selector: 'app-delete-post',
   templateUrl: './delete-post.component.html',
   styleUrls: ['./delete-post.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatButtonModule, MatDialogTitle, LoaderComponent, TranslateModule]
 })
 export class DeletePostComponent {

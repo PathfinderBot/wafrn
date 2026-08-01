@@ -1,4 +1,4 @@
-import { Component, effect, output, signal, inject } from '@angular/core'
+import { Component, effect, output, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
@@ -11,6 +11,7 @@ import { SettingsService } from '../services/settings.service'
   selector: 'app-select-image-button',
   imports: [MatButtonModule, MatProgressSpinnerModule, FontAwesomeModule],
   templateUrl: './select-image-button.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './select-image-button.component.scss'
 })
 export class SelectImageButtonComponent {

@@ -4,20 +4,14 @@ import {
   OnDestroy,
   OnInit,
   Signal,
-  signal,
   ViewEncapsulation,
   WritableSignal,
   inject,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
 } from '@angular/core'
 import { NavigationEnd, Router } from '@angular/router'
 import { fromEvent, merge, Subscription } from 'rxjs'
-import { Action } from 'src/app/interfaces/editor-launcher-data'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { EditorService } from 'src/app/services/editor.service'
-import { JwtService } from 'src/app/services/jwt.service'
-import { AccountData, LoginService } from 'src/app/services/login.service'
-import { NotificationsService } from 'src/app/services/notifications.service'
 import { toObservable } from '@angular/core/rxjs-interop'
 
 import {
@@ -53,24 +47,30 @@ import {
   faPlus,
   faShuffle,
   faInbox,
-  faUserShield,
   faVolumeXmark,
   faBellSlash,
   faRoadBarrier
 } from '@fortawesome/free-solid-svg-icons'
-import { MenuItem, MenuLink } from 'src/app/interfaces/menu-item'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { ThemeService } from 'src/app/services/theme.service'
-import packageJson from '../../../../package.json'
-import { BlogDetails } from 'src/app/interfaces/blogDetails'
-import { GlobalData } from 'src/app/services/global-data.service'
+
 import buildData from '../../../buildData.json'
+import { BlogDetails } from '../../interfaces/blogDetails'
+import { MenuItem, MenuLink } from '../../interfaces/menu-item'
+import { DashboardService } from '../../services/dashboard.service'
+import { EditorService } from '../../services/editor.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { GlobalData } from '../../services/global-data.service'
+import { JwtService } from '../../services/jwt.service'
+import { LoginService, AccountData } from '../../services/login.service'
+import { NotificationsService } from '../../services/notifications.service'
+import { ThemeService } from '../../services/theme.service'
+import { Action } from '../../interfaces/editor-launcher-data'
 
 @Component({
   selector: 'app-navigation-menu',
   templateUrl: './navigation-menu.component.html',
   styleUrls: ['./navigation-menu.component.scss'],
   standalone: false,
+  changeDetection: ChangeDetectionStrategy.Eager,
   encapsulation: ViewEncapsulation.None
 })
 export class NavigationMenuComponent implements OnInit, OnDestroy {

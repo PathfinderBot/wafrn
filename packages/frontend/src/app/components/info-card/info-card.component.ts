@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common'
-import { Component, computed, input } from '@angular/core'
+import { Component, computed, input, ChangeDetectionStrategy } from '@angular/core'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faQuestionCircle, faTriangleExclamation, IconDefinition } from '@fortawesome/free-solid-svg-icons'
 
@@ -14,6 +14,7 @@ const iconMap: Record<InfoType, IconDefinition> = {
   selector: 'app-info-card',
   imports: [FontAwesomeModule, NgClass],
   templateUrl: './info-card.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './info-card.component.scss'
 })
 export class InfoCardComponent {

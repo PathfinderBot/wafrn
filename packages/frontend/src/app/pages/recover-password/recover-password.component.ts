@@ -1,14 +1,15 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-recover-password',
   templateUrl: './recover-password.component.html',
   styleUrls: ['./recover-password.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class RecoverPasswordComponent {

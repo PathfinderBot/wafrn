@@ -1,14 +1,15 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { JwtService } from 'src/app/services/jwt.service'
-import { SimpleSeoService } from 'src/app/services/simple-seo.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
-import { UtilsService } from 'src/app/services/utils.service'
+import { ChangeDetectorRef, Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
+import { EnvironmentService } from '../../services/environment.service'
+import { JwtService } from '../../services/jwt.service'
+import { SimpleSeoService } from '../../services/simple-seo.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
+import { UtilsService } from '../../services/utils.service'
 
 @Component({
   selector: 'app-about',
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class AboutComponent implements OnInit {

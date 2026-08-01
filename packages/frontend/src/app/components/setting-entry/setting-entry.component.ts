@@ -1,11 +1,11 @@
-import { Component, computed, input, viewChildren, inject } from '@angular/core'
+import { Component, computed, input, viewChildren, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox'
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectChange, MatSelectModule } from '@angular/material/select'
 import { TranslateModule } from '@ngx-translate/core'
-import { KeyValueTypedPipe } from 'src/app/pipes/keyvaluetyped.pipe'
-import { SettingData, SettingDataEntry, SettingKey, SettingsService } from 'src/app/services/settings.service'
 import { UserSelectorComponent } from '../user-selector/user-selector.component'
+import { KeyValueTypedPipe } from '../../pipes/keyvaluetyped.pipe'
+import { SettingsService, SettingData, SettingDataEntry, SettingKey } from '../../services/settings.service'
 
 @Component({
   selector: 'app-setting-entry',
@@ -18,6 +18,7 @@ import { UserSelectorComponent } from '../user-selector/user-selector.component'
     UserSelectorComponent
   ],
   templateUrl: './setting-entry.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './setting-entry.component.scss'
 })
 export class SettingEntryComponent {

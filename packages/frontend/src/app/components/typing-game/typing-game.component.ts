@@ -1,4 +1,4 @@
-import { Component, computed, output, signal } from '@angular/core'
+import { Component, computed, output, signal, ChangeDetectionStrategy } from '@angular/core'
 import { MatInputModule } from '@angular/material/input'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -27,6 +27,7 @@ const rarePrompts = [
   selector: 'app-typing-game',
   imports: [MatInputModule, TranslatePipe],
   templateUrl: './typing-game.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './typing-game.component.scss'
 })
 export class TypingGameComponent {
