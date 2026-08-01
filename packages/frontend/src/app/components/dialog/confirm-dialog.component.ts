@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core'
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import {
   MAT_DIALOG_DATA,
@@ -12,8 +12,8 @@ import { MatInputModule } from '@angular/material/input'
 import { TranslatePipe } from '@ngx-translate/core'
 import { Subject, timer } from 'rxjs'
 import { FifteenGameComponent } from '../fifteen-game/fifteen-game.component'
-import { ParticleService } from 'src/app/services/particle.service'
 import { TypingGameComponent } from '../typing-game/typing-game.component'
+import { ParticleService } from '../../services/particle.service'
 
 export enum Annoyance {
   none = '0',
@@ -48,6 +48,7 @@ export type ConfirmDialogResult = boolean
     TypingGameComponent,
     TranslatePipe
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './confirm-dialog.component.html'
 })
 export class ConfirmDialogComponent {

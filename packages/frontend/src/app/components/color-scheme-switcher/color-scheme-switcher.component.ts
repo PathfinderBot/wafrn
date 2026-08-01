@@ -1,23 +1,23 @@
 import { CommonModule, NgClass } from '@angular/common'
-import { Component, Signal, WritableSignal, inject } from '@angular/core'
+import { Component, Signal, WritableSignal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatMenuModule } from '@angular/material/menu'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { FaIconComponent } from '@fortawesome/angular-fontawesome'
 import { faPalette } from '@fortawesome/free-solid-svg-icons'
+import { TranslatePipe } from '@ngx-translate/core'
 import {
   AdditionalStyleMode,
   additionalStyleModesData,
-  Theme,
-  themeData,
-  themeGroupList,
-  ThemeGroupList,
   LightDarkMode,
   lightDarkModeData,
+  Theme,
+  themeData,
+  ThemeGroupList,
+  themeGroupList,
   ThemeService
-} from 'src/app/services/theme.service'
-import { TranslatePipe } from '@ngx-translate/core'
+} from '../../services/theme.service'
 
 // !! NOTE FOR ADDING THEMES !! //
 //
@@ -36,6 +36,7 @@ import { TranslatePipe } from '@ngx-translate/core'
     TranslatePipe
   ],
   templateUrl: './color-scheme-switcher.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './color-scheme-switcher.component.scss'
 })
 export class ColorSchemeSwitcherComponent {

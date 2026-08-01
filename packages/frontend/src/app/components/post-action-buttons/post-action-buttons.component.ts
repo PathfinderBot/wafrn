@@ -7,7 +7,8 @@ import {
   signal,
   viewChild,
   inject,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  ChangeDetectionStrategy
 } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatMenuModule } from '@angular/material/menu'
@@ -37,16 +38,16 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { TranslatePipe } from '@ngx-translate/core'
 import { delay, firstValueFrom, of, Subject, switchMap, takeUntil } from 'rxjs'
-import { PostLinkModule } from 'src/app/directives/post-link/post-link.module'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { DeletePostService } from 'src/app/services/delete-post.service'
-import { EditorService } from 'src/app/services/editor.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
-import { ParticleService } from 'src/app/services/particle.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { SettingKey, SettingListItem, SettingsService } from 'src/app/services/settings.service'
+import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { DashboardService } from '../../services/dashboard.service'
+import { DeletePostService } from '../../services/delete-post.service'
+import { EditorService } from '../../services/editor.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
+import { ParticleService } from '../../services/particle.service'
+import { PostsService } from '../../services/posts.service'
+import { SettingsService, SettingKey, SettingListItem } from '../../services/settings.service'
 
 export const replyBarItems = ['quote', 'rewoot', 'reply', 'bookmark', 'like', 'edit', 'delete'] as const
 export type replyBarItemsVariants = typeof replyBarItems
@@ -64,6 +65,7 @@ export type ReplyBarItem = replyBarItemsVariants[number]
     TranslatePipe
   ],
   templateUrl: './post-action-buttons.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './post-action-buttons.component.scss'
 })
 export class PostActionButtonsComponent implements OnChanges {

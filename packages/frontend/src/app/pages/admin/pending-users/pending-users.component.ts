@@ -1,18 +1,19 @@
-import { Component, signal, inject, ChangeDetectorRef } from '@angular/core'
+import { Component, signal, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
-import { LoaderComponent } from 'src/app/components/loader/loader.component'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { AdminService } from 'src/app/services/admin.service'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { LoaderComponent } from '../../../components/loader/loader.component'
+import { SimplifiedUser } from '../../../interfaces/simplified-user'
+import { AdminService } from '../../../services/admin.service'
+import { EnvironmentService } from '../../../services/environment.service'
+import { SimpleDialogService } from '../../../services/simple-dialog.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-pending-users',
   imports: [MatButtonModule, MatCardModule, LoaderComponent, TranslateModule],
   templateUrl: './pending-users.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './pending-users.component.scss'
 })
 export class PendingUsersComponent {

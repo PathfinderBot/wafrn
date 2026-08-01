@@ -1,21 +1,28 @@
 /* eslint-disable max-len */
 import { Application, Response } from 'express'
+import { QueueEvents } from 'bullmq'
 import { Media } from '../models/index.js'
 import uploadHandler from '../utils/uploads.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
+import { mediaUploadLimiter } from '../utils/rateLimiters.js'
 
 import getIp from '../utils/getIP.js'
-import optimizeMedia from '../utils/optimizeMedia.js'
 import { logger } from '../utils/logger.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getQueue } from '../utils/queues.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { OptimizeMediaJobPayload, OptimizeMediaJobResult } from '../utils/queueProcessors/optimizeMediaJob.js'
 
 const updateMediaDataQueue = getQueue('processRemoteMediaData')
+const optimizeMediaQueue = getQueue<OptimizeMediaJobPayload>('optimizeMediaQueue')
+const optimizeMediaQueueEvents = new QueueEvents('optimizeMediaQueue', {
+  connection: completeEnvironment.bullmqConnection
+})
 
 export default function mediaRoutes(app: Application) {
   app.post(
     '/api/uploadMedia',
+    mediaUploadLimiter,
     authenticateToken,
     uploadHandler().array('image'),
     async (req: AuthorizedRequest, res: Response) => {
@@ -31,8 +38,9 @@ export default function mediaRoutes(app: Application) {
           const formatsToNotConvert = ['webp', 'aac', 'mp3', 'wav', 'ogg', 'oga', 'm4a', 'pdf']
           if (!formatsToNotConvert.includes(extension)) {
             try {
-              const optimizedMediaPath = await optimizeMedia(file.path)
-              fileUrl = `/${optimizedMediaPath}`
+              const job = await optimizeMediaQueue.add('optimizeMedia', { inputPath: file.path })
+              const jobResult = (await job.waitUntilFinished(optimizeMediaQueueEvents)) as OptimizeMediaJobResult
+              fileUrl = `/${jobResult.outputPath}`
             } catch (error) {
               logger.debug({
                 message: `Error optimizing media`,
@@ -44,7 +52,6 @@ export default function mediaRoutes(app: Application) {
                 message: `Error optimizing mediaº`
               })
             }
-
           }
           if (completeEnvironment.removeFolderNameFromFileUploads) {
             fileUrl = fileUrl.slice('/uploads/'.length - 1)

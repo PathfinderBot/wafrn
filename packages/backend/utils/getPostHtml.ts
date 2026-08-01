@@ -25,7 +25,7 @@ function emojiToHtml(emoji: Emoji): string {
     (emoji.external
       ? encodeURIComponent(emoji.url)
       : encodeURIComponent(completeEnvironment.frontendEnvironment.baseMediaUrl + emoji.url))
-  }" title="${emoji.name}" alt="${emoji.name}">`
+  }" title="${sanitizeHtml(emoji.name, { allowedTags: [] })}" alt="${sanitizeHtml(emoji.name, { allowedTags: [] })}">`
 }
 
 export function getPostHtml(
@@ -213,7 +213,7 @@ export function getPostHtml(
         'writing-mode': [new RegExp('.*')]
       }
     },
-    allowVulnerableTags: true,
+    allowVulnerableTags: true
   })
   // we remove stuff like img and script tags. we only allow certain stuff.
   const parsedAsHTML = parser.parseFromString(sanitized, 'text/html')

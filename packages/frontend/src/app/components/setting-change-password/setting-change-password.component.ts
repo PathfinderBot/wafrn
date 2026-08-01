@@ -1,15 +1,16 @@
-import { Component, signal, inject } from '@angular/core'
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { TranslatePipe } from '@ngx-translate/core'
-import { JwtService } from 'src/app/services/jwt.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
+import { JwtService } from '../../services/jwt.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-setting-change-password',
   imports: [MatButtonModule, MatExpansionModule, TranslatePipe],
   templateUrl: './setting-change-password.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './setting-change-password.component.scss'
 })
 export class SettingChangePasswordComponent {

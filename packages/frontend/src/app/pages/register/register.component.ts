@@ -1,18 +1,18 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
-
 import { faArrowRight, faEye, faEyeSlash, faUpload, faUserPlus } from '@fortawesome/free-solid-svg-icons'
-import { EnvironmentService } from 'src/app/services/environment.service'
 import { Router } from '@angular/router'
-import { JwtService } from 'src/app/services/jwt.service'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { JwtService } from '../../services/jwt.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
+import { SimpleDialogService } from '../../services/simple-dialog.service'
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class RegisterComponent {

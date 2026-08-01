@@ -20,7 +20,7 @@
         attr.aria-label="{{ 'editor.ariaLabelQuoteSetter' | translate }}"
         mat-icon-button
         (click)="quoteOpen = !quoteOpen"
-        [disabled]="data?.quote"
+        [disabled]="$safeNavigationMigration(data?.quote)"
         class="input-height-btn"
         matTooltip="{{ 'editor.quoteButton' | translate }}"
       >

@@ -211,7 +211,9 @@
         @if (blog?.isAdmin) {
           <span
             class="badge admin-badge"
-            [matTooltip]="'blog.adminTooltip' | translate: { url: blog?.url, instanceHostname }"
+            [matTooltip]="
+              'blog.adminTooltip' | translate: { url: $safeNavigationMigration(blog?.url), instanceHostname }
+            "
           >
             <fa-icon class="mr-2" [icon]="adminIcon"></fa-icon>{{ 'blog.adminBadge' | translate }}
           </span>
@@ -256,7 +258,10 @@
   @if (allowRemoteAsk) {
     <details class="mt-2">
       <summary class="text-center">{{ 'blog.remoteAskSummary' | translate }}</summary>
-      <p class="m-0" [innerHTML]="'blog.remoteAskDescription' | translate: { url: blog?.url }"></p>
+      <p
+        class="m-0"
+        [innerHTML]="'blog.remoteAskDescription' | translate: { url: $safeNavigationMigration(blog?.url) }"
+      ></p>
     </details>
   }
   @if (blog?.migratedTo) {
@@ -283,7 +288,7 @@
               ? blog.displayUrl
                 ? blog.displayUrl
                 : blog.remoteId
-              : 'https://bsky.app/profile/' + blog?.url?.split('@')?.at(1)
+              : 'https://bsky.app/profile/' + $safeNavigationMigration(blog?.url?.split('@')?.at(1))
           "
           target="_blank"
           >{{ 'blog.viewOnRemoteInstance' | translate }}</a
@@ -292,19 +297,28 @@
     </app-info-card>
   }
   <footer class="mt-4 py-3 flex justify-content-evenly follow-counts">
-    <a [routerLink]="['/blog', blog?.url]" class="flex flex-column justify-content-center subtle-link">
+    <a
+      [routerLink]="['/blog', $safeNavigationMigration(blog?.url)]"
+      class="flex flex-column justify-content-center subtle-link"
+    >
       <b class="m-0 text-lg text-center">
         {{ (!settings.disablePostCounts && blog && formatBigNumber(blog.postCount)) || '-' }}
       </b>
       <p class="m-0 text-xs">{{ 'blog.postCount' | translate }}</p>
     </a>
-    <a [routerLink]="['/blog', blog?.url, 'following']" class="flex flex-column justify-content-center subtle-link">
+    <a
+      [routerLink]="['/blog', $safeNavigationMigration(blog?.url), 'following']"
+      class="flex flex-column justify-content-center subtle-link"
+    >
       <b class="m-0 text-lg text-center">
         {{ (!settings.disableFollowingCounts && blog && formatBigNumber(blog.followed)) || '-' }}
       </b>
       <p class="m-0 text-xs">{{ 'blog.following' | translate }}</p>
     </a>
-    <a [routerLink]="['/blog', blog?.url, 'followers']" class="flex flex-column justify-content-center subtle-link">
+    <a
+      [routerLink]="['/blog', $safeNavigationMigration(blog?.url), 'followers']"
+      class="flex flex-column justify-content-center subtle-link"
+    >
       <b class="m-0 text-lg text-center">
         {{ (!settings.disableFollowerCounts && blog && formatBigNumber(blog.followers)) || '-' }}
       </b>

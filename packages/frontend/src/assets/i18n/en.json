@@ -817,6 +817,8 @@
     "genericError": "Something went wrong! Check your internet connectivity and try again.",
     "notRewootableError": "The woot was not rewootable as requested by the user.",
     "bitePostSuccess": "You successfully bit this woot.",
+    "pinPostSuccess": "Post pinned successfully.",
+    "unpinPostSuccess": "Post unpinned successfully.",
     "biteUserSuccess": "You successfully bit this user!"
   },
   "keyboard-shortcuts": {
@@ -846,6 +848,8 @@
     "shareExternalUrl": "Copy remote link",
     "viewOnAtproto": "View on Atproto",
     "forceRefederate": "Force refederate woot",
+    "pinPost": "Pin woot",
+    "unpinPost": "Unpin woot",
     "viewOriginalPost": "View original woot",
     "replyPost": "Reply to woot",
     "rewootPost": "Rewoot woot",
@@ -883,7 +887,8 @@
   "post": {
     "expandWoot": "Expand woot",
     "collapsedPosts": "{{count}} posts",
-    "threadCollapsed": "Thread collapsed because it's very long but we show you the end of the thread"
+    "threadCollapsed": "Thread collapsed because it's very long but we show you the end of the thread",
+    "pinned": "Pinned post"
   },
   "bottomReplyBar": {
     "notes": "notes",

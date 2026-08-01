@@ -1,21 +1,22 @@
-import { Component, OnDestroy, OnInit, Signal, signal, inject } from '@angular/core'
+import { Component, OnDestroy, OnInit, Signal, signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { Subscription, filter } from 'rxjs'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
-import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { EnvironmentService } from 'src/app/services/environment.service'
-import { LoginService } from 'src/app/services/login.service'
-import { MessageService } from 'src/app/services/message.service'
-import { PostsService } from 'src/app/services/posts.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { DashboardService } from '../../services/dashboard.service'
+import { EnvironmentService } from '../../services/environment.service'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
+import { PostsService } from '../../services/posts.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class SearchComponent implements OnInit, OnDestroy {
@@ -25,8 +26,6 @@ export class SearchComponent implements OnInit, OnDestroy {
   protected loginService = inject(LoginService)
   private activatedRoute = inject(ActivatedRoute)
 
-  cacheurl = EnvironmentService.environment.externalCacheurl
-  baseMediaUrl = EnvironmentService.environment.baseMediaUrl
   searchForm: UntypedFormGroup = new UntypedFormGroup({
     search: new UntypedFormControl('', [Validators.required]),
     user: new UntypedFormControl('')
@@ -106,9 +105,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.posts.set(searchResult.posts)
     this.users.set(searchResult.users)
     searchResult.users.forEach((user) => {
-      this.avatars[user.url] = user.url.startsWith('@')
-        ? this.cacheurl + encodeURIComponent(user.avatar)
-        : this.cacheurl + encodeURIComponent(this.baseMediaUrl + user.avatar)
+      this.avatars[user.url] = this.getAvatarUrl(user)
     })
     this.loading.set(false)
 
@@ -134,10 +131,16 @@ export class SearchComponent implements OnInit, OnDestroy {
     searchResult.posts.forEach((post) => this.posts().push(post))
     searchResult.users.forEach((user) => {
       this.users().push(user)
-      this.avatars[user.url] = user.url.startsWith('@')
-        ? this.cacheurl + encodeURIComponent(user.avatar)
-        : this.cacheurl + encodeURIComponent(this.baseMediaUrl + user.avatar)
+      this.avatars[user.url] = this.getAvatarUrl(user)
     })
+  }
+
+  private getAvatarUrl(user: SimplifiedUser): string {
+    return (
+      (EnvironmentService.environment.cacheDomain ? EnvironmentService.environment.cacheDomain : '') +
+      '/api/v2/cache/avatar/' +
+      user.id
+    )
   }
 
   async followUser(id: string) {

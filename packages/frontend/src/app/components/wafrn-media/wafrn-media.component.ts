@@ -1,11 +1,22 @@
-import { AfterViewInit, Component, computed, ElementRef, input, OnInit, Signal, ViewChild, inject } from '@angular/core'
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  OnInit,
+  Signal,
+  ViewChild,
+  inject,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { EnvironmentService } from '../../services/environment.service'
 import { MediaService } from '../../services/media.service'
 import { faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-//@ts-ignore
+//@ts-expect-error something vite i dont remember
 import Vlitejs from 'vlitejs'
-import { SettingsService } from 'src/app/services/settings.service'
+import { SettingsService } from '../../services/settings.service'
 
 type FitMode = 'contain' | 'cover'
 
@@ -13,6 +24,7 @@ type FitMode = 'contain' | 'cover'
   selector: 'app-wafrn-media',
   templateUrl: './wafrn-media.component.html',
   styleUrls: ['./wafrn-media.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class WafrnMediaComponent implements OnInit, AfterViewInit {

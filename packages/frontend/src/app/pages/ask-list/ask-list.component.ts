@@ -1,19 +1,20 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { ChangeDetectorRef, Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
-import { SingleAskComponent } from 'src/app/components/single-ask/single-ask.component'
-import { Ask } from 'src/app/interfaces/ask'
-import { BlogService } from 'src/app/services/blog.service'
-import { DashboardService } from 'src/app/services/dashboard.service'
-import { EditorService } from 'src/app/services/editor.service'
-import { LoaderComponent } from 'src/app/components/loader/loader.component'
 import { TranslatePipe } from '@ngx-translate/core'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { LoaderComponent } from '../../components/loader/loader.component'
+import { SingleAskComponent } from '../../components/single-ask/single-ask.component'
+import { Ask } from '../../interfaces/ask'
+import { BlogService } from '../../services/blog.service'
+import { DashboardService } from '../../services/dashboard.service'
+import { EditorService } from '../../services/editor.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-ask-list',
   imports: [SingleAskComponent, MatButtonModule, MatCardModule, LoaderComponent, TranslatePipe],
   templateUrl: './ask-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './ask-list.component.scss'
 })
 export class AskListComponent {

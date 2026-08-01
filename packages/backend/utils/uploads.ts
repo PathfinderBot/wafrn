@@ -17,7 +17,8 @@ function uploadHandler(extensionsRegex?: RegExp, storage?: multer.StorageEngine)
   return multer({
     storage: storage ? storage : imageStorage,
     limits: {
-      fileSize: completeEnvironment.uploadLimit * 1024 * 1024 // 15 MB.
+      fileSize: completeEnvironment.uploadLimit * 1024 * 1024,
+      files: 1
     },
     fileFilter(req, file, cb) {
       const name = file.originalname.toLowerCase()

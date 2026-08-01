@@ -4,9 +4,9 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatInputModule } from '@angular/material/input'
 import { UserSelectorComponent } from '../user-selector/user-selector.component'
-import { LoginService } from 'src/app/services/login.service'
 import { LoaderComponent } from '../loader/loader.component'
 import { TranslateModule } from '@ngx-translate/core'
+import { LoginService } from '../../services/login.service'
 
 @Component({
   selector: 'app-migrate-out',
@@ -20,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core'
     TranslateModule
   ],
   templateUrl: './migrate-out.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './migrate-out.component.scss'
 })
 export class MigrateOutComponent {

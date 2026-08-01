@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.07.03-DEV",
+  "version": "2026.08.01",
   "description": "wafrn",
   "main": "index.ts",
   "scripts": {
@@ -47,7 +47,7 @@
     "@types/showdown": "^2.0.6",
     "eslint": "^9.39.4",
     "globals": "^15.15.0",
-    "typescript": "^5.8.0",
+    "typescript": "^6.0.0",
     "typescript-eslint": "^8.57.0"
   },
   "dependencies": {

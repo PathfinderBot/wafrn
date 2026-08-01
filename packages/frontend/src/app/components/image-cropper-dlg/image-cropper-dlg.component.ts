@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogTitle, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog'
 import { ImageCroppedEvent, ImageCropperComponent } from 'ngx-image-cropper'
@@ -8,6 +8,7 @@ import { TranslateModule } from '@ngx-translate/core'
   selector: 'app-image-cropper',
   templateUrl: './image-cropper-dlg.component.html',
   styleUrls: ['./image-cropper-dlg.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatButtonModule, MatDialogTitle, ImageCropperComponent, TranslateModule]
 })
 export class ImageCropperDlgComponent {

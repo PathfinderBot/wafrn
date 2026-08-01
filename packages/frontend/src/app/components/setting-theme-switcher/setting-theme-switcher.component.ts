@@ -1,23 +1,24 @@
-import { Component, WritableSignal, inject } from '@angular/core'
+import { Component, WritableSignal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatSelectChange, MatSelectModule } from '@angular/material/select'
 import { TranslatePipe } from '@ngx-translate/core'
-import { KeyValueTypedPipe } from 'src/app/pipes/keyvaluetyped.pipe'
+import { KeyValueTypedPipe } from '../../pipes/keyvaluetyped.pipe'
 import {
-  AdditionalStyleMode,
-  additionalStyleModesData,
+  ThemeService,
+  LightDarkMode,
+  lightDarkModeData,
   Theme,
   themeData,
   themeGroupList,
-  LightDarkMode,
-  lightDarkModeData,
-  ThemeService
-} from 'src/app/services/theme.service'
+  additionalStyleModesData,
+  AdditionalStyleMode
+} from '../../services/theme.service'
 
 @Component({
   selector: 'app-setting-theme-switcher',
   imports: [MatFormFieldModule, MatSelectModule, TranslatePipe, KeyValueTypedPipe],
   templateUrl: './setting-theme-switcher.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './setting-theme-switcher.component.scss'
 })
 export class SettingThemeSwitcherComponent {

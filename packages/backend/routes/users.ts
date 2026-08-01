@@ -75,6 +75,7 @@ import { wait } from '../utils/wait.js'
 import { migrateUserFedi } from '../utils/activitypub/migrateUser.js'
 import { syncBskyAccountData } from '../utils/atproto/syncBskyAccountData.js'
 import { LANGUAGES } from '../utils/languages.js'
+import { pinPost } from '../utils/activitypub/likePost.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -85,6 +86,18 @@ const markdownConverter = new showdown.Converter({
   emoji: true
 })
 const forbiddenCharacters = [':', '@', '/', '<', '>', '"', '&', '?']
+
+// timings attacks require us to check against something if no user found in db
+let dummyPasswordHashPromise: Promise<string> | null = null
+function getDummyPasswordHash(): Promise<string> {
+  if (!dummyPasswordHashPromise) {
+    dummyPasswordHashPromise = bcrypt.hash(
+      'wafrn-timing-normalization-dummy-password' + new Date().getTime(),
+      completeEnvironment.saltRounds
+    )
+  }
+  return dummyPasswordHashPromise
+}
 
 const generateUserKeyPairQueue = getQueue('generateUserKeyPair')
 
@@ -142,7 +155,7 @@ const slurs = [
   'wetback',
   'wigger',
   'wop',
-  'yid' 
+  'yid'
 ]
 
 function userRoutes(app: Application) {
@@ -302,15 +315,15 @@ function userRoutes(app: Application) {
             const emailSent = completeEnvironment.disableRequireSendEmail
               ? true
               : sendEmail({
-                email,
-                subject: `Welcome to ${instanceHost}, please verify your email!`,
-                body: `\
+                  email,
+                  subject: `Welcome to ${instanceHost}, please verify your email!`,
+                  body: `\
 <h1>Welcome to ${instanceUrl}</h1>
 <p>To activate your account, <a href="${activationLink}">verify your email</a>.</p>
 <br />
 <p>If you can't see the link above, copy this link: ${activationLink}</p>
 `
-              })
+                })
             await Promise.all([userWithEmail, emailSent])
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
@@ -327,6 +340,11 @@ function userRoutes(app: Application) {
               url: req.body.url,
               forbidChar: !forbiddenCharacters.some((char) => req.body.url.includes(char)),
               emailValid: validateEmail(req.body.email)
+            })
+            // we shall not leak if user exists
+            success = true
+            res.send({
+              success: true
             })
           }
         } else {
@@ -522,7 +540,8 @@ function userRoutes(app: Application) {
           const link = `${completeEnvironment.instanceUrl}/resetPassword/${encodeURIComponent(email)}/${resetCode}`
           const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(email)}&code=${resetCode}`
 
-          await sendEmail({
+          // for timing we dont use await we just send it "fire and forget"
+          sendEmail({
             email: req.body.email.toLowerCase(),
             subject: `Reset ${completeEnvironment.instanceUrl} password`,
             body: `\
@@ -531,6 +550,11 @@ function userRoutes(app: Application) {
 <p>If you can't see the web link above, copy this link: ${link}</p>
 <p>If you didn't request this, ignore this email.</p>
 `
+          }).catch((error) => {
+            logger.error({
+              message: 'Error sending forgotPassword email',
+              error
+            })
           })
         }
       }
@@ -589,22 +613,29 @@ function userRoutes(app: Application) {
     })
   })
 
-  app.post('/api/resetPassword', async (req, res) => {
+  app.post('/api/resetPassword', createAccountLimiter, onePerSecondLimiter, async (req, res) => {
     let success = false
 
     try {
       if (req.body?.email && req.body.code && req.body.password && validateEmail(req.body.email)) {
-        const resetPasswordDeadline = new Date()
-        resetPasswordDeadline.setTime(resetPasswordDeadline.getTime() + 3600 * 2 * 1000)
+        // Codes are only valid if the reset was requested within the last 2 hours.
+        // (Previously this compared `requestedPasswordReset < now + 2h`, which is
+        // true for any past timestamp and therefore never expired anything.)
+        const resetPasswordWindowStart = new Date()
+        resetPasswordWindowStart.setTime(resetPasswordWindowStart.getTime() - 3600 * 2 * 1000)
         const user = await User.scope('full').findOne({
           where: {
             email: req.body.email.toLowerCase(),
             activationCode: req.body.code,
-            requestedPasswordReset: { [Op.lt]: resetPasswordDeadline }
+            requestedPasswordReset: { [Op.gt]: resetPasswordWindowStart }
           }
         })
         if (user) {
           await updatePassword(user, req.body.password)
+          // Invalidate the code so it cannot be reused/brute-forced further.
+          user.activationCode = generateRandomString()
+          user.requestedPasswordReset = null as unknown as Date
+          await user.save()
 
           success = true
         }
@@ -618,7 +649,7 @@ function userRoutes(app: Application) {
     })
   })
 
-  app.post('/api/changePassword', async (req: AuthorizedRequest, res: Response) => {
+  app.post('/api/changePassword', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const user = (await User.findByPk(req.jwtData?.userId as string)) as User
     const password = req.body.oldPassword
     const newPassword = req.body.newPassword
@@ -784,6 +815,9 @@ function userRoutes(app: Application) {
               })
             }
           }
+        } else {
+          // timing attacks
+          await bcrypt.compare(req.body.password, await getDummyPasswordHash())
         }
       }
     } catch (error) {
@@ -1138,19 +1172,19 @@ function userRoutes(app: Application) {
       let followed = blog.isRemoteUser
         ? blog.followingCount
         : Follows.count({
-          where: {
-            followerId: blog.id,
-            accepted: true
-          }
-        })
+            where: {
+              followerId: blog.id,
+              accepted: true
+            }
+          })
       let followers = blog.isRemoteUser
         ? blog.followerCount
         : Follows.count({
-          where: {
-            followedId: blog.id,
-            accepted: true
-          }
-        })
+            where: {
+              followedId: blog.id,
+              accepted: true
+            }
+          })
       const publicOptions = UserOptions.findAll({
         where: {
           userId: blog.id,
@@ -1189,10 +1223,10 @@ function userRoutes(app: Application) {
 
       const postCount = blog
         ? await Post.count({
-          where: {
-            userId: blog.id
-          }
-        })
+            where: {
+              userId: blog.id
+            }
+          })
         : 0
 
       followed = await followed
@@ -1927,6 +1961,89 @@ function userRoutes(app: Application) {
     })
   })
 
+  // lazy I know. if post is already pinned, we unpin
+  app.post('/api/user/pinPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    let success = false
+    try {
+      const userId = req.jwtData?.userId as string
+      const postId = req.body.postId
+      const user = (await User.findByPk(userId)) as User
+      if (postId) {
+        const postToPin = await Post.findOne({
+          where: {
+            id: postId,
+            userId: userId,
+            isReblog: false
+          }
+        })
+        if (postToPin && !postToPin.featured) {
+          const transaction = await sequelize.transaction()
+          try {
+            // unpin any other post by this user before pinning the new one
+            const pinnedPosts = await Post.findAll({
+              where: {
+                userId: userId,
+                featured: { [Op.ne]: null }
+              },
+              transaction
+            })
+            // less efficient, but we send unpin to every alredy pinned post to fedi to make sure we only allow one pinned post
+            for await (const post of pinnedPosts) {
+              await pinPost(post, true)
+              post.featured = null
+              await post.save()
+            }
+            postToPin.featured = new Date()
+            await postToPin.save({ transaction })
+            await transaction.commit()
+            success = true
+          } catch (error) {
+            await transaction.rollback()
+            throw error
+          }
+          // clear cache
+          await redisCache.del('localUserData:' + user.url.toLowerCase())
+          await redisCache.del('featuredCollection:' + user.id)
+          await pinPost(postToPin)
+
+          if (completeEnvironment.enableBsky && postToPin.bskyUri && postToPin.bskyCid) {
+            const user = await User.scope('full').findByPk(userId)
+            if (user?.enableBsky && user.bskyDid) {
+              const bskySession = await getAtProtoSession(user)
+              await pinPostOnBluesky(bskySession, postToPin.bskyUri, postToPin.bskyCid)
+            }
+          }
+        } else if (postToPin) {
+          // we unpin!
+          postToPin.featured = null
+          await postToPin.save()
+
+          // we clear cache
+          await redisCache.del('localUserData:' + user.url.toLowerCase())
+          await redisCache.del('featuredCollection:' + user.id)
+          if (completeEnvironment.enableBsky) {
+            const user = await User.scope('full').findByPk(userId)
+            if (user?.enableBsky && user.bskyDid) {
+              const bskySession = await getAtProtoSession(user)
+              await pinPostOnBluesky(bskySession, '', '')
+            }
+          }
+          await pinPost(postToPin, true)
+          success = true
+        }
+      }
+    } catch (error) {
+      logger.info({
+        message: `Error pinning post`,
+        error: error
+      })
+    }
+
+    res.send({
+      success: success
+    })
+  })
+
   app.post(
     '/api/user/selfDeactivate',
     authenticateToken,
@@ -2109,6 +2226,26 @@ async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   }
 }
 
+async function pinPostOnBluesky(agent: BskyAgent, uri: string, cid: string) {
+  try {
+    return await agent.upsertProfile(async (existingProfile) => {
+      const profile = existingProfile ?? ({} as AppBskyActorProfile.Record)
+      if (uri && cid) {
+        profile.pinnedPost = { uri, cid }
+      } else {
+        delete profile.pinnedPost
+      }
+      return profile
+    })
+  } catch (error) {
+    logger.error({
+      message: `Error pinning post on bluesky`,
+      uri,
+      error
+    })
+  }
+}
+
 async function updateProfileOptions(optionsJSON: string, posterId: string) {
   const _options = JSON.parse(optionsJSON)
   if (Array.isArray(_options)) {
@@ -2229,7 +2366,7 @@ async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boo
   await user.save()
   await updateUserDidDoc(user)
   if (forceLog) {
-    logger.info(`Forced app password on user ${user.url}: ${appPassword}`)
+    logger.info(`Forced app password on user ${user.url}`)
   }
   await redisCache.del('bskySession:' + user.id)
   return true

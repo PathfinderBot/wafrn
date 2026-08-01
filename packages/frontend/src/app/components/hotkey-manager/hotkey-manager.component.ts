@@ -1,4 +1,13 @@
-import { Component, computed, inject, NgZone, Signal, signal, WritableSignal } from '@angular/core'
+import {
+  Component,
+  computed,
+  inject,
+  NgZone,
+  Signal,
+  signal,
+  WritableSignal,
+  ChangeDetectionStrategy
+} from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogState } from '@angular/material/dialog'
@@ -7,13 +16,13 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faKeyboard, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { TranslateModule, TranslateService, _ } from '@ngx-translate/core'
 import { animationFrames, filter, fromEvent, map, merge, Subject, takeUntil, takeWhile } from 'rxjs'
-import { EditorService } from 'src/app/services/editor.service'
-import { CallbackDictionary, GlobalKeydownService } from 'src/app/services/global-keydown.service'
-import { JwtService } from 'src/app/services/jwt.service'
-import { LoginService } from 'src/app/services/login.service'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { ThemeService } from 'src/app/services/theme.service'
-import { HotkeyAction, HotkeyService } from 'src/app/services/hotkey.service'
+import { HotkeyAction, HotkeyService } from '../../services/hotkey.service'
+import { EditorService } from '../../services/editor.service'
+import { GlobalKeydownService, CallbackDictionary } from '../../services/global-keydown.service'
+import { JwtService } from '../../services/jwt.service'
+import { LoginService } from '../../services/login.service'
+import { ThemeService } from '../../services/theme.service'
 
 type HotkeyConfig = {
   [key in HotkeyAction]: string | undefined
@@ -54,6 +63,7 @@ let smoothScroll = signal(true)
   selector: 'app-hotkey-manager',
   imports: [MatButtonModule, FontAwesomeModule, MatTooltipModule, BrowserAnimationsModule],
   templateUrl: './hotkey-manager.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './hotkey-manager.component.scss'
 })
 export class HotkeyManagerComponent {
@@ -293,6 +303,7 @@ interface DialogData {
   selector: 'app-hotkey-list-dialog',
   imports: [MatButtonModule, FontAwesomeModule, TranslateModule, MatCheckboxModule],
   templateUrl: './hotkey-list-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './hotkey-manager.component.scss'
 })
 export class HotkeyListComponent {

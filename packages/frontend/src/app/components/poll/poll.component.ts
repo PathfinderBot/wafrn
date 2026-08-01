@@ -1,4 +1,4 @@
-import { Component, input, OnInit, Signal, inject } from '@angular/core'
+import { Component, input, OnInit, Signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormControl, UntypedFormGroup, Validators } from '@angular/forms'
 import { QuestionPoll } from '../../interfaces/questionPoll'
 import { LoginService } from '../../services/login.service'
@@ -8,6 +8,7 @@ import { PostsService } from '../../services/posts.service'
   selector: 'app-poll',
   templateUrl: './poll.component.html',
   styleUrls: ['./poll.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class PollComponent implements OnInit {

@@ -1,5 +1,5 @@
 import { CdkPortalOutlet, ComponentPortal, Portal } from '@angular/cdk/portal'
-import { Component, InjectionToken, Injector, Signal, inject } from '@angular/core'
+import { Component, InjectionToken, Injector, Signal, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatListModule } from '@angular/material/list'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
@@ -7,9 +7,9 @@ import { ActivatedRoute, RouterModule } from '@angular/router'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faFloppyDisk } from '@fortawesome/free-solid-svg-icons'
 import { TranslateModule } from '@ngx-translate/core'
-import { GroupedSettingData, SettingData, SettingsService, SettingValues } from 'src/app/services/settings.service'
 import { SettingsLoaderComponent } from './settings-loader/settings-loader.component'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { SettingsService, SettingData, GroupedSettingData } from '../../services/settings.service'
+import { SimpleTitleService } from '../../services/simple-title.service'
 
 export const SETTINGS_TOKEN = new InjectionToken('settings token')
 
@@ -25,6 +25,7 @@ export const SETTINGS_TOKEN = new InjectionToken('settings token')
     CdkPortalOutlet
   ],
   templateUrl: './settings.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './settings.component.scss'
 })
 export class SettingsComponent {

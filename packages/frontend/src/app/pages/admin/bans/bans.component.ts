@@ -1,4 +1,4 @@
-import { Component, viewChild, inject } from '@angular/core'
+import { Component, viewChild, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -9,10 +9,10 @@ import { MatSortModule } from '@angular/material/sort'
 import { MatTableDataSource, MatTableModule } from '@angular/material/table'
 import { RouterModule } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
-import { AvatarSmallComponent } from 'src/app/components/avatar-small/avatar-small.component'
-import { AdminService, UserBan } from 'src/app/services/admin.service'
-import { SimpleDialogService } from 'src/app/services/simple-dialog.service'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
+import { AdminService, UserBan } from '../../../services/admin.service'
+import { SimpleDialogService } from '../../../services/simple-dialog.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-bans',
@@ -30,6 +30,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
     TranslatePipe
   ],
   templateUrl: './bans.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./bans.component.scss']
 })
 export class BansComponent {

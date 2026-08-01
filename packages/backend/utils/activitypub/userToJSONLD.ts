@@ -6,6 +6,31 @@ import { logger } from '../logger.js'
 import { redisCache } from '../redis.js'
 import { emojiToAPTag } from './emojiToAPTag.js'
 import { existsSync } from 'fs'
+import showdown from 'showdown'
+import sanitizeHtml from 'sanitize-html'
+
+const attachmentMarkdownConverter = new showdown.Converter({
+  simplifiedAutoLink: true,
+  literalMidWordUnderscores: true,
+  simpleLineBreaks: true,
+  openLinksInNewWindow: true,
+  encodeEmails: false
+})
+
+function attachmentValueToHtml(value: string): string {
+  // showdown always wraps output in a <p>, which we don't need
+  const html = attachmentMarkdownConverter
+    .makeHtml(value)
+    .replace(/^<p>/, '')
+    .replace(/<\/p>\s*$/, '')
+    .trim()
+  return sanitizeHtml(html, {
+    allowedTags: ['a', 'br'],
+    allowedAttributes: {
+      a: ['href', 'title', 'target', 'rel']
+    }
+  })
+}
 
 export async function userToJSONLD(user: User) {
   // test remove cache
@@ -48,7 +73,7 @@ export async function userToJSONLD(user: User) {
       try {
         const attachmentsArray: { name: string; value: string }[] = JSON.parse(unprocessedAttachments.optionValue)
         attachments = attachmentsArray.map((elem) => {
-          return { ...elem, type: 'PropertyValue' }
+          return { ...elem, value: attachmentValueToHtml(elem.value), type: 'PropertyValue' }
         })
       } catch (error) {
         logger.debug({
@@ -74,12 +99,16 @@ export async function userToJSONLD(user: User) {
       preferredUsername: user.url.toLowerCase(),
       name: user.name,
       summary: user.description,
-      ...(!!user.userMigratedTo ? {
-        movedTo: user.userMigratedTo
-      } : {}),
-      ...(customCSS ? {
-        _wafrn_customCSS: customCSS
-      } : {}),
+      ...(!!user.userMigratedTo
+        ? {
+            movedTo: user.userMigratedTo
+          }
+        : {}),
+      ...(customCSS
+        ? {
+            _wafrn_customCSS: customCSS
+          }
+        : {}),
       url: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
       manuallyApprovesFollowers: user.manuallyAcceptsFollows,
       discoverable: true,
@@ -91,28 +120,28 @@ export async function userToJSONLD(user: User) {
       },
       ...(user.avatar
         ? {
-          icon: {
-            type: 'Image',
-            mediaType: 'image/webp',
-            url: completeEnvironment.mediaUrl + user.avatar
+            icon: {
+              type: 'Image',
+              mediaType: 'image/webp',
+              url: completeEnvironment.mediaUrl + user.avatar
+            }
           }
-        }
         : undefined),
       ...(user.headerImage
         ? {
-          image: {
-            type: 'Image',
-            mediaType: 'image/webp',
-            url: completeEnvironment.mediaUrl + user.headerImage
+            image: {
+              type: 'Image',
+              mediaType: 'image/webp',
+              url: completeEnvironment.mediaUrl + user.headerImage
+            }
           }
-        }
         : undefined),
       publicKey: {
         id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#main-key`,
         owner: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         publicKeyPem: user.publicKey
       },
-      canBite: "https://www.w3.org/ns/activitystreams#Public"
+      canBite: 'https://www.w3.org/ns/activitystreams#Public'
     }
 
     if (user.userMigratedTo) {

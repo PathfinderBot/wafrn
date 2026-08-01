@@ -13,7 +13,7 @@
         <fa-icon [fixedWidth]="true" [icon]="plusIcon" size="xs"></fa-icon>
         <img class="post-emoji" loading="lazy" [src]="image()" />
       } @else if (icon() !== undefined) {
-        <fa-icon [fixedWidth]="true" [icon]="$any(icon())"></fa-icon>
+        <fa-icon [fixedWidth]="true" [icon]="$any(icon())" [attr.data-icon-name]="icon()?.iconName"></fa-icon>
       }
     </div>
     @if ((users() || []).length > 1) {

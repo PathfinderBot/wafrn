@@ -1,9 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core'
-import { LoginService } from 'src/app/services/login.service'
-
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
-import { MessageService } from 'src/app/services/message.service'
 import { faUser, faEye, faEyeSlash, faArrowRightToBracket, faArrowRight } from '@fortawesome/free-solid-svg-icons'
+import { LoginService } from '../../services/login.service'
+import { MessageService } from '../../services/message.service'
 
 const loginMessageVariants: string[] = [
   '// TODO: make login screen better',
@@ -20,6 +19,7 @@ const loginMessageVariants: string[] = [
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class LoginComponent implements OnInit {

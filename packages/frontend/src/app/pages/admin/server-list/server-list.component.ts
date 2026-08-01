@@ -1,14 +1,15 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core'
-import { server } from 'src/app/interfaces/servers'
-import { AdminService } from 'src/app/services/admin.service'
+import { Component, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatTableDataSource } from '@angular/material/table'
 import { MatPaginator } from '@angular/material/paginator'
-import { SimpleTitleService } from 'src/app/services/simple-title.service'
+import { server } from '../../../interfaces/servers'
+import { AdminService } from '../../../services/admin.service'
+import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ServerListComponent implements OnInit {
