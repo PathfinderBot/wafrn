@@ -77,19 +77,29 @@ export function assertPublicHttpUrl(rawUrl: string): void {
 
 function safeLookup(
   hostname: string,
-  options: dns.LookupOneOptions,
-  callback: (err: NodeJS.ErrnoException | null, address: string, family: number) => void
+  options: dns.LookupOneOptions | dns.LookupAllOptions,
+  callback: (err: NodeJS.ErrnoException | null, address: any, family?: number) => void
 ): void {
-  dns.lookup(hostname, { ...options, all: false }, (err, address, family) => {
-    if (err) return callback(err, address as any, family as any)
-    if (isBlockedIp(address, family)) {
+  const wantsAll = (options as dns.LookupAllOptions)?.all === true
+
+  dns.lookup(hostname, { ...options, all: true } as dns.LookupAllOptions, (err, addresses) => {
+    if (err) return callback(err, undefined, undefined)
+
+    const safeAddresses = addresses.filter((a) => !isBlockedIp(a.address, a.family))
+    if (safeAddresses.length === 0) {
       return callback(
-        new SsrfBlockedError(`Blocked resolved address for ${hostname}: ${address}`) as any,
-        address,
-        family
+        new SsrfBlockedError(
+          `Blocked resolved address(es) for ${hostname}: ${addresses.map((a) => a.address).join(', ')}`
+        ),
+        undefined,
+        undefined
       )
     }
-    callback(null, address, family)
+
+    if (wantsAll) {
+      return callback(null, safeAddresses)
+    }
+    callback(null, safeAddresses[0].address, safeAddresses[0].family)
   })
 }
 
