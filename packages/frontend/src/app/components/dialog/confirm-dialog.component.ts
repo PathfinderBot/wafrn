@@ -51,8 +51,8 @@ export type ConfirmDialogResult = boolean
   templateUrl: './confirm-dialog.component.html'
 })
 export class ConfirmDialogComponent {
-  protected data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
-  private particle = inject(ParticleService);
+  protected data = inject<ConfirmDialogData>(MAT_DIALOG_DATA)
+  private particle = inject(ParticleService)
 
   readonly dialogRef = inject<MatDialogRef<ConfirmDialogComponent, ConfirmDialogResult>>(
     MatDialogRef<ConfirmDialogComponent>
@@ -78,7 +78,7 @@ export class ConfirmDialogComponent {
   Annoyance = Annoyance
 
   constructor() {
-    const data = this.data;
+    const data = this.data
 
     this.textData = Object.assign(this.defaultTextData, data)
 
@@ -95,11 +95,10 @@ export class ConfirmDialogComponent {
         this.annoyanceComplete.next()
       })
     }
-    
-    if(!data.annoying || data.annoying == Annoyance.none ) {
-      this.confirmButtonEnabled = true;
-    }
 
+    if (!data.annoying || data.annoying == Annoyance.none) {
+      this.confirmButtonEnabled = true
+    }
   }
 
   winAnnoyance() {

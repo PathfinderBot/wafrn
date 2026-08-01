@@ -5,7 +5,7 @@ import { EnvironmentService } from 'src/app/services/environment.service'
 import { LoginService } from 'src/app/services/login.service'
 import { MessageService } from 'src/app/services/message.service'
 import { TranslateService } from '@ngx-translate/core'
-import encodeQR from 'qr';
+import encodeQR from 'qr'
 
 @Component({
   selector: 'app-mfa-setup',
@@ -14,9 +14,9 @@ import encodeQR from 'qr';
   standalone: false
 })
 export class MfaSetupComponent {
-  private loginService = inject(LoginService);
-  private messageService = inject(MessageService);
-  private translateService = inject(TranslateService);
+  private loginService = inject(LoginService)
+  private messageService = inject(MessageService)
+  private translateService = inject(TranslateService)
 
   loading = false
   logo = EnvironmentService.environment.logo
@@ -43,7 +43,7 @@ export class MfaSetupComponent {
     this.loading = true
     if (!this.mfaVerifyDetails) {
       this.mfaVerifyDetails = await this.loginService.createNewMfa(this.mfaForm)
-      const imageData = encodeQR(this.mfaVerifyDetails?.qrString, 'svg');
+      const imageData = encodeQR(this.mfaVerifyDetails?.qrString, 'svg')
       this.mfaVerifyQrCode = 'data:image/svg+xml;base64,' + btoa(imageData)
     } else {
       let success = await this.loginService.verifyMfa(this.mfaVerifyDetails.id, this.mfaVerifyForm)
@@ -64,6 +64,5 @@ export class MfaSetupComponent {
         this.mfaList = await this.loginService.getUserMfaList()
       }
     })
-
   }
 }

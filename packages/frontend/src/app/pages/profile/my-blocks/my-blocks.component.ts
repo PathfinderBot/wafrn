@@ -35,7 +35,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
   styleUrls: ['./my-blocks.component.scss']
 })
 export class MyBlocksComponent {
-  private blocksService = inject(BlocksService);
+  private blocksService = inject(BlocksService)
 
   blocks = new MatTableDataSource<UserBlockMute | null, MatPaginator>(undefined)
 
@@ -44,7 +44,7 @@ export class MyBlocksComponent {
   loading = true
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.settings.myBlockedUsers')
   }

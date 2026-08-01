@@ -28,7 +28,7 @@ export const SETTINGS_TOKEN = new InjectionToken('settings token')
   styleUrl: './settings.component.scss'
 })
 export class SettingsComponent {
-  private settingsService = inject(SettingsService);
+  private settingsService = inject(SettingsService)
 
   data: SettingData
   values
@@ -45,9 +45,9 @@ export class SettingsComponent {
   saveIcon = faFloppyDisk
 
   constructor() {
-    const settingsService = this.settingsService;
-    const activatedRoute = inject(ActivatedRoute);
-    const simpleTitle = inject(SimpleTitleService);
+    const settingsService = this.settingsService
+    const activatedRoute = inject(ActivatedRoute)
+    const simpleTitle = inject(SimpleTitleService)
 
     this.data = settingsService.data
     this.values = settingsService.values

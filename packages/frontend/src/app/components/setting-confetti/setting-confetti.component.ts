@@ -27,8 +27,8 @@ type ConfettiType = (typeof confettiTypeVariants)[number]
   styleUrl: './setting-confetti.component.scss'
 })
 export class SettingConfettiComponent {
-  private settingsService = inject(SettingsService);
-  private particle = inject(ParticleService);
+  private settingsService = inject(SettingsService)
+  private particle = inject(ParticleService)
 
   data: SettingData
   values
@@ -43,7 +43,7 @@ export class SettingConfettiComponent {
   }
 
   constructor() {
-    const settingsService = this.settingsService;
+    const settingsService = this.settingsService
 
     this.data = settingsService.data
     this.values = settingsService.values

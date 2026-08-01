@@ -8,9 +8,7 @@ export const InteractionControl = {
   FollowersFollowingAndMentioned: 6,
   MentionedUsersOnly: 7,
   NoOne: 8,
-  SameAsOp: 100, // this one is bsky exclusive and its gona be FUN (a headache). This only applies to REPLIES. Nothing else.
-};
+  SameAsOp: 100 // this one is bsky exclusive and its gona be FUN (a headache). This only applies to REPLIES. Nothing else.
+}
 
-
-export type InteractionControlType =
-  typeof InteractionControl[keyof typeof InteractionControl];
+export type InteractionControlType = (typeof InteractionControl)[keyof typeof InteractionControl]

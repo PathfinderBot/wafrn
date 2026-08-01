@@ -40,4 +40,4 @@ const routes: Routes = [
     AvatarSmallComponent
   ]
 })
-export class SinglePostModule { }
+export class SinglePostModule {}

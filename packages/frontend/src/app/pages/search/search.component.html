@@ -56,9 +56,11 @@
         extended
         class="border-round-md search-button"
       >
-        {{ (postService.followedHashtags.includes(currentSearch.toLowerCase()) ? 'search.unfollow' : 'search.follow') | translate }} #{{
-          currentSearch
+        {{
+          (postService.followedHashtags.includes(currentSearch.toLowerCase()) ? 'search.unfollow' : 'search.follow')
+            | translate
         }}
+        #{{ currentSearch }}
       </button>
     </mat-card>
   }

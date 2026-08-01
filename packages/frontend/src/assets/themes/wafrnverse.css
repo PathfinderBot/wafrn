@@ -46,29 +46,33 @@
 
   --color-trans: 100ms;
 
-  --card-gradient: linear-gradient(to top,
-      light-dark(#ededed, #1e1e1e) 0px,
-      light-dark(#f6f6f6, #272727) 25px,
-      light-dark(#ffffff, #303030) 50px,
-      light-dark(#ffffff, #303030) 100%);
-  --button-gradient: linear-gradient(to top,
-      light-dark(#ededed, #1e1e1e) 0px,
-      light-dark(#f6f6f6, #272727) 20%,
-      light-dark(#ffffff, #303030) 60% 100%);
-  --percentage-gradient-bottom: linear-gradient(to bottom,
-      light-dark(#ffffff, #303030) 0%,
-      light-dark(#f6f6f6, #272727) 47%,
-      light-dark(#ededed, #1e1e1e) 100%);
-  --percentage-gradient-right: linear-gradient(to right,
-      light-dark(#ffffff, #303030) 0%,
-      light-dark(#f6f6f6, #272727) 47%,
-      light-dark(#ededed, #1e1e1e) 100%);
-  --green-gradient-bottom: linear-gradient(to bottom,
-      #8ff200,
-      #0bae00);
-  --red-gradient-bottom: linear-gradient(to bottom,
-      #f2000e,
-      #ae5200);
+  --card-gradient: linear-gradient(
+    to top,
+    light-dark(#ededed, #1e1e1e) 0px,
+    light-dark(#f6f6f6, #272727) 25px,
+    light-dark(#ffffff, #303030) 50px,
+    light-dark(#ffffff, #303030) 100%
+  );
+  --button-gradient: linear-gradient(
+    to top,
+    light-dark(#ededed, #1e1e1e) 0px,
+    light-dark(#f6f6f6, #272727) 20%,
+    light-dark(#ffffff, #303030) 60% 100%
+  );
+  --percentage-gradient-bottom: linear-gradient(
+    to bottom,
+    light-dark(#ffffff, #303030) 0%,
+    light-dark(#f6f6f6, #272727) 47%,
+    light-dark(#ededed, #1e1e1e) 100%
+  );
+  --percentage-gradient-right: linear-gradient(
+    to right,
+    light-dark(#ffffff, #303030) 0%,
+    light-dark(#f6f6f6, #272727) 47%,
+    light-dark(#ededed, #1e1e1e) 100%
+  );
+  --green-gradient-bottom: linear-gradient(to bottom, #8ff200, #0bae00);
+  --red-gradient-bottom: linear-gradient(to bottom, #f2000e, #ae5200);
 }
 
 /* BACKGROUND --------------------------------------------------------------- */
@@ -77,18 +81,23 @@
 }
 
 .mat-app-background {
-  background-image: repeating-linear-gradient(45deg,
+  background-image:
+    repeating-linear-gradient(
+      45deg,
       var(--mat-sys-surface) 25%,
       transparent 25%,
       transparent 75%,
       var(--mat-sys-surface) 75%,
-      var(--mat-sys-surface)),
-    repeating-linear-gradient(45deg,
+      var(--mat-sys-surface)
+    ),
+    repeating-linear-gradient(
+      45deg,
       var(--mat-sys-surface) 25%,
       var(--background) 25%,
       var(--background) 75%,
       var(--mat-sys-surface) 75%,
-      var(--mat-sys-surface)) !important;
+      var(--mat-sys-surface)
+    ) !important;
   background-position:
     0 0,
     80px 80px !important;
@@ -98,7 +107,7 @@
 /* WAFRN LOGO --------------------------------------------------------------- */
 .instance-logo {
   /* filter: hue-rotate(270deg); */
-  content: url("/assets/img/wafrnverse.webp");
+  content: url('/assets/img/wafrnverse.webp');
   height: 91px;
 }
 
@@ -170,7 +179,7 @@ button {
 .show-sidebar-menu-button,
 .refresh-button,
 .create-post-button,
-button[aria-label="Go back to the dashboard"] {
+button[aria-label='Go back to the dashboard'] {
   background: var(--percentage-gradient-bottom);
   border-radius: var(--mat-sys-corner-full);
   border: 1px solid var(--mat-sys-primary) !important;
@@ -187,7 +196,6 @@ button[aria-label="Go back to the dashboard"] {
 
 /* Manage followers tab buttons */
 .mat-mdc-table {
-
   button {
     border-radius: var(--mat-sys-corner-small);
     background: var(--red-gradient-bottom);
@@ -375,12 +383,13 @@ div.quoted-post {
 .media-content-container,
 .yt-thumbnail,
 .media-container {
-  background-image: radial-gradient(var(--mat-sys-surface) 2px,
-      transparent 2px),
-    radial-gradient(var(--mat-sys-surface) 2px,
-      var(--background) 2px) !important;
+  background-image:
+    radial-gradient(var(--mat-sys-surface) 2px, transparent 2px),
+    radial-gradient(var(--mat-sys-surface) 2px, var(--background) 2px) !important;
   background-size: 30px 30px !important;
-  background-position: 0 0, 15px 15px !important;
+  background-position:
+    0 0,
+    15px 15px !important;
   border-radius: var(--mat-sys-corner-medium) !important;
 }
 

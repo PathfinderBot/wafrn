@@ -8,7 +8,7 @@ import { BlocksService } from 'src/app/services/blocks.service'
   standalone: false
 })
 export class MyServerBlocksComponent {
-  private blocksService = inject(BlocksService);
+  private blocksService = inject(BlocksService)
 
   serverBlocks: any[] = []
   ready = false

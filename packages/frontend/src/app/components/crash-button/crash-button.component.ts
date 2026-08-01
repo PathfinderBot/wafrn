@@ -11,7 +11,7 @@ import { OverlayService } from 'src/app/services/overlay.service'
   styleUrl: './crash-button.component.scss'
 })
 export class CrashButtonComponent {
-  private overlayService = inject(OverlayService);
+  private overlayService = inject(OverlayService)
 
   survivedCount = 0
   clearTextTimeout = new Subject<void>()

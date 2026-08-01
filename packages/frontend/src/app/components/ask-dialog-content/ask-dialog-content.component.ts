@@ -28,14 +28,14 @@ import { ParticleService } from 'src/app/services/particle.service'
   styleUrl: './ask-dialog-content.component.scss'
 })
 export class AskDialogContentComponent implements OnInit {
-  private dialogRef = inject<MatDialogRef<AskDialogContentComponent>>(MatDialogRef);
-  private messages = inject(MessageService);
+  private dialogRef = inject<MatDialogRef<AskDialogContentComponent>>(MatDialogRef)
+  private messages = inject(MessageService)
   data = inject<{
-    details: BlogDetails;
-}>(MAT_DIALOG_DATA);
-  private blogService = inject(BlogService);
-  protected loginService = inject(LoginService);
-  private particle = inject(ParticleService);
+    details: BlogDetails
+  }>(MAT_DIALOG_DATA)
+  private blogService = inject(BlogService)
+  protected loginService = inject(LoginService)
+  private particle = inject(ParticleService)
 
   allowAnons = false
   constructor() {

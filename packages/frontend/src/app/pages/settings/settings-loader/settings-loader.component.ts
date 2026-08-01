@@ -19,8 +19,8 @@ export class SettingsLoaderComponent {
   portal: Portal<any> | undefined
 
   constructor() {
-    const settingsService = inject(SettingsService);
-    const groupKey = inject(SETTINGS_TOKEN);
+    const settingsService = inject(SettingsService)
+    const groupKey = inject(SETTINGS_TOKEN)
 
     this.data = settingsService.data
     this.values = settingsService.values

@@ -7,12 +7,20 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { AdminService } from 'src/app/services/admin.service'
 import { MessageService } from 'src/app/services/message.service'
 import { SimpleTitleService } from 'src/app/services/simple-title.service'
-import { InjectHtmlModule } from "src/app/directives/inject-html/inject-html.module";
+import { InjectHtmlModule } from 'src/app/directives/inject-html/inject-html.module'
 import { TranslateModule } from '@ngx-translate/core'
 
 @Component({
   selector: 'app-email-campaign',
-  imports: [FormsModule, MatButtonModule, MatCardModule, MatInputModule, MatProgressBarModule, InjectHtmlModule, TranslateModule],
+  imports: [
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatInputModule,
+    MatProgressBarModule,
+    InjectHtmlModule,
+    TranslateModule
+  ],
   templateUrl: './email-campaign.component.html',
   styleUrl: './email-campaign.component.scss'
 })
@@ -35,7 +43,6 @@ export class EmailCampaignComponent {
   get canSubmit() {
     return this.ready && !!this.subject.trim() && !!this.body.trim()
   }
-
 
   async submit(test: boolean) {
     if (!this.canSubmit) {

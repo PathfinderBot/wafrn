@@ -15,15 +15,26 @@
       <mat-form-field class="block w-full mb-3">
         <mat-label>{{ 'login.password' | translate }}</mat-label>
         <input formControlName="password" [type]="showPassword ? 'text' : 'password'" matInput />
-        <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()"
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="togglePasswordVisibility()"
           [attr.aria-label]="showPassword ? ('login.hidePassword' | translate) : ('login.showPassword' | translate)"
-          [attr.aria-pressed]="showPassword">
+          [attr.aria-pressed]="showPassword"
+        >
           <fa-icon [icon]="showPassword ? faEyeSlash : faEye"></fa-icon>
         </button>
       </mat-form-field>
 
-      <button [disabled]="!emailForm.valid || loading" type="submit" mat-flat-button color="primary" extended
-        class="w-full border-round-md mt-4">
+      <button
+        [disabled]="!emailForm.valid || loading"
+        type="submit"
+        mat-flat-button
+        color="primary"
+        extended
+        class="w-full border-round-md mt-4"
+      >
         <span class="flex gap-2">{{ 'settings.changeEmail' | translate }}<fa-icon [icon]="icon"></fa-icon></span>
       </button>
     </form>

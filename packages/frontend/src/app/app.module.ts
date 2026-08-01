@@ -63,26 +63,26 @@ const globalRippleConfig: RippleGlobalOptions = {
     { provide: MAT_RIPPLE_GLOBAL_OPTIONS, useValue: globalRippleConfig },
     provideHttpClient(withInterceptorsFromDi(), withFetch()),
     provideAppInitializer(() => {
-      const http = inject(HttpClient);
-      const environmentService = inject(EnvironmentService);
-      const translateService = inject(TranslateService);
+      const http = inject(HttpClient)
+      const environmentService = inject(EnvironmentService)
+      const translateService = inject(TranslateService)
 
-      const langs = [...supportedLanguages];
-      translateService.addLangs(langs);
-      translateService.setDefaultLang('en');
+      const langs = [...supportedLanguages]
+      translateService.addLangs(langs)
+      translateService.setDefaultLang('en')
 
-      const userLanguage = typeof localStorage !== 'undefined' ? localStorage.getItem('appLanguage') : null;
+      const userLanguage = typeof localStorage !== 'undefined' ? localStorage.getItem('appLanguage') : null
       const isSupportedLanguage = (lang: string | null): lang is SupportedLanguage =>
         typeof lang === 'string' && langs.includes(lang as SupportedLanguage)
       const languageToUse = isSupportedLanguage(userLanguage)
         ? userLanguage
         : (translateService.getDefaultLang() as SupportedLanguage)
-      document.documentElement.lang = languageToUse;
+      document.documentElement.lang = languageToUse
 
       return translateService.use(languageToUse).pipe(
         catchError((error) => {
-          console.error('Translation load failed; falling back to default language', error);
-          return of(null);
+          console.error('Translation load failed; falling back to default language', error)
+          return of(null)
         }),
         switchMap(() => http.get('/api/environment')),
         tap((data: any) => {

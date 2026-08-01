@@ -172,9 +172,9 @@ export const additionalStyleModesData: AdditionalStyleModeData = {
   providedIn: 'root'
 })
 export class ThemeService {
-  private loginService = inject(LoginService);
-  private http = inject(HttpClient);
-  private settingService = inject(SettingsService);
+  private loginService = inject(LoginService)
+  private http = inject(HttpClient)
+  private settingService = inject(SettingsService)
 
   public theme = signal<Theme>('default')
   public lightDarkMode = signal<LightDarkMode>('auto')
@@ -191,7 +191,7 @@ export class ThemeService {
   public customCSSEnabled = signal(true) // Allows pages to disable it and re-enable on snappy hide
 
   constructor() {
-    const loginService = this.loginService;
+    const loginService = this.loginService
 
     // Setup when logging out and completing setting sync
     // Also watches change from other tabs
@@ -248,7 +248,7 @@ export class ThemeService {
     // Forced lightDarkMode
     if (themeData[theme]?.compatibility === 'light') await this.setLightDarkMode('light')
     if (themeData[theme]?.compatibility === 'dark') await this.setLightDarkMode('dark')
-    this.settingService.forceUpdateValue([{name: 'theme', value: theme}], !doNotSavePreference, !doNotSavePreference)
+    this.settingService.forceUpdateValue([{ name: 'theme', value: theme }], !doNotSavePreference, !doNotSavePreference)
   }
 
   public setLightDarkMode = async (lightDarkMode: LightDarkMode, doNotSavePreference = false) => {
@@ -257,47 +257,59 @@ export class ThemeService {
     this.settingService.values.update((v) => v)
 
     document.documentElement.setAttribute('data-theme', lightDarkMode)
-    this.settingService.forceUpdateValue([{name: 'lightDarkMode', value: lightDarkMode}], !doNotSavePreference, !doNotSavePreference)
+    this.settingService.forceUpdateValue(
+      [{ name: 'lightDarkMode', value: lightDarkMode }],
+      !doNotSavePreference,
+      !doNotSavePreference
+    )
   }
 
   // When setting additionalStyleMode either call the set method here or modify and call sync afterwards if modifying many settings at once.
   public setAdditionalStyleMode = async (mode: AdditionalStyleMode, value: boolean, doNotSavePreference = false) => {
     this.additionalStyleModes[mode].set(value)
     this.syncAdditionalStyleModeSettings()
-    this.settingService.forceUpdateValue([{ name: 'additionalStyleModes', value: JSON.stringify(this.getAditionalStyleModesAsArray())}], !doNotSavePreference, !doNotSavePreference)
+    this.settingService.forceUpdateValue(
+      [{ name: 'additionalStyleModes', value: JSON.stringify(this.getAditionalStyleModesAsArray()) }],
+      !doNotSavePreference,
+      !doNotSavePreference
+    )
   }
 
   private getAditionalStyleModesAsArray() {
     const res: string[] = []
     // This is a bit ugly but fuck it it will work for now. Future me or future contributor Im sorry Im a bit sleepy
-    const modes = this.additionalStyleModes;
-    if(modes.centerLayout()) {
+    const modes = this.additionalStyleModes
+    if (modes.centerLayout()) {
       res.push('centerLayout')
     }
-    if(modes.colorfulTags()) {
+    if (modes.colorfulTags()) {
       res.push('colorfulTags')
     }
-    if(modes.horizontalMenu()) {
+    if (modes.horizontalMenu()) {
       res.push('horizontalMenu')
     }
-    if(modes.lowContrastSidebar()) {
+    if (modes.lowContrastSidebar()) {
       res.push('lowContrastSidebar')
     }
-    if(modes.oldTags()) {
+    if (modes.oldTags()) {
       res.push('oldTags')
     }
-    if(modes.solidCards()) {
+    if (modes.solidCards()) {
       res.push('solidCards')
     }
-    if(modes.topToolbar()) {
+    if (modes.topToolbar()) {
       res.push('topToolbar')
     }
-    return res;
+    return res
   }
 
   public syncAdditionalStyleMode() {
     this.syncAdditionalStyleModeSettings()
-    this.settingService.forceUpdateValue([{ name: 'additionalStyleModes', value: JSON.stringify(this.getAditionalStyleModesAsArray())}], false, false)
+    this.settingService.forceUpdateValue(
+      [{ name: 'additionalStyleModes', value: JSON.stringify(this.getAditionalStyleModesAsArray()) }],
+      false,
+      false
+    )
   }
 
   // Helper to sync up the settings service values and theme service values
@@ -363,7 +375,9 @@ export class ThemeService {
 
   // Shorthand for the theme location in the media URL
   private getThemeUrl(theme: string, force = false): string {
-    return `${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css` + (force ? '?nocache=' + Date.now() : '')
+    return (
+      `${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css` + (force ? '?nocache=' + Date.now() : '')
+    )
   }
 
   async themeExists(theme: string): Promise<boolean> {

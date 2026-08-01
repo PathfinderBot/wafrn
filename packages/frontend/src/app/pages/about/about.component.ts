@@ -12,11 +12,11 @@ import { UtilsService } from 'src/app/services/utils.service'
   standalone: false
 })
 export class AboutComponent implements OnInit {
-  private simpleTitle = inject(SimpleTitleService);
-  private seo = inject(SimpleSeoService);
-  private utilsService = inject(UtilsService);
-  private cdr = inject(ChangeDetectorRef);
-  private jwtService = inject(JwtService);
+  private simpleTitle = inject(SimpleTitleService)
+  private seo = inject(SimpleSeoService)
+  private utilsService = inject(UtilsService)
+  private cdr = inject(ChangeDetectorRef)
+  private jwtService = inject(JwtService)
 
   loggedIn = this.jwtService.tokenValid()
 
@@ -56,7 +56,7 @@ export class AboutComponent implements OnInit {
     if (this.disableShowingBlockedServers) {
       this.blockedLoaded = true
       this.cdr.markForCheck()
-      return;
+      return
     }
     this.blockedLoading = true
     this.blockedServers = await this.utilsService.getBlockedServers()

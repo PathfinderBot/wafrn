@@ -11,8 +11,8 @@ import { PostsService } from '../../services/posts.service'
   standalone: false
 })
 export class PollComponent implements OnInit {
-  protected loginService = inject(LoginService);
-  private postsService = inject(PostsService);
+  protected loginService = inject(LoginService)
+  private postsService = inject(PostsService)
 
   poll = input.required<QuestionPoll>()
   total = 0

@@ -101,7 +101,7 @@ async function bitePostRemote(biteRelation: UserBitesPostRelation) {
           inboxList: inboxChunk,
         },
         {
-          priority: 2097152,
+          priority: 2097151,
           delay: 500,
         }
       );
@@ -166,7 +166,7 @@ async function biteUserRemote(biter: User, bittenUser: User) {
           inboxList: inboxChunk,
         },
         {
-          priority: 2097152,
+          priority: 2097151,
           delay: 500,
         }
       );

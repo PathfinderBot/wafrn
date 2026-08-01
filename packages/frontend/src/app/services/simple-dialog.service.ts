@@ -17,8 +17,7 @@ import { CustomDialogComponent, CustomDialogData } from '../components/dialog/cu
   providedIn: 'root'
 })
 export class SimpleDialogService {
-  private dialog = inject(MatDialog);
-
+  private dialog = inject(MatDialog)
 
   public async createPromptDialog(data: PromptDialogData): Promise<PromptDialogResult | undefined> {
     const ref = this.dialog.open<PromptDialogComponent, PromptDialogData, PromptDialogResult>(PromptDialogComponent, {

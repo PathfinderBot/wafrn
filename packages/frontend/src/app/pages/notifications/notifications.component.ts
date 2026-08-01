@@ -1,108 +1,95 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from "@angular/core";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import { Follower } from "src/app/interfaces/follower";
-import { ProcessedPost } from "src/app/interfaces/processed-post";
-import { Reblog } from "src/app/interfaces/reblog";
-import { SimplifiedUser } from "src/app/interfaces/simplified-user";
-import { UserNotifications } from "src/app/interfaces/user-notifications";
-import { NotificationsService } from "src/app/services/notifications.service";
-import { SimpleTitleService } from "src/app/services/simple-title.service";
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core'
+import { faArrowsRotate } from '@fortawesome/free-solid-svg-icons'
+import { Follower } from 'src/app/interfaces/follower'
+import { ProcessedPost } from 'src/app/interfaces/processed-post'
+import { Reblog } from 'src/app/interfaces/reblog'
+import { SimplifiedUser } from 'src/app/interfaces/simplified-user'
+import { UserNotifications } from 'src/app/interfaces/user-notifications'
+import { NotificationsService } from 'src/app/services/notifications.service'
+import { SimpleTitleService } from 'src/app/services/simple-title.service'
 
 @Component({
-  selector: "app-notifications",
-  templateUrl: "./notifications.component.html",
-  styleUrls: ["./notifications.component.scss"],
-  standalone: false,
+  selector: 'app-notifications',
+  templateUrl: './notifications.component.html',
+  styleUrls: ['./notifications.component.scss'],
+  standalone: false
 })
 export class NotificationsComponent implements OnInit {
-  private notificationsService = inject(NotificationsService);
-  private cdr = inject(ChangeDetectorRef);
+  private notificationsService = inject(NotificationsService)
+  private cdr = inject(ChangeDetectorRef)
 
-  page = 0;
-  follows: Follower[] = [];
-  likes: Reblog[] = [];
-  reblogs: Reblog[] = [];
-  mentions: Reblog[] = [];
-  quotes: Reblog[] = [];
-  emojiReacts: UserNotifications[] = [];
-  observer: IntersectionObserver;
+  page = 0
+  follows: Follower[] = []
+  likes: Reblog[] = []
+  reblogs: Reblog[] = []
+  mentions: Reblog[] = []
+  quotes: Reblog[] = []
+  emojiReacts: UserNotifications[] = []
+  observer: IntersectionObserver
 
   seen = {
     follows: 0,
     likes: 0,
     reblogs: 0,
     mentions: 0,
-    total: 0,
-  };
+    total: 0
+  }
 
-  notificationsToShow: UserNotifications[] = [];
+  notificationsToShow: UserNotifications[] = []
 
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
-    simpleTitle.set("menu.notifications");
+    simpleTitle.set('menu.notifications')
 
-    this.observer = new IntersectionObserver(
-      (intersectionEntries: IntersectionObserverEntry[]) => {
-        if (intersectionEntries.some((elem) => elem.isIntersecting)) {
-          this.page = this.page + 1;
-          this.loadNotificationsV2(this.page);
-        }
+    this.observer = new IntersectionObserver((intersectionEntries: IntersectionObserverEntry[]) => {
+      if (intersectionEntries.some((elem) => elem.isIntersecting)) {
+        this.page = this.page + 1
+        this.loadNotificationsV2(this.page)
       }
-    );
+    })
   }
 
   reload() {
-    this.page = 0;
-    this.notificationsToShow = [];
-    this.ngOnInit();
+    this.page = 0
+    this.notificationsToShow = []
+    this.ngOnInit()
   }
 
   async ngOnInit(): Promise<void> {
     // window.scrollTo(0, 0)
-    localStorage.setItem(
-      "lastTimeCheckNotifications",
-      new Date().toISOString()
-    );
-    await this.loadNotificationsV2(0);
-    this.notificationsService.updateCount();
+    localStorage.setItem('lastTimeCheckNotifications', new Date().toISOString())
+    await this.loadNotificationsV2(0)
+    this.notificationsService.updateCount()
   }
 
   async loadNotificationsV2(page: number) {
     console.log(window.location.href)
-    const notifications =
-      await this.notificationsService.getNotificationsScrollV2(page, window.location.href.endsWith('detached'));
+    const notifications = await this.notificationsService.getNotificationsScrollV2(
+      page,
+      window.location.href.endsWith('detached')
+    )
     // this waythe whole object is not recreated from scratch
-    notifications.forEach((notif) => this.notificationsToShow.push(notif));
+    notifications.forEach((notif) => this.notificationsToShow.push(notif))
     setTimeout(() => {
-      const elements = document.querySelectorAll(
-        ".load-more-notifications-intersector"
-      );
+      const elements = document.querySelectorAll('.load-more-notifications-intersector')
       if (elements) {
         elements.forEach((element) => {
-          this.observer.observe(element);
-        });
+          this.observer.observe(element)
+        })
       } else {
-        console.log("observer not ready");
+        console.log('observer not ready')
       }
-    });
-    this.cdr.detectChanges();
+    })
+    this.cdr.detectChanges()
   }
 
   reblogToNotification(
     reblog: Reblog,
-    type:
-      | "MENTION"
-      | "LIKE"
-      | "EMOJIREACT"
-      | "REWOOT"
-      | "QUOTE"
-      | "FOLLOW"
-      | "USERBITE"
-      | "POSTBITE"
+    type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE'
   ): UserNotifications {
     if (!reblog.user) {
-      console.log(`ERROR WITH ${type}`);
+      console.log(`ERROR WITH ${type}`)
     }
     return {
       url: `/fediverse/post/${reblog.id}`,
@@ -114,7 +101,7 @@ export class NotificationsComponent implements OnInit {
       emojiName: reblog.emojiName,
       emojiReact: reblog.emojiReact,
       userName: reblog.user.name,
-      userId: reblog.user.id,
-    };
+      userId: reblog.user.id
+    }
   }
 }

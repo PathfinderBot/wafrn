@@ -31,5 +31,7 @@
 </form>
 
 @if (!alreadyVoted && this.loginService.loggedIn.value && this.openPoll) {
-  <button mat-flat-button color="primary" class="w-full mt-2" [disabled]="!form.valid" (click)="vote()">{{ 'poll.vote' | translate }}</button>
+  <button mat-flat-button color="primary" class="w-full mt-2" [disabled]="!form.valid" (click)="vote()">{{
+    'poll.vote' | translate
+  }}</button>
 }

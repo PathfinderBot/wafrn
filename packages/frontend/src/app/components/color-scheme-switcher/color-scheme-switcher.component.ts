@@ -1,4 +1,4 @@
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common'
 import { Component, Signal, WritableSignal, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
@@ -63,7 +63,7 @@ export class ColorSchemeSwitcherComponent {
   iconClass = ''
 
   constructor() {
-    const themeService = inject(ThemeService);
+    const themeService = inject(ThemeService)
 
     this.colorScheme = themeService.theme
     this.theme = themeService.lightDarkMode

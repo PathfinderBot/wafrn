@@ -43,15 +43,15 @@ export interface basicPost {
   notes?: number
   quotes?: basicPost[]
   markdownContent: string
-  isRewoot: boolean
+  isReblog: boolean
   canReply: boolean
   canQuote: boolean
   canLike: boolean
   canReblog: boolean
-  replyControl: InteractionControlType;
-  reblogControl: InteractionControlType;
-  quoteControl: InteractionControlType;
-  likeControl: InteractionControlType;
+  replyControl: InteractionControlType
+  reblogControl: InteractionControlType
+  quoteControl: InteractionControlType
+  likeControl: InteractionControlType
 }
 
 export interface EmojiRelations {

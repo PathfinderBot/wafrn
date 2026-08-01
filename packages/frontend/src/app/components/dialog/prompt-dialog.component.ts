@@ -45,7 +45,7 @@ export type PromptDialogResult =
   templateUrl: './prompt-dialog.component.html'
 })
 export class PromptDialogComponent {
-  protected data = inject<PromptDialogData>(MAT_DIALOG_DATA);
+  protected data = inject<PromptDialogData>(MAT_DIALOG_DATA)
 
   readonly dialogRef = inject<MatDialogRef<PromptDialogComponent, PromptDialogResult>>(
     MatDialogRef<PromptDialogComponent>
@@ -64,7 +64,7 @@ export class PromptDialogComponent {
   inputResponse = signal('')
 
   constructor() {
-    const data = this.data;
+    const data = this.data
 
     this.textData = Object.assign(this.defaultTextData, data)
     console.log(this.textData)

@@ -33,4 +33,4 @@ const routes: Route[] = [
     TranslateModule
   ]
 })
-export class InviteCodesModule { }
+export class InviteCodesModule {}

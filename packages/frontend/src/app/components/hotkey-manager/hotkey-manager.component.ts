@@ -57,13 +57,13 @@ let smoothScroll = signal(true)
   styleUrl: './hotkey-manager.component.scss'
 })
 export class HotkeyManagerComponent {
-  private keyboardService = inject(GlobalKeydownService);
-  private editorService = inject(EditorService);
-  private jwtService = inject(JwtService);
-  private dialogService = inject(MatDialog);
-  private loginService = inject(LoginService);
-  private hotkeyService = inject(HotkeyService);
-  private zone = inject(NgZone);
+  private keyboardService = inject(GlobalKeydownService)
+  private editorService = inject(EditorService)
+  private jwtService = inject(JwtService)
+  private dialogService = inject(MatDialog)
+  private loginService = inject(LoginService)
+  private hotkeyService = inject(HotkeyService)
+  private zone = inject(NgZone)
 
   scrollSize = 100 // Pixels per scroll
   scrollPageSize = 300 // Pixels per page scroll
@@ -117,7 +117,7 @@ export class HotkeyManagerComponent {
   shortcutList: WritableSignal<CallbackDictionary>
 
   constructor() {
-    const themeService = inject(ThemeService);
+    const themeService = inject(ThemeService)
 
     const cachedMap = localStorage.getItem('customHotKeyMapping')
     const customMapping = cachedMap !== null ? JSON.parse(cachedMap) : {}
@@ -296,7 +296,7 @@ interface DialogData {
   styleUrl: './hotkey-manager.component.scss'
 })
 export class HotkeyListComponent {
-  private translateService = inject(TranslateService);
+  private translateService = inject(TranslateService)
 
   readonly data = inject<DialogData>(MAT_DIALOG_DATA)
   mapping = this.data.currentHotkeys

@@ -34,8 +34,8 @@ export type ReportDialogData = { type: 'post'; post: ProcessedPost } | { type: '
   ]
 })
 export class ReportPostComponent {
-  private readonly dialogRef = inject<MatDialogRef<ReportPostComponent, UserReport | undefined>>(MatDialogRef);
-  data = inject<ReportDialogData>(MAT_DIALOG_DATA);
+  private readonly dialogRef = inject<MatDialogRef<ReportPostComponent, UserReport | undefined>>(MatDialogRef)
+  data = inject<ReportDialogData>(MAT_DIALOG_DATA)
 
   formValid = computed<boolean>(() => this.reportSeverity() !== null && this.reportDescription().length > 0)
   postId: string | undefined
@@ -54,7 +54,7 @@ export class ReportPostComponent {
   }
 
   constructor() {
-    const data = this.data;
+    const data = this.data
 
     this.postId = data.type === 'post' ? data.post.id : undefined
     this.userId = data.type === 'user' ? data.userId : data.post.userId

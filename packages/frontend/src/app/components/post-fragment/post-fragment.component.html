@@ -45,9 +45,9 @@
       }
       @if (block) {
         <div #mediaInline class="fragment-content overflow-hidden">
-          @if(!userPrefersReducedMotion) {
+          @if (!userPrefersReducedMotion) {
             <app-post-html-content [fragment]="block"></app-post-html-content>
-          } @else{
+          } @else {
             <div [innerHTML]="block"></div>
           }
           @if (typeof block !== 'string') {

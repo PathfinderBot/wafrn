@@ -24,15 +24,15 @@ export type AccountData = {
   providedIn: 'root'
 })
 export class LoginService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
-  private utils = inject(UtilsService);
-  private jwt = inject(JwtService);
-  private postsService = inject(PostsService);
-  private messagesService = inject(MessageService);
-  private translate = inject(TranslateService);
-  private dashboardService = inject(DashboardService);
-  private simpleDialog = inject(SimpleDialogService);
+  private http = inject(HttpClient)
+  private router = inject(Router)
+  private utils = inject(UtilsService)
+  private jwt = inject(JwtService)
+  private postsService = inject(PostsService)
+  private messagesService = inject(MessageService)
+  private translate = inject(TranslateService)
+  private dashboardService = inject(DashboardService)
+  private simpleDialog = inject(SimpleDialogService)
 
   public loggedIn: BehaviorSubject<boolean>
   public currentAccount: Signal<BlogDetails | undefined> = computed(() => this.accountList()[0]?.blog)
@@ -171,8 +171,11 @@ export class LoginService {
     }
   }
 
-  async register(registerForm: UntypedFormGroup, img: File | null): Promise<{
-    success: boolean,
+  async register(
+    registerForm: UntypedFormGroup,
+    img: File | null
+  ): Promise<{
+    success: boolean
     message?: string
   }> {
     let resPetition = {
@@ -232,9 +235,10 @@ export class LoginService {
       newPassword: newPassword
     }
     try {
-      const response: any = await firstValueFrom(this.http
-      .post(`${EnvironmentService.environment.baseUrl}/changePassword`, payload))
-      if(response && response.success) {
+      const response: any = await firstValueFrom(
+        this.http.post(`${EnvironmentService.environment.baseUrl}/changePassword`, payload)
+      )
+      if (response && response.success) {
         res = true
       }
     } catch (error) {
@@ -250,9 +254,10 @@ export class LoginService {
       email: newEmail
     }
     try {
-      const response: any = await firstValueFrom(this.http
-      .post(`${EnvironmentService.environment.baseUrl}/changeEmail`, payload))
-      if(response && response.success) {
+      const response: any = await firstValueFrom(
+        this.http.post(`${EnvironmentService.environment.baseUrl}/changeEmail`, payload)
+      )
+      if (response && response.success) {
         res = true
       }
     } catch (error) {
@@ -595,7 +600,9 @@ export class LoginService {
   }
 
   userPrefersReducedMotion(): boolean {
-    const res = window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true || localStorage.getItem('forceReducedMotion') === 'true';
-    return res;
+    const res =
+      window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true ||
+      localStorage.getItem('forceReducedMotion') === 'true'
+    return res
   }
 }

@@ -6,8 +6,7 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class SimpleSeoService {
-  private metaTagService = inject(Meta);
-
+  private metaTagService = inject(Meta)
 
   setSEOTags(title: string, description: string, author: string, image: string): void {
     const sanitizedDescription = description

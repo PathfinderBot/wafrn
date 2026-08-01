@@ -114,7 +114,7 @@ const settingKeyVariants = [
   'showMediaDescriptions',
   'markAllMediaAsNSFW',
   'disableBsky',
-  'forceReducedMotion',
+  'forceReducedMotion'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -193,13 +193,13 @@ export type DropListData = Record<string, DropListDataEntry>
   providedIn: 'root'
 })
 export class SettingsService {
-  private dashboardService = inject(DashboardService);
-  private loginService = inject(LoginService);
-  private postsService = inject(PostsService);
-  private messages = inject(MessageService);
-  private http = inject(HttpClient);
-  private utils = inject(UtilsService);
-  private jwtService = inject(JwtService);
+  private dashboardService = inject(DashboardService)
+  private loginService = inject(LoginService)
+  private postsService = inject(PostsService)
+  private messages = inject(MessageService)
+  private http = inject(HttpClient)
+  private utils = inject(UtilsService)
+  private jwtService = inject(JwtService)
 
   public data: SettingData = {
     name: {
@@ -1029,7 +1029,7 @@ export class SettingsService {
         { type: 'key', value: 'notifyReactions' },
         { type: 'key', value: 'notifyQuotes' },
         { type: 'key', value: 'notifyRewoots' },
-        { type: 'key', value: 'notifyBites' },
+        { type: 'key', value: 'notifyBites' }
       ]
     },
     {
@@ -1128,7 +1128,7 @@ export class SettingsService {
   public settingsLoadedFromLogin = new Subject<void>()
 
   constructor() {
-    const loginService = this.loginService;
+    const loginService = this.loginService
 
     // Set defaults from local storage over global defaults
     // Uses an evil hack on the equal property to allow for "deep" checks (manually calling update) to notify dependents
@@ -1154,7 +1154,7 @@ export class SettingsService {
           try {
             this.fediAttachments.length = 0
             this.fediAttachments.push(...JSON.parse(rawAttachments.optionValue))
-          } catch (error) { }
+          } catch (error) {}
 
           if (this.fediAttachments.length === 0) {
             this.fediAttachments.push({ name: '', value: '' })
@@ -1308,8 +1308,12 @@ export class SettingsService {
    *
    * @returns whether the server was able to save your value
    */
-  async forceUpdateValue(values: { name: SettingKey, value: string | string[] }[], updateLocalStorage: boolean, sendRemote: boolean): Promise<boolean> {
-    let keyList: SettingKey[] = values.map(elem => elem.name)
+  async forceUpdateValue(
+    values: { name: SettingKey; value: string | string[] }[],
+    updateLocalStorage: boolean,
+    sendRemote: boolean
+  ): Promise<boolean> {
+    let keyList: SettingKey[] = values.map((elem) => elem.name)
 
     // Optionally write to localStorage
     if (updateLocalStorage) {
@@ -1325,17 +1329,19 @@ export class SettingsService {
     // Write options to the server
     if (this.loginService.loggedIn.value && sendRemote) {
       const res = await lastValueFrom(
-        this.http.post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/editOptions`, {
-          options: values.map(elem => {
-            return {
-              name: 'wafrn.' + this.data[elem.name].localStorageKey,
-              value: elem.value
-            }
+        this.http
+          .post<{ success: boolean }>(`${EnvironmentService.environment.baseUrl}/editOptions`, {
+            options: values.map((elem) => {
+              return {
+                name: 'wafrn.' + this.data[elem.name].localStorageKey,
+                value: elem.value
+              }
+            })
           })
-        }).pipe(
-          timeout(60000), // if it doesn't return in a full minute you've got problems
-          catchError((_err) => of({ success: false }))
-        )
+          .pipe(
+            timeout(60000), // if it doesn't return in a full minute you've got problems
+            catchError((_err) => of({ success: false }))
+          )
       )
       if (res.success) {
         return true
@@ -1403,7 +1409,8 @@ export class SettingsService {
     console.error('Error converting list to string!', list)
     if (list) {
       return list.toString() // should not happen lmao
-    } else { // well it did happen
+    } else {
+      // well it did happen
       return ''
     }
   }

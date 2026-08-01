@@ -23,7 +23,7 @@ function main(): void {
     git: {
       branch: execSyncSafe('git rev-parse --abbrev-ref HEAD'),
       hash: execSyncSafe('git rev-parse --short=7 HEAD'),
-      fullHash: execSyncSafe('git rev-parse HEAD'),
+      fullHash: execSyncSafe('git rev-parse HEAD')
     },
     timestamp: new Date().getTime()
   }

@@ -40,59 +40,56 @@ async function likePostRemote(like: any, dislike = false) {
 
   if (!user || !likedPost) return;
 
-  const stringMyFollowers = `${
-    completeEnvironment.frontendUrl
-  }/fediverse/blog/${user.url.toLowerCase()}/followers`;
+  const stringMyFollowers = `${completeEnvironment.frontendUrl
+    }/fediverse/blog/${user.url.toLowerCase()}/followers`;
   const ownerOfLikedPost = likedPost.user.remoteId
     ? likedPost.user.remoteId
     : `${completeEnvironment.frontendUrl}/fediverse/blog/${likedPost.user.url}`;
   const likeObject: activityPubObject = !dislike
     ? {
-        "@context": [
-          "https://www.w3.org/ns/activitystreams",
-          `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
-        ],
-        actor: `${
-          completeEnvironment.frontendUrl
+      "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
+      ],
+      actor: `${completeEnvironment.frontendUrl
         }/fediverse/blog/${user.url.toLowerCase()}`,
-        to:
-          likedPost.privacy / 1 === Privacy.DirectMessage
-            ? [ownerOfLikedPost]
-            : likedPost.privacy / 1 === Privacy.Public
+      to:
+        likedPost.privacy / 1 === Privacy.DirectMessage
+          ? [ownerOfLikedPost]
+          : likedPost.privacy / 1 === Privacy.Public
             ? [
-                "https://www.w3.org/ns/activitystreams#Public",
-                stringMyFollowers,
-              ]
+              "https://www.w3.org/ns/activitystreams#Public",
+              stringMyFollowers,
+            ]
             : [stringMyFollowers],
-        cc: likedPost.privacy / 1 === Privacy.Public ? [ownerOfLikedPost] : [],
-        id: `${completeEnvironment.frontendUrl}/fediverse/likes/${like.userId}/${like.postId}`,
-        object: likedPost.remotePostId
-          ? likedPost.remotePostId
-          : `${completeEnvironment.frontendUrl}/fediverse/post/${likedPost.id}`,
-        type: "Like",
-      }
+      cc: likedPost.privacy / 1 === Privacy.Public ? [ownerOfLikedPost] : [],
+      id: `${completeEnvironment.frontendUrl}/fediverse/likes/${like.userId}/${like.postId}`,
+      object: likedPost.remotePostId
+        ? likedPost.remotePostId
+        : `${completeEnvironment.frontendUrl}/fediverse/post/${likedPost.id}`,
+      type: "Like",
+    }
     : {
-        "@context": [
-          "https://www.w3.org/ns/activitystreams",
-          `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
-        ],
-        actor: `${
-          completeEnvironment.frontendUrl
+      "@context": [
+        "https://www.w3.org/ns/activitystreams",
+        `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
+      ],
+      actor: `${completeEnvironment.frontendUrl
         }/fediverse/blog/${user.url.toLowerCase()}`,
-        to:
-          likedPost.privacy / 1 === Privacy.DirectMessage
-            ? [ownerOfLikedPost]
-            : likedPost.privacy / 1 === Privacy.Public
+      to:
+        likedPost.privacy / 1 === Privacy.DirectMessage
+          ? [ownerOfLikedPost]
+          : likedPost.privacy / 1 === Privacy.Public
             ? [
-                "https://www.w3.org/ns/activitystreams#Public",
-                stringMyFollowers,
-              ]
+              "https://www.w3.org/ns/activitystreams#Public",
+              stringMyFollowers,
+            ]
             : [stringMyFollowers],
-        cc: likedPost.privacy / 1 === Privacy.Public ? [ownerOfLikedPost] : [],
-        id: `${completeEnvironment.frontendUrl}/fediverse/undo/likes/${like.userId}/${like.postId}`,
-        object: `${completeEnvironment.frontendUrl}/fediverse/likes/${like.userId}/${like.postId}`,
-        type: "Undo",
-      };
+      cc: likedPost.privacy / 1 === Privacy.Public ? [ownerOfLikedPost] : [],
+      id: `${completeEnvironment.frontendUrl}/fediverse/undo/likes/${like.userId}/${like.postId}`,
+      object: `${completeEnvironment.frontendUrl}/fediverse/likes/${like.userId}/${like.postId}`,
+      type: "Undo",
+    };
   // petition to owner of the post:
   const ownerOfPostLikePromise = likedPost.user.remoteInbox
     ? postPetitionSigned(likeObject, user, likedPost.user.remoteInbox)
@@ -148,7 +145,7 @@ async function likePostRemote(like: any, dislike = false) {
           inboxList: inboxChunk,
         },
         {
-          priority: 2097152,
+          priority: 2097151,
           delay: 500,
         }
       );
@@ -176,9 +173,8 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
   if (!user || !reactedPost) return;
 
   const emoji = await Emoji.findByPk(react.emojiId);
-  const stringMyFollowers = `${
-    completeEnvironment.frontendUrl
-  }/fediverse/blog/${user.url.toLowerCase()}/followers`;
+  const stringMyFollowers = `${completeEnvironment.frontendUrl
+    }/fediverse/blog/${user.url.toLowerCase()}/followers`;
   const ownerOfreactedPost = reactedPost.user.remoteId
     ? reactedPost.user.remoteId
     : `${completeEnvironment.frontendUrl}/fediverse/blog/${reactedPost.user.url}`;
@@ -187,15 +183,14 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
       "https://www.w3.org/ns/activitystreams",
       `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
     ],
-    actor: `${
-      completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLowerCase()}`,
+    actor: `${completeEnvironment.frontendUrl
+      }/fediverse/blog/${user.url.toLowerCase()}`,
     to:
       reactedPost.privacy / 1 === Privacy.DirectMessage
         ? [ownerOfreactedPost]
         : reactedPost.privacy / 1 === Privacy.Public
-        ? ["https://www.w3.org/ns/activitystreams#Public", stringMyFollowers]
-        : [stringMyFollowers],
+          ? ["https://www.w3.org/ns/activitystreams#Public", stringMyFollowers]
+          : [stringMyFollowers],
     cc: reactedPost.privacy / 1 === Privacy.Public ? [ownerOfreactedPost] : [],
     id: `${completeEnvironment.frontendUrl}/fediverse/emojiReact/${react.userId}/${react.postId}/${react.emojiId}`,
     object: reactedPost.remotePostId
@@ -211,15 +206,14 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
         "https://www.w3.org/ns/activitystreams",
         `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`,
       ],
-      actor: `${
-        completeEnvironment.frontendUrl
-      }/fediverse/blog/${user.url.toLowerCase()}`,
+      actor: `${completeEnvironment.frontendUrl
+        }/fediverse/blog/${user.url.toLowerCase()}`,
       to:
         reactedPost.privacy / 1 === Privacy.DirectMessage
           ? [ownerOfreactedPost]
           : reactedPost.privacy / 1 === Privacy.Public
-          ? ["https://www.w3.org/ns/activitystreams#Public", stringMyFollowers]
-          : [stringMyFollowers],
+            ? ["https://www.w3.org/ns/activitystreams#Public", stringMyFollowers]
+            : [stringMyFollowers],
       cc:
         reactedPost.privacy / 1 === Privacy.Public ? [ownerOfreactedPost] : [],
       id: `${completeEnvironment.frontendUrl}/fediverse/undo/emojiReact/${react.userId}/${react.postId}/${react.emojiId}`,
@@ -282,7 +276,7 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
           inboxList: inboxChunk,
         },
         {
-          priority: 2097152,
+          priority: 2097151,
         }
       );
     }

@@ -21,29 +21,28 @@ import { PostsService } from './services/posts.service'
   standalone: false
 })
 export class AppComponent implements OnInit {
-  private swUpdate = inject(SwUpdate);
-  private swPush = inject(SwPush);
-  private injector = inject(Injector);
-  private loginService = inject(LoginService);
-  private environmentService = inject(EnvironmentService);
-  private document = inject<Document>(DOCUMENT);
-  private translateService = inject(TranslateService);
-  private websocketService = inject(WebsocketService);
-  private router = inject(Router);
-  private messages = inject(MessageService);
-  private titleService = inject(Title);
+  private swUpdate = inject(SwUpdate)
+  private swPush = inject(SwPush)
+  private injector = inject(Injector)
+  private loginService = inject(LoginService)
+  private environmentService = inject(EnvironmentService)
+  private document = inject<Document>(DOCUMENT)
+  private translateService = inject(TranslateService)
+  private websocketService = inject(WebsocketService)
+  private router = inject(Router)
+  private messages = inject(MessageService)
+  private titleService = inject(Title)
   private postService = inject(PostsService)
-  
 
   title = 'wafrn'
 
   @HostBinding('attr.data-additional-style-modes') dataAdditionalStyleModes: string | null = null
 
   constructor() {
-    const swUpdate = this.swUpdate;
-    const translateService = this.translateService;
-    const router = this.router;
-    const themeService = inject(ThemeService);
+    const swUpdate = this.swUpdate
+    const translateService = this.translateService
+    const router = this.router
+    const themeService = inject(ThemeService)
 
     this.title = this.titleService.getTitle()
     GlobalData.appDefaultTitle = this.title
@@ -95,10 +94,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-
     // lets check for evil websites. fuck them.
-    const referer = document.referrer;
-    if(referer) {
+    const referer = document.referrer
+    if (referer) {
       console.log(referer)
       try {
         let evilUrls = [
@@ -278,10 +276,10 @@ export class AppComponent implements OnInit {
           'hommaforum.org'
         ]
         const refererUrl = new URL(referer)
-        if(evilUrls.includes(refererUrl.host)) {
-          while(true) {
-            let i = 0;
-            i ++;
+        if (evilUrls.includes(refererUrl.host)) {
+          while (true) {
+            let i = 0
+            i++
           }
         }
       } catch (error) {
@@ -323,8 +321,7 @@ export class AppComponent implements OnInit {
         }
         // we are no longer asking nicely
         if (updateAvaiable) {
-          localStorage.setItem('wafrnUpdated',
-            'true')
+          localStorage.setItem('wafrnUpdated', 'true')
           if (window.location.toString().toLowerCase().endsWith('/editor')) {
             if (confirm('There is an update available, would you like to update?')) {
               window.location.reload()
@@ -369,9 +366,6 @@ export class AppComponent implements OnInit {
     }
     */
 
-
-    this.postService.loadFollowers().then(() => {
-      })
-
+    this.postService.loadFollowers().then(() => {})
   }
 }

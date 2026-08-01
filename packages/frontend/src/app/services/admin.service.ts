@@ -82,7 +82,7 @@ export type UserBlockMute = {
 
 export type EmailCampaign = {
   subject: string
-  body: string,
+  body: string
   test: boolean
 }
 
@@ -95,8 +95,7 @@ export type EmailCampaignResponse = {
   providedIn: 'root'
 })
 export class AdminService {
-  private http = inject(HttpClient);
-
+  private http = inject(HttpClient)
 
   async getServers(): Promise<server[]> {
     const response = await firstValueFrom(
@@ -127,7 +126,10 @@ export class AdminService {
     }
 
     return firstValueFrom<InviteCode>(
-      this.http.post<InviteCode>(`${EnvironmentService.environment.baseUrl}/admin/create-invite-code`, { code, expirationDate })
+      this.http.post<InviteCode>(`${EnvironmentService.environment.baseUrl}/admin/create-invite-code`, {
+        code,
+        expirationDate
+      })
     )
   }
 
@@ -154,7 +156,10 @@ export class AdminService {
 
   async forceCWPost(id: string, message: string) {
     return firstValueFrom(
-      this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceCWPost`, { id: id, content_warning: message })
+      this.http.post(`${EnvironmentService.environment.baseUrl}/admin/forceCWPost`, {
+        id: id,
+        content_warning: message
+      })
     )
   }
 
@@ -217,7 +222,10 @@ export class AdminService {
 
   async sendEmailCampaign(campaign: EmailCampaign): Promise<EmailCampaignResponse> {
     return firstValueFrom(
-      this.http.post<EmailCampaignResponse>(`${EnvironmentService.environment.baseUrl}/admin/sendEmailCampaign`, campaign)
+      this.http.post<EmailCampaignResponse>(
+        `${EnvironmentService.environment.baseUrl}/admin/sendEmailCampaign`,
+        campaign
+      )
     )
   }
 }

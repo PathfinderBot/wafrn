@@ -1055,8 +1055,8 @@
   },
   "emoji": {
     "searchAvailable": "Search available emojis",
-    "recentEmojis": "Recently used emojis"
-    ,"reactionsUnsupported": "Mastodon and bluesky do not support emoji reactions yet"
+    "recentEmojis": "Recently used emojis",
+    "reactionsUnsupported": "Mastodon and bluesky do not support emoji reactions yet"
   },
   "dashboard": {
     "notFollowingAnyone": "You dont seem to be following anyone!",

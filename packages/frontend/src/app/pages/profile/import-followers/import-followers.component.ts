@@ -13,9 +13,9 @@ import { PostsService } from 'src/app/services/posts.service'
   standalone: false
 })
 export class ImportFollowersComponent {
-  private http = inject(HttpClient);
-  private postService = inject(PostsService);
-  private messages = inject(MessageService);
+  private http = inject(HttpClient)
+  private postService = inject(PostsService)
+  private messages = inject(MessageService)
   private cdr = inject(ChangeDetectorRef)
 
   step = 0
@@ -62,7 +62,7 @@ export class ImportFollowersComponent {
           severity: 'error',
           summary: 'Following list failed to load'
         })
-        this.uploading = false;
+        this.uploading = false
       })
       if (petition) {
         this.messages.add({
@@ -88,7 +88,6 @@ export class ImportFollowersComponent {
     }
     this.cdr.detectChanges()
   }
-
 
   async followEveryone() {
     this.step = this.step + 1

@@ -8,18 +8,25 @@ import { MessageService } from 'src/app/services/message.service'
   providedIn: 'root'
 })
 export class FileUploadService {
-  private http = inject(HttpClient);
-  private messageService = inject(MessageService);
-
+  private http = inject(HttpClient)
+  private messageService = inject(MessageService)
 
   uploadFile(url: string, file: File, formdataName: string) {
     const formData = new FormData()
-    formData.append(formdataName, file)
-    return this.http.post<WafrnMedia[]>(url, formData, { reportProgress: true, observe: 'events' }).pipe(
-      catchError((error) => {
-        this.messageService.add({ severity: 'error', summary: 'Failed to upload.' })
-        return throwError(() => error)
+    // FUCK YOU WEBKIT
+    const blob = new Blob([file], { type: file.type })
+    formData.append(formdataName, blob, file.name)
+    return this.http
+      .post<WafrnMedia[]>(url, formData, {
+        reportProgress: true,
+        observe: 'events',
+        headers: { 'ngsw-bypass': 'true' }
       })
-    )
+      .pipe(
+        catchError((error) => {
+          this.messageService.add({ severity: 'error', summary: 'Failed to upload.' })
+          return throwError(() => error)
+        })
+      )
   }
 }

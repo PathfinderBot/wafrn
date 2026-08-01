@@ -13,8 +13,8 @@ import { LoginService } from 'src/app/services/login.service'
   styleUrl: './setting-language-switcher.component.scss'
 })
 export class SettingLanguageSwitcherComponent {
-  private loginService = inject(LoginService);
-  private translationService = inject(TranslateService);
+  private loginService = inject(LoginService)
+  private translationService = inject(TranslateService)
 
   allLanguages
   appLanguage: string
@@ -22,7 +22,7 @@ export class SettingLanguageSwitcherComponent {
   languageMap = languageMap
 
   constructor() {
-    const translationService = this.translationService;
+    const translationService = this.translationService
 
     this.allLanguages = supportedLanguages
     this.appLanguage = translationService.currentLang

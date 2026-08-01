@@ -2,16 +2,16 @@ import { Injectable, inject } from '@angular/core'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { AudioName, AudioService } from './audio.service'
 import { TranslateService } from '@ngx-translate/core'
-import { Router } from "@angular/router";
+import { Router } from '@angular/router'
 
 @Injectable({
   providedIn: 'root'
 })
 export class MessageService {
-  private translateService = inject(TranslateService);
-  private snackBar = inject(MatSnackBar);
-  private audioService = inject(AudioService);
-  private router = inject(Router);
+  private translateService = inject(TranslateService)
+  private snackBar = inject(MatSnackBar)
+  private audioService = inject(AudioService)
+  private router = inject(Router)
 
   add(message: {
     severity: 'error' | 'success' | 'warn' | 'info'
@@ -41,7 +41,7 @@ export class MessageService {
     })
 
     snackBarRef.onAction().subscribe(() => {
-      this.router.navigate([message.route]);
-    });
+      this.router.navigate([message.route])
+    })
   }
 }

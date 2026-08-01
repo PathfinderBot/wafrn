@@ -14,7 +14,7 @@ import { SimpleTitleService } from 'src/app/services/simple-title.service'
 })
 export class EmojiUploaderComponent {
   constructor() {
-    const simpleTitle = inject(SimpleTitleService);
+    const simpleTitle = inject(SimpleTitleService)
 
     simpleTitle.set('menu.admin.addEmojis')
   }

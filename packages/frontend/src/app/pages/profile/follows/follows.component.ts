@@ -48,11 +48,11 @@ import { MatTooltipModule } from '@angular/material/tooltip'
   styleUrl: './follows.component.scss'
 })
 export class FollowsComponent implements OnInit, OnDestroy {
-  activatedRoute = inject(ActivatedRoute);
-  private router = inject(Router);
-  postService = inject(PostsService);
-  private dashboardService = inject(DashboardService);
-  private blogService = inject(BlogService);
+  activatedRoute = inject(ActivatedRoute)
+  private router = inject(Router)
+  postService = inject(PostsService)
+  private dashboardService = inject(DashboardService)
+  private blogService = inject(BlogService)
 
   navigationSubscription: Subscription
   followsSubscription: Subscription
@@ -73,7 +73,7 @@ export class FollowsComponent implements OnInit, OnDestroy {
   dataSource!: MatTableDataSource<followsResponse, MatPaginator>
 
   constructor() {
-    const loginService = inject(LoginService);
+    const loginService = inject(LoginService)
 
     this.myId = loginService.getLoggedUserUUID()
     this.followsSubscription = this.postService.updateFollowers.subscribe(() => {

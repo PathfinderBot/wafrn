@@ -22,7 +22,7 @@ export class SelectImageButtonComponent {
   fileName = ''
 
   constructor() {
-    const settingsService = inject(SettingsService);
+    const settingsService = inject(SettingsService)
 
     effect(() => {
       if (!settingsService.settingsModified()) {

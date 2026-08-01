@@ -36,9 +36,9 @@ import { ImageCropperService } from 'src/app/services/image-cropper.service'
   styleUrl: './settings-profile.component.scss'
 })
 export class SettingsProfileComponent {
-  private settingsService = inject(SettingsService);
-  private messageService = inject(MessageService);
-  private imageCropperService = inject(ImageCropperService);
+  private settingsService = inject(SettingsService)
+  private messageService = inject(MessageService)
+  private imageCropperService = inject(ImageCropperService)
 
   data: SettingData
   values
@@ -68,8 +68,8 @@ export class SettingsProfileComponent {
   removeIcon = faXmark
 
   constructor() {
-    const settingsService = this.settingsService;
-    const loginService = inject(LoginService);
+    const settingsService = this.settingsService
+    const loginService = inject(LoginService)
 
     this.data = settingsService.data
     this.values = settingsService.values

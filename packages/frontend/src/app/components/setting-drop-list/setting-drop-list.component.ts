@@ -32,7 +32,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
   styleUrl: './setting-drop-list.component.scss'
 })
 export class SettingDropListComponent {
-  private settingsService = inject(SettingsService);
+  private settingsService = inject(SettingsService)
 
   data: SettingData
   settingKey: SettingKey
@@ -44,10 +44,10 @@ export class SettingDropListComponent {
   defaultIcon = faRotateRight
 
   constructor() {
-    const settingsService = this.settingsService;
+    const settingsService = this.settingsService
     const data = inject<{
-    settingKey: SettingKey;
-}>(SETTINGS_TOKEN);
+      settingKey: SettingKey
+    }>(SETTINGS_TOKEN)
 
     this.data = settingsService.data
     this.settingKey = data.settingKey
