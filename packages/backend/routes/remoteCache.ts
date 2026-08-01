@@ -218,7 +218,8 @@ function cacheRoutes(app: Application) {
     const youtubeId = decodeURIComponent(req.params.id)
     const ytRegex =
       /((?:https?:\/\/)?(www.|m.)?(youtube(\-nocookie)?\.com|youtu\.be)\/(v\/|watch\?v=|embed\/)?([\S]{11}))([^\S]|\?[\S]*|\&[\S]*|\b)/g
-    const match = youtubeId.matchAll(ytRegex).toArray()
+    let match: any[] = youtubeId.matchAll(ytRegex).toArray()
+    match = match.length === 1 ? match[0] : match
     if (match && match.length >= 7) {
       try {
         await getMediaFromUrl(`https://img.youtube.com/vi/${match[6]}/hqdefault.jpg`, res)
