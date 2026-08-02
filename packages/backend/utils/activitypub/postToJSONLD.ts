@@ -434,6 +434,8 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
       quoteUrl: misskeyQuoteURL,
       _misskey_quote: misskeyQuoteURL,
       quoteUri: misskeyQuoteURL,
+      quote: misskeyQuoteURL,
+      quoteAuthorization: quoteAuthorization,
       // conversation: conversationString,
       content: (standardMentionsContent + processedContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, ''),
       attachment: postMedias

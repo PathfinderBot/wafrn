@@ -608,6 +608,10 @@ export const wafrnContext = {
         '@id': 'https://w3id.org/fep/044f#quote',
         '@type': '@id'
       },
+      quoteAuthorization: {
+        '@id': 'https://w3id.org/fep/044f#quoteAuthorization',
+        '@type': '@id'
+      },
       wafrn: 'https://wafrn.net/ns#',
       blueskyUri: 'wafrn:blueskyUri',
       blueskyCid: 'wafrn:blueskyCid',
@@ -742,6 +746,10 @@ export const WellKnownContext = {
       QuoteAuthorization: 'https://w3id.org/fep/044f#QuoteAuthorization',
       quote: {
         '@id': 'https://w3id.org/fep/044f#quote',
+        '@type': '@id'
+      },
+      quoteAuthorization: {
+        '@id': 'https://w3id.org/fep/044f#quoteAuthorization',
         '@type': '@id'
       },
       gts: 'https://gotosocial.org/ns#',
