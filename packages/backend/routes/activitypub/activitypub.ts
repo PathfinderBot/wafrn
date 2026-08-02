@@ -15,6 +15,7 @@ import { userToJSONLD } from '../../utils/activitypub/userToJSONLD.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
 import { getPostUrlForQuote, postToJSONLD } from '../../utils/activitypub/postToJSONLD.js'
+import { LITEPUB_CONTEXT_PATH } from '../../utils/activitypub/contexts.js'
 
 // we get the user from the memory cache. if does not exist we try to find it
 async function getLocalUserByUrl(url: string): Promise<any> {
@@ -412,7 +413,7 @@ function activityPubRoutes(app: Application) {
         let objectToSend: activityPubObject = {
           '@context': [
             'https://www.w3.org/ns/activitystreams',
-            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
           ],
           actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${quote.dataValues.quoterPost.dataValues.user.url}`,
           id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${req.params.id}`,
@@ -457,7 +458,7 @@ function activityPubRoutes(app: Application) {
         const objectToSend: activityPubObject = {
           '@context': [
             'https://www.w3.org/ns/activitystreams',
-            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
           ],
           id: `${completeEnvironment.frontendUrl}/fediverse/quote_authorization/${req.params.quoterPostId}/${req.params.quotedPostId}`,
           type: 'QuoteAuthorization',

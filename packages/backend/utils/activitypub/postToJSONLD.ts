@@ -10,6 +10,7 @@ import { redisCache } from '../redis.js'
 import { htmlToMfm } from './htmlToMfm.js'
 import showdown from 'showdown'
 import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
+import { LITEPUB_CONTEXT_PATH } from './contexts.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -392,10 +393,7 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
         ]
       : []
   let postAsJSONLD: activityPubObject = {
-    '@context': [
-      'https://www.w3.org/ns/activitystreams',
-      `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
-    ],
+    '@context': ['https://www.w3.org/ns/activitystreams', `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
     id: `${completeEnvironment.frontendUrl}/fediverse/activity/post/${post.id}`,
     type: 'Create',
     actor: actorUrl,

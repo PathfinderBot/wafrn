@@ -5,6 +5,7 @@ import { completeEnvironment } from '../backendOptions.js'
 import { userToJSONLD } from './userToJSONLD.js'
 import { Op } from 'sequelize'
 import { redisCache } from '../redis.js'
+import { LITEPUB_CONTEXT_PATH } from './contexts.js'
 
 const lowPriorityQueue = getQueue('deletePostQueue')
 
@@ -13,7 +14,7 @@ async function sendUpdateProfile(user: User) {
   const userObjectData = await userToJSONLD(user)
   delete userObjectData['@context']
   const objectToSend: activityPubObject = {
-    '@context': [`${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`],
+    '@context': [`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
     actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
     to: ['https://www.w3.org/ns/activitystreams#Public'],
     id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#update/${new Date().getTime()}`,

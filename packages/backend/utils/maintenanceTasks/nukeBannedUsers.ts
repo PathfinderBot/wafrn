@@ -24,6 +24,7 @@ import { getDeletedUser } from '../cacheGetters/getDeletedUser.js'
 import { logger } from '../logger.js'
 import { wait } from '../wait.js'
 import { getQueue } from '../queues.js'
+import { LITEPUB_CONTEXT_PATH } from '../activitypub/contexts.js'
 
 async function nukeBannedUsers() {
   const deletePostQueue = getQueue('deletePostQueue')
@@ -201,7 +202,7 @@ async function nukeBannedUsers() {
     for await (const user of users) {
       logger.debug(`Preparing queue of mass delete for ${user.url}`)
       const objectToSend: activityPubObject = {
-        '@context': [`${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`],
+        '@context': [`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
         actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#deleteUser`,
         object: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,

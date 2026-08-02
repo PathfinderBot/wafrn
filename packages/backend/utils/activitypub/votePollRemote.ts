@@ -20,6 +20,7 @@ import { emojiToAPTag } from './emojiToAPTag.js'
 import { wait } from '../wait.js'
 import { loadPoll } from './loadPollFromPost.js'
 import { getPostThreadRecursive } from './getPostThreadRecursive.js'
+import { LITEPUB_CONTEXT_PATH } from './contexts.js'
 
 const sendPostQueue = getQueue('sendPostToInboxes')
 
@@ -62,7 +63,7 @@ async function voteInPoll(userId: string, pollId: number) {
     const voteObject = {
       '@context': [
         'https://www.w3.org/ns/activitystreams',
-        `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+        `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
       ],
       actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
       id: `${completeEnvironment.frontendUrl}/fediverse/voteActivity/${userId}/${vote.id}`,

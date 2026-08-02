@@ -29,7 +29,6 @@ app.use(
   })
 )
 
-app.use('/contexts', express.static('contexts'))
 activityPubRoutes(app)
 wellKnownRoutes(app)
 
