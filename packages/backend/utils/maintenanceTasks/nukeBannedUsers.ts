@@ -202,7 +202,10 @@ async function nukeBannedUsers() {
     for await (const user of users) {
       logger.debug(`Preparing queue of mass delete for ${user.url}`)
       const objectToSend: activityPubObject = {
-        '@context': [`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
+        '@context': [
+          'https://www.w3.org/ns/activitystreams',
+          `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+        ],
         actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#deleteUser`,
         object: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,

@@ -67,7 +67,10 @@ export default function deletePost(app: Application) {
         }
         // bsky delete end
         const objectToSend: activityPubObject = {
-          '@context': [`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          ],
           actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
           to: ['https://www.w3.org/ns/activitystreams#Public'],
           id: `${completeEnvironment.frontendUrl}/fediverse/post/${postToDelete.id}#delete`,
@@ -206,7 +209,10 @@ export default function deletePost(app: Application) {
 
         const objectsToSend: activityPubObject[] = reblogsToDelete.map((elem) => {
           return {
-            '@context': [`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
+            '@context': [
+              'https://www.w3.org/ns/activitystreams',
+              `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+            ],
             actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
             to: ['https://www.w3.org/ns/activitystreams#Public'],
             id: `${completeEnvironment.frontendUrl}/fediverse/post/${elem}#delete`,

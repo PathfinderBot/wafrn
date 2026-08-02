@@ -14,7 +14,7 @@ async function sendUpdateProfile(user: User) {
   const userObjectData = await userToJSONLD(user)
   delete userObjectData['@context']
   const objectToSend: activityPubObject = {
-    '@context': [`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
+    '@context': ['https://www.w3.org/ns/activitystreams', `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
     actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
     to: ['https://www.w3.org/ns/activitystreams#Public'],
     id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}#update/${new Date().getTime()}`,
