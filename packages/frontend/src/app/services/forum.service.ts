@@ -37,7 +37,7 @@ export class ForumService {
     const realPosts = tmpResult
       .filter((elem) => !elem.isReblog)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    const result: { post?: ProcessedPost; reblogs: SimplifiedUser[] }[] = [
+    const result: { post?: ProcessedPost; reblogs: SimplifiedUser[]; latestReblogCreatedAt?: Date }[] = [
       {
         reblogs: []
       },
@@ -49,8 +49,10 @@ export class ForumService {
       const postIndex = result.findIndex((realPost) => realPost.post?.id === elem.parentId)
       if (postIndex && result[postIndex]) {
         result[postIndex].reblogs.push(elem.user)
+        result[postIndex].latestReblogCreatedAt = elem.createdAt
       } else if (window.location.href.split('/post/')[1] === elem.parentId) {
         result[0].reblogs.push(elem.user)
+        result[0].latestReblogCreatedAt = elem.createdAt
       }
     })
     return result

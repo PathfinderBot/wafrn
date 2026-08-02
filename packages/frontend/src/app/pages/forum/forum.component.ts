@@ -62,7 +62,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private simpleTitle = inject(SimpleTitleService)
 
   loading = true
-  forumPosts = signal<{ post?: ProcessedPost; reblogs: SimplifiedUser[] }[]>([])
+  forumPosts = signal<{ post?: ProcessedPost; reblogs: SimplifiedUser[]; latestReblogCreatedAt?: Date }[]>([])
   post = model<ProcessedPost[]>([])
   postId = model<string>('')
   snappyPost = snappyInject(SnappyPostData)

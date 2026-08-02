@@ -46,7 +46,7 @@
         <app-post-ribbon
           [users]="content.reblogs"
           [icon]="rewootIcon"
-          [time]="$safeNavigationMigration(content.post?.createdAt)"
+          [time]="$safeNavigationMigration(content.latestReblogCreatedAt)"
         >
           <span class="text-sm post-action"> {{ 'post-actions.rewooted' | translate }} </span>
         </app-post-ribbon>
