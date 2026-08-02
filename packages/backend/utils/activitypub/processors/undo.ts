@@ -5,149 +5,144 @@ import {
   Notification,
   Post,
   User,
-  UserLikesPostRelations,
-} from "../../../models/index.js";
-import { activityPubObject } from "../../../interfaces/fediverse/activityPubObject.js";
-import { deletePostCommon } from "../../deletePost.js";
-import { logger } from "../../logger.js";
-import { redisCache } from "../../redis.js";
-import { getPostThreadRecursive } from "../getPostThreadRecursive.js";
-import { signAndAccept } from "../signAndAccept.js";
+  UserLikesPostRelations
+} from '../../../models/index.js'
+import { activityPubObject } from '../../../interfaces/fediverse/activityPubObject.js'
+import { deletePostCommon } from '../../deletePost.js'
+import { logger } from '../../logger.js'
+import { redisCache } from '../../redis.js'
+import { getPostThreadRecursive } from '../getPostThreadRecursive.js'
+import { signAndAccept } from '../signAndAccept.js'
 
-async function UndoActivity(
-  body: activityPubObject,
-  remoteUser: User,
-  user: User
-) {
-  const apObject: activityPubObject =
-    body.object?.id && body.object?.type ? body.object : body;
+async function UndoActivity(body: activityPubObject, remoteUser: User, user: User) {
+  const apObject: activityPubObject = body.object?.id && body.object?.type ? body.object : body
   // TODO divide this one in files too
 
   // Unfollow? Destroy post? what else can be undone
   switch (apObject.type) {
-    case "Block": {
+    case 'Block': {
       const blockToRemove = await Blocks.findOne({
         where: {
-          remoteBlockId: apObject.id,
-        },
-      });
+          remoteBlockId: apObject.id
+        }
+      })
       if (blockToRemove) {
-        await blockToRemove.destroy();
+        await blockToRemove.destroy()
       }
-      redisCache.del("blocks:mutes:onlyUser:" + user.id);
-      redisCache.del("blocks:mutes:" + user.id);
-      redisCache.del("blocks:mutes:" + user.id);
-      redisCache.del("blocks:" + user.id);
+      redisCache.del('blocks:mutes:onlyUser:' + user.id)
+      redisCache.del('blocks:mutes:' + user.id)
+      redisCache.del('blocks:mutes:' + user.id)
+      redisCache.del('blocks:' + user.id)
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
-    case "Follow": {
+    case 'Follow': {
       const remoteFollow = await Follows.findOne({
         where: {
           // I think i was doing something wrong here. Changed so when remote unfollow does not cause you to unfollow them instead lol
-          remoteFollowId: apObject.id,
-        },
-      });
+          remoteFollowId: apObject.id
+        }
+      })
       if (remoteFollow) {
         Notification.destroy({
           where: {
-            notificationType: "FOLLOW",
+            notificationType: 'FOLLOW',
             notifiedUserId: remoteFollow.followedId,
-            userId: remoteFollow.followerId,
-          },
-        });
-        await remoteFollow.destroy();
+            userId: remoteFollow.followerId
+          }
+        })
+        await remoteFollow.destroy()
       }
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
-    case "Undo": {
+    case 'Undo': {
       // just undo? Might be like might be something else.
       const likeToRemove = await UserLikesPostRelations.findOne({
         where: {
-          remoteId: apObject.id,
-        },
-      });
+          remoteId: apObject.id
+        }
+      })
       if (likeToRemove) {
-        await likeToRemove.destroy();
+        await likeToRemove.destroy()
       }
       const emojiReactionToRemove = await EmojiReaction.findOne({
         where: {
-          remoteId: apObject.id,
-        },
-      });
+          remoteId: apObject.id
+        }
+      })
       if (emojiReactionToRemove) {
-        await emojiReactionToRemove.destroy();
+        await emojiReactionToRemove.destroy()
       }
       // await signAndAccept({ body: body }, remoteUser, user)
 
-      break;
+      break
     }
-    case "Announce": {
+    case 'Announce': {
       const postToDelete = await Post.findOne({
         where: {
-          remotePostId: apObject.id,
-        },
-      });
+          remotePostId: apObject.id
+        }
+      })
       if (postToDelete) {
-        await deletePostCommon(postToDelete.id);
+        await deletePostCommon(postToDelete.id)
       }
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
-    case "Like": {
+    case 'Like': {
       const likeToRemove = await UserLikesPostRelations.findOne({
         where: {
-          remoteId: apObject.id,
-        },
-      });
+          remoteId: apObject.id
+        }
+      })
       if (likeToRemove) {
         await Notification.destroy({
           where: {
-            notificationType: "LIKE",
+            notificationType: 'LIKE',
             postId: likeToRemove.postId,
-            userId: likeToRemove.userId,
-          },
-        });
-        likeToRemove.destroy();
+            userId: likeToRemove.userId
+          }
+        })
+        likeToRemove.destroy()
       }
     }
     // eslint-disable-next-line no-fallthrough
-    case "EmojiReact": {
+    case 'EmojiReact': {
       const reactionToRemove = await EmojiReaction.findOne({
         where: {
-          remoteId: apObject.id,
-        },
-      });
+          remoteId: apObject.id
+        }
+      })
       if (reactionToRemove) {
         await Notification.destroy({
           where: {
-            emojiReactionId: reactionToRemove.id,
-          },
-        });
-        await reactionToRemove.destroy();
+            emojiReactionId: reactionToRemove.id
+          }
+        })
+        await reactionToRemove.destroy()
       }
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
     // activities that we ignore:
-    case "View": {
+    case 'View': {
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
     default: {
       logger.debug({
         message: `UNDO NOT IMPLEMENTED: ${apObject.type} attemping to delete post`,
-        object: apObject,
-      });
-      const postToDelete = await getPostThreadRecursive(user, apObject.object);
+        object: apObject
+      })
+      const postToDelete = await getPostThreadRecursive(user, apObject.object)
       if (postToDelete) {
-        await deletePostCommon(postToDelete.id);
+        await deletePostCommon(postToDelete.id)
       }
       // await signAndAccept({ body: body }, remoteUser, user)
-      logger.debug(apObject);
+      logger.debug(apObject)
     }
   }
 }
 
-export { UndoActivity };
+export { UndoActivity }

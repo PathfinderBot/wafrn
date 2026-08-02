@@ -1,23 +1,23 @@
-import { Jetstream } from "@skyware/jetstream";
-import { Job, Queue, Worker } from "bullmq";
-import { checkCommitMentions } from "./atproto/utils/checkCommitMentions.js";
-import { logger } from "./utils/logger.js";
-import { completeEnvironment } from "./utils/backendOptions.js";
-import { redisCache } from "./utils/redis.js";
-import { forceUpdateDidsCacheQueue } from "./interfaces/atproto/forceUpdateDidsCacheUpdate.js";
-import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_DIDS_CACHE_KEY } from "./constants.js";
-import { forcePopulateCache } from "./atproto/cache/forcePopulateCache.js";
-import { getQueue } from "./utils/queues.js";
-import { wait } from "./utils/wait.js";
-import { getAtprotoUser } from "./atproto/utils/getAtprotoUser.js";
+import { Jetstream } from '@skyware/jetstream'
+import { Job, Queue, Worker } from 'bullmq'
+import { checkCommitMentions } from './atproto/utils/checkCommitMentions.js'
+import { logger } from './utils/logger.js'
+import { completeEnvironment } from './utils/backendOptions.js'
+import { redisCache } from './utils/redis.js'
+import { forceUpdateDidsCacheQueue } from './interfaces/atproto/forceUpdateDidsCacheUpdate.js'
+import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_DIDS_CACHE_KEY } from './constants.js'
+import { forcePopulateCache } from './atproto/cache/forcePopulateCache.js'
+import { getQueue } from './utils/queues.js'
+import { wait } from './utils/wait.js'
+import { getAtprotoUser } from './atproto/utils/getAtprotoUser.js'
 
 //const firehose = new Firehose(`wss://bolson.bsky.dev`);
 
-const cursorCache = await redisCache.get("jetstreamCursor");
-let cursor = new Date().getTime();
+const cursorCache = await redisCache.get('jetstreamCursor')
+let cursor = new Date().getTime()
 if (cursorCache) {
   try {
-    cursor = new Date(cursorCache).getTime();
+    cursor = new Date(cursorCache).getTime()
   } catch (error) {
     logger.warn({
       message: `Error starting the jetstream`,
@@ -30,7 +30,7 @@ const cacheLoaded = await redisCache.exists(LOCAL_USER_DIDS_CACHE_KEY)
 if (!cacheLoaded) {
   await forcePopulateCache()
 }
-const cacheLastForceUpdate = await redisCache.get('bskyCacheDate') ?? '0'
+const cacheLastForceUpdate = (await redisCache.get('bskyCacheDate')) ?? '0'
 // every two weeks force update dids
 if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 28 * 1000) {
   logger.info({
@@ -44,70 +44,68 @@ if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 28 * 100
 const jetstream = new Jetstream({
   endpoint: completeEnvironment.bskyJetstreamUrl,
   wantedCollections: [
-    "net.wafrn.feed.bite",
-    "app.bsky.feed.like",
-    "app.bsky.feed.post",
-    "app.bsky.feed.repost",
-    "app.bsky.graph.follow",
-    "app.bsky.graph.block",
-    "app.bsky.feed.threadgate",
+    'net.wafrn.feed.bite',
+    'app.bsky.feed.like',
+    'app.bsky.feed.post',
+    'app.bsky.feed.repost',
+    'app.bsky.graph.follow',
+    'app.bsky.graph.block',
+    'app.bsky.feed.threadgate'
   ],
   // wantedDids: [
   //   'did:plc:zmgp4bhcck7kdxs5og7qo5rm'
   // ],
-  cursor: cursor,
-});
+  cursor: cursor
+})
 
 const firehoseQueue = getQueue('firehoseQueue')
 
 const lowPriorityFirehoseQueue = getQueue('lowPriorityFirehoseQueue')
 
-jetstream.on("commit", async (event) => {
-  const commit = event.commit;
+jetstream.on('commit', async (event) => {
+  const commit = event.commit
 
-  if (
-    await checkCommitMentions(event.did, commit)
-  ) {
-    await redisCache.set("jetstreamCursor", event.time_us);
+  if (await checkCommitMentions(event.did, commit)) {
+    await redisCache.set('jetstreamCursor', event.time_us)
     const data = {
       repo: event.did,
       operation: {
         ...(commit as any),
         action: commit.operation,
         collection: commit.collection,
-        path: `${commit.collection}/${commit.rkey}`,
-      },
-    };
+        path: `${commit.collection}/${commit.rkey}`
+      }
+    }
     if (commit.operation === 'delete' || ['app.bsky.graph.follow', 'app.bsky.feed.like'].includes(commit.collection)) {
-      await lowPriorityFirehoseQueue.add("lowPriorityFirehoseQueue", data)
+      await lowPriorityFirehoseQueue.add('lowPriorityFirehoseQueue', data)
     } else {
-      await firehoseQueue.add("processFirehoseQueue", data);
+      await firehoseQueue.add('processFirehoseQueue', data)
     }
   }
-});
+})
 
 // with this we may be able to detect users moving off servers
-jetstream.on("identity", async (event) => {
+jetstream.on('identity', async (event) => {
   const didToUpdate = event.identity.did
   if (await redisCache.sismember(FOLLOWED_BSKY_DIDS_CACHE_KEY, didToUpdate)) {
     await getAtprotoUser(didToUpdate, { ignoreCache: true })
   }
-});
+})
 
-jetstream.on("close", async () => {
-  logger.warn("jetstream closed");
-  const timeClosing = new Date().getTime();
-  await redisCache.set("jetstreamCursor", timeClosing);
-  await wait(2500);
-  throw new Error("Jetstream closed. Forcing restart");
-});
+jetstream.on('close', async () => {
+  logger.warn('jetstream closed')
+  const timeClosing = new Date().getTime()
+  await redisCache.set('jetstreamCursor', timeClosing)
+  await wait(2500)
+  throw new Error('Jetstream closed. Forcing restart')
+})
 
-jetstream.start();
+jetstream.start()
 
 const workerForceUpdateAtDidCache = new Worker(
-  "forceUpdateDids",
+  'forceUpdateDids',
   async (job: Job) => {
-    const data = job.data as forceUpdateDidsCacheQueue;
+    const data = job.data as forceUpdateDidsCacheQueue
     if (data?.addFollowedDid) {
       await redisCache.sadd(FOLLOWED_BSKY_DIDS_CACHE_KEY, data.addFollowedDid)
     }
@@ -121,15 +119,15 @@ const workerForceUpdateAtDidCache = new Worker(
   {
     connection: completeEnvironment.bullmqConnection,
     concurrency: 1,
-    lockDuration: 120000,
+    lockDuration: 120000
   }
-);
+)
 
-workerForceUpdateAtDidCache.on("failed", (err) => {
+workerForceUpdateAtDidCache.on('failed', (err) => {
   logger.warn({
     message: `workerforceUpdateDids failed`,
-    error: err,
-  });
-});
+    error: err
+  })
+})
 
-logger.info("started atproto");
+logger.info('started atproto')

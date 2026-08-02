@@ -1,11 +1,11 @@
-import { activityPubObject } from "../../../interfaces/fediverse/activityPubObject.js";
-import { Bites } from "../../../models/bites.js";
-import { User } from "../../../models/user.js";
-import { UserBitesPostRelation } from "../../../models/userBitesPostRelation.js";
-import { getDeletedUser } from "../../cacheGetters/getDeletedUser.js";
-import { createNotification } from "../../pushNotifications.js";
-import { getPostThreadRecursive } from "../getPostThreadRecursive.js";
-import { getRemoteActor } from "../getRemoteActor.js";
+import { activityPubObject } from '../../../interfaces/fediverse/activityPubObject.js'
+import { Bites } from '../../../models/bites.js'
+import { User } from '../../../models/user.js'
+import { UserBitesPostRelation } from '../../../models/userBitesPostRelation.js'
+import { getDeletedUser } from '../../cacheGetters/getDeletedUser.js'
+import { createNotification } from '../../pushNotifications.js'
+import { getPostThreadRecursive } from '../getPostThreadRecursive.js'
+import { getRemoteActor } from '../getRemoteActor.js'
 
 async function biteActivity(apObject: activityPubObject, remoteUser: User, user: User) {
   if (apObject.target) {
@@ -24,7 +24,7 @@ async function biteActivity(apObject: activityPubObject, remoteUser: User, user:
           notificationType: 'USERBITE',
           userId: remoteUser.id,
           notifiedUserId: userToBeBitten.id,
-          detached: false,
+          detached: false
         },
         {
           userUrl: remoteUser.url

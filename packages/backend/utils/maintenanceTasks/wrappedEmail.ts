@@ -1,23 +1,16 @@
-import { col, fn, literal, Op } from "sequelize";
-import {
-  Bites,
-  EmojiReaction,
-  Follows,
-  Notification,
-  Post,
-  User,
-} from "../../models/index.js";
-import { wait } from "../wait.js";
-import sendEmail from "../sendEmail.js";
-import getBlockedIds from "../cacheGetters/getBlockedIds.js";
-import { getMutedPosts } from "../cacheGetters/getMutedPosts.js";
-import { getNotificationOptions } from "../../routes/notifications.js";
-import { completeEnvironment } from "../backendOptions.js";
+import { col, fn, literal, Op } from 'sequelize'
+import { Bites, EmojiReaction, Follows, Notification, Post, User } from '../../models/index.js'
+import { wait } from '../wait.js'
+import sendEmail from '../sendEmail.js'
+import getBlockedIds from '../cacheGetters/getBlockedIds.js'
+import { getMutedPosts } from '../cacheGetters/getMutedPosts.js'
+import { getNotificationOptions } from '../../routes/notifications.js'
+import { completeEnvironment } from '../backendOptions.js'
 
 async function sendMail() {
-  const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+  const startOfYear = new Date(new Date().getFullYear(), 0, 1)
 
-  const users = await User.scope("full").findAll({
+  const users = await User.scope('full').findAll({
     where: {
       banned: { [Op.ne]: true },
       activated: true,
@@ -26,82 +19,80 @@ async function sendMail() {
         [Op.gte]: startOfYear
       },
       email: {
-        [Op.ne]: null,
-      },
+        [Op.ne]: null
+      }
     },
-    order: [["createdAt", "ASC"]],
-  });
+    order: [['createdAt', 'ASC']]
+  })
 
   const allUsers = await User.findAll({
     where: {
       email: {
-        [Op.ne]: null,
+        [Op.ne]: null
       },
       banned: { [Op.ne]: true },
       activated: true,
       updatedAt: {
-        [Op.gte]: startOfYear,
-      },
+        [Op.gte]: startOfYear
+      }
     },
-    order: [["createdAt", "DESC"]],
-  });
+    order: [['createdAt', 'DESC']]
+  })
 
-  const allUserIds = allUsers.map((user) => user.id);
+  const allUserIds = allUsers.map((user) => user.id)
 
   const allUserCounts = (await Post.findAll({
     attributes: [
-      "userId",
-      [fn("COUNT", col("id")), "postCount"],
-      [literal('SUM(CASE WHEN "isReblog" THEN 1 ELSE 0 END)'), "reblogCount"],
+      'userId',
+      [fn('COUNT', col('id')), 'postCount'],
+      [literal('SUM(CASE WHEN "isReblog" THEN 1 ELSE 0 END)'), 'reblogCount']
     ],
     where: {
       createdAt: {
-        [Op.gte]: startOfYear,
+        [Op.gte]: startOfYear
       },
       userId: {
-        [Op.in]: allUserIds,
-      },
+        [Op.in]: allUserIds
+      }
     },
-    group: ["userId"],
-    raw: true,
-  })) as any as { userId: string; postCount: string; reblogCount: string }[];
+    group: ['userId'],
+    raw: true
+  })) as any as { userId: string; postCount: string; reblogCount: string }[]
 
   for await (const user of users) {
     if (!user.email) {
-      continue;
+      continue
     }
 
-    const blockedUsers = await getBlockedIds(user.id, false);
-    const startCountDate = user?.lastTimeNotificationsCheck;
-    const mutedPostIds = (await getMutedPosts(user.id)).concat(
-      await getMutedPosts(user.id, true)
-    );
+    const blockedUsers = await getBlockedIds(user.id, false)
+    const startCountDate = user?.lastTimeNotificationsCheck
+    const mutedPostIds = (await getMutedPosts(user.id)).concat(await getMutedPosts(user.id, true))
 
     const currentUserCounts = (await Post.findOne({
       attributes: [
-        "userId",
-        [fn("COUNT", col("id")), "postCount"],
-        [literal('SUM(CASE WHEN "isReblog" THEN 1 ELSE 0 END)'), "reblogCount"],
+        'userId',
+        [fn('COUNT', col('id')), 'postCount'],
+        [literal('SUM(CASE WHEN "isReblog" THEN 1 ELSE 0 END)'), 'reblogCount']
       ],
       where: {
         createdAt: {
-          [Op.gte]: startOfYear,
+          [Op.gte]: startOfYear
         },
-        userId: user.id,
+        userId: user.id
       },
-      group: ["userId"],
-      raw: true,
-    })) as any as { userId: string; postCount: string; reblogCount: string };
+      group: ['userId'],
+      raw: true
+    })) as any as { userId: string; postCount: string; reblogCount: string }
 
     const allUserPosts = await Post.findAll({
       where: {
         createdAt: {
-          [Op.gte]: startOfYear,
+          [Op.gte]: startOfYear
         },
-        userId: user.id,
+        userId: user.id
       },
-      order: [["createdAt", "DESC"]],
-    });
+      order: [['createdAt', 'DESC']]
+    })
 
     const postQuotesRewootsAncestors: any[] = [] /*await PostAncestor.findAll({
       where: {
@@ -112,125 +103,117 @@ async function sendMail() {
       include: ["post", "ancestor"]
     });
     */
-    const posts = currentUserCounts ? parseInt(currentUserCounts.postCount) : 0;
-    const rewoots = currentUserCounts
-      ? parseInt(currentUserCounts.reblogCount)
-      : 0;
+    const posts = currentUserCounts ? parseInt(currentUserCounts.postCount) : 0
+    const rewoots = currentUserCounts ? parseInt(currentUserCounts.reblogCount) : 0
 
-    const postQuotesRewoots = postQuotesRewootsAncestors.map(x => x.post)
+    const postQuotesRewoots = postQuotesRewootsAncestors.map((x) => x.post)
 
     const postQuotesRewoots2 = Object.groupBy(
       postQuotesRewoots,
-      ({ id }) =>
-        postQuotesRewootsAncestors.find((x) => x.postsId === id)?.ancestorId ??
-        ""
-    );
+      ({ id }) => postQuotesRewootsAncestors.find((x) => x.postsId === id)?.ancestorId ?? ''
+    )
 
     const postQuotesRewoots3 = Object.keys(postQuotesRewoots2).map((x) => ({
       parentId: x,
       rewoots: postQuotesRewoots2[x]?.filter((x) => x.isReblog).length ?? 0,
-      quotes: postQuotesRewoots2[x]?.filter((x) => !x.isReblog).length ?? 0,
-    }));
+      quotes: postQuotesRewoots2[x]?.filter((x) => !x.isReblog).length ?? 0
+    }))
 
-    const mostRewootedPosts = postQuotesRewoots3.sort(
-      (a, b) => b.rewoots - a.rewoots
-    );
-    const mostQuotedPosts = postQuotesRewoots3.sort(
-      (a, b) => b.quotes - a.quotes
-    );
+    const mostRewootedPosts = postQuotesRewoots3.sort((a, b) => b.rewoots - a.rewoots)
+    const mostQuotedPosts = postQuotesRewoots3.sort((a, b) => b.quotes - a.quotes)
 
     const mostReactedPostsReaction = await EmojiReaction.findAll({
       where: {
         postId: {
-          [Op.in]: allUserPosts.map((x) => x.id),
-        },
+          [Op.in]: allUserPosts.map((x) => x.id)
+        }
       },
-      include: ["post"]
-    });
+      include: ['post']
+    })
 
     const mostReactedPosts = (
       await Post.findAll({
         where: {
           id: {
-            [Op.in]: mostReactedPostsReaction.map((x) => x.postId),
-          },
-        },
+            [Op.in]: mostReactedPostsReaction.map((x) => x.postId)
+          }
+        }
       })
     )
       .map((x) => ({
         postId: x.id,
-        reactions: mostReactedPostsReaction.filter((y) => y.postId === x.id),
+        reactions: mostReactedPostsReaction.filter((y) => y.postId === x.id)
       }))
-      .sort((a, b) => b.reactions.length - a.reactions.length);
+      .sort((a, b) => b.reactions.length - a.reactions.length)
 
     const mostRepliedPosts = (
       (await Post.findAll({
-        attributes: ["parentId", [fn("COUNT", col("parentId")), "replyCount"]],
+        attributes: ['parentId', [fn('COUNT', col('parentId')), 'replyCount']],
         where: {
           parentId: {
-            [Op.in]: allUserPosts.map((x) => x.id),
+            [Op.in]: allUserPosts.map((x) => x.id)
           },
           userId: {
-            [Op.ne]: user.id,
+            [Op.ne]: user.id
           },
           hierarchyLevel: {
-            [Op.gt]: 0,
-          },
+            [Op.gt]: 0
+          }
         },
-        group: ["parentId"],
-        raw: true,
+        group: ['parentId'],
+        raw: true
       })) as any as { parentId: string; replyCount: string }[]
     )
       .map((x) => ({
         ...x,
-        replyCount: parseInt(x.replyCount),
+        replyCount: parseInt(x.replyCount)
       }))
-      .sort((a, b) => b.replyCount - a.replyCount);
+      .sort((a, b) => b.replyCount - a.replyCount)
 
     const yearFollows = await Follows.findAndCountAll({
       where: {
         followerId: user.id,
         createdAt: {
-          [Op.gte]: startOfYear,
-        },
-      },
-    });
+          [Op.gte]: startOfYear
+        }
+      }
+    })
 
     const yearFollowers = await Follows.findAndCountAll({
       where: {
         followedId: user.id,
         createdAt: {
-          [Op.gte]: startOfYear,
-        },
-      },
-    });
+          [Op.gte]: startOfYear
+        }
+      }
+    })
 
-    let yearBitens = (await Bites.findAll({
-      attributes: ["biterId", [fn("COUNT", col("biterId")), "biteCount"]],
-      where: {
-        bittenId: user.id
-      },
-      group: ["biterId"],
-      order: [
-        ["biteCount", "DESC"]
-      ],
-      raw: true
-    })).map(x => ({
+    let yearBitens = (
+      await Bites.findAll({
+        attributes: ['biterId', [fn('COUNT', col('biterId')), 'biteCount']],
+        where: {
+          bittenId: user.id
+        },
+        group: ['biterId'],
+        order: [['biteCount', 'DESC']],
+        raw: true
+      })
+    ).map((x) => ({
       ...x,
       biteCount: Number.parseInt((x as any).biteCount)
     }))
 
-    let yearBites = (await Bites.findAll({
-      attributes: ["bittenId", [fn("COUNT", col("bittenId")), "bittenCount"]],
-      where: {
-        biterId: user.id
-      },
-      group: ["bittenId"],
-      order: [
-        ["bittenCount", "DESC"]
-      ],
-      raw: true
-    })).map(x => ({
+    let yearBites = (
+      await Bites.findAll({
+        attributes: ['bittenId', [fn('COUNT', col('bittenId')), 'bittenCount']],
+        where: {
+          biterId: user.id
+        },
+        group: ['bittenId'],
+        order: [['bittenCount', 'DESC']],
+        raw: true
+      })
+    ).map((x) => ({
       ...x,
       bittenCount: Number.parseInt((x as any).bittenCount)
     }))
@@ -238,20 +221,20 @@ async function sendMail() {
     const userBitesAccounts = await User.findAll({
       where: {
         id: {
-          [Op.in]: [...yearBitens.map(x => x.biterId), ...yearBites.map(x => x.bittenId)]
+          [Op.in]: [...yearBitens.map((x) => x.biterId), ...yearBites.map((x) => x.bittenId)]
         }
       },
       raw: true
     })
 
-    yearBitens = yearBitens.map(x => ({
+    yearBitens = yearBitens.map((x) => ({
       ...x,
-      biter: userBitesAccounts.find(y => y.id === x.biterId) as User
+      biter: userBitesAccounts.find((y) => y.id === x.biterId) as User
     }))
 
-    yearBites = yearBites.map(x => ({
+    yearBites = yearBites.map((x) => ({
       ...x,
-      bitten: userBitesAccounts.find(y => y.id === x.bittenId) as User
+      bitten: userBitesAccounts.find((y) => y.id === x.bittenId) as User
     }))
 
     console.log(yearBitens, yearBites)
@@ -263,111 +246,136 @@ async function sendMail() {
         postId: {
           [Op.or]: [
             {
-              [Op.notIn]: mutedPostIds?.length
-                ? mutedPostIds
-                : ["00000000-0000-0000-0000-000000000000"],
+              [Op.notIn]: mutedPostIds?.length ? mutedPostIds : ['00000000-0000-0000-0000-000000000000']
             },
             {
-              [Op.eq]: null,
-            },
-          ],
+              [Op.eq]: null
+            }
+          ]
         },
         userId: {
-          [Op.notIn]: blockedUsers.concat([user.id]),
+          [Op.notIn]: blockedUsers.concat([user.id])
         },
         createdAt: {
-          [Op.gt]: startCountDate,
-        },
-      },
-    });
-    // Modify before sending the email!
-    const subject = `Hello ${user.url}, get WAFfed`;
-    const body = `\
-    <h1>Hello ${user.url}, We miss you at <a href="${completeEnvironment.frontendUrl
-      }">${completeEnvironment.defaultSEOData.title}</a>!</h1>
-    <p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
-    ${notificationsCount == 0
-        ? "<p>Hmm, no notifications. I guess you should get more oomfs</p>"
-        : ""
+          [Op.gt]: startCountDate
+        }
       }
+    })
+    // Modify before sending the email!
+    const subject = `Hello ${user.url}, get WAFfed`
+    const body = `\
+    <h1>Hello ${user.url}, We miss you at <a href="${
+      completeEnvironment.frontendUrl
+    }">${completeEnvironment.defaultSEOData.title}</a>!</h1>
+    <p>As you can see, other people also misses you, as you have ${notificationsCount} unread notifications!</p>
+    ${notificationsCount == 0 ? '<p>Hmm, no notifications. I guess you should get more oomfs</p>' : ''}
     <br />
     <p>Ok ok let's do this, here's your waffed for the year ${new Date().getFullYear()}</p>
     <p>Of course a wrapped isn't complete with your initial stats, and because of that:</p>
     <p>You wooted ${posts} woots on this year, that's ${calcPercentile(
-        posts,
-        allUserCounts.map((x) => x.postCount)
-      )}% more than others!</p>
+      posts,
+      allUserCounts.map((x) => x.postCount)
+    )}% more than others!</p>
     <p>Also you rewooted ${rewoots} woots on this year, that's ${calcPercentile(
-        rewoots,
-        allUserCounts.map((x) => x.reblogCount)
-      )}% more than others!</p>
-    <p>You got followed by ${yearFollowers.count
-      } people on this year, and you followed ${yearFollows.count
-      } people on this year!</p>
-    ${yearBites[0] ? `<p>You biten ${yearBites.map(x => x.bittenCount).reduce((p, c) => p + c, 0)}
+      rewoots,
+      allUserCounts.map((x) => x.reblogCount)
+    )}% more than others!</p>
+    <p>You got followed by ${yearFollowers.count} people on this year, and you followed ${
+      yearFollows.count
+    } people on this year!</p>
+    ${
+      yearBites[0]
+        ? `<p>You biten ${yearBites.map((x) => x.bittenCount).reduce((p, c) => p + c, 0)}
       times on this year, especially <a href=${new URL(
         `/user/${yearBites[0].bitten.url}`,
         completeEnvironment.frontendUrl
       )}>${yearBites[0].bitten.url}</a> with ${yearBites[0].bittenCount} bites, 
-      ${yearBites[1] ? `
+      ${
+        yearBites[1]
+          ? `
       <a href=${new URL(
         `/user/${yearBites[1].bitten.url}`,
         completeEnvironment.frontendUrl
-      )}>${yearBites[1].bitten.url}</a> with ${yearBites[1].bittenCount} bites` : ''}
-      ${yearBites[2] ? `and <a href=${new URL(
-        `/user/${yearBites[2].bitten.url}`,
-        completeEnvironment.frontendUrl
-      )}>${yearBites[2].bitten.url}</a> with ${yearBites[2].bittenCount} bites.` : ''}
-    </p>` : ''}
-    ${yearBitens[0] ? `<p>You got bitten ${yearBitens.map(x => x.biteCount).reduce((p, c) => p + c, 0)}
+      )}>${yearBites[1].bitten.url}</a> with ${yearBites[1].bittenCount} bites`
+          : ''
+      }
+      ${
+        yearBites[2]
+          ? `and <a href=${new URL(
+              `/user/${yearBites[2].bitten.url}`,
+              completeEnvironment.frontendUrl
+            )}>${yearBites[2].bitten.url}</a> with ${yearBites[2].bittenCount} bites.`
+          : ''
+      }
+    </p>`
+        : ''
+    }
+    ${
+      yearBitens[0]
+        ? `<p>You got bitten ${yearBitens.map((x) => x.biteCount).reduce((p, c) => p + c, 0)}
       times on this year, especially <a href=${new URL(
         `/user/${yearBitens[0].biter.url}`,
         completeEnvironment.frontendUrl
       )}>${yearBitens[0].biter.url}</a> with ${yearBitens[0].biteCount} bites, 
-      ${yearBitens[1] ? `<a href=${new URL(
-        `/user/${yearBitens[1].biter.url}`,
-        completeEnvironment.frontendUrl
-      )}>${yearBitens[1].biter.url}</a> with ${yearBitens[1].biteCount} bites` : ''}
-      ${yearBitens[2] ? `and <a href=${new URL(
-        `/user/${yearBitens[2].biter.url}`,
-        completeEnvironment.frontendUrl
-      )}>${yearBitens[2].biter.url}</a> with ${yearBitens[2].biteCount} bites.` : ''}
-    </p>` : ''}
+      ${
+        yearBitens[1]
+          ? `<a href=${new URL(
+              `/user/${yearBitens[1].biter.url}`,
+              completeEnvironment.frontendUrl
+            )}>${yearBitens[1].biter.url}</a> with ${yearBitens[1].biteCount} bites`
+          : ''
+      }
+      ${
+        yearBitens[2]
+          ? `and <a href=${new URL(
+              `/user/${yearBitens[2].biter.url}`,
+              completeEnvironment.frontendUrl
+            )}>${yearBitens[2].biter.url}</a> with ${yearBitens[2].biteCount} bites.`
+          : ''
+      }
+    </p>`
+        : ''
+    }
     <br />
     <p>Now let's go to the juicy parts</p>
-    ${mostRewootedPosts[0]
+    ${
+      mostRewootedPosts[0]
         ? `<p>The most rewooted woot you have is ${new URL(
-          `/fediverse/post/${mostRewootedPosts[0].parentId}`,
-          completeEnvironment.frontendUrl
-        )} which has ${mostRewootedPosts[0].rewoots} rewoots</p>`
-        : ""
-      }
-    ${mostQuotedPosts[0]
+            `/fediverse/post/${mostRewootedPosts[0].parentId}`,
+            completeEnvironment.frontendUrl
+          )} which has ${mostRewootedPosts[0].rewoots} rewoots</p>`
+        : ''
+    }
+    ${
+      mostQuotedPosts[0]
         ? `<p>The most quoted woot you have is ${new URL(
-          `/fediverse/post/${mostQuotedPosts[0].parentId}`,
-          completeEnvironment.frontendUrl
-        )} which has ${mostQuotedPosts[0].quotes} quotes</p>`
-        : ""
-      }
-    ${mostRepliedPosts[0]
+            `/fediverse/post/${mostQuotedPosts[0].parentId}`,
+            completeEnvironment.frontendUrl
+          )} which has ${mostQuotedPosts[0].quotes} quotes</p>`
+        : ''
+    }
+    ${
+      mostRepliedPosts[0]
         ? `<p>The most replied woot you have is ${new URL(
-          `/fediverse/post/${mostRepliedPosts[0].parentId}`,
-          completeEnvironment.frontendUrl
-        )} which has ${mostRepliedPosts[0].replyCount} replies</p>`
-        : ""
-      }
-    ${mostReactedPosts[0]
+            `/fediverse/post/${mostRepliedPosts[0].parentId}`,
+            completeEnvironment.frontendUrl
+          )} which has ${mostRepliedPosts[0].replyCount} replies</p>`
+        : ''
+    }
+    ${
+      mostReactedPosts[0]
         ? `<p>The most reacted woot you have is ${new URL(
-          `/fediverse/post/${mostReactedPosts[0].postId}`,
-          completeEnvironment.frontendUrl
-        )} which has ${mostReactedPosts[0].reactions.length} reactions</p>`
-        : ""
-      }
+            `/fediverse/post/${mostReactedPosts[0].postId}`,
+            completeEnvironment.frontendUrl
+          )} which has ${mostReactedPosts[0].reactions.length} reactions</p>`
+        : ''
+    }
     <br />
-    And finaly, the part of the email where I say "give me money". Well, first, give money to your <a href="${completeEnvironment.donationUrl
+    And finaly, the part of the email where I say "give me money". Well, first, give money to your <a href="${
+      completeEnvironment.donationUrl
         ? completeEnvironment.donationUrl
         : new URL(`/about`, completeEnvironment.frontendUrl)
-      }">wafrn instance</a>, then to the team, and then me
+    }">wafrn instance</a>, then to the team, and then me
     <ul>
     	<li><a href="https://ko-fi.com/cyrneko/tiers" target="_blank">Alexia</a> has helped improve the quality of the code and made the way for other improvements. She has done a lot to help wafrn grow</li>
       <li><a href="https://app.wafrn.net/blog/fireisgood">FireIsGood</a> has done A LOT. Like A HUGE FUCKING LOT. You should give her moneys <a href="https://ko-fi.com/fireisgood">here</a> </li>
@@ -377,27 +385,24 @@ async function sendMail() {
     	<li>And finaly... we have to link the wafrn <a href="https://patreon.com/wafrn" target="_blank">patreon</a> and <a href="https://ko-fi.com/wafrn" target="_blank">kofi</a>. This money goes to gabbo for fried chicken and to the wafrn servers. Give me money! please :3</li>
     </ul>
     <br />
-    <p>If you no longer desire to get these emails, you can <a href="${completeEnvironment.frontendUrl
-      }/api/disableEmailNotifications/${user.id}/${user.activationCode
-      }">unsubscribe</a>.</p>
-    `;
-    console.log(`mailing ${user.url}`);
-    await sendEmail({ email: user.email, subject, body });
-    await wait(1000);
+    <p>If you no longer desire to get these emails, you can <a href="${
+      completeEnvironment.frontendUrl
+    }/api/disableEmailNotifications/${user.id}/${user.activationCode}">unsubscribe</a>.</p>
+    `
+    console.log(`mailing ${user.url}`)
+    await sendEmail({ email: user.email, subject, body })
+    await wait(1000)
   }
 }
 
-function calcPercentile(
-  userVal: string | number,
-  allVals: string[] | number[]
-): string {
-  if (allVals.length === 0) return "0";
+function calcPercentile(userVal: string | number, allVals: string[] | number[]): string {
+  if (allVals.length === 0) return '0'
 
-  userVal = parseInt(userVal.toString());
-  allVals = allVals.map((x) => parseInt(x.toString()));
+  userVal = parseInt(userVal.toString())
+  allVals = allVals.map((x) => parseInt(x.toString()))
 
-  const belowUser = allVals.filter((x) => x < userVal).length;
-  return ((belowUser / allVals.length) * 100).toFixed(2);
+  const belowUser = allVals.filter((x) => x < userVal).length
+  return ((belowUser / allVals.length) * 100).toFixed(2)
 }
 
-sendMail();
+sendMail()

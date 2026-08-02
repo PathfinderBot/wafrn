@@ -13,7 +13,7 @@ export const completeEnvironment = {
     frontUrl: baseEnvironment.frontendUrl,
     instanceName: baseEnvironment.instanceUrl,
     enableBsky: baseEnvironment.enableBsky,
-    bskyPDSUrl: baseEnvironment.bskyPdsUrl ? baseEnvironment.bskyPdsUrl : baseEnvironment.bskyPds,
+    bskyPDSUrl: baseEnvironment.bskyPdsUrl ? baseEnvironment.bskyPdsUrl : baseEnvironment.bskyPds
     // the 'satisfies' keyword is used to tell typescript that this object is fits with type Environment but can extend it
     // for example, to make the 'bskyPdsUrl' property not optional
   } satisfies Environment

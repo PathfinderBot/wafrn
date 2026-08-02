@@ -3,9 +3,9 @@ import { activityPubObject } from '../../../interfaces/fediverse/activityPubObje
 import { createNotification } from '../../pushNotifications.js'
 import { acceptRemoteFollow } from '../acceptRemoteFollow.js'
 import { getRemoteActor } from '../getRemoteActor.js'
-import {  } from '../signAndAccept.js'
+import {} from '../signAndAccept.js'
 import { rejectremoteFollow } from '../rejectRemoteFollow.js'
-import {  } from '../../logger.js'
+import {} from '../../logger.js'
 
 async function FollowActivity(body: activityPubObject, remoteUser: User, user: User) {
   const apObject: activityPubObject = body
@@ -27,14 +27,14 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
     let autoAcceptFollow = !user.manuallyAcceptsFollows
 
     const userIsFollowingNewFollower = await Follows.findOne({
-        where: {
-          followerId: userToBeFollowed.id,
-          followedId: remoteUser.id
-        }
-      })
+      where: {
+        followerId: userToBeFollowed.id,
+        followedId: remoteUser.id
+      }
+    })
 
     if (dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' && userIsFollowingNewFollower) {
-      autoAcceptFollow = true;
+      autoAcceptFollow = true
     }
 
     const blockExisting = await ServerBlock.findAll({
@@ -46,8 +46,9 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
 
     if (
       (!autoAcceptFollow &&
-      dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' &&
-      dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true') || blockExisting.length > 0
+        dbOptionAutoAcceptFollowsFromFollowing?.optionValue === 'true' &&
+        dbOptionAutoRejectFollowsFromUsersYouDoNotFollow?.optionValue === 'true') ||
+      blockExisting.length > 0
     ) {
       await rejectremoteFollow(userToBeFollowed.id, remoteUser.id)
       return

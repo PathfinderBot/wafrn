@@ -217,25 +217,25 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
 
   const bskyCheckPromise = completeEnvironment.enableBsky
     ? (async () => {
-      // DETECT BSKY NSFW
-      const bskyPosts = await Post.findAll({
-        where: {
-          id: {
-            [Op.in]: postIds
-          },
-          userId: {
-            [Op.notIn]: await getAllLocalUserIds()
-          },
-          bskyUri: {
-            [Op.ne]: null
+        // DETECT BSKY NSFW
+        const bskyPosts = await Post.findAll({
+          where: {
+            id: {
+              [Op.in]: postIds
+            },
+            userId: {
+              [Op.notIn]: await getAllLocalUserIds()
+            },
+            bskyUri: {
+              [Op.ne]: null
+            }
           }
+        })
+        if (bskyPosts && bskyPosts.length) {
+          await checkBskyLabelersNSFW(bskyPosts.filter((elem) => !elem.content_warning && elem.bskyUri))
         }
-      })
-      if (bskyPosts && bskyPosts.length) {
-        await checkBskyLabelersNSFW(bskyPosts.filter((elem) => !elem.content_warning && elem.bskyUri))
-      }
-      // END DETECT BSKY NSFW
-    })()
+        // END DETECT BSKY NSFW
+      })()
     : Promise.resolve()
 
   const quotesPromise = getQuotes(postIds)
@@ -401,8 +401,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   // debug shit
   await Promise.all([postWithNotes, quotedPosts])
   const allPosts = (await postWithNotes)
-    .concat((await postWithNotes)
-      .flatMap((elem: any) => elem.ancestors))
+    .concat((await postWithNotes).flatMap((elem: any) => elem.ancestors))
     .concat(await quotedPosts)
     .map((elem: any) => (elem.dataValues ? elem.dataValues : elem))
   const postsToFullySend = allPosts.filter((post: any) => {
@@ -469,8 +468,8 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
           ...x,
           ...(pronouns
             ? {
-              pronouns
-            }
+                pronouns
+              }
             : {})
         }
       }),
@@ -523,8 +522,8 @@ async function canInteract(
   let userFollowers = userFollowersInput
     ? userFollowersInput
     : getFollowedsIds(userId, false, {
-      getFollowersInstead: true
-    })
+        getFollowersInstead: true
+      })
   let mentions = mentionsInput ? mentionsInput : getMentionedUserIds([postId])
   let post: Promise<Post | null> | Post | null = postInput !== undefined ? postInput : Post.findByPk(postId)
   await Promise.all([usersFollowing, userFollowers, mentions, post])
@@ -586,9 +585,7 @@ async function canInteract(
         break
       }
       case InteractionControl.SameAsOp: {
-        const originalPost = await Post.findByPk(
-          post.rootId as string
-        )
+        const originalPost = await Post.findByPk(post.rootId as string)
         if (!originalPost || originalPost?.id === post.id) {
           res = false
         } else {
@@ -670,15 +667,13 @@ async function addPostCanInteract(
   if (post.ancestors) {
     post.ancestors = await Promise.all(
       post.ancestors.map((elem: Post) =>
-        addPostCanInteract(userId, (elem.dataValues || elem), userFollowersInput, userFollowingInput, mentionsInput)
+        addPostCanInteract(userId, elem.dataValues || elem, userFollowersInput, userFollowingInput, mentionsInput)
       )
     )
   }
 
   return post
 }
-
-
 
 async function findPostsWithAncestors(postIdsInput: string[]) {
   const postsOriginal = await Post.findAll({
@@ -696,8 +691,6 @@ async function findPostsWithAncestors(postIdsInput: string[]) {
 
   return posts
 }
-
-
 
 export {
   getUnjointedPosts,
