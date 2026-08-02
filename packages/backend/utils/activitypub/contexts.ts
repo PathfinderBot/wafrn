@@ -679,7 +679,7 @@ export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
   'https://www.w3.org/ns/activitystreams': activitystreams
 }
 
-export const LITEPUB_CONTEXT_PATH = '/contexts/litepub-wafrn-0.2.jsonld'
+export const LITEPUB_CONTEXT_PATH = '/contexts/litepub-wafrn-2026-08-02.jsonld'
 export const LEGACY_LITEPUB_CONTEXT_PATH = '/contexts/litepub-0.1.jsonld'
 
 export function getPreloadedContexts(): Record<string, JsonLd> {
