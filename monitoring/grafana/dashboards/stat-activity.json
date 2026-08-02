@@ -67,10 +67,7 @@
           "decimals": 1,
           "mappingType": 1,
           "pattern": "duration",
-          "thresholds": [
-            "60",
-            "300"
-          ],
+          "thresholds": ["60", "300"],
           "type": "number",
           "unit": "s"
         },
@@ -87,10 +84,7 @@
           "decimals": 2,
           "mappingType": 1,
           "pattern": "waiting",
-          "thresholds": [
-            "1",
-            "2"
-          ],
+          "thresholds": ["1", "2"],
           "type": "string",
           "unit": "short",
           "valueMaps": [
@@ -137,9 +131,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -161,9 +153,7 @@
   ],
   "refresh": "5s",
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {

@@ -1,4 +1,4 @@
-# Ok this is a compose that does not include nor frontend nor backend. 
+# Ok this is a compose that does not include nor frontend nor backend.
 services:
   db:
     image: postgres:17
@@ -35,19 +35,17 @@ services:
     image: nauverse/bull-board
     restart: unless-stopped
     ports:
-    - "3000:3000"
+      - "3000:3000"
     environment:
       REDIS_URL: redis:6379
       BULL_PREFIX: bull
     depends_on:
       - redis
 
-
 volumes:
   dbpg:
   redis:
   cache:
-
 
 networks:
   default:
