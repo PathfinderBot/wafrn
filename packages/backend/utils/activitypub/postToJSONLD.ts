@@ -445,10 +445,7 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
           return {
             type: 'Document',
             mediaType: media.mediaType,
-            url:
-              media.url.startsWith('?cid') || media.external
-                ? completeEnvironment.externalCacheurl + encodeURIComponent(media.url)
-                : completeEnvironment.mediaUrl + media.url,
+            url: media.fullUrl,
             sensitive: media.NSFW ? true : false,
             name: media.description
           }
