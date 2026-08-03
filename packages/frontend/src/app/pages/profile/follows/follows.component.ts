@@ -1,3 +1,4 @@
+import { ScrollingModule } from '@angular/cdk/scrolling'
 import { CommonModule } from '@angular/common'
 import { Component, OnDestroy, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule } from '@angular/forms'
@@ -31,6 +32,7 @@ import { PostsService } from '../../../services/posts.service'
     BlogHeaderComponent,
     MatTableModule,
     MatPaginatorModule,
+    ScrollingModule,
     FormsModule,
     MatCardModule,
     MatInputModule,
