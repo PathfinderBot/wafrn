@@ -30,13 +30,13 @@ async function postPetitionSigned(message: object, userInput: User, target: stri
     const sendDate = new Date()
     const stringToSign = `(request-target): post ${url.pathname}\nhost: ${
       url.host
-    }\ndate: ${sendDate.toUTCString()}\nalgorithm: rsa-sha256\ndigest: SHA-256=${digest}`
+    }\ndate: ${sendDate.toUTCString()}\ndigest: SHA-256=${digest}`
     signer.update(stringToSign)
     signer.end()
     const signature = signer.sign(user.privateKey as string).toString('base64')
     const header = `keyId="${
       completeEnvironment.frontendUrl
-    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date algorithm digest",signature="${signature}"`
+    }/fediverse/blog/${user.url.toLocaleLowerCase()}#main-key",algorithm="rsa-sha256",headers="(request-target) host date digest",signature="${signature}"`
     const headers = {
       'Content-Type': 'application/activity+json',
       'User-Agent': getUserAgent('ActivityPubWorker'),

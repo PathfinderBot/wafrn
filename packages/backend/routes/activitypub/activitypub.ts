@@ -44,6 +44,86 @@ function getFeaturedCollectionCacheKey(userId: string): string {
   return `featuredCollection:${userId}`
 }
 
+async function getQuoteByQuoterPostIdCache(quoterPostId: string): Promise<any | undefined> {
+  const cacheKey = `quote:quoterPostId:${quoterPostId}`
+  let cacheResult = await redisCache.get(cacheKey)
+  if (!cacheResult) {
+    const quote: any = await Quotes.findOne({
+      include: [
+        {
+          model: Post,
+          as: 'quotedPost'
+        },
+        {
+          model: Post,
+          as: 'quoterPost',
+          include: [
+            {
+              model: User,
+              as: 'user'
+            }
+          ]
+        }
+      ],
+      where: {
+        quoterPostId
+      }
+    })
+    if (quote) {
+      await redisCache.set(cacheKey, JSON.stringify(quote.dataValues), 'EX', 300)
+      return { dataValues: quote.dataValues }
+    }
+    await redisCache.set(cacheKey, 'null', 'EX', 60)
+    return undefined
+  }
+  if (cacheResult === 'null') return undefined
+  try {
+    return { dataValues: JSON.parse(cacheResult) }
+  } catch (e) {
+    return undefined
+  }
+}
+
+async function getQuoteByQuoterAndQuotedPostIdCache(quoterPostId: string, quotedPostId: string): Promise<any | undefined> {
+  const cacheKey = `quote:quoter:${quoterPostId}:quoted:${quotedPostId}`
+  let cacheResult = await redisCache.get(cacheKey)
+  if (!cacheResult) {
+    const quote: any = await Quotes.findOne({
+      include: [
+        {
+          model: Post,
+          as: 'quotedPost',
+          include: [
+            {
+              model: User,
+              as: 'user'
+            }
+          ]
+        },
+        {
+          model: Post,
+          as: 'quoterPost'
+        }
+      ],
+      where: {
+        quoterPostId,
+        quotedPostId
+      }
+    })
+    if (quote) {
+      await redisCache.set(cacheKey, JSON.stringify(quote.dataValues), 'EX', 300)
+      return { dataValues: quote.dataValues }
+    }
+    await redisCache.set(cacheKey, 'null', 'EX', 60)
+    return undefined
+  }
+  if (cacheResult === 'null') return undefined
+  try {
+    return { dataValues: JSON.parse(cacheResult) }
+  } catch (e) {
+    return undefined
+  }
+}
 // all the stuff related to activitypub goes here
 
 function activityPubRoutes(app: Application) {
@@ -388,27 +468,7 @@ function activityPubRoutes(app: Application) {
     '/fediverse/quote_request/:id',
     getCheckFediverseSignatureFunction(true),
     async (req: SignedRequest, res: Response) => {
-      const quote: any = await Quotes.findOne({
-        include: [
-          {
-            model: Post,
-            as: 'quotedPost'
-          },
-          {
-            model: Post,
-            as: 'quoterPost',
-            include: [
-              {
-                model: User,
-                as: 'user'
-              }
-            ]
-          }
-        ],
-        where: {
-          quoterPostId: req.params.id
-        }
-      })
+        const quote: any = await getQuoteByQuoterPostIdCache(req.params.id)
       if (quote) {
         let objectToSend: activityPubObject = {
           '@context': [
@@ -431,28 +491,10 @@ function activityPubRoutes(app: Application) {
     '/fediverse/quote_authorization/:quoterPostId/:quotedPostId',
     getCheckFediverseSignatureFunction(true),
     async (req: SignedRequest, res: Response) => {
-      const quote: any = await Quotes.findOne({
-        include: [
-          {
-            model: Post,
-            as: 'quotedPost',
-            include: [
-              {
-                model: User,
-                as: 'user'
-              }
-            ]
-          },
-          {
-            model: Post,
-            as: 'quoterPost'
-          }
-        ],
-        where: {
-          quoterPostId: req.params.quoterPostId,
-          quotedPostId: req.params.quotedPostId
-        }
-      })
+      const quote: any = await getQuoteByQuoterAndQuotedPostIdCache(
+        req.params.quoterPostId,
+        req.params.quotedPostId
+      )
       // TODO we currently assume every stored quote is authorized
       if (quote) {
         const objectToSend: activityPubObject = {
