@@ -202,8 +202,33 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
       activated: true
     }
     userFound = userFound ? userFound : await internalGetDBUser(newDataTmp.bskyDid, newDataTmp.url)
-    // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
+    // if user has fedi id and marked remoteid false we dont update from bsky
+    // if user is local, we check if their handle has changed
     if (userFound?.email) {
+      const alternateUrl = '@' + (data.handle === 'handle.invalid' ? `handle.invalid${data.did}` : data.handle)
+      if (userFound.alternateUrl !== alternateUrl) {
+        const conflictingUsers = await User.findAll({
+          where: {
+            [Op.or]: [{ url: alternateUrl }, { alternateUrl: alternateUrl }],
+            id: { [Op.ne]: userFound.id }
+          }
+        })
+        for (const existingUser of conflictingUsers) {
+          if (existingUser.id === userFound.id) {
+            continue
+          }
+          if (existingUser.alternateUrl === alternateUrl) {
+            existingUser.alternateUrl = undefined
+          }
+          if (existingUser.url === alternateUrl) {
+            existingUser.url = `${existingUser.url}_OVERWRITTEN_ON${new Date().getTime()}`
+          }
+          existingUser.activated = false
+          await existingUser.save()
+        }
+        userFound.alternateUrl = alternateUrl
+        await userFound.save()
+      }
       return (await User.findByPk(userFound.id)) as User
     }
     if (userFound?.remoteId && !userFound.isBskyPrimary) {
