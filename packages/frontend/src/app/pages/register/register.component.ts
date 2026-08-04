@@ -239,7 +239,7 @@ export class RegisterComponent {
     'CMOS battery',
     'IP over Avian Carriers',
     'wrong',
-    'Ceiling cat is watching you create a Wafrn account (you´re doing great, by the way!)',
+    'Ceiling cat is watching you create a Wafrn account (you\'re doing great, by the way!)'
     'XKCD comic',
     'a walrus in disguise',
     '[REDACTED]',
