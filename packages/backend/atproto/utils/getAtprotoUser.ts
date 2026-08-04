@@ -49,6 +49,7 @@ async function clearStaleBskyIdentity(user: User) {
       error
     })
   }
+  return user
 }
 
 async function forcePopulateUsers(dids: string[], localUser: User) {
@@ -92,9 +93,12 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
             ]
           }
         })
-  // sometimes we can get the dids and if its a local user we just return it and thats it
-  if (userFound && userFound.email) {
-    return (await User.findByPk(userFound.id)) as User
+  if (userFound?.email && userFound.bskyDid) {
+    // local user already linked to a bsky account: make sure it's still hosted on our PDS
+    userFound = await clearStaleBskyIdentity(userFound)
+    if (!userFound.bskyDid) {
+      return (await User.findByPk(userFound.id)) as User
+    }
   }
   const did = handle.startsWith('did:')
     ? handle
@@ -103,8 +107,9 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
   if (userFound) {
     avatarString = userFound.avatar
 
-    // we check if it's bridgy fed pds by getting did doc of course
-    const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
+    const bskyPds = userFound.email
+      ? undefined
+      : doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
     if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
       // bridgy user. find the alsoknownas user
       const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
@@ -148,6 +153,9 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
       bskyUserResponse = pdsData
     }
   } catch (error) {
+    if (userFound?.email) {
+      return (await User.findByPk(userFound.id)) as User
+    }
     return (await User.findOne({
       where: {
         url: completeEnvironment.deletedUser
