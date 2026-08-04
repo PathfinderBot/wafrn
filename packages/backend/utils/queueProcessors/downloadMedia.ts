@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
+import { pipeline } from 'stream/promises'
 import { Job } from 'bullmq'
 import { getResolver } from 'plc-did-resolver'
 import { Resolver } from 'did-resolver'
@@ -135,23 +136,25 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
   fs.writeFileSync(localFileName + '.mime', mime)
 
   const writeStream = fs.createWriteStream(localFileName)
-  stream.pipe(writeStream)
+  try {
+    await pipeline(stream, writeStream)
+  } catch (error) {
+    fs.rm(localFileName, { force: true }, () => {})
+    fs.rm(localFileName + '.mime', { force: true }, () => {})
+    throw error
+  }
 
-  return new Promise<DownloadJobResult>((resolve, reject) => {
-    writeStream.on('finish', async () => {
-      if (USE_EXIV_FOR_ALT_TEXT) {
-        const media = await Media.findOne({
-          where: sequelize.where(
-            sequelize.fn('md5', sequelize.col('url')),
-            crypto.createHash('md5').update(mediaUrl).digest('hex')
-          )
-        })
-        if (media?.description) {
-          await writeAlTextAsEXIV(localFileName, media?.description)
-        }
-      }
-      resolve({ mime, localFileName })
+  if (USE_EXIV_FOR_ALT_TEXT) {
+    const media = await Media.findOne({
+      where: sequelize.where(
+        sequelize.fn('md5', sequelize.col('url')),
+        crypto.createHash('md5').update(mediaUrl).digest('hex')
+      )
     })
-    writeStream.on('error', (err) => reject(err))
-  })
+    if (media?.description) {
+      await writeAlTextAsEXIV(localFileName, media?.description)
+    }
+  }
+
+  return { mime, localFileName } as DownloadJobResult
 }
