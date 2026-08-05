@@ -1,18 +1,22 @@
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
-import { pipeline } from 'stream/promises'
 import { Job } from 'bullmq'
+import { getResolver } from 'plc-did-resolver'
+import { Resolver } from 'did-resolver'
 import getUserAgent from '../getUserAgent.js'
-import { getServerFromDid } from '../atproto/getServerFromDid.js'
-import { logger } from '../logger.js'
 import axios from 'axios'
 import { getMimeType } from 'stream-mime-type'
 import { spawn } from 'child_process'
 import sequelize from 'sequelize/lib/sequelize'
 import { Media } from '../../models/media.js'
 import { completeEnvironment } from '../backendOptions.js'
-import { assertPublicHttpUrl, ssrfSafeHttpAgent, ssrfSafeHttpsAgent } from '../ssrfProtection.js'
+import {
+  assertPublicHttpUrl,
+  assertUrlResolvesPublic,
+  ssrfSafeHttpAgent,
+  ssrfSafeHttpsAgent
+} from '../ssrfProtection.js'
 
 export type DownloadJobPayload = {
   mediaUrl: string
@@ -23,25 +27,6 @@ export type DownloadJobResult = {
 }
 
 const USE_EXIV_FOR_ALT_TEXT = false
-const MEDIA_FETCH_TIMEOUT_MS = 25000
-function withTimeout<T>(promise: Promise<T>, ms: number, onTimeout: () => void): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      onTimeout()
-      reject(new Error(`Timed out after ${ms}ms`))
-    }, ms)
-    promise.then(
-      (value) => {
-        clearTimeout(timer)
-        resolve(value)
-      },
-      (error) => {
-        clearTimeout(timer)
-        reject(error)
-      }
-    )
-  })
-}
 
 function writeAlTextAsEXIV(filename: string, altText: string) {
   return new Promise((resolve, reject) => {
@@ -78,20 +63,45 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
       throw new Error('Missing cid param in ATProto URL')
     }
 
-    let pdsUrl = ''
-    try {
-      pdsUrl = await getServerFromDid(did)
-    } catch {}
-    if (!pdsUrl) {
-      try {
-        pdsUrl = await getServerFromDid(did, true)
-      } catch {}
+    if (did.startsWith('did:plc')) {
+      const plcResolver = getResolver()
+      const didResolver = new Resolver(plcResolver)
+      const didData = await didResolver.resolve(did)
+      if (didData?.didDocument?.service) {
+        const url =
+          didData.didDocument.service[0].serviceEndpoint +
+          '/xrpc/com.atproto.sync.getBlob?did=' +
+          encodeURIComponent(did) +
+          '&cid=' +
+          encodeURIComponent(cid)
+        mediaUrl = url
+      }
+    } else if (did.startsWith('did:web')) {
+      // get did doc first
+      const didWebUrl = `https://${did.split('did:web:')[1]}/.well-known/did.json`
+      await assertUrlResolvesPublic(didWebUrl)
+      const docRes = await fetch(didWebUrl, {
+        headers: {
+          'User-Agent': getUserAgent('ATProtoWorker')
+        }
+      })
+      const didDoc = await docRes.json()
+      const atProtoServer = didDoc.service.find(
+        (x: any) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer'
+      )
+
+      if (!atProtoServer) {
+        throw new Error(`ATProto PDS not found on DID doc for ${did}`)
+      }
+
+      const url =
+        atProtoServer.serviceEndpoint +
+        '/xrpc/com.atproto.sync.getBlob?did=' +
+        encodeURIComponent(did) +
+        '&cid=' +
+        encodeURIComponent(cid)
+      mediaUrl = url
     }
-    if (!pdsUrl) {
-      throw new Error(`Could not resolve PDS for did ${did}`)
-    }
-    mediaUrl =
-      pdsUrl + '/xrpc/com.atproto.sync.getBlob?did=' + encodeURIComponent(did) + '&cid=' + encodeURIComponent(cid)
   }
 
   let readStream: fs.ReadStream
@@ -113,7 +123,7 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
     const response = await axios.get(mediaUrl, {
       responseType: 'stream' as const,
       headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') },
-      timeout: MEDIA_FETCH_TIMEOUT_MS,
+      timeout: 25000,
       maxRedirects: 3,
       httpAgent: ssrfSafeHttpAgent,
       httpsAgent: ssrfSafeHttpsAgent
@@ -121,37 +131,27 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
     readStream = response.data
   }
 
-  // getMimeType() pipes readStream internally without forwarding its errors, so destroying
-  // it on timeout below emits an unhandled 'error' event unless something is listening here.
-  readStream.on('error', (error) => {
-    logger.debug({ message: 'downloadMedia readStream error (likely aborted after timeout)', mediaUrl, error })
-  })
-
-  const { stream, mime } = await withTimeout(getMimeType(readStream), MEDIA_FETCH_TIMEOUT_MS, () => {
-    readStream.destroy(new Error('Aborted: mime sniffing timed out'))
-  })
+  const { stream, mime } = await getMimeType(readStream)
   fs.writeFileSync(localFileName + '.mime', mime)
 
   const writeStream = fs.createWriteStream(localFileName)
-  try {
-    await pipeline(stream, writeStream)
-  } catch (error) {
-    fs.rm(localFileName, { force: true }, () => {})
-    fs.rm(localFileName + '.mime', { force: true }, () => {})
-    throw error
-  }
+  stream.pipe(writeStream)
 
-  if (USE_EXIV_FOR_ALT_TEXT) {
-    const media = await Media.findOne({
-      where: sequelize.where(
-        sequelize.fn('md5', sequelize.col('url')),
-        crypto.createHash('md5').update(mediaUrl).digest('hex')
-      )
+  return new Promise<DownloadJobResult>((resolve, reject) => {
+    writeStream.on('finish', async () => {
+      if (USE_EXIV_FOR_ALT_TEXT) {
+        const media = await Media.findOne({
+          where: sequelize.where(
+            sequelize.fn('md5', sequelize.col('url')),
+            crypto.createHash('md5').update(mediaUrl).digest('hex')
+          )
+        })
+        if (media?.description) {
+          await writeAlTextAsEXIV(localFileName, media?.description)
+        }
+      }
+      resolve({ mime, localFileName })
     })
-    if (media?.description) {
-      await writeAlTextAsEXIV(localFileName, media?.description)
-    }
-  }
-
-  return { mime, localFileName } as DownloadJobResult
+    writeStream.on('error', (err) => reject(err))
+  })
 }

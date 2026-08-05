@@ -49,7 +49,6 @@ async function clearStaleBskyIdentity(user: User) {
       error
     })
   }
-  return user
 }
 
 async function forcePopulateUsers(dids: string[], localUser: User) {
@@ -93,12 +92,9 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
             ]
           }
         })
-  if (userFound?.email && userFound.bskyDid) {
-    // local user already linked to a bsky account: make sure it's still hosted on our PDS
-    userFound = await clearStaleBskyIdentity(userFound)
-    if (!userFound.bskyDid) {
-      return (await User.findByPk(userFound.id)) as User
-    }
+  // sometimes we can get the dids and if its a local user we just return it and thats it
+  if (userFound && userFound.email) {
+    return (await User.findByPk(userFound.id)) as User
   }
   const did = handle.startsWith('did:')
     ? handle
@@ -107,9 +103,8 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
   if (userFound) {
     avatarString = userFound.avatar
 
-    const bskyPds = userFound.email
-      ? undefined
-      : doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
+    // we check if it's bridgy fed pds by getting did doc of course
+    const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
     if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
       // bridgy user. find the alsoknownas user
       const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
@@ -153,9 +148,6 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
       bskyUserResponse = pdsData
     }
   } catch (error) {
-    if (userFound?.email) {
-      return (await User.findByPk(userFound.id)) as User
-    }
     return (await User.findOne({
       where: {
         url: completeEnvironment.deletedUser
@@ -210,36 +202,8 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
       activated: true
     }
     userFound = userFound ? userFound : await internalGetDBUser(newDataTmp.bskyDid, newDataTmp.url)
-    // if user has fedi id and marked remoteid false we dont update from bsky
-    // if user is local, we check if their handle has changed
+    // if user is local OR user has fedi id and marked remoteid false we dont update from bsky
     if (userFound?.email) {
-      const alternateUrl = '@' + (data.handle === 'handle.invalid' ? `handle.invalid${data.did}` : data.handle)
-      if (userFound.alternateUrl !== alternateUrl) {
-        const conflictingUsers = await User.findAll({
-          where: {
-            [Op.or]: [{ url: alternateUrl }, { alternateUrl: alternateUrl }],
-            id: { [Op.ne]: userFound.id }
-          }
-        })
-        for (const existingUser of conflictingUsers) {
-          if (existingUser.id === userFound.id) {
-            continue
-          }
-          if (existingUser.alternateUrl === alternateUrl) {
-            existingUser.alternateUrl = undefined
-          }
-          if (existingUser.url === alternateUrl) {
-            existingUser.url = `${existingUser.url}_OVERWRITTEN_ON${new Date().getTime()}`
-          }
-          // never deactivate local users here, only remote ones
-          if (!existingUser.email) {
-            existingUser.activated = false
-          }
-          await existingUser.save()
-        }
-        userFound.alternateUrl = alternateUrl
-        await userFound.save()
-      }
       return (await User.findByPk(userFound.id)) as User
     }
     if (userFound?.remoteId && !userFound.isBskyPrimary) {
