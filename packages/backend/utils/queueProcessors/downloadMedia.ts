@@ -5,6 +5,7 @@ import { pipeline } from 'stream/promises'
 import { Job } from 'bullmq'
 import getUserAgent from '../getUserAgent.js'
 import { getServerFromDid } from '../atproto/getServerFromDid.js'
+import { logger } from '../logger.js'
 import axios from 'axios'
 import { getMimeType } from 'stream-mime-type'
 import { spawn } from 'child_process'
@@ -119,6 +120,12 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
     })
     readStream = response.data
   }
+
+  // getMimeType() pipes readStream internally without forwarding its errors, so destroying
+  // it on timeout below emits an unhandled 'error' event unless something is listening here.
+  readStream.on('error', (error) => {
+    logger.debug({ message: 'downloadMedia readStream error (likely aborted after timeout)', mediaUrl, error })
+  })
 
   const { stream, mime } = await withTimeout(getMimeType(readStream), MEDIA_FETCH_TIMEOUT_MS, () => {
     readStream.destroy(new Error('Aborted: mime sniffing timed out'))
