@@ -28,6 +28,25 @@ export type DownloadJobResult = {
 }
 
 const USE_EXIV_FOR_ALT_TEXT = false
+const MEDIA_FETCH_TIMEOUT_MS = 25000
+function withTimeout<T>(promise: Promise<T>, ms: number, onTimeout: () => void): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      onTimeout()
+      reject(new Error(`Timed out after ${ms}ms`))
+    }, ms)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timer)
+        reject(error)
+      }
+    )
+  })
+}
 
 function writeAlTextAsEXIV(filename: string, altText: string) {
   return new Promise((resolve, reject) => {
@@ -84,7 +103,8 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
       const docRes = await fetch(didWebUrl, {
         headers: {
           'User-Agent': getUserAgent('ATProtoWorker')
-        }
+        },
+        signal: AbortSignal.timeout(MEDIA_FETCH_TIMEOUT_MS)
       })
       const didDoc = await docRes.json()
       const atProtoServer = didDoc.service.find(
@@ -124,7 +144,7 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
     const response = await axios.get(mediaUrl, {
       responseType: 'stream' as const,
       headers: { 'User-Agent': getUserAgent('WafrnMediaCacher') },
-      timeout: 25000,
+      timeout: MEDIA_FETCH_TIMEOUT_MS,
       maxRedirects: 3,
       httpAgent: ssrfSafeHttpAgent,
       httpsAgent: ssrfSafeHttpsAgent
@@ -132,7 +152,9 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
     readStream = response.data
   }
 
-  const { stream, mime } = await getMimeType(readStream)
+  const { stream, mime } = await withTimeout(getMimeType(readStream), MEDIA_FETCH_TIMEOUT_MS, () => {
+    readStream.destroy(new Error('Aborted: mime sniffing timed out'))
+  })
   fs.writeFileSync(localFileName + '.mime', mime)
 
   const writeStream = fs.createWriteStream(localFileName)
