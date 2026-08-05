@@ -1,4 +1,4 @@
-import { Model, DataType, Column, Table } from "sequelize-typescript"
+import { Model, DataType, Column, Table } from 'sequelize-typescript'
 
 export interface UnifiedPushDataAttributes {
   id: string // UUID
@@ -11,11 +11,14 @@ export interface UnifiedPushDataAttributes {
 }
 
 @Table({
-  tableName: "unifiedPushData",
-  modelName: "unifiedPushData",
+  tableName: 'unifiedPushData',
+  modelName: 'unifiedPushData',
   timestamps: true
 })
-export class UnifiedPushData extends Model<UnifiedPushDataAttributes, Partial<UnifiedPushDataAttributes>> implements UnifiedPushDataAttributes {
+export class UnifiedPushData
+  extends Model<UnifiedPushDataAttributes, Partial<UnifiedPushDataAttributes>>
+  implements UnifiedPushDataAttributes
+{
   @Column({
     type: DataType.UUID,
     primaryKey: true,
@@ -40,7 +43,7 @@ export class UnifiedPushData extends Model<UnifiedPushDataAttributes, Partial<Un
     allowNull: false
   })
   declare deviceAuth: string
-  
+
   @Column({
     type: DataType.STRING,
     allowNull: false

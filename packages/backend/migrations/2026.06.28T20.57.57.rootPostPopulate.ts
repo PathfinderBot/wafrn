@@ -1,22 +1,23 @@
-import { DataTypes, QueryTypes, Sequelize, UUIDV4 } from "sequelize";
-import { Migration } from "../migrate.js";
-import { FederatedHost } from "../models/federatedHost.js";
-import { User } from "../models/user.js";
-import { DataType } from "sequelize-typescript";
-import { logger } from "../utils/logger.js";
-import { sequelize } from "../models/index.js";
+import { DataTypes, QueryTypes, Sequelize, UUIDV4 } from 'sequelize'
+import { Migration } from '../migrate.js'
+import { FederatedHost } from '../models/federatedHost.js'
+import { User } from '../models/user.js'
+import { DataType } from 'sequelize-typescript'
+import { logger } from '../utils/logger.js'
+import { sequelize } from '../models/index.js'
 
 export const up: Migration = async (params) => {
-    const queryInterface = params.context;
-    let processed = 0;
-    let iteration = 0;
-    const batchSize = 250;
+  const queryInterface = params.context
+  let processed = 0
+  let iteration = 0
+  const batchSize = 250
 
-    logger.debug('rootId backfill starting');
+  logger.debug('rootId backfill starting')
 
-    while (true) {
-        // Get batch of posts without rootId
-        const updateQuery = await sequelize.query(`WITH RECURSIVE
+  while (true) {
+    // Get batch of posts without rootId
+    const updateQuery = await sequelize.query(
+      `WITH RECURSIVE
 batch AS (
     SELECT id, "parentId"
     FROM posts
@@ -77,24 +78,22 @@ expanded AS (
 UPDATE posts
 SET "rootId" = expanded."rootId"
 FROM expanded
-WHERE posts.id = expanded.id;`, {
-            type: QueryTypes.UPDATE
-        })
-        const updated = updateQuery[1]
-        processed += updated;
-        iteration++;
-        if (updated === 0) {
-            logger.info(`update complete`)
-            break;
-        }
-        else {
-            logger.info(`Updating rootId: processed ${processed} (${updated}), iteration ${iteration}`)
-        }
+WHERE posts.id = expanded.id;`,
+      {
+        type: QueryTypes.UPDATE
+      }
+    )
+    const updated = updateQuery[1]
+    processed += updated
+    iteration++
+    if (updated === 0) {
+      logger.info(`update complete`)
+      break
+    } else {
+      logger.info(`Updating rootId: processed ${processed} (${updated}), iteration ${iteration}`)
     }
-
-};
+  }
+}
 export const down: Migration = async (params) => {
-    const queryInterface = params.context;
-
-
-};
+  const queryInterface = params.context
+}

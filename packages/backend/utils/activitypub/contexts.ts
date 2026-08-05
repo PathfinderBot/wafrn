@@ -9,7 +9,7 @@ import type { Context, JsonLd } from 'jsonld/jsonld-spec.js'
 import { completeEnvironment } from '../backendOptions.js'
 
 /* eslint:disable:quotemark indent */
-const id_v1 = {
+export const id_v1 = {
   '@context': {
     id: '@id',
     type: '@type',
@@ -333,6 +333,10 @@ const activitystreams = {
       '@id': 'as:preview',
       '@type': '@id'
     },
+    provider: {
+      '@id': 'as:provider',
+      '@type': '@id'
+    },
     replies: {
       '@id': 'as:replies',
       '@type': '@id'
@@ -379,10 +383,7 @@ const activitystreams = {
       '@id': 'as:name',
       '@container': '@language'
     },
-    duration: {
-      '@id': 'as:duration',
-      '@type': 'xsd:duration'
-    },
+    duration: 'as:duration',
     endTime: {
       '@id': 'as:endTime',
       '@type': 'xsd:dateTime'
@@ -396,24 +397,11 @@ const activitystreams = {
       '@type': '@id'
     },
     hreflang: 'as:hreflang',
-    latitude: {
-      '@id': 'as:latitude',
-      '@type': 'xsd:float'
-    },
-    longitude: {
-      '@id': 'as:longitude',
-      '@type': 'xsd:float'
-    },
     mediaType: 'as:mediaType',
     published: {
       '@id': 'as:published',
       '@type': 'xsd:dateTime'
     },
-    radius: {
-      '@id': 'as:radius',
-      '@type': 'xsd:float'
-    },
-    rel: 'as:rel',
     startIndex: {
       '@id': 'as:startIndex',
       '@type': 'xsd:nonNegativeInteger'
@@ -453,7 +441,7 @@ const activitystreams = {
       '@type': 'xsd:dateTime'
     },
     inbox: {
-      '@id': 'ldp:inbox',
+      '@id': 'as:inbox',
       '@type': '@id'
     },
     outbox: {
@@ -577,7 +565,57 @@ export const wafrnContext = {
       contentMap: {
         '@id': 'as:content',
         '@container': '@language'
-      }
+      },
+
+      _misskey_content: 'misskey:_misskey_content',
+      _misskey_quote: 'misskey:_misskey_quote',
+      _misskey_summary: 'misskey:_misskey_summary',
+      gts: 'https://gotosocial.org/ns#',
+      interactionPolicy: {
+        '@id': 'gts:interactionPolicy',
+        '@type': '@id'
+      },
+      canQuote: {
+        '@id': 'gts:canQuote',
+        '@type': '@id'
+      },
+      canLike: {
+        '@id': 'gts:canLike',
+        '@type': '@id'
+      },
+      canReply: {
+        '@id': 'gts:canReply',
+        '@type': '@id'
+      },
+      canAnnounce: {
+        '@id': 'gts:canAnnounce',
+        '@type': '@id'
+      },
+      automaticApproval: {
+        '@id': 'gts:automaticApproval',
+        '@type': '@id'
+      },
+      interactingObject: {
+        '@id': 'gts:interactingObject',
+        '@type': '@id'
+      },
+      interactionTarget: {
+        '@id': 'gts:interactionTarget',
+        '@type': '@id'
+      },
+      QuoteAuthorization: 'https://w3id.org/fep/044f#QuoteAuthorization',
+      quote: {
+        '@id': 'https://w3id.org/fep/044f#quote',
+        '@type': '@id'
+      },
+      quoteAuthorization: {
+        '@id': 'https://w3id.org/fep/044f#quoteAuthorization',
+        '@type': '@id'
+      },
+      wafrn: 'https://wafrn.net/ns#',
+      blueskyUri: 'wafrn:blueskyUri',
+      blueskyCid: 'wafrn:blueskyCid',
+      forceDescendentsToUseSameInteractionControls: 'wafrn:forceDescendentsToUseSameInteractionControls'
     }
   ]
 } satisfies JsonLd
@@ -641,94 +679,100 @@ export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
   'https://www.w3.org/ns/activitystreams': activitystreams
 }
 
+export const LITEPUB_CONTEXT_PATH = '/contexts/litepub-wafrn-2026-08-02.jsonld'
+export const LEGACY_LITEPUB_CONTEXT_PATH = '/contexts/litepub-0.1.jsonld'
+
 export function getPreloadedContexts(): Record<string, JsonLd> {
   const res = PRELOADED_CONTEXTS
-  const wafrnContextUrl = `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
-  res[wafrnContextUrl] = wafrnContext
+  res[`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`] = wafrnContext
+  res[`${completeEnvironment.frontendUrl}${LEGACY_LITEPUB_CONTEXT_PATH}`] = wafrnContext
   return res
 }
 
-
 export const WellKnownContext = {
-  "@context": [
-    "https://www.w3.org/ns/activitystreams",
-    "https://w3id.org/security/v1",
+  '@context': [
+    'https://www.w3.org/ns/activitystreams',
+    'https://w3id.org/security/v1',
     {
       // as non-standards
-      manuallyApprovesFollowers: "as:manuallyApprovesFollowers",
+      manuallyApprovesFollowers: 'as:manuallyApprovesFollowers',
       movedTo: {
-        "@id": "https://www.w3.org/ns/activitystreams#movedTo",
-        "@type": "@id",
+        '@id': 'https://www.w3.org/ns/activitystreams#movedTo',
+        '@type': '@id'
       },
-      movedToUri: "as:movedTo",
-      sensitive: "as:sensitive",
-      Hashtag: "as:Hashtag",
-      quoteUri: "fedibird:quoteUri",
-      quoteUrl: "as:quoteUrl",
+      movedToUri: 'as:movedTo',
+      sensitive: 'as:sensitive',
+      Hashtag: 'as:Hashtag',
+      quoteUri: 'fedibird:quoteUri',
+      quoteUrl: 'as:quoteUrl',
       // Mastodon
-      toot: "http://joinmastodon.org/ns#",
-      Emoji: "toot:Emoji",
-      featured: "toot:featured",
-      discoverable: "toot:discoverable",
+      toot: 'http://joinmastodon.org/ns#',
+      Emoji: 'toot:Emoji',
+      featured: 'toot:featured',
+      discoverable: 'toot:discoverable',
       // schema
-      schema: "http://schema.org#",
-      PropertyValue: "schema:PropertyValue",
-      value: "schema:value",
+      schema: 'http://schema.org#',
+      PropertyValue: 'schema:PropertyValue',
+      value: 'schema:value',
       // Misskey
-      misskey: "https://misskey-hub.net/ns#",
-      _misskey_content: "misskey:_misskey_content",
-      _misskey_quote: "misskey:_misskey_quote",
-      _misskey_reaction: "misskey:_misskey_reaction",
-      _misskey_votes: "misskey:_misskey_votes",
-      _misskey_talk: "misskey:_misskey_talk",
-      _misskey_summary: "misskey:_misskey_summary",
-      isCat: "misskey:isCat",
+      misskey: 'https://misskey-hub.net/ns#',
+      _misskey_content: 'misskey:_misskey_content',
+      _misskey_quote: 'misskey:_misskey_quote',
+      _misskey_reaction: 'misskey:_misskey_reaction',
+      _misskey_votes: 'misskey:_misskey_votes',
+      _misskey_talk: 'misskey:_misskey_talk',
+      _misskey_summary: 'misskey:_misskey_summary',
+      isCat: 'misskey:isCat',
       // Fedibird
-      fedibird: "http://fedibird.com/ns#",
+      fedibird: 'http://fedibird.com/ns#',
       // vcard
-      vcard: "http://www.w3.org/2006/vcard/ns#",
+      vcard: 'http://www.w3.org/2006/vcard/ns#',
       // litepub
-      litepub: "http://litepub.social/ns#",
-      EmojiReact: "litepub:EmojiReact",
-      EmojiReaction: "litepub:EmojiReaction",
+      litepub: 'http://litepub.social/ns#',
+      EmojiReact: 'litepub:EmojiReact',
+      EmojiReaction: 'litepub:EmojiReaction',
       // mia
-      Bite: "https://ns.mia.jetzt/as#Bite",
+      Bite: 'https://ns.mia.jetzt/as#Bite',
       canBite: {
-        "@id": "https://ns.mia.jetzt/as#canBite",
-        "@type": "@id",
+        '@id': 'https://ns.mia.jetzt/as#canBite',
+        '@type': '@id'
       },
       // pancakes
       pronouns: {
-        "@id": "https://ns.pancakes.gay/as#pronouns",
-        "@container": "@language",
+        '@id': 'https://ns.pancakes.gay/as#pronouns',
+        '@container': '@language'
       },
       // mastodon-style quotes
-      QuoteAuthorization: "https://w3id.org/fep/044f#QuoteAuthorization",
+      QuoteAuthorization: 'https://w3id.org/fep/044f#QuoteAuthorization',
       quote: {
-        "@id": "https://w3id.org/fep/044f#quote",
-        "@type": "@id",
+        '@id': 'https://w3id.org/fep/044f#quote',
+        '@type': '@id'
       },
-      gts: "https://gotosocial.org/ns#",
+      quoteAuthorization: {
+        '@id': 'https://w3id.org/fep/044f#quoteAuthorization',
+        '@type': '@id'
+      },
+      gts: 'https://gotosocial.org/ns#',
       interactionPolicy: {
-        "@id": "gts:interactionPolicy",
-        "@type": "@id",
+        '@id': 'gts:interactionPolicy',
+        '@type': '@id'
       },
       canQuote: {
-        "@id": "gts:canQuote",
-        "@type": "@id",
+        '@id': 'gts:canQuote',
+        '@type': '@id'
       },
       automaticApproval: {
-        "@id": "gts:automaticApproval",
-        "@type": "@id",
+        '@id': 'gts:automaticApproval',
+        '@type': '@id'
       },
       interactingObject: {
-        "@id": "gts:interactingObject",
-        "@type": "@id",
+        '@id': 'gts:interactingObject',
+        '@type': '@id'
       },
       interactionTarget: {
-        "@id": "gts:interactionTarget",
-        "@type": "@id",
-      },
-    },
-  ],
-};
+        '@id': 'gts:interactionTarget',
+        '@type': '@id'
+      }
+    }
+  ]
+}

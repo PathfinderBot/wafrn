@@ -9,81 +9,82 @@
     <mat-label>{{ 'blog.searchUser' | translate }}</mat-label>
     <input matInput class="w-full" [(ngModel)]="dataSource.filter" />
   </mat-form-field>
-  <table mat-table [dataSource]="dataSource">
-    <ng-container matColumnDef="avatar">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td mat-cell *matCellDef="let element">
-        <app-avatar-small [user]="element"></app-avatar-small>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="url">
-      <th mat-header-cell *matHeaderCellDef>{{ 'blog.user' | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        <a [blogLink]="element">{{ element.url }}</a>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef>{{ 'blog.since' | translate }}</th>
-      <td mat-cell *matCellDef="let element">
-        {{ element.follows.createdAt | date: 'short' }}
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td mat-cell *matCellDef="let element">
-        @if (!notYetAcceptedFollows.includes(element.id) && !followedUsers.includes(element.id)) {
-          <button
-            mat-stroked-button
-            color="accent"
-            class="follow-button flex-shrink-0"
-            (click)="postService.followUser(element.id)"
-          >
-            {{ 'blog.followUser' | translate }}
-          </button>
-        }
-        @if (notYetAcceptedFollows.includes(element.id)) {
-          <button
-            mat-stroked-button
-            color="accent"
-            class="follow-button flex-shrink-0"
-            (click)="postService.unfollowUser(element.id)"
-          >
-            {{ 'post-header.awaitingApproval' | translate }}
-          </button>
-        }
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="removeFollower">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td *matCellDef="let element">
-        @if (
-          activatedRoute.snapshot.routeConfig?.path?.toLowerCase()?.endsWith('followers') && blogDetails.id === myId
-        ) {
-          @if (!element.follows.accepted) {
-            <button mat-mini-fab (mouseup)="acceptFollower(element)">
+  <cdk-virtual-scroll-viewport itemSize="56" class="follows-viewport">
+    <table mat-table [dataSource]="dataSource">
+      <ng-container matColumnDef="avatar">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <app-avatar-small [user]="element"></app-avatar-small>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="url">
+        <th mat-header-cell *matHeaderCellDef>{{ 'blog.user' | translate }}</th>
+        <td mat-cell *matCellDef="let element" class="url-cell">
+          <a [blogLink]="element" class="url-link" [matTooltip]="element.url">{{ element.url }}</a>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>{{ 'blog.since' | translate }}</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.follows.createdAt | date: 'short' }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          @if (!notYetAcceptedFollows.includes(element.id) && !followedUsers.includes(element.id)) {
+            <button
+              mat-stroked-button
+              color="accent"
+              class="follow-button flex-shrink-0"
+              (click)="postService.followUser(element.id)"
+            >
+              {{ 'blog.followUser' | translate }}
+            </button>
+          }
+          @if (notYetAcceptedFollows.includes(element.id)) {
+            <button
+              mat-stroked-button
+              color="accent"
+              class="follow-button flex-shrink-0"
+              (click)="postService.unfollowUser(element.id)"
+            >
+              {{ 'post-header.awaitingApproval' | translate }}
+            </button>
+          }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="removeFollower">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td *matCellDef="let element">
+          @if (
+            activatedRoute.snapshot.routeConfig?.path?.toLowerCase()?.endsWith('followers') && blogDetails.id === myId
+          ) {
+            @if (!element.follows.accepted) {
+              <button mat-mini-fab (mouseup)="acceptFollower(element)">
+                <fa-icon
+                  size="lg"
+                  class="cursor-pointer"
+                  [icon]="acceptIcon"
+                  [matTooltip]="'blog.acceptFollower' | translate"
+                ></fa-icon>
+              </button>
+            }
+            <button mat-mini-fab (mouseup)="deleteFollower(element)">
               <fa-icon
                 size="lg"
                 class="cursor-pointer"
-                [icon]="acceptIcon"
-                [matTooltip]="'blog.acceptFollower' | translate"
+                [icon]="deleteIcon"
+                [matTooltip]="'blog.removeFollower' | translate"
               ></fa-icon>
             </button>
           }
-          <button mat-mini-fab (mouseup)="deleteFollower(element)">
-            <fa-icon
-              size="lg"
-              class="cursor-pointer"
-              [icon]="deleteIcon"
-              [matTooltip]="'blog.removeFollower' | translate"
-            ></fa-icon>
-          </button>
-        }
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-  </table>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </cdk-virtual-scroll-viewport>
 
   <mat-paginator
     [pageSizeOptions]="[10, 25, 50, 100]"

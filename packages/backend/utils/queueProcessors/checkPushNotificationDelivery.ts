@@ -1,13 +1,13 @@
-import { Job } from "bullmq";
-import { logger } from "../logger.js";
-import { handleDeliveryError } from "../pushNotifications.js";
-import { Expo } from "expo-server-sdk";
+import { Job } from 'bullmq'
+import { logger } from '../logger.js'
+import { handleDeliveryError } from '../pushNotifications.js'
+import { Expo } from 'expo-server-sdk'
 
 const expoClient = new Expo()
 
 export async function checkPushNotificationDelivery(job: Job<{ ticketIds: string[] }>) {
   const { ticketIds } = job.data
-  let receiptIdChunks = expoClient.chunkPushNotificationReceiptIds(ticketIds);
+  let receiptIdChunks = expoClient.chunkPushNotificationReceiptIds(ticketIds)
   for (const chunk of receiptIdChunks) {
     try {
       const receipts = await expoClient.getPushNotificationReceiptsAsync(chunk)

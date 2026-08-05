@@ -1,9 +1,9 @@
 on:
   push:
     branches:
-      - 'main'
-      - 'preproduction'
-      - 'development'
+      - "main"
+      - "preproduction"
+      - "development"
 
 env:
   REGISTRY: codeberg.org

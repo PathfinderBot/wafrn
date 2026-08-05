@@ -46,9 +46,9 @@ docker exec -ti wafrn-backend-1 npm exec tsx utils/maintenanceTasks/exportActivi
 
 The `exportType` can be one of the following:
 
-* `1`: *Basic:* Only export the named blog, and local media files attached to the main blog. Result will be mostly compatible with what Mastodon would export as a backup. This is the default
-* `2`: *Threaded:* Export the named blog, and all conversation information (post threads) related to the main blog. Also include all local media files for the blog and threads.
-* `3`: *All-inclusive:* Same as `2`, but also downloads all linked remote media files and includes them in the backup.
+- `1`: _Basic:_ Only export the named blog, and local media files attached to the main blog. Result will be mostly compatible with what Mastodon would export as a backup. This is the default
+- `2`: _Threaded:_ Export the named blog, and all conversation information (post threads) related to the main blog. Also include all local media files for the blog and threads.
+- `3`: _All-inclusive:_ Same as `2`, but also downloads all linked remote media files and includes them in the backup.
 
 > **Note:** Only the default option (`1`) will generate a backup file compatible with some Mastodon import tools, although if Bluesky is enabled it will also contain Bluesky posts that these importers might choke on. All options are supported by Wafrn's own importer however, including importing Bluesky data.
 
@@ -84,12 +84,12 @@ docker exec -ti wafrn-backend-1 npm exec  tsx updateDatabase/blockHosts.ts
 
 If you need to move your Wafrn to a new server, here is an overview of the process:
 
-* Install Wafrn on the new server with dummy information. This will be overwritten later.
-* Create a backup of your instance on the old server.
-* Upload this backup to the new server.
-* Overwrite the new server's .env with the old server's information.
-* Use the restore from backup script outlined in the Backups section to overwrite the new server's data.
-* If all succeeds, your Wafrn install is now migrated to a new server!
+- Install Wafrn on the new server with dummy information. This will be overwritten later.
+- Create a backup of your instance on the old server.
+- Upload this backup to the new server.
+- Overwrite the new server's .env with the old server's information.
+- Use the restore from backup script outlined in the Backups section to overwrite the new server's data.
+- If all succeeds, your Wafrn install is now migrated to a new server!
 
 ## Sending Custom Mass Emails
 

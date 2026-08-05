@@ -155,9 +155,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -179,15 +177,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -200,9 +194,7 @@
           "rawSql": "SELECT\n  $__timeGroup(time, $__interval),\n  avg((data->'load_5min')::float8) as \"load_5min\"\nFROM\n  cpu_load\nWHERE\n  $__timeFilter(time)\n  AND dbname = '$dbname'\nGROUP BY 1\nORDER BY 1",
           "refId": "A",
           "resultFormat": "time_series",
-          "select": [
-            []
-          ],
+          "select": [[]],
           "table": "cpu_load",
           "tags": [
             {
@@ -231,15 +223,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "auto"
-              ],
+              "params": ["auto"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -255,9 +243,7 @@
           "select": [
             [
               {
-                "params": [
-                  "load_5min"
-                ],
+                "params": ["load_5min"],
                 "type": "field"
               },
               {
@@ -349,9 +335,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -367,15 +351,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1s"
-              ],
+              "params": ["1s"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -389,9 +369,7 @@
           "select": [
             [
               {
-                "params": [
-                  "details"
-                ],
+                "params": ["details"],
                 "type": "field"
               },
               {
@@ -485,9 +463,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -503,15 +479,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1s"
-              ],
+              "params": ["1s"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -525,9 +497,7 @@
           "select": [
             [
               {
-                "params": [
-                  "details"
-                ],
+                "params": ["details"],
                 "type": "field"
               },
               {
@@ -621,9 +591,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -639,15 +607,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "null"
-              ],
+              "params": ["null"],
               "type": "fill"
             }
           ],
@@ -660,9 +624,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "field"
               },
               {
@@ -757,9 +719,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -775,15 +735,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "null"
-              ],
+              "params": ["null"],
               "type": "fill"
             }
           ],
@@ -796,9 +752,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "field"
               },
               {
@@ -893,9 +847,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -911,15 +863,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "null"
-              ],
+              "params": ["null"],
               "type": "fill"
             }
           ],
@@ -932,9 +880,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "field"
               },
               {
@@ -1029,9 +975,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -1047,15 +991,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "null"
-              ],
+              "params": ["null"],
               "type": "fill"
             }
           ],
@@ -1068,9 +1008,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "field"
               },
               {
@@ -1169,9 +1107,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -1192,9 +1128,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -1223,9 +1157,7 @@
   ],
   "refresh": false,
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
@@ -1274,17 +1206,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
   "title": "Change events",

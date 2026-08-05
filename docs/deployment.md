@@ -144,7 +144,7 @@ FRONTEND_DESCRIPTION=Wafrn is a federated social media inspired by tumblr that c
 
 Once updated you'll need to rebuild your containers to get these picked up.
 
-### Frontend overrides  (NEW, BETTER, FASTER)
+### Frontend overrides (NEW, BETTER, FASTER)
 
 There is a folder called `packages/frontend/runtime-overrides`. Any file you put here will override anything in the wafrn frontend files.
 
@@ -244,14 +244,13 @@ If you want to run Wafrn on a low-memory system (not recommended), you can modif
 
 With this, a single user instance is using a total of 2700mb of ram, with a 7 month size database of lots of follows. You will be better than that at the begining. This is fine with some swap.
 
-
 #### Do not do this unless there is no other option
 
 Another option to reduce usage is to disable other services used by wafrn.
 
-```docker compose stop bullboard``` is the only one on this list that is ok to do, but you wont be able to see the queues of your instance. This will free up 200 to 300mb of ram.
+`docker compose stop bullboard` is the only one on this list that is ok to do, but you wont be able to see the queues of your instance. This will free up 200 to 300mb of ram.
 
-```docker compose stop websocket``` will stop the real time notifications from fedi. But will also disable IMPORTANT DB MAINTENANCE FEATURES. You can stop this for 100 or 200 extra mb of "free" ram, but some important maintenance tasks and future features wont run.
+`docker compose stop websocket` will stop the real time notifications from fedi. But will also disable IMPORTANT DB MAINTENANCE FEATURES. You can stop this for 100 or 200 extra mb of "free" ram, but some important maintenance tasks and future features wont run.
 
 Bluesky pds worker is run in a separate thread. You can stop that service too but you will be forced to use the standard bsky appview as fallback mode. This will:
 
@@ -259,4 +258,4 @@ Bluesky pds worker is run in a separate thread. You can stop that service too bu
 - Forced to use their apis. If they're down you wont get any posts
 - Forced to use their moderation. If they ban an account is banned for you too.
 
-Just do ```docker compose stop pds_worker``` each time after updates. This will reduce ram usage in 200 or 300mb. You can also have bluesky totaly disabled. I mean that is ok.
+Just do `docker compose stop pds_worker` each time after updates. This will reduce ram usage in 200 or 300mb. You can also have bluesky totaly disabled. I mean that is ok.

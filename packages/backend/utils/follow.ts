@@ -21,13 +21,17 @@ async function follow(
       }
     })
     // first of all: check bridgy?
-    if (petition && completeEnvironment.enableBsky && ['@bsky.brid.gy@bsky.brid.gy', '@ap.brid.gy'].includes(userFollowed?.url || 'notFound')) {
-      petition.status(400);
+    if (
+      petition &&
+      completeEnvironment.enableBsky &&
+      ['@bsky.brid.gy@bsky.brid.gy', '@ap.brid.gy'].includes(userFollowed?.url || 'notFound')
+    ) {
+      petition.status(400)
       petition.send({
         error: true,
         message: `You are trying to follow bridgy! You can enable bluesky on settings`
       })
-      return false;
+      return false
     }
     const blocksExisting = await Blocks.count({
       where: {
@@ -66,7 +70,8 @@ async function follow(
       const follow = await Follows.create({
         followerId: followerId,
         followedId: userFollowed.id,
-        accepted: userFollowed.isBlueskyUser || (userFollowed.isRemoteUser ? false : !userFollowed.manuallyAcceptsFollows),
+        accepted:
+          userFollowed.isBlueskyUser || (userFollowed.isRemoteUser ? false : !userFollowed.manuallyAcceptsFollows),
         bskyUri: bskyResult?.uri,
         muteQuotes: false,
         muteRewoots: false

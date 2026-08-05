@@ -1,0 +1,41 @@
+.follows-viewport {
+  height: 60vh;
+  min-height: 300px;
+  max-height: 600px;
+
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+
+    tr.mat-row,
+    tr.mat-header-row {
+      height: 56px;
+    }
+  }
+
+  .mat-column-avatar {
+    width: 56px;
+    max-width: 56px;
+  }
+
+  .mat-column-actions {
+    width: 140px;
+    max-width: 140px;
+  }
+
+  .mat-column-removeFollower {
+    width: 96px;
+    max-width: 96px;
+  }
+
+  .mat-column-url {
+  }
+
+  .url-link {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}

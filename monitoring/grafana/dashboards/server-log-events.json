@@ -125,9 +125,7 @@
       "interval": "",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -153,9 +151,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -277,9 +273,7 @@
       "interval": "",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -305,9 +299,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -435,9 +427,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -458,9 +448,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -596,9 +584,7 @@
         "footer": {
           "countRows": false,
           "fields": "",
-          "reducer": [
-            "sum"
-          ],
+          "reducer": ["sum"],
           "show": false
         },
         "showHeader": true
@@ -619,9 +605,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -683,20 +667,14 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
         "current": {
           "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "text": ["All"],
+          "value": ["$__all"]
         },
         "datasource": {
           "type": "grafana-postgresql-datasource",

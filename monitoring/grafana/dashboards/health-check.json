@@ -23,11 +23,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -91,15 +87,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -114,9 +106,7 @@
           "select": [
             [
               {
-                "params": [
-                  "total_relation_size_b"
-                ],
+                "params": ["total_relation_size_b"],
                 "type": "field"
               },
               {
@@ -159,11 +149,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -227,15 +213,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -250,9 +232,7 @@
           "select": [
             [
               {
-                "params": [
-                  "postmaster_uptime_s"
-                ],
+                "params": ["postmaster_uptime_s"],
                 "type": "field"
               },
               {
@@ -296,11 +276,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#C4162A",
-        "#FA6400",
-        "#299c46"
-      ],
+      "colors": ["#C4162A", "#FA6400", "#299c46"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -370,15 +346,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1m"
-              ],
+              "params": ["1m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -393,9 +365,7 @@
           "select": [
             [
               {
-                "params": [
-                  "active"
-                ],
+                "params": ["active"],
                 "type": "field"
               },
               {
@@ -433,11 +403,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -501,15 +467,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -524,9 +486,7 @@
           "select": [
             [
               {
-                "params": [
-                  "longest_query_seconds"
-                ],
+                "params": ["longest_query_seconds"],
                 "type": "field"
               },
               {
@@ -570,11 +530,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46",
-        "#d44a3a"
-      ],
+      "colors": ["rgba(237, 129, 40, 0.89)", "#299c46", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -644,15 +600,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -667,9 +619,7 @@
           "select": [
             [
               {
-                "params": [
-                  "numbackends"
-                ],
+                "params": ["numbackends"],
                 "type": "field"
               },
               {
@@ -713,11 +663,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#FA6400",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "#FA6400", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -787,15 +733,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -810,9 +752,7 @@
           "select": [
             [
               {
-                "params": [
-                  "numbackends"
-                ],
+                "params": ["numbackends"],
                 "type": "field"
               },
               {
@@ -856,11 +796,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -930,15 +866,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -953,9 +885,7 @@
           "select": [
             [
               {
-                "params": [
-                  "waiting"
-                ],
+                "params": ["waiting"],
                 "type": "field"
               },
               {
@@ -999,11 +929,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1073,15 +999,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1096,9 +1018,7 @@
           "select": [
             [
               {
-                "params": [
-                  "blks_hit"
-                ],
+                "params": ["blks_hit"],
                 "type": "field"
               },
               {
@@ -1142,11 +1062,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1216,15 +1132,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1239,9 +1151,7 @@
           "select": [
             [
               {
-                "params": [
-                  "xact_commit"
-                ],
+                "params": ["xact_commit"],
                 "type": "field"
               },
               {
@@ -1279,11 +1189,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1353,15 +1259,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1376,9 +1278,7 @@
           "select": [
             [
               {
-                "params": [
-                  "xact_commit"
-                ],
+                "params": ["xact_commit"],
                 "type": "field"
               },
               {
@@ -1416,11 +1316,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1490,15 +1386,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1513,9 +1405,7 @@
           "select": [
             [
               {
-                "params": [
-                  "load_5min"
-                ],
+                "params": ["load_5min"],
                 "type": "field"
               },
               {
@@ -1553,11 +1443,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1627,15 +1513,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "15m"
-              ],
+              "params": ["15m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1650,9 +1532,7 @@
           "select": [
             [
               {
-                "params": [
-                  "idleintransaction"
-                ],
+                "params": ["idleintransaction"],
                 "type": "field"
               },
               {
@@ -1696,11 +1576,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1770,15 +1646,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1793,9 +1665,7 @@
           "select": [
             [
               {
-                "params": [
-                  "postmaster_uptime_s"
-                ],
+                "params": ["postmaster_uptime_s"],
                 "type": "field"
               },
               {
@@ -1833,11 +1703,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -1907,15 +1773,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1930,9 +1792,7 @@
           "select": [
             [
               {
-                "params": [
-                  "postmaster_uptime_s"
-                ],
+                "params": ["postmaster_uptime_s"],
                 "type": "field"
               },
               {
@@ -1970,11 +1830,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#d44a3a",
-        "rgba(237, 129, 40, 0.89)",
-        "#299c46"
-      ],
+      "colors": ["#d44a3a", "rgba(237, 129, 40, 0.89)", "#299c46"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2044,15 +1900,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2067,9 +1919,7 @@
           "select": [
             [
               {
-                "params": [
-                  "event"
-                ],
+                "params": ["event"],
                 "type": "field"
               },
               {
@@ -2113,11 +1963,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2187,15 +2033,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2210,9 +2052,7 @@
           "select": [
             [
               {
-                "params": [
-                  "load_5min"
-                ],
+                "params": ["load_5min"],
                 "type": "field"
               },
               {
@@ -2250,11 +2090,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2324,15 +2160,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2347,9 +2179,7 @@
           "select": [
             [
               {
-                "params": [
-                  "event"
-                ],
+                "params": ["event"],
                 "type": "field"
               },
               {
@@ -2393,11 +2223,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2467,15 +2293,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2490,9 +2312,7 @@
           "select": [
             [
               {
-                "params": [
-                  "event"
-                ],
+                "params": ["event"],
                 "type": "field"
               },
               {
@@ -2536,11 +2356,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2604,15 +2420,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "365d"
-              ],
+              "params": ["365d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2627,9 +2439,7 @@
           "select": [
             [
               {
-                "params": [
-                  "is_failing_int"
-                ],
+                "params": ["is_failing_int"],
                 "type": "field"
               },
               {
@@ -2683,11 +2493,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2757,15 +2563,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2780,9 +2582,7 @@
           "select": [
             [
               {
-                "params": [
-                  "load_5min"
-                ],
+                "params": ["load_5min"],
                 "type": "field"
               },
               {
@@ -2820,11 +2620,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -2894,15 +2690,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -2917,9 +2709,7 @@
           "select": [
             [
               {
-                "params": [
-                  "total_relation_size_b"
-                ],
+                "params": ["total_relation_size_b"],
                 "type": "field"
               },
               {
@@ -2951,11 +2741,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3019,15 +2805,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3042,9 +2824,7 @@
           "select": [
             [
               {
-                "params": [
-                  "total_relation_size_b"
-                ],
+                "params": ["total_relation_size_b"],
                 "type": "field"
               },
               {
@@ -3082,11 +2862,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3156,15 +2932,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "365d"
-              ],
+              "params": ["365d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3179,9 +2951,7 @@
           "select": [
             [
               {
-                "params": [
-                  "checkpoints_req"
-                ],
+                "params": ["checkpoints_req"],
                 "type": "field"
               },
               {
@@ -3225,11 +2995,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3293,15 +3059,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3316,9 +3078,7 @@
           "select": [
             [
               {
-                "params": [
-                  "total_relation_size_b"
-                ],
+                "params": ["total_relation_size_b"],
                 "type": "field"
               },
               {
@@ -3356,11 +3116,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3430,15 +3186,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3453,9 +3205,7 @@
           "select": [
             [
               {
-                "params": [
-                  "xlog_location_b"
-                ],
+                "params": ["xlog_location_b"],
                 "type": "field"
               },
               {
@@ -3463,9 +3213,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1s"
-                ],
+                "params": ["1s"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -3505,11 +3253,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3579,15 +3323,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3602,9 +3342,7 @@
           "select": [
             [
               {
-                "params": [
-                  "temp_bytes"
-                ],
+                "params": ["temp_bytes"],
                 "type": "field"
               },
               {
@@ -3612,9 +3350,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1s"
-                ],
+                "params": ["1s"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -3654,11 +3390,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3722,15 +3454,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "15m"
-              ],
+              "params": ["15m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3745,9 +3473,7 @@
           "select": [
             [
               {
-                "params": [
-                  "seconds_since_last_vacuum"
-                ],
+                "params": ["seconds_since_last_vacuum"],
                 "type": "field"
               },
               {
@@ -3791,11 +3517,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -3865,15 +3587,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "5m"
-              ],
+              "params": ["5m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -3888,9 +3606,7 @@
           "select": [
             [
               {
-                "params": [
-                  "seq_scan"
-                ],
+                "params": ["seq_scan"],
                 "type": "field"
               },
               {
@@ -3898,9 +3614,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -3940,11 +3654,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4014,15 +3724,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "5m"
-              ],
+              "params": ["5m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4037,9 +3743,7 @@
           "select": [
             [
               {
-                "params": [
-                  "tup_updated"
-                ],
+                "params": ["tup_updated"],
                 "type": "field"
               },
               {
@@ -4047,9 +3751,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -4089,11 +3791,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4163,15 +3861,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "5m"
-              ],
+              "params": ["5m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4186,9 +3880,7 @@
           "select": [
             [
               {
-                "params": [
-                  "tup_updated"
-                ],
+                "params": ["tup_updated"],
                 "type": "field"
               },
               {
@@ -4196,9 +3888,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -4238,11 +3928,7 @@
       "cacheTimeout": null,
       "colorBackground": false,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4312,15 +3998,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "5m"
-              ],
+              "params": ["5m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4335,9 +4017,7 @@
           "select": [
             [
               {
-                "params": [
-                  "tup_updated"
-                ],
+                "params": ["tup_updated"],
                 "type": "field"
               },
               {
@@ -4345,9 +4025,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -4387,11 +4065,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4455,15 +4129,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4478,9 +4148,7 @@
           "select": [
             [
               {
-                "params": [
-                  "max_xmin_age_tx"
-                ],
+                "params": ["max_xmin_age_tx"],
                 "type": "field"
               },
               {
@@ -4524,11 +4192,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4592,15 +4256,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "365d"
-              ],
+              "params": ["365d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4615,9 +4275,7 @@
           "select": [
             [
               {
-                "params": [
-                  "max_xmin_age_tx"
-                ],
+                "params": ["max_xmin_age_tx"],
                 "type": "field"
               },
               {
@@ -4661,11 +4319,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4735,15 +4389,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "365d"
-              ],
+              "params": ["365d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4758,9 +4408,7 @@
           "select": [
             [
               {
-                "params": [
-                  "max_xmin_age_tx"
-                ],
+                "params": ["max_xmin_age_tx"],
                 "type": "field"
               },
               {
@@ -4804,11 +4452,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#bf1b00",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "#bf1b00", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -4878,15 +4522,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1m"
-              ],
+              "params": ["1m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -4901,9 +4541,7 @@
           "select": [
             [
               {
-                "params": [
-                  "active"
-                ],
+                "params": ["active"],
                 "type": "field"
               },
               {
@@ -4941,11 +4579,7 @@
       "cacheTimeout": null,
       "colorBackground": true,
       "colorValue": false,
-      "colors": [
-        "#299c46",
-        "#FA6400",
-        "#d44a3a"
-      ],
+      "colors": ["#299c46", "#FA6400", "#d44a3a"],
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "pgwatch-metrics"
@@ -5015,15 +4649,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1m"
-              ],
+              "params": ["1m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -5038,9 +4668,7 @@
           "select": [
             [
               {
-                "params": [
-                  "active"
-                ],
+                "params": ["active"],
                 "type": "field"
               },
               {
@@ -5109,9 +4737,7 @@
   ],
   "schemaVersion": 19,
   "style": "dark",
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
@@ -5205,17 +4831,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
   "title": "Health-check",

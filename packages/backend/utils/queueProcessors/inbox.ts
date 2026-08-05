@@ -40,6 +40,7 @@ import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js
 import { getAdminUser } from '../getAdminAndDeletedUser.js'
 import { postPetitionSigned } from '../activitypub/postPetitionSigned.js'
 import { biteActivity } from '../activitypub/processors/bite.js'
+import { LITEPUB_CONTEXT_PATH } from '../activitypub/contexts.js'
 
 async function inboxWorker(job: Job) {
   try {
@@ -202,7 +203,7 @@ async function inboxWorker(job: Job) {
                   const acceptToSend: activityPubObject = {
                     '@context': [
                       'https://www.w3.org/ns/activitystreams',
-                      `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+                      `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
                     ],
                     actor: `${
                       completeEnvironment.frontendUrl

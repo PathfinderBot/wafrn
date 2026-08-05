@@ -157,8 +157,8 @@ async function getPostThreadRecursive(
     reblogControl: InteractionControl.Anyone,
     quoteControl: InteractionControl.Anyone
   }
-  let bskyUri: string | undefined;
-  let bskyCid: string | undefined;
+  let bskyUri: string | undefined
+  let bskyCid: string | undefined
   const checkBluesky = completeEnvironment.enableBsky && !options?.forceNotBsky
   if (remotePostId === null) return
 
@@ -226,7 +226,7 @@ async function getPostThreadRecursive(
             // OK TIME TO UPDATE WHO IS PARENT OF DESCENDENTS
             await Post.update(
               {
-                parentId: bskyVersion.id,
+                parentId: bskyVersion.id
               },
               {
                 where: {
@@ -274,7 +274,7 @@ async function getPostThreadRecursive(
               bskyUri = postPetition.blueskyUri
               bskyCid = postPetition.blueskyCid
             }
-          } catch (error) { }
+          } catch (error) {}
         }
         if (remotePostInDatabase) {
           if (remotePostInDatabase.remotePostId) {
@@ -315,7 +315,9 @@ async function getPostThreadRecursive(
               })
           )
         ]
-        const invisibleMentionsToRemove = postPetition.tag?.find((elem: fediverseTag) => elem.type === 'WafrnMentionsTextToHide')
+        const invisibleMentionsToRemove = postPetition.tag?.find(
+          (elem: fediverseTag) => elem.type === 'WafrnMentionsTextToHide'
+        )
         let fediMentions: fediverseTag[] = postPetition.tag?.filter((elem: fediverseTag) => elem.type === 'Mention')
         if (fediMentions == undefined) {
           fediMentions = postPetition.to.map((elem: string) => {
@@ -434,9 +436,7 @@ async function getPostThreadRecursive(
           replyControl.replyControl = InteractionControl.SameAsOp
         } else if (parent) {
           // we check if op has property forceDescendentsToUseSameInteractionControls
-          const opId = (
-            (await Post.findByPk(parent.rootId as string)) as Post
-          ).remotePostId
+          const opId = ((await Post.findByPk(parent.rootId as string)) as Post).remotePostId
           const opPostPetition = await getPetitionSigned(user, parent.remotePostId as string)
           if (opPostPetition && opPostPetition.forceDescendentsToUseSameInteractionControls == true) {
             replyControl.replyControl = InteractionControl.SameAsOp
@@ -522,7 +522,7 @@ async function getPostThreadRecursive(
                   existingFedi.remotePostId = null
                   await Post.update(
                     {
-                      parentId: postBskyVersion.id,
+                      parentId: postBskyVersion.id
                     },
                     {
                       where: {
@@ -553,7 +553,7 @@ async function getPostThreadRecursive(
                     existingFedi.isDeleted = true
                     await Post.update(
                       {
-                        parentId: postBskyVersion.id,
+                        parentId: postBskyVersion.id
                       },
                       {
                         where: {
@@ -575,7 +575,7 @@ async function getPostThreadRecursive(
                     await postBskyVersion.save()
                     await Post.update(
                       {
-                        parentId: existingFedi.id,
+                        parentId: existingFedi.id
                       },
                       {
                         where: {
@@ -617,12 +617,12 @@ async function getPostThreadRecursive(
           bskyCid: postPetition.blueskyCid,
           ...(bskyCid && bskyUri
             ? {
-              bskyCid,
-              bskyUri
-            }
+                bskyCid,
+                bskyUri
+              }
             : {}),
           ...replyControl,
-          language: postLanguage,
+          language: postLanguage
         }
 
         if (postPetition.name) {
@@ -666,7 +666,7 @@ async function getPostThreadRecursive(
           postToCreate.isReply = parent ? parent.isReply || parent.userId != postToCreate.userId : false
           postToCreate.isBskyExclusive = false
           postToCreate.parentId = parent?.id
-          postToCreate.rootId = parent?.rootId;
+          postToCreate.rootId = parent?.rootId
         }
 
         const existingPost = localPostToForceUpdate ? await Post.findByPk(localPostToForceUpdate) : undefined
@@ -687,7 +687,11 @@ async function getPostThreadRecursive(
         }
         newPost.setMedias(medias)
         try {
-          if (postPetition.quote || postPetition.quoteUrl || postPetition.tag?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')?.length) {
+          if (
+            postPetition.quote ||
+            postPetition.quoteUrl ||
+            postPetition.tag?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')?.length
+          ) {
             const urlQuote = postPetition.quoteUrl || postPetition.quote
             const postToQuote = await getPostThreadRecursive(user, urlQuote)
             if (postToQuote && postToQuote.privacy != Privacy.DirectMessage) {
@@ -701,7 +705,6 @@ async function getPostThreadRecursive(
               postPetition.tag
                 ?.filter((elem: fediverseTag) => elem.type === 'BskyQuote')
                 .forEach((quote: fediverseTag) => {
-
                   postsToQuotePromise.push(processSinglePost(quote.href as string))
                   postToCreate.content = postToCreate.content.replace(quote.name, '')
                 })
@@ -791,7 +794,7 @@ async function getPostThreadRecursive(
         }
         try {
           await addAsksToPost(newPost, fediTags)
-        } catch (error) { }
+        } catch (error) {}
         if (mentionedUsersIds.length != 0) {
           // check if detached
           if (parent?.detached) {
@@ -835,14 +838,17 @@ async function getPostThreadRecursive(
               },
               transaction
             })
-            await Post.update({
-              parentId: newPost.id,
-            }, {
-              where: {
-                parentId: existingBskyPost.id
+            await Post.update(
+              {
+                parentId: newPost.id
               },
-              transaction
-            })
+              {
+                where: {
+                  parentId: existingBskyPost.id
+                },
+                transaction
+              }
+            )
 
             await existingBskyPost.destroy({ transaction })
             await newPost.save({ transaction })
@@ -1010,14 +1016,14 @@ async function processEmojis(post: any, fediEmojis: any[]) {
 
 /**
  * Checks if activity object contains `contentMap`.
- * 
+ *
  * Returns the content and language from the `contentMap` if
  *   - there's only one language property
  *   - language is present in utils/languages.ts
- * @param postPetition 
+ * @param postPetition
  * @returns content and language code
  */
-function processContentAndLanguage(postPetition: any): { postTextContent: string, postLanguage: string | undefined } {
+function processContentAndLanguage(postPetition: any): { postTextContent: string; postLanguage: string | undefined } {
   const contentMap = postPetition.contentMap
 
   if (typeof contentMap == 'object') {
@@ -1029,7 +1035,7 @@ function processContentAndLanguage(postPetition: any): { postTextContent: string
       if (language) {
         return {
           postTextContent: postPetition.contentMap[keys[0]] || '',
-          postLanguage: language,
+          postLanguage: language
         }
       }
     }
@@ -1037,7 +1043,7 @@ function processContentAndLanguage(postPetition: any): { postTextContent: string
 
   return {
     postTextContent: postPetition.content || '',
-    postLanguage: undefined,
+    postLanguage: undefined
   }
 }
 

@@ -7,6 +7,7 @@ import _ from 'underscore'
 import { redisCache } from '../redis.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
 import { getQueue } from '../queues.js'
+import { LITEPUB_CONTEXT_PATH } from './contexts.js'
 
 const sendPostQueue = getQueue('sendPostToInboxes')
 async function federatePostHasBeenEdited(postToEdit: any) {
@@ -20,7 +21,7 @@ async function federatePostHasBeenEdited(postToEdit: any) {
     return
   }
   const objectToSend = {
-    '@context': [`${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`],
+    '@context': ['https://www.w3.org/ns/activitystreams', `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
     actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
     to: postAsJSONLD.to,
     cc: postAsJSONLD.cc,
