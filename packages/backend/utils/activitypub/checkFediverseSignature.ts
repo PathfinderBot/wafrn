@@ -181,7 +181,8 @@ function getCheckFediverseSignatureFunction(force = false) {
                 message: `Rejected LD-signature: signer identity does not match claimed actor (possible impersonation attempt)`,
                 fediHost: hostUrl,
                 signerIdentity,
-                claimedActor: req.body.actor
+                claimedActor: req.body.actor,
+                body: req.body
               })
             } else if (
               remoteActor &&
