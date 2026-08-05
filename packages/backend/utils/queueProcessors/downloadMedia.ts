@@ -3,21 +3,15 @@ import fs from 'fs'
 import path from 'path'
 import { pipeline } from 'stream/promises'
 import { Job } from 'bullmq'
-import { getResolver } from 'plc-did-resolver'
-import { Resolver } from 'did-resolver'
 import getUserAgent from '../getUserAgent.js'
+import { getServerFromDid } from '../atproto/getServerFromDid.js'
 import axios from 'axios'
 import { getMimeType } from 'stream-mime-type'
 import { spawn } from 'child_process'
 import sequelize from 'sequelize/lib/sequelize'
 import { Media } from '../../models/media.js'
 import { completeEnvironment } from '../backendOptions.js'
-import {
-  assertPublicHttpUrl,
-  assertUrlResolvesPublic,
-  ssrfSafeHttpAgent,
-  ssrfSafeHttpsAgent
-} from '../ssrfProtection.js'
+import { assertPublicHttpUrl, ssrfSafeHttpAgent, ssrfSafeHttpsAgent } from '../ssrfProtection.js'
 
 export type DownloadJobPayload = {
   mediaUrl: string
@@ -83,46 +77,20 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
       throw new Error('Missing cid param in ATProto URL')
     }
 
-    if (did.startsWith('did:plc')) {
-      const plcResolver = getResolver()
-      const didResolver = new Resolver(plcResolver)
-      const didData = await didResolver.resolve(did)
-      if (didData?.didDocument?.service) {
-        const url =
-          didData.didDocument.service[0].serviceEndpoint +
-          '/xrpc/com.atproto.sync.getBlob?did=' +
-          encodeURIComponent(did) +
-          '&cid=' +
-          encodeURIComponent(cid)
-        mediaUrl = url
-      }
-    } else if (did.startsWith('did:web')) {
-      // get did doc first
-      const didWebUrl = `https://${did.split('did:web:')[1]}/.well-known/did.json`
-      await assertUrlResolvesPublic(didWebUrl)
-      const docRes = await fetch(didWebUrl, {
-        headers: {
-          'User-Agent': getUserAgent('ATProtoWorker')
-        },
-        signal: AbortSignal.timeout(MEDIA_FETCH_TIMEOUT_MS)
-      })
-      const didDoc = await docRes.json()
-      const atProtoServer = didDoc.service.find(
-        (x: any) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer'
-      )
-
-      if (!atProtoServer) {
-        throw new Error(`ATProto PDS not found on DID doc for ${did}`)
-      }
-
-      const url =
-        atProtoServer.serviceEndpoint +
-        '/xrpc/com.atproto.sync.getBlob?did=' +
-        encodeURIComponent(did) +
-        '&cid=' +
-        encodeURIComponent(cid)
-      mediaUrl = url
+    let pdsUrl = ''
+    try {
+      pdsUrl = await getServerFromDid(did)
+    } catch {}
+    if (!pdsUrl) {
+      try {
+        pdsUrl = await getServerFromDid(did, true)
+      } catch {}
     }
+    if (!pdsUrl) {
+      throw new Error(`Could not resolve PDS for did ${did}`)
+    }
+    mediaUrl =
+      pdsUrl + '/xrpc/com.atproto.sync.getBlob?did=' + encodeURIComponent(did) + '&cid=' + encodeURIComponent(cid)
   }
 
   let readStream: fs.ReadStream

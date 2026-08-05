@@ -231,7 +231,10 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
           if (existingUser.url === alternateUrl) {
             existingUser.url = `${existingUser.url}_OVERWRITTEN_ON${new Date().getTime()}`
           }
-          existingUser.activated = false
+          // never deactivate local users here, only remote ones
+          if (!existingUser.email) {
+            existingUser.activated = false
+          }
           await existingUser.save()
         }
         userFound.alternateUrl = alternateUrl
