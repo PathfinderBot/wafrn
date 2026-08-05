@@ -10,7 +10,6 @@ import { emojiToAPTag } from './emojiToAPTag.js'
 import { Privacy } from '../../models/post.js'
 import { getAllLocalUserIds, getAllLocalUserIdsSet } from '../cacheGetters/getAllLocalUserIds.js'
 import { getQueue } from '../queues.js'
-import { LITEPUB_CONTEXT_PATH } from './contexts.js'
 
 const sendPostQueue = getQueue('sendPostToInboxes')
 
@@ -100,7 +99,7 @@ async function likePostRemote(like: any, dislike = false) {
     ? {
         '@context': [
           'https://www.w3.org/ns/activitystreams',
-          `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
         ],
         actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         to:
@@ -119,7 +118,7 @@ async function likePostRemote(like: any, dislike = false) {
     : {
         '@context': [
           'https://www.w3.org/ns/activitystreams',
-          `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
         ],
         actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         to:
@@ -176,7 +175,10 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
     ? reactedPost.user.remoteId
     : `${completeEnvironment.frontendUrl}/fediverse/blog/${reactedPost.user.url}`
   let emojireactObject: activityPubObject = {
-    '@context': ['https://www.w3.org/ns/activitystreams', `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
+    '@context': [
+      'https://www.w3.org/ns/activitystreams',
+      `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+    ],
     actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
     to:
       reactedPost.privacy / 1 === Privacy.DirectMessage
@@ -197,7 +199,7 @@ async function emojiReactRemote(react: EmojiReaction, undo = false) {
     emojireactObject = {
       '@context': [
         'https://www.w3.org/ns/activitystreams',
-        `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+        `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
       ],
       actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
       to:
@@ -234,7 +236,10 @@ async function pinPost(post: Post, undo = false) {
   const user = (await User.scope('full').findByPk(post.userId)) as User
 
   const activity: activityPubObject = {
-    '@context': ['https://www.w3.org/ns/activitystreams', `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`],
+    '@context': [
+      'https://www.w3.org/ns/activitystreams',
+      `${completeEnvironment.frontendUrl}/schemas/litepub-0.1.jsonld`
+    ],
     actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
     cc: [`${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}/followers`],
     id: `${completeEnvironment.frontendUrl}/fediverse/${undo ? 'unpin' : 'pin'}/${post.id}`,

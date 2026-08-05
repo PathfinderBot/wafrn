@@ -10,8 +10,6 @@ import EventEmitter from 'events'
 import { User } from '../models/index.js'
 import { sendEmailCampaign, sendEmailCampaignUser } from '../utils/queueProcessors/sendEmailCampaign.js'
 
-const HEARTBEAT_INTERVAL_MS = 30000
-
 export default function websocketRoutes(app: Application) {
   const notificationEmitter: EventEmitter = new EventEmitter()
   notificationEmitter.setMaxListeners(1000)
@@ -61,20 +59,6 @@ export default function websocketRoutes(app: Application) {
     let procesingAuth = false
     let userId: string | undefined
     let notificationHandler: ((data: any) => void) | undefined
-    let isAlive = true
-    ws.on('pong', () => {
-      isAlive = true
-    })
-    const heartbeatInterval = setInterval(() => {
-      if (!isAlive) {
-        logger.debug(`websocket closed: no pong received, terminating dead connection`)
-        ws.terminate()
-        return
-      }
-      isAlive = false
-      ws.ping()
-    }, HEARTBEAT_INTERVAL_MS)
-
     ws.on('message', (msg: string) => {
       let msgAsObject: { type: 'auth' | 'NOTVALID'; object: any } = {
         type: 'NOTVALID',
@@ -145,7 +129,6 @@ export default function websocketRoutes(app: Application) {
     })
 
     ws.on('close', () => {
-      clearInterval(heartbeatInterval)
       if (userId && notificationHandler) {
         notificationEmitter.removeListener(userId, notificationHandler)
         notificationHandler = undefined

@@ -140,6 +140,7 @@ postsRoutes(app)
 searchRoutes(app)
 deletePost(app)
 if (completeEnvironment.fediPort == completeEnvironment.port) {
+  app.use('/contexts', express.static('contexts'))
   activityPubRoutes(app)
   wellKnownRoutes(app)
 }

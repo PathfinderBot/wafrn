@@ -9,7 +9,7 @@ import type { Context, JsonLd } from 'jsonld/jsonld-spec.js'
 import { completeEnvironment } from '../backendOptions.js'
 
 /* eslint:disable:quotemark indent */
-export const id_v1 = {
+const id_v1 = {
   '@context': {
     id: '@id',
     type: '@type',
@@ -333,10 +333,6 @@ const activitystreams = {
       '@id': 'as:preview',
       '@type': '@id'
     },
-    provider: {
-      '@id': 'as:provider',
-      '@type': '@id'
-    },
     replies: {
       '@id': 'as:replies',
       '@type': '@id'
@@ -383,7 +379,10 @@ const activitystreams = {
       '@id': 'as:name',
       '@container': '@language'
     },
-    duration: 'as:duration',
+    duration: {
+      '@id': 'as:duration',
+      '@type': 'xsd:duration'
+    },
     endTime: {
       '@id': 'as:endTime',
       '@type': 'xsd:dateTime'
@@ -397,11 +396,24 @@ const activitystreams = {
       '@type': '@id'
     },
     hreflang: 'as:hreflang',
+    latitude: {
+      '@id': 'as:latitude',
+      '@type': 'xsd:float'
+    },
+    longitude: {
+      '@id': 'as:longitude',
+      '@type': 'xsd:float'
+    },
     mediaType: 'as:mediaType',
     published: {
       '@id': 'as:published',
       '@type': 'xsd:dateTime'
     },
+    radius: {
+      '@id': 'as:radius',
+      '@type': 'xsd:float'
+    },
+    rel: 'as:rel',
     startIndex: {
       '@id': 'as:startIndex',
       '@type': 'xsd:nonNegativeInteger'
@@ -441,7 +453,7 @@ const activitystreams = {
       '@type': 'xsd:dateTime'
     },
     inbox: {
-      '@id': 'as:inbox',
+      '@id': 'ldp:inbox',
       '@type': '@id'
     },
     outbox: {
@@ -565,57 +577,7 @@ export const wafrnContext = {
       contentMap: {
         '@id': 'as:content',
         '@container': '@language'
-      },
-
-      _misskey_content: 'misskey:_misskey_content',
-      _misskey_quote: 'misskey:_misskey_quote',
-      _misskey_summary: 'misskey:_misskey_summary',
-      gts: 'https://gotosocial.org/ns#',
-      interactionPolicy: {
-        '@id': 'gts:interactionPolicy',
-        '@type': '@id'
-      },
-      canQuote: {
-        '@id': 'gts:canQuote',
-        '@type': '@id'
-      },
-      canLike: {
-        '@id': 'gts:canLike',
-        '@type': '@id'
-      },
-      canReply: {
-        '@id': 'gts:canReply',
-        '@type': '@id'
-      },
-      canAnnounce: {
-        '@id': 'gts:canAnnounce',
-        '@type': '@id'
-      },
-      automaticApproval: {
-        '@id': 'gts:automaticApproval',
-        '@type': '@id'
-      },
-      interactingObject: {
-        '@id': 'gts:interactingObject',
-        '@type': '@id'
-      },
-      interactionTarget: {
-        '@id': 'gts:interactionTarget',
-        '@type': '@id'
-      },
-      QuoteAuthorization: 'https://w3id.org/fep/044f#QuoteAuthorization',
-      quote: {
-        '@id': 'https://w3id.org/fep/044f#quote',
-        '@type': '@id'
-      },
-      quoteAuthorization: {
-        '@id': 'https://w3id.org/fep/044f#quoteAuthorization',
-        '@type': '@id'
-      },
-      wafrn: 'https://wafrn.net/ns#',
-      blueskyUri: 'wafrn:blueskyUri',
-      blueskyCid: 'wafrn:blueskyCid',
-      forceDescendentsToUseSameInteractionControls: 'wafrn:forceDescendentsToUseSameInteractionControls'
+      }
     }
   ]
 } satisfies JsonLd
@@ -679,13 +641,10 @@ export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
   'https://www.w3.org/ns/activitystreams': activitystreams
 }
 
-export const LITEPUB_CONTEXT_PATH = '/contexts/litepub-wafrn-2026-08-02.jsonld'
-export const LEGACY_LITEPUB_CONTEXT_PATH = '/contexts/litepub-0.1.jsonld'
-
 export function getPreloadedContexts(): Record<string, JsonLd> {
   const res = PRELOADED_CONTEXTS
-  res[`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`] = wafrnContext
-  res[`${completeEnvironment.frontendUrl}${LEGACY_LITEPUB_CONTEXT_PATH}`] = wafrnContext
+  const wafrnContextUrl = `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+  res[wafrnContextUrl] = wafrnContext
   return res
 }
 
@@ -746,10 +705,6 @@ export const WellKnownContext = {
       QuoteAuthorization: 'https://w3id.org/fep/044f#QuoteAuthorization',
       quote: {
         '@id': 'https://w3id.org/fep/044f#quote',
-        '@type': '@id'
-      },
-      quoteAuthorization: {
-        '@id': 'https://w3id.org/fep/044f#quoteAuthorization',
         '@type': '@id'
       },
       gts: 'https://gotosocial.org/ns#',

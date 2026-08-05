@@ -125,7 +125,7 @@ export class Media extends Model<MediaAttributes, MediaAttributes> implements Me
 
   get fullUrl(): string {
     return this.url.startsWith('?cid')
-      ? `${new URL(completeEnvironment.externalCacheurl).origin}/api/v2/cache/media/${this.id}`
+      ? `https://${new URL(this.url).hostname}/api/v2/cache/media/${this.id}`
       : this.external
         ? this.url
         : completeEnvironment.mediaUrl + this.url
