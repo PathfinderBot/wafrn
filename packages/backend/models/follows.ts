@@ -13,6 +13,7 @@ export interface FollowsAttributes {
   followedId: string
   muteRewoots: boolean
   muteQuotes: boolean
+  hideReplies: boolean
 }
 
 @Table({
@@ -47,6 +48,13 @@ export class Follows extends Model<FollowsAttributes, FollowsAttributes> impleme
     defaultValue: false
   })
   declare muteQuotes: boolean
+
+  @Column({
+    allowNull: true,
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
+  declare hideReplies: boolean
 
   @Column({
     allowNull: true,

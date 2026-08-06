@@ -130,6 +130,7 @@ export default function followsRoutes(app: Application) {
 
     const posterId = req.jwtData?.userId
     const muteQuotes = req.body?.muteQuotes
+    const hideReplies = req.body?.hideReplies
     const userId = req.body?.userId
     if (posterId && userId) {
       const existingFollow = await Follows.findOne({
@@ -140,10 +141,12 @@ export default function followsRoutes(app: Application) {
       })
       if (existingFollow) {
         success = true
-        if (!muteQuotes) {
-          existingFollow.muteRewoots = !existingFollow.muteRewoots
-        } else {
+        if (hideReplies) {
+          existingFollow.hideReplies = !existingFollow.hideReplies
+        } else if (muteQuotes) {
           existingFollow.muteQuotes = !existingFollow.muteQuotes
+        } else {
+          existingFollow.muteRewoots = !existingFollow.muteRewoots
         }
         await existingFollow.save()
       }

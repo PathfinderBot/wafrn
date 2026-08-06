@@ -68,6 +68,7 @@ export class PostsService {
   public enableBluesky: boolean = false
   public usersQuotesDisabled: string[] = []
   public usersRewootsDisabled: string[] = []
+  public usersRepliesDisabled: string[] = []
 
   private lastTimeLoadedFollowers = new Date(0)
 
@@ -93,6 +94,7 @@ export class PostsService {
         followedHashtags: string[]
         mutedRewoots: string[]
         mutedQuotes: string[]
+        hiddenReplies: string[]
         enableBluesky: boolean
         serviceAnnouncements: ServiceAnnouncement[]
         languages: Language[]
@@ -125,6 +127,7 @@ export class PostsService {
     this.myFollowers = followsAndBlocks.myFollowers
     this.usersQuotesDisabled = followsAndBlocks.mutedQuotes
     this.usersRewootsDisabled = followsAndBlocks.mutedRewoots
+    this.usersRepliesDisabled = followsAndBlocks.hiddenReplies
     // Here we check user options
     if (followsAndBlocks.options?.length > 0) {
       // frontend options start with wafrn.
@@ -1019,6 +1022,17 @@ export class PostsService {
       this.http.post(`${EnvironmentService.environment.baseUrl}/muteRewoots`, {
         userId: userId,
         muteQuotes: true
+      })
+    )
+    this.loadFollowers()
+    return res
+  }
+
+  async updateDisableReplies(userId: string) {
+    const res = await firstValueFrom(
+      this.http.post(`${EnvironmentService.environment.baseUrl}/muteRewoots`, {
+        userId: userId,
+        hideReplies: true
       })
     )
     this.loadFollowers()

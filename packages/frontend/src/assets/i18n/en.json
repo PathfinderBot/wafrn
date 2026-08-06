@@ -766,7 +766,9 @@
       "hideRewoots": "Hide rewoots made by this user",
       "unhideRewoots": "Unhide rewoots made by this user",
       "unhideQuotes": "Unhide quotes from this user",
-      "hideQuotes": "Hide quotes from this user"
+      "hideQuotes": "Hide quotes from this user",
+      "hideReplies": "Hide replies made by this user",
+      "unhideReplies": "Unhide replies made by this user"
     },
     "report": {
       "reportUserTitle": "Report User",

@@ -64,7 +64,8 @@ async function FollowActivity(body: activityPubObject, remoteUser: User, user: U
         remoteFollowId: apObject.id,
         accepted: userToBeFollowed.isRemoteUser ? true : autoAcceptFollow,
         muteQuotes: false,
-        muteRewoots: false
+        muteRewoots: false,
+        hideReplies: false
       }
     })
     remoteFollow.remoteFollowId = apObject.id

@@ -3,6 +3,7 @@ import optionalAuthentication from '../utils/optionalAuthentication.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import {
   FederatedHost,
+  Follows,
   Post,
   PostMentionsUserRelation,
   PostTag,
@@ -133,17 +134,26 @@ export default function dashboardRoutes(app: Application) {
           break
         }
         case 1: {
-          const [user, followedIds, subscribedTags, dbOptionDisableRewootsDashboard] = await Promise.all([
-            User.findByPk(posterId),
-            getFollowedsIds(posterId),
-            getFollowedHashtags(posterId),
-            UserOptions.findOne({
-              where: {
-                userId: posterId,
-                optionName: 'wafrn.disableRewootsDashboard'
-              }
-            })
-          ])
+          const [user, followedIds, subscribedTags, dbOptionDisableRewootsDashboard, hiddenRepliesFollows] =
+            await Promise.all([
+              User.findByPk(posterId),
+              getFollowedsIds(posterId),
+              getFollowedHashtags(posterId),
+              UserOptions.findOne({
+                where: {
+                  userId: posterId,
+                  optionName: 'wafrn.disableRewootsDashboard'
+                }
+              }),
+              Follows.findAll({
+                attributes: ['followedId'],
+                where: {
+                  followerId: posterId,
+                  hideReplies: true
+                }
+              })
+            ])
+          const hiddenRepliesUserIds = hiddenRepliesFollows.map((follow) => follow.followedId)
 
           if (completeEnvironment.enableBsky && user && user.enableBsky && user.bskyDid) {
             try {
@@ -207,6 +217,18 @@ export default function dashboardRoutes(app: Application) {
           if (disableReplies || disableBsky) {
             and.push({
               [Op.or]: disableRepliesOr
+            })
+          }
+
+          if (hiddenRepliesUserIds.length > 0) {
+            and.push({
+              [Op.not]: {
+                [Op.and]: [
+                  { isReply: true },
+                  { isReblog: { [Op.ne]: true } },
+                  { userId: { [Op.in]: hiddenRepliesUserIds } }
+                ]
+              }
             })
           }
 

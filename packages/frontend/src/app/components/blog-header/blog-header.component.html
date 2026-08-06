@@ -152,6 +152,17 @@
                   <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ 'dialog.blog.hideQuotes' | translate }}
                 </button>
               }
+              @if (postService.usersRepliesDisabled.includes(blog.id)) {
+                <button mat-menu-item (click)="updateDisableReplies()">
+                  <fa-icon class="mr-2" [icon]="disableRepliesIcon"></fa-icon
+                  >{{ 'dialog.blog.unhideReplies' | translate }}
+                </button>
+              } @else {
+                <button mat-menu-item (click)="updateDisableReplies()">
+                  <fa-icon class="mr-2" [icon]="disableRepliesIcon"></fa-icon
+                  >{{ 'dialog.blog.hideReplies' | translate }}
+                </button>
+              }
             }
             @if (!isMe) {
               <button (click)="reportService.report(blog.id)" mat-menu-item class="dangerous-option">

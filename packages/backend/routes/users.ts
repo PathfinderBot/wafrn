@@ -1326,6 +1326,15 @@ function userRoutes(app: Application) {
         })
       ).map((elem) => elem.followedId)
 
+      const hiddenReplies = (
+        await Follows.findAll({
+          where: {
+            followerId: userId,
+            hideReplies: true
+          }
+        })
+      ).map((elem) => elem.followedId)
+
       // TODO: get this type from a database model object (maybe add more info?)
       type ServiceAnnouncement = {
         level: 'error' | 'info' | 'warning'
@@ -1358,7 +1367,8 @@ function userRoutes(app: Application) {
         // TODO: create a table for "service annonuncements" where we can this (and maybe direct them to specific users)
         serviceAnnouncements,
         mutedRewoots,
-        mutedQuotes
+        mutedQuotes,
+        hiddenReplies
       })
     }
   })

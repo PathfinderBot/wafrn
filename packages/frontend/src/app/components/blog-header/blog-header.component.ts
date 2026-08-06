@@ -28,6 +28,7 @@ import {
   faTriangleExclamation,
   faRepeat,
   faQuoteRight,
+  faReply,
   faCookieBite,
   faCode,
   faPlaneDeparture,
@@ -102,6 +103,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   reportUserIcon = faTriangleExclamation
   disableRewootIcon = faRepeat
   disableQuotesIcon = faQuoteRight
+  disableRepliesIcon = faReply
   rawJsonIcon = faCode
   migratedToUrl = ''
 
@@ -341,5 +343,11 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     const blog = this.blogDetails()
     if (blog === undefined) return
     await this.postService.updateDisableQuotes(blog.id)
+  }
+
+  async updateDisableReplies() {
+    const blog = this.blogDetails()
+    if (blog === undefined) return
+    await this.postService.updateDisableReplies(blog.id)
   }
 }

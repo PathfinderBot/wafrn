@@ -69,7 +69,8 @@ async function follow(
         accepted: userFollowed.isBlueskyUser || (userFollowed.isRemoteUser ? false : !userFollowed.manuallyAcceptsFollows),
         bskyUri: bskyResult?.uri,
         muteQuotes: false,
-        muteRewoots: false
+        muteRewoots: false,
+        hideReplies: false
       })
       if (follow.accepted) {
         // if user does this manualy you dont want to give them a notification after accepting lol

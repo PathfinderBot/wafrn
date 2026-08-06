@@ -58,6 +58,7 @@ async function syncBskyFollowsJob(job: Job) {
             followedId: userId,
             muteQuotes: false,
             muteRewoots: false,
+            hideReplies: false,
             accepted: true
           }
         }),
@@ -139,6 +140,7 @@ async function syncBskyFollowsJob(job: Job) {
             followerId: userId,
             muteQuotes: false,
             muteRewoots: false,
+            hideReplies: false,
             accepted: true
           }
         }),
