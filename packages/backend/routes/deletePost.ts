@@ -24,6 +24,7 @@ import { redisCache } from '../utils/redis.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
+import { LITEPUB_CONTEXT_PATH } from '../utils/activitypub/contexts.js'
 
 const deletePostQueue = getQueue('deletePostQueue')
 
@@ -66,7 +67,10 @@ export default function deletePost(app: Application) {
         }
         // bsky delete end
         const objectToSend: activityPubObject = {
-          '@context': [`${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`],
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          ],
           actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
           to: ['https://www.w3.org/ns/activitystreams#Public'],
           id: `${completeEnvironment.frontendUrl}/fediverse/post/${postToDelete.id}#delete`,
@@ -205,7 +209,10 @@ export default function deletePost(app: Application) {
 
         const objectsToSend: activityPubObject[] = reblogsToDelete.map((elem) => {
           return {
-            '@context': [`${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`],
+            '@context': [
+              'https://www.w3.org/ns/activitystreams',
+              `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+            ],
             actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
             to: ['https://www.w3.org/ns/activitystreams#Public'],
             id: `${completeEnvironment.frontendUrl}/fediverse/post/${elem}#delete`,
