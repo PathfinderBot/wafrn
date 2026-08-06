@@ -141,7 +141,7 @@ export class RegisterComponent {
     'Wait those were quark types',
     'a pale imitation',
     'Jimmy',
-    'bowl of salad but with fizzy soda instead of milk'.
+    'bowl of salad but with fizzy soda instead of milk',
     'Home of the Whooper:  West virginia',
     'Wait, you wrote widsom not wisdom before',
     'a bootleg copy of Portal',
@@ -239,7 +239,7 @@ export class RegisterComponent {
     'CMOS battery',
     'IP over Avian Carriers',
     'wrong',
-    'Ceiling cat is watching you create a Wafrn account (you\'re doing great, by the way!)'
+    "Ceiling cat is watching you create a Wafrn account (you're doing great, by the way!)",
     'XKCD comic',
     'a walrus in disguise',
     '[REDACTED]',
@@ -288,7 +288,7 @@ export class RegisterComponent {
     'defenestration',
     'dankmeme.jpg',
     '2010s survivor',
-    'ever so slightly burnt piece of popcorn'.
+    'ever so slightly burnt piece of popcorn',
     'real',
     'imaginary',
     'complex',
@@ -320,7 +320,7 @@ export class RegisterComponent {
     'Your left foot',
     'ON SALE 50% OFF PICK THIS GENDER NOW AND GET ONE FREE',
     'Prilosec®',
-    'amish person who is only down with FLOSS tech'.
+    'amish person who is only down with FLOSS tech',
     '<font face="Comic Sans MS">Comic Sans</font>',
     'why do they call it oven when you of in the cold food of out hot eat the food',
     'bruno mars (gay)',
