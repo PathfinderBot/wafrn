@@ -31,7 +31,7 @@ export async function createThumbnail(imageUrl: string): Promise<Buffer> {
     throw new Error(`Thumbnail is too large: ${originalImage.length} bytes`)
   }
 
-  let previewImage = await sharp(originalImage, { failOnError: false, limitInputPixels: MAX_IMAGE_PIXELS })
+  let previewImage = await sharp(originalImage, { failOn: 'none', limitInputPixels: MAX_IMAGE_PIXELS })
     .rotate()
     .resize({
       width: 1000,
@@ -44,7 +44,7 @@ export async function createThumbnail(imageUrl: string): Promise<Buffer> {
 
   for (const quality of [75, 65, 55, 45]) {
     if (previewImage.length <= 1000000) break
-    previewImage = await sharp(originalImage, { failOnError: false, limitInputPixels: MAX_IMAGE_PIXELS })
+    previewImage = await sharp(originalImage, { failOn: 'none', limitInputPixels: MAX_IMAGE_PIXELS })
       .rotate()
       .resize({
         width: 800,
@@ -57,7 +57,7 @@ export async function createThumbnail(imageUrl: string): Promise<Buffer> {
   }
 
   if (previewImage.length > 1000000) {
-    previewImage = await sharp(originalImage, { failOnError: false, limitInputPixels: MAX_IMAGE_PIXELS })
+    previewImage = await sharp(originalImage, { failOn: 'none', limitInputPixels: MAX_IMAGE_PIXELS })
       .rotate()
       .resize({
         width: 480,
@@ -196,7 +196,7 @@ export default async function optimizeMedia(
 
       let conversion = sharp(inputPath, {
         animated: !options?.disableAnimation,
-        failOnError: false,
+        failOn: 'none',
         limitInputPixels: MAX_IMAGE_PIXELS
       }).rotate()
       if (options?.maxSize) {
