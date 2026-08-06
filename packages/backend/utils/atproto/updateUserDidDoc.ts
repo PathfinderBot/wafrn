@@ -52,7 +52,7 @@ async function updateUserDidDoc(user: User) {
 async function getPlcAuditLogs(did: string) {
   const response = await fetch(`https://plc.directory/${did}/log/audit`, {
     headers: {
-      'User-Agent': getUserAgent('ATProtoWorker')
+      "User-Agent": getUserAgent('ATProtoWorker')
     }
   })
   if (!response.ok) {

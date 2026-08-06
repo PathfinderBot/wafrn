@@ -42,7 +42,7 @@ export default function likeRoutes(app: Application) {
       const like = await likePromise
       if (userId && user && post && !like) {
         // TODO check if user can LIKE post.
-        if (!(await canInteract(post.likeControl, userId, post.id))) {
+        if (!await canInteract(post.likeControl, userId, post.id)) {
           res.status(403)
           return res.send({
             success: false,

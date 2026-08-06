@@ -73,8 +73,7 @@ export default function biteRoutes(app: Application) {
 
         res.status(500)
         return res.send({
-          error: true,
-          message: `Error biting post`
+          error: true,  message: `Error biting post`
         })
       }
 
@@ -141,8 +140,7 @@ export default function biteRoutes(app: Application) {
         res.status(500)
 
         return res.send({
-          error: true,
-          message: `Error biting user`
+          error: true,  message: `Error biting user`
         })
       }
 

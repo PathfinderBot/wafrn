@@ -19,6 +19,7 @@ async function deletePostCommon(id: string) {
   const postToDelete = await Post.findByPk(id)
 
   if (postToDelete) {
+
     if (postToDelete.isReblog) {
       await Notification.destroy({
         where: {
@@ -28,10 +29,9 @@ async function deletePostCommon(id: string) {
       })
     } else {
       // post is not a reblog we do extra stuff
-      const reblogsDestroyed = await Post.update(
-        {
-          isDeleted: true
-        },
+      const reblogsDestroyed = await Post.update({
+        isDeleted: true,
+      },
         {
           where: {
             parentId: id,

@@ -18,7 +18,7 @@ const users = await User.findAll({
 for await (const user of users) {
   console.log(`Syncing ${user.url}`)
   try {
-    await syncBskyAccountData(user.id, { syncPosts: true, syncFollows: true })
+    await syncBskyAccountData(user.id, {syncPosts: true, syncFollows: true})
   } catch (error) {
     logger.warn(error)
   }

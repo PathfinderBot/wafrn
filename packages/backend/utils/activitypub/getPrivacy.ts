@@ -12,17 +12,11 @@ function getApObjectPrivacy(apObject: activityPubObject, remoteUser: any): Priva
   ) {
     privacy = Privacy.FollowersOnly
   }
-  if (
-    apObject.cc &&
-    (apObject.cc.includes('https://www.w3.org/ns/activitystreams#Public') || apObject.cc.includes('as:Public'))
-  ) {
+  if (apObject.cc && (apObject.cc.includes('https://www.w3.org/ns/activitystreams#Public') || apObject.cc.includes('as:Public'))) {
     // unlisted
     privacy = Privacy.Unlisted
   }
-  if (
-    apObject.to &&
-    (apObject.to.includes('https://www.w3.org/ns/activitystreams#Public') || apObject.to.includes('as:Public'))
-  ) {
+  if (apObject.to && (apObject.to.includes('https://www.w3.org/ns/activitystreams#Public') || apObject.to.includes('as:Public'))) {
     // post is PUBLIC
     privacy = Privacy.Public
   }

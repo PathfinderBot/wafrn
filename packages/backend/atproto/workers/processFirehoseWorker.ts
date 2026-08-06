@@ -42,7 +42,7 @@ async function processFirehose(job: Job) {
               // this is a bluesky post
               const postId = await processSinglePost(subject)
               if (postId) {
-                const post = await Post.findByPk(postId)
+                const post = await Post.findByPk(postId);
                 if (post) {
                   await UserBitesPostRelation.create({
                     userId: remoteUser.id,
@@ -66,7 +66,7 @@ async function processFirehose(job: Job) {
               }
             } else {
               // this is a bluesky user
-              const user = await getAtprotoUser(subject.replace('at://', ''))
+              const user = await getAtprotoUser(subject.replace('at://', ''));
               if (user) {
                 await Bites.create({
                   biterId: user.id,
@@ -315,18 +315,15 @@ async function processFirehose(job: Job) {
                     reblogsToDelete.forEach(async (elem) => {
                       await redisCache.del('postAndUser:' + elem)
                     })
-                    await Post.update(
-                      {
-                        isDeleted: true
-                      },
-                      {
-                        where: {
-                          id: {
-                            [Op.in]: reblogsToDelete
-                          }
+                    await Post.update({
+                      isDeleted: true
+                    }, {
+                      where: {
+                        id: {
+                          [Op.in]: reblogsToDelete
                         }
                       }
-                    )
+                    })
                   }
                 }
               }
@@ -361,7 +358,7 @@ async function processFirehose(job: Job) {
               })
               if (post) {
                 post.isDeleted = true
-                await post.save()
+                await post.save();
               }
               break
             }

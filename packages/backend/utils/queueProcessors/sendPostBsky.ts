@@ -75,42 +75,23 @@ async function sendPostBsky(job: Job) {
                 record: {
                   $type: 'app.bsky.feed.postgate',
                   post: bskyPost.uri,
-                  embeddingRules: [{ $type: 'app.bsky.feed.postgate#disableRule' }],
+                  embeddingRules: [
+                    { '$type': 'app.bsky.feed.postgate#disableRule' }
+                  ],
                   createdAt: new Date().toISOString()
                 }
               })
             }
             if (post.hierarchyLevel === 1 && post.replyControl != InteractionControl.Anyone && agent.session) {
               const gates: string[] = []
-              if (
-                [
-                  InteractionControl.FollowersFollowingAndMentioned,
-                  InteractionControl.MentionedUsersOnly,
-                  InteractionControl.FollowersAndMentioned,
-                  InteractionControl.FollowingAndMentioned
-                ].includes(post.replyControl)
-              ) {
+              if ([InteractionControl.FollowersFollowingAndMentioned, InteractionControl.MentionedUsersOnly, InteractionControl.FollowersAndMentioned, InteractionControl.FollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#mentionRule')
               }
-              if (
-                [
-                  InteractionControl.Followers,
-                  InteractionControl.FollowersAndFollowing,
-                  InteractionControl.FollowersAndMentioned,
-                  InteractionControl.FollowersFollowingAndMentioned
-                ].includes(post.replyControl)
-              ) {
+              if ([InteractionControl.Followers, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersAndMentioned, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#followerRule')
               }
 
-              if (
-                [
-                  InteractionControl.Following,
-                  InteractionControl.FollowingAndMentioned,
-                  InteractionControl.FollowersAndFollowing,
-                  InteractionControl.FollowersFollowingAndMentioned
-                ].includes(post.replyControl)
-              ) {
+              if ([InteractionControl.Following, InteractionControl.FollowingAndMentioned, InteractionControl.FollowersAndFollowing, InteractionControl.FollowersFollowingAndMentioned].includes(post.replyControl)) {
                 gates.push('app.bsky.feed.threadgate#followingRule')
               }
               if (post.quoteControl !== InteractionControl.Anyone) {
@@ -122,14 +103,16 @@ async function sendPostBsky(job: Job) {
                 record: {
                   $type: 'app.bsky.feed.threadgate',
                   post: bskyPost.uri,
-                  allow: gates.map((elem) => {
+                  allow: gates.map(elem => {
                     return {
-                      $type: elem
+                      '$type': elem
                     }
                   }),
                   createdAt: new Date().toISOString()
                 }
               })
+
+
             }
             await wait(750)
             const duplicatedPost = await Post.findOne({

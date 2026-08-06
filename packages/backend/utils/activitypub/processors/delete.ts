@@ -1,47 +1,51 @@
-import { Blocks, Post, User } from '../../../models/index.js'
-import { activityPubObject } from '../../../interfaces/fediverse/activityPubObject.js'
-import { deletePostCommon } from '../../deletePost.js'
-import { logger } from '../../logger.js'
-import { redisCache } from '../../redis.js'
-import { removeUser } from '../removeUser.js'
-import { signAndAccept } from '../signAndAccept.js'
+import { Blocks, Post, User } from "../../../models/index.js";
+import { activityPubObject } from "../../../interfaces/fediverse/activityPubObject.js";
+import { deletePostCommon } from "../../deletePost.js";
+import { logger } from "../../logger.js";
+import { redisCache } from "../../redis.js";
+import { removeUser } from "../removeUser.js";
+import { signAndAccept } from "../signAndAccept.js";
 
-async function DeleteActivity(body: activityPubObject, remoteUser: User, user: User) {
+async function DeleteActivity(
+  body: activityPubObject,
+  remoteUser: User,
+  user: User
+) {
   // TODO ????
-  const apObject: activityPubObject = body.object.type ? body.object : body
+  const apObject: activityPubObject = body.object.type ? body.object : body;
   // TODO divide in files
   try {
-    if (typeof apObject.object === 'string') {
+    if (typeof apObject.object === "string") {
       // we assume its just the url of an user
-      await removeUser(apObject.object)
+      await removeUser(apObject.object);
       // await signAndAccept({ body: body }, remoteUser, user)
-      return
+      return;
     } else {
       switch (apObject.type) {
-        case 'Tombstone': {
+        case "Tombstone": {
           const postToDelete = await Post.findOne({
             where: {
-              remotePostId: apObject.id
-            }
-          })
+              remotePostId: apObject.id,
+            },
+          });
           if (postToDelete) {
-            await deletePostCommon(postToDelete.id)
+            await deletePostCommon(postToDelete.id);
           }
           // await signAndAccept({ body: body }, remoteUser, user)
-          break
+          break;
         }
         default: {
-          logger.info({ message: `DELETE NOT IMPLEMENTED`, apObject })
+          logger.info({ message: `DELETE NOT IMPLEMENTED`, apObject });
         }
       }
     }
   } catch (error) {
     logger.trace({
-      message: 'error with delete petition',
+      message: "error with delete petition",
       error: error,
-      petition: body
-    })
+      petition: body,
+    });
   }
 }
 
-export { DeleteActivity }
+export { DeleteActivity };

@@ -50,18 +50,16 @@ export default function emojiRoutes(app: Application) {
             const emojinames = fs
               .readdirSync('./uploads/emojipacks/' + packName)
               .filter((filename) => filename.toLowerCase().match(fileFormats))
-            const emojisToCreate = emojinames
-              .filter((elem) => !fs.existsSync(`/emojipacks/${packName}/${elem}`))
-              .map((elem) => {
-                const emojiName = `:${elem.split('.')[0]}:`
-                return {
-                  name: emojiName,
-                  external: false,
-                  url: `/emojipacks/${packName}/${elem}`,
-                  id: emojiName,
-                  emojiCollectionId: pack[0].id
-                }
-              })
+            const emojisToCreate = emojinames.filter(elem => !fs.existsSync(`/emojipacks/${packName}/${elem}`)).map((elem) => {
+              const emojiName = `:${elem.split('.')[0]}:`
+              return {
+                name: emojiName,
+                external: false,
+                url: `/emojipacks/${packName}/${elem}`,
+                id: emojiName,
+                emojiCollectionId: pack[0].id
+              }
+            })
             const emojisCreated = await Emoji.bulkCreate(emojisToCreate, {
               ignoreDuplicates: true
             })

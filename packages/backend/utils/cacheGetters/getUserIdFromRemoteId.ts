@@ -10,17 +10,17 @@ async function getUserIdFromRemoteId(remoteId: string): Promise<string> {
   } else {
     const user = isLocalRemoteId(remoteId)
       ? await User.findOne({
-          attributes: ['id'],
-          where: {
-            url: getLocalUsernameFromLocalRemoteId(remoteId)
-          }
-        })
+        attributes: ['id'],
+        where: {
+          url: getLocalUsernameFromLocalRemoteId(remoteId)
+        }
+      })
       : await User.findOne({
-          attributes: ['id'],
-          where: {
-            remoteId: remoteId
-          }
-        })
+        attributes: ['id'],
+        where: {
+          remoteId: remoteId
+        }
+      })
     if (user) {
       res = user.id
       await redisCache.set('userRemoteId:' + remoteId.toLocaleLowerCase(), res, 'EX', 1000)

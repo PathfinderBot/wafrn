@@ -7,6 +7,8 @@ import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSessi
 import handleAgentLoginFail from './handleAgentLoginFail.js'
 import { wait } from '../../utils/wait.js'
 
+
+
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
   /*
     This is a dirty solution, but we want to retry multiple times before saying "fuck off"
@@ -15,20 +17,21 @@ async function getAtProtoSession(userInput?: User, force?: boolean): Promise<Atp
     the posibility of the password disapearing mid update. At this moment we are NOT gona test for that!
   */
   let res: AtpAgent = await getAtProtoSessionInternal(userInput, force)
-  if (res.did) {
-    return res
+  if(res.did) {
+    return res;
   } else {
     await wait(1000)
     res = await getAtProtoSessionInternal(userInput, true)
-    if (res.did) {
-      return res
+    if(res.did) {
+      return res;
     } else {
       await wait(2500)
       res = await getAtProtoSessionInternal(userInput, true)
-      if (!res.did && userInput) {
-        await handleAgentLoginFail(userInput)
+      if(!res.did && userInput) {
+          await handleAgentLoginFail(userInput)
       }
-      return res
+      return res;
+
     }
   }
 }
@@ -93,5 +96,7 @@ async function getAtProtoSessionInternal(userInput?: User, force?: boolean): Pro
   }
   return agent
 }
+
+
 
 export { getAtProtoSession }

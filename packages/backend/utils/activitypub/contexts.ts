@@ -648,86 +648,87 @@ export function getPreloadedContexts(): Record<string, JsonLd> {
   return res
 }
 
+
 export const WellKnownContext = {
-  '@context': [
-    'https://www.w3.org/ns/activitystreams',
-    'https://w3id.org/security/v1',
+  "@context": [
+    "https://www.w3.org/ns/activitystreams",
+    "https://w3id.org/security/v1",
     {
       // as non-standards
-      manuallyApprovesFollowers: 'as:manuallyApprovesFollowers',
+      manuallyApprovesFollowers: "as:manuallyApprovesFollowers",
       movedTo: {
-        '@id': 'https://www.w3.org/ns/activitystreams#movedTo',
-        '@type': '@id'
+        "@id": "https://www.w3.org/ns/activitystreams#movedTo",
+        "@type": "@id",
       },
-      movedToUri: 'as:movedTo',
-      sensitive: 'as:sensitive',
-      Hashtag: 'as:Hashtag',
-      quoteUri: 'fedibird:quoteUri',
-      quoteUrl: 'as:quoteUrl',
+      movedToUri: "as:movedTo",
+      sensitive: "as:sensitive",
+      Hashtag: "as:Hashtag",
+      quoteUri: "fedibird:quoteUri",
+      quoteUrl: "as:quoteUrl",
       // Mastodon
-      toot: 'http://joinmastodon.org/ns#',
-      Emoji: 'toot:Emoji',
-      featured: 'toot:featured',
-      discoverable: 'toot:discoverable',
+      toot: "http://joinmastodon.org/ns#",
+      Emoji: "toot:Emoji",
+      featured: "toot:featured",
+      discoverable: "toot:discoverable",
       // schema
-      schema: 'http://schema.org#',
-      PropertyValue: 'schema:PropertyValue',
-      value: 'schema:value',
+      schema: "http://schema.org#",
+      PropertyValue: "schema:PropertyValue",
+      value: "schema:value",
       // Misskey
-      misskey: 'https://misskey-hub.net/ns#',
-      _misskey_content: 'misskey:_misskey_content',
-      _misskey_quote: 'misskey:_misskey_quote',
-      _misskey_reaction: 'misskey:_misskey_reaction',
-      _misskey_votes: 'misskey:_misskey_votes',
-      _misskey_talk: 'misskey:_misskey_talk',
-      _misskey_summary: 'misskey:_misskey_summary',
-      isCat: 'misskey:isCat',
+      misskey: "https://misskey-hub.net/ns#",
+      _misskey_content: "misskey:_misskey_content",
+      _misskey_quote: "misskey:_misskey_quote",
+      _misskey_reaction: "misskey:_misskey_reaction",
+      _misskey_votes: "misskey:_misskey_votes",
+      _misskey_talk: "misskey:_misskey_talk",
+      _misskey_summary: "misskey:_misskey_summary",
+      isCat: "misskey:isCat",
       // Fedibird
-      fedibird: 'http://fedibird.com/ns#',
+      fedibird: "http://fedibird.com/ns#",
       // vcard
-      vcard: 'http://www.w3.org/2006/vcard/ns#',
+      vcard: "http://www.w3.org/2006/vcard/ns#",
       // litepub
-      litepub: 'http://litepub.social/ns#',
-      EmojiReact: 'litepub:EmojiReact',
-      EmojiReaction: 'litepub:EmojiReaction',
+      litepub: "http://litepub.social/ns#",
+      EmojiReact: "litepub:EmojiReact",
+      EmojiReaction: "litepub:EmojiReaction",
       // mia
-      Bite: 'https://ns.mia.jetzt/as#Bite',
+      Bite: "https://ns.mia.jetzt/as#Bite",
       canBite: {
-        '@id': 'https://ns.mia.jetzt/as#canBite',
-        '@type': '@id'
+        "@id": "https://ns.mia.jetzt/as#canBite",
+        "@type": "@id",
       },
       // pancakes
       pronouns: {
-        '@id': 'https://ns.pancakes.gay/as#pronouns',
-        '@container': '@language'
+        "@id": "https://ns.pancakes.gay/as#pronouns",
+        "@container": "@language",
       },
       // mastodon-style quotes
-      QuoteAuthorization: 'https://w3id.org/fep/044f#QuoteAuthorization',
+      QuoteAuthorization: "https://w3id.org/fep/044f#QuoteAuthorization",
       quote: {
-        '@id': 'https://w3id.org/fep/044f#quote',
-        '@type': '@id'
+        "@id": "https://w3id.org/fep/044f#quote",
+        "@type": "@id",
       },
-      gts: 'https://gotosocial.org/ns#',
+      gts: "https://gotosocial.org/ns#",
       interactionPolicy: {
-        '@id': 'gts:interactionPolicy',
-        '@type': '@id'
+        "@id": "gts:interactionPolicy",
+        "@type": "@id",
       },
       canQuote: {
-        '@id': 'gts:canQuote',
-        '@type': '@id'
+        "@id": "gts:canQuote",
+        "@type": "@id",
       },
       automaticApproval: {
-        '@id': 'gts:automaticApproval',
-        '@type': '@id'
+        "@id": "gts:automaticApproval",
+        "@type": "@id",
       },
       interactingObject: {
-        '@id': 'gts:interactingObject',
-        '@type': '@id'
+        "@id": "gts:interactingObject",
+        "@type": "@id",
       },
       interactionTarget: {
-        '@id': 'gts:interactionTarget',
-        '@type': '@id'
-      }
-    }
-  ]
-}
+        "@id": "gts:interactionTarget",
+        "@type": "@id",
+      },
+    },
+  ],
+};

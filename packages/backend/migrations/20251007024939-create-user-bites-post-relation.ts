@@ -1,7 +1,7 @@
-import { DataTypes } from 'sequelize'
-import { Migration } from '../migrate.js'
+import { DataTypes } from 'sequelize';
+import { Migration } from '../migrate.js';
 
-export const up: Migration = async (params) => {
+export const up: Migration = async params => {
   const queryInterface = params.context
   await queryInterface.createTable('userBitesPostRelations', {
     id: {
@@ -39,11 +39,11 @@ export const up: Migration = async (params) => {
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false
-    }
+    },
   })
-}
+};
 
-export const down: Migration = async (params) => {
+export const down: Migration = async params => {
   const queryInterface = params.context
   await queryInterface.dropTable('userBitesPostRelations')
 }

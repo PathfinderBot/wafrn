@@ -69,7 +69,7 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
         try {
           if (remoteActor) {
             // Optimized: check followers more efficiently
-            const isFollower = !!(await Follows.findOne({
+            const isFollower = !!await Follows.findOne({
               include: [
                 {
                   model: User,
@@ -83,7 +83,7 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
                 followedId: user.id,
                 accepted: true
               }
-            }))
+            })
 
             if (!isFollower) {
               res.sendStatus(403)

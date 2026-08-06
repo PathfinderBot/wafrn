@@ -19,8 +19,8 @@ async function getMutedPosts(userId: string, superMute = false): Promise<Array<s
         superMuted: superMute
           ? true
           : {
-              [Op.in]: [true, false, null, undefined] as any
-            }
+            [Op.in]: [true, false, null, undefined] as any
+          }
       },
       attributes: ['postId']
     })
@@ -29,7 +29,7 @@ async function getMutedPosts(userId: string, superMute = false): Promise<Array<s
 
     // If superMute, also get all descendants of muted posts
     if (superMute && res.length) {
-      const mutedPosts = (await sequelize.query(
+      const mutedPosts = await sequelize.query(
         `
         WITH RECURSIVE descendants AS (
           SELECT id FROM posts WHERE id = ANY(ARRAY[:mutedIds]::uuid[])
@@ -43,12 +43,17 @@ async function getMutedPosts(userId: string, superMute = false): Promise<Array<s
           replacements: { mutedIds: res },
           type: QueryTypes.SELECT
         }
-      )) as Array<{ id: string }>
+      ) as Array<{ id: string }>
 
       res = mutedPosts.map((elem) => elem.id)
     }
 
-    await redisCache.set((superMute ? 'superMutedPosts:' : 'mutedPosts:') + userId, JSON.stringify(res), 'EX', 600)
+    await redisCache.set(
+      (superMute ? 'superMutedPosts:' : 'mutedPosts:') + userId,
+      JSON.stringify(res),
+      'EX',
+      600
+    )
   }
 
   return res
@@ -106,11 +111,13 @@ async function getMutedPostsMultiple(userIds: string[], superMute = false) {
       postIds.set(userId, JSON.parse(result) as string[])
     } else {
       // Get muted posts for this user
-      let mutedIds = mutedFirstIds.filter((elem) => elem.userId === userId).map((elem) => elem.postId)
+      let mutedIds = mutedFirstIds
+        .filter((elem) => elem.userId === userId)
+        .map((elem) => elem.postId)
 
       // If superMute, also get all descendants
       if (superMute && mutedIds.length) {
-        const mutedPosts = (await sequelize.query(
+        const mutedPosts = await sequelize.query(
           `
           WITH RECURSIVE descendants AS (
             SELECT id FROM posts WHERE id = ANY(ARRAY[:mutedIds]::uuid[])
@@ -124,7 +131,7 @@ async function getMutedPostsMultiple(userIds: string[], superMute = false) {
             replacements: { mutedIds: mutedIds },
             type: QueryTypes.SELECT
           }
-        )) as Array<{ id: string }>
+        ) as Array<{ id: string }>
 
         mutedIds = mutedPosts.map((elem) => elem.id)
       }

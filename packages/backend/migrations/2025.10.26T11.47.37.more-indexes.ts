@@ -9,9 +9,11 @@ export const up: Migration = async (params) => {
 
   await queryInterface.sequelize.query(`CREATE INDEX idx_posts_userid_privacy ON posts("userId", "privacy");`)
   await queryInterface.sequelize.query(`CREATE INDEX idx_users_url_activated ON users(LOWER(url), activated);`)
+
 }
 export const down: Migration = async (params) => {
   const queryInterface = params.context
   await queryInterface.sequelize.query(`DROP INDEX idx_posts_userid_privacy;`)
   await queryInterface.sequelize.query(`DROP INDEX idx_users_url_activated;`)
+
 }

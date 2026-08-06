@@ -1,17 +1,19 @@
-import { Model, Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript'
-import { Post } from './post.js'
+import {
+  Model, Table, Column, DataType, ForeignKey, BelongsTo
+} from "sequelize-typescript";
+import { Post } from "./post.js";
 
 export interface PostTagAttributes {
-  id?: number
-  createdAt?: Date
-  updatedAt?: Date
-  tagName?: string
-  postId?: string
+  id?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  tagName?: string;
+  postId?: string;
 }
 
 @Table({
-  tableName: 'postTags',
-  modelName: 'postTags',
+  tableName: "postTags",
+  modelName: "postTags",
   timestamps: true
 })
 export class PostTag extends Model<PostTagAttributes, PostTagAttributes> implements PostTagAttributes {
@@ -19,15 +21,15 @@ export class PostTag extends Model<PostTagAttributes, PostTagAttributes> impleme
     allowNull: true,
     type: DataType.STRING
   })
-  declare tagName: string
+  declare tagName: string;
 
   @ForeignKey(() => Post)
   @Column({
     allowNull: true,
     type: DataType.UUID
   })
-  declare postId: string
+  declare postId: string;
 
-  @BelongsTo(() => Post, 'postId')
-  declare post: Post
+  @BelongsTo(() => Post, "postId")
+  declare post: Post;
 }

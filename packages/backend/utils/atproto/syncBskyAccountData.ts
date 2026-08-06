@@ -7,6 +7,8 @@ import { processSinglePost } from '../../atproto/utils/getAtProtoThread.js'
 import { completeEnvironment } from '../backendOptions.js'
 import { Queue } from 'bullmq'
 
+
+
 export type syncBskyDataPayload = {
   userId: string
 }
@@ -29,14 +31,14 @@ const syncBskyPostsQueue = new Queue<syncBskyDataPayload, void>('syncBskyPosts',
   }
 })
 
-async function syncBskyAccountData(userId: string, options: { syncPosts: boolean; syncFollows: boolean }) {
+async function syncBskyAccountData(userId: string, options: {syncPosts: boolean, syncFollows: boolean}) {
   const user = await User.findByPk(userId)
   if (user && user.bskyDid) {
-    if (options.syncFollows) {
-      await syncBskyFollowsQueue.add('syncBskyFollows', { userId: userId })
+    if(options.syncFollows) {
+      await syncBskyFollowsQueue.add('syncBskyFollows', {userId: userId})
     }
     if (options.syncPosts) {
-      await syncBskyPostsQueue.add('syncBskyPosts', { userId: userId })
+      await syncBskyPostsQueue.add('syncBskyPosts', {userId: userId})
     }
   }
 }

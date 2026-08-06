@@ -50,9 +50,12 @@ export default function forumRoutes(app: Application) {
     SELECT DISTINCT id FROM descendants
     `
       let postIds = (
-        await sequelize.query(query, {
-          type: QueryTypes.SELECT
-        })
+        await sequelize.query(
+          query,
+          {
+            type: QueryTypes.SELECT
+          }
+        )
       ).map((elem: any) => elem.id)
       const fullPostsToGet = await Post.findAll({
         include: [
@@ -211,8 +214,8 @@ export default function forumRoutes(app: Application) {
             ...x,
             ...(pronouns
               ? {
-                  pronouns
-                }
+                pronouns
+              }
               : {})
           }
         }),

@@ -8,9 +8,7 @@ export const up: Migration = async (params) => {
     allowNull: true
   })
 
-  await queryInterface.sequelize.query(
-    `ALTER TABLE posts ADD CONSTRAINT "posts_userId_slug_unique" UNIQUE ("userId", "slug");`
-  )
+  await queryInterface.sequelize.query(`ALTER TABLE posts ADD CONSTRAINT "posts_userId_slug_unique" UNIQUE ("userId", "slug");`)
 }
 export const down: Migration = async (params) => {
   const queryInterface = params.context

@@ -10,9 +10,7 @@ function parseInlineStyle(style: string) {
   // @ts-ignore
   const root = postcss.parse(`*{${style}}`, { parser: safeParser })
   const types: Record<string, string> = {}
-  root.walkDecls((d) => {
-    types[d.prop] = d.value
-  })
+  root.walkDecls(d => { types[d.prop] = d.value })
   return types
 }
 
@@ -68,63 +66,46 @@ function rehypeToMfm() {
       if (node.type === 'text') return node.value
       try {
         if (node.type === 'element') {
-          const child = (node.children || []).map(nodeToMfm).join('')
-          const style = node.properties?.style || ''
-          const href = node.properties?.href || ''
-          const types = parseInlineStyle(style)
-          const schild = cssToMfm(child, types)
+        const child = (node.children || []).map(nodeToMfm).join('')
+        const style = node.properties?.style || ''
+        const href = node.properties?.href || ''
+        const types = parseInlineStyle(style)
+        const schild = cssToMfm(child, types)
 
-          switch (node.tagName.toLowerCase()) {
-            case 'strong':
-            case 'b':
-              return `**${schild}**`
-            case 'em':
-            case 'i':
-              return `*${schild}*`
-            case 'style':
-              return '' // misskey seems to strip only the tags
-            case 'script':
-              return '' // and not strip the content????????
-            case 'center':
-              return `<center>${schild}</center>`
-            case 'del':
-              return `~~${schild}~~`
-            case 'code':
-              return schild.includes('\n') ? `\`\`\`\n${schild}\n\`\`\`` : `\`${schild}\``
-            case 'p':
-              return `${schild}\n\n`
-            case 'br':
-              return '\n'
-            case 'h1':
-              return `$[x2 ${schild}]\n\n`
-            case 'h2':
-              return `**${schild}**\n\n`
-            case 'h3':
-              return `${schild}\n\n`
-            case 'blockquote':
-              return `> ${schild}`
-            case 'ul':
-            case 'ol':
-              return Array.from(node.children || [])
-                .map(nodeToMfm)
-                .join('')
-            case 'li':
-              return `- ${schild}\n`
-            case 'a': {
-              if (schild.startsWith('@')) {
-                const mfmMention = new URL(href).hostname
-                return `${schild}@${mfmMention}`
-              }
-              return `[${schild}](${href})`
+        switch (node.tagName.toLowerCase()) {
+          case 'strong':
+          case 'b': return `**${schild}**`
+          case 'em':
+          case 'i': return `*${schild}*`
+          case 'style': return ''   // misskey seems to strip only the tags
+          case 'script': return ''  // and not strip the content????????
+          case 'center': return `<center>${schild}</center>`
+          case 'del': return `~~${schild}~~`
+          case 'code': return (schild.includes('\n')) ? `\`\`\`\n${schild}\n\`\`\`` : `\`${schild}\``
+          case 'p': return `${schild}\n\n`
+          case 'br': return '\n'
+          case 'h1': return `$[x2 ${schild}]\n\n`
+          case 'h2': return `**${schild}**\n\n`
+          case 'h3': return `${schild}\n\n`
+          case 'blockquote': return `> ${schild}`
+          case 'ul':
+          case 'ol': return Array.from(node.children || []).map(nodeToMfm).join('')
+          case 'li': return `- ${schild}\n`
+          case 'a': {
+            if (schild.startsWith('@')) {
+              const mfmMention = new URL(href).hostname;
+              return `${schild}@${mfmMention}`
             }
-            default:
-              return schild
+            return `[${schild}](${href})`
           }
+          default:
+            return schild
         }
+      } 
       } catch (error) {
         return node.value + ' ERROR DURING HTML2MFM'
       }
-
+      
       return node.value
     }
 
