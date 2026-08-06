@@ -3,7 +3,11 @@
 </div>
 
 @for (notification of notificationsToShow; track $index) {
-  <app-single-notification [notification]="notification"></app-single-notification>
+  @defer (on viewport) {
+    <app-single-notification [notification]="notification"></app-single-notification>
+  } @placeholder {
+    <div class="notification-placeholder"></div>
+  }
   @if ($index % 19 === 0 && $index > 0) {
     <!--This element is the one that says NOTIFICATION LOAD TIME-->
   }

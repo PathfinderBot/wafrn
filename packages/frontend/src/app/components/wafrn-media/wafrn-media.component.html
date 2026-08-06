@@ -1,6 +1,10 @@
 @if (mimeType().toLowerCase() == 'text/html' && !data().url.startsWith('https://media.tenor.com/')) {
   @if (displayUrl() && data().url) {
-    <app-link-preview [link]="data().url"></app-link-preview>
+    @defer (on viewport) {
+      <app-link-preview [link]="data().url"></app-link-preview>
+    } @placeholder {
+      <div class="link-preview-placeholder"></div>
+    }
   }
 } @else {
   <div
@@ -22,6 +26,7 @@
           [height]="height()"
           class="displayed-image"
           [class.nsfw]="nsfw"
+          loading="lazy"
         />
       }
 
