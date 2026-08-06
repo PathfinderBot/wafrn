@@ -273,15 +273,17 @@ function cacheRoutes(app: Application) {
       res.send(cacheResult)
     } else {
       let result = {}
+      let success = false
       try {
         await assertUrlResolvesPublic(url)
         result = await getLinkPreview(url, {
           followRedirects: 'follow',
           headers: { 'User-Agent': getUserAgent('LinkPreview') }
         })
+        success = true
       } catch (error) {}
       // we cache the url 24 hours if success, 5 minutes if not
-      await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(result), 'EX', 300)
+      await redisCache.set('linkPreviewCache:' + urlHash, JSON.stringify(result), 'EX', success ? 86400 : 300)
       res.send(result)
     }
   })
@@ -306,11 +308,18 @@ async function getMediaFromUrl(
     const localFileName = `cache/${mediaLinkHash}`
     const lockKey = `download:lock:${mediaUrl}`
     const lockValue = crypto.randomUUID()
+    const failureKey = `download:failed:${mediaLinkHash}`
 
     // if file exists
     if (fs.existsSync(localFileName) && !force) {
       if (res) {
         return sendWithCache(res, localFileName)
+      }
+      return
+    }
+    if (!force && (await redisCache.get(failureKey))) {
+      if (res) {
+        res.sendStatus(404)
       }
       return
     }
@@ -330,6 +339,9 @@ async function getMediaFromUrl(
         if (res) {
           return sendWithCache(res, data.localFileName)
         }
+      } catch (error) {
+        await redisCache.set(failureKey, '1', 'EX', 600)
+        throw error
       } finally {
         // Release lock
         await redisCache.del(lockKey)
