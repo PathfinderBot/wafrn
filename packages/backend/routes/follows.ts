@@ -2,15 +2,15 @@ import { Application, Response } from 'express'
 import { Follows, Notification, User } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 import { logger } from '../utils/logger.js'
-import {  } from '../utils/activitypub/remoteFollow.js'
+import {} from '../utils/activitypub/remoteFollow.js'
 import { remoteUnfollow } from '../utils/activitypub/remoteUnfollow.js'
-import {  } from 'sequelize'
+import {} from 'sequelize'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { follow } from '../utils/follow.js'
 import { redisCache } from '../utils/redis.js'
-import {  } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
+import {} from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
-import {  } from '../utils/cacheGetters/getMutedPosts.js'
+import {} from '../utils/cacheGetters/getMutedPosts.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
@@ -47,7 +47,7 @@ export default function followsRoutes(app: Application) {
           if (followResult.validationStatus == 'valid') {
             bskyFollowResult = followResult
             await forceUpdateCacheDidsAtThread({
-              addFollowedDid: userToBeFollowed.bskyDid as string,
+              addFollowedDid: userToBeFollowed.bskyDid as string
             })
           } else {
             return res.sendStatus(500)

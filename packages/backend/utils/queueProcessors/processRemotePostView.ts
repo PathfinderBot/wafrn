@@ -16,7 +16,6 @@ async function processRemotePostView(job: Job) {
         userId: userView,
         postId: postId
       }
-
     })
   }
   if (serverView) {

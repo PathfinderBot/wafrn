@@ -1,8 +1,6 @@
-import {
-  Model, Table, Column, DataType, ForeignKey, BelongsTo
-} from "sequelize-typescript";
-import { generateRandomStringInviteCode } from "../utils/generateRandomString.js";
-import { User } from "./index.js";
+import { Model, Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript'
+import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
+import { User } from './index.js'
 
 export interface InviteCodeAttributes {
   code?: string
@@ -14,8 +12,8 @@ export interface InviteCodeAttributes {
 }
 
 @Table({
-  tableName: "inviteCodes",
-  modelName: "inviteCodes",
+  tableName: 'inviteCodes',
+  modelName: 'inviteCodes',
   timestamps: true
 })
 export class InviteCode extends Model<InviteCodeAttributes, InviteCodeAttributes> implements InviteCodeAttributes {
@@ -24,7 +22,7 @@ export class InviteCode extends Model<InviteCodeAttributes, InviteCodeAttributes
     type: DataType.CHAR,
     defaultValue: () => generateRandomStringInviteCode()
   })
-  declare code: string;
+  declare code: string
 
   @ForeignKey(() => User)
   @Column({
@@ -40,7 +38,7 @@ export class InviteCode extends Model<InviteCodeAttributes, InviteCodeAttributes
       return date
     }
   })
-  declare expirationDate: Date;
+  declare expirationDate: Date
 
   @ForeignKey(() => User)
   @Column({

@@ -4,7 +4,6 @@ import { redisCache } from '../redis.js'
 
 const localUsersSet = new Set<string>()
 
-
 async function getAllLocalUserIds(): Promise<string[]> {
   let res: string[] = []
   const cacheResult = await redisCache.get('allLocalUserIds')
@@ -23,18 +22,18 @@ async function getAllLocalUserIds(): Promise<string[]> {
     })
     if (localUsers) {
       res = localUsers.map((elem: User) => elem.id)
-      res.forEach(element => {
+      res.forEach((element) => {
         localUsersSet.add(element)
-      });
+      })
       await redisCache.set('allLocalUserIds', JSON.stringify(res), 'EX', 60)
     }
   }
   return res
 }
 async function getAllLocalUserIdsSet(): Promise<Set<string>> {
-  const ids = await getAllLocalUserIds();
-  ids.forEach(elem => localUsersSet.add(elem)) 
-  return localUsersSet;
+  const ids = await getAllLocalUserIds()
+  ids.forEach((elem) => localUsersSet.add(elem))
+  return localUsersSet
 }
 
 export { getAllLocalUserIds, getAllLocalUserIdsSet }

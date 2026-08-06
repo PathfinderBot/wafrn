@@ -265,15 +265,18 @@ async function nukeBannedUsers() {
 
     logger.debug(`--- Nuking posts Completed ---`)
     await wait(3600000)
-    await User.update({
-      banned: true
-    }, {
-      where: {
-        id: {
-          [Op.in]: usersToNukeIds
+    await User.update(
+      {
+        banned: true
+      },
+      {
+        where: {
+          id: {
+            [Op.in]: usersToNukeIds
+          }
         }
       }
-    })
+    )
     try {
       await User.destroy({
         where: {

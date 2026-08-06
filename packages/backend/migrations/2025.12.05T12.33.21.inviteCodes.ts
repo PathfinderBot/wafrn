@@ -1,8 +1,8 @@
-import { DataTypes } from 'sequelize';
-import { Migration } from '../migrate.js';
-import generateRandomString from '../utils/generateRandomString.js';
+import { DataTypes } from 'sequelize'
+import { Migration } from '../migrate.js'
+import generateRandomString from '../utils/generateRandomString.js'
 
-export const up: Migration = async params => {
+export const up: Migration = async (params) => {
   const queryInterface = params.context
   await queryInterface.createTable('inviteCodes', {
     code: {
@@ -44,7 +44,7 @@ export const up: Migration = async params => {
   })
 }
 
-export const down: Migration = async params => {
+export const down: Migration = async (params) => {
   const queryInterface = params.context
   await queryInterface.dropTable('inviteCodes')
 }

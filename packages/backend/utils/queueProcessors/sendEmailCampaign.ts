@@ -35,7 +35,7 @@ export async function sendEmailCampaign(job: Job<SendEmailCampaignJobData>) {
     where: {
       banned: { [Op.ne]: true },
       activated: true,
-      disableEmailNotifications: {[Op.ne]: true},
+      disableEmailNotifications: { [Op.ne]: true },
       email: {
         [Op.ne]: null
       }

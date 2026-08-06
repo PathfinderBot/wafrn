@@ -1,64 +1,55 @@
-import { Post, User } from "../../../models/index.js";
-import { activityPubObject } from "../../../interfaces/fediverse/activityPubObject.js";
-import { logger } from "../../logger.js";
-import { getPostThreadRecursive } from "../getPostThreadRecursive.js";
-import { getRemoteActor } from "../getRemoteActor.js";
-import { signAndAccept } from "../signAndAccept.js";
+import { Post, User } from '../../../models/index.js'
+import { activityPubObject } from '../../../interfaces/fediverse/activityPubObject.js'
+import { logger } from '../../logger.js'
+import { getPostThreadRecursive } from '../getPostThreadRecursive.js'
+import { getRemoteActor } from '../getRemoteActor.js'
+import { signAndAccept } from '../signAndAccept.js'
 
-async function UpdateActivity(
-  body: activityPubObject,
-  remoteUser: User,
-  user: User
-) {
-  const apObject: activityPubObject = body.object.id ? body.object : body;
+async function UpdateActivity(body: activityPubObject, remoteUser: User, user: User) {
+  const apObject: activityPubObject = body.object.id ? body.object : body
   // TODO divide this one in files too?
   switch (apObject.type) {
-    case "Question":
-    case "Article":
-    case "Note": {
+    case 'Question':
+    case 'Article':
+    case 'Note': {
       const localPost = await Post.findOne({
         where: {
-          remotePostId: apObject.id,
-        },
-      });
-      await getPostThreadRecursive(
-        user,
-        apObject.id,
-        apObject.object,
-        localPost ? localPost.id : undefined
-      );
+          remotePostId: apObject.id
+        }
+      })
+      await getPostThreadRecursive(user, apObject.id, apObject.object, localPost ? localPost.id : undefined)
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
-    case "OrderedCollection": {
+    case 'OrderedCollection': {
       // TODO do something better than this
       // we force an update of the user who asked for this. Not the nicest thing to do but well
-      await getRemoteActor(remoteUser.remoteId ?? '', user, true);
+      await getRemoteActor(remoteUser.remoteId ?? '', user, true)
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
-    case "Application":
-    case "Service":
-    case "Person": {
+    case 'Application':
+    case 'Service':
+    case 'Person': {
       if (apObject.id) {
-        await getRemoteActor(apObject.id, user, true);
+        await getRemoteActor(apObject.id, user, true)
         // await signAndAccept({ body: body }, remoteUser, user)
       }
-      break;
+      break
     }
     // ignore cases
-    case "Video":
-    case "CacheFile": {
+    case 'Video':
+    case 'CacheFile': {
       // await signAndAccept({ body: body }, remoteUser, user)
-      break;
+      break
     }
     default: {
       logger.info({
         message: `update not implemented ${apObject.type}`,
-        apObject,
-      });
+        apObject
+      })
     }
   }
 }
 
-export { UpdateActivity };
+export { UpdateActivity }

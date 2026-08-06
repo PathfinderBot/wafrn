@@ -22,21 +22,24 @@ export const up: Migration = async (params) => {
 <p><br></p>
 <p>Consider <a href="/register" rel="noopener noreferrer" target="_blank">joining Wafrn</a>!</p>`
 
-    await Post.upsert({
-      userId: adminUser.id,
-      slug: 'system.welcome',
-      content: content,
-      markdownContent: content,
-      content_warning: '',
-      privacy: Privacy.LinkOnly,
-      hierarchyLevel: 0,
-      likeControl: InteractionControl.NoOne,
-      reblogControl: InteractionControl.NoOne,
-      quoteControl: InteractionControl.NoOne,
-      replyControl: InteractionControl.NoOne
-    }, {
-      conflictFields: ['userId', 'slug']
-    })
+    await Post.upsert(
+      {
+        userId: adminUser.id,
+        slug: 'system.welcome',
+        content: content,
+        markdownContent: content,
+        content_warning: '',
+        privacy: Privacy.LinkOnly,
+        hierarchyLevel: 0,
+        likeControl: InteractionControl.NoOne,
+        reblogControl: InteractionControl.NoOne,
+        quoteControl: InteractionControl.NoOne,
+        replyControl: InteractionControl.NoOne
+      },
+      {
+        conflictFields: ['userId', 'slug']
+      }
+    )
 
     content = `<h2>Wafrn, the social media that respects you</h2>
 <p>This website is running Wafrn, a federated social media inspired by Tumblr that connects with both the Fediverse and Bluesky</p>
@@ -57,21 +60,24 @@ export const up: Migration = async (params) => {
 <p>* You can upload spicy art. Just mark it as such. Regarding "adult like characters and child like characters in spicy art" the answer is no.</p>
 <p>* Do not give me a huge headache repeatedly</p>`
 
-    await Post.upsert({
-      userId: adminUser.id,
-      slug: 'system.about',
-      content: content,
-      markdownContent: content,
-      content_warning: '',
-      privacy: Privacy.LinkOnly,
-      hierarchyLevel: 0,
-      likeControl: InteractionControl.NoOne,
-      reblogControl: InteractionControl.NoOne,
-      quoteControl: InteractionControl.NoOne,
-      replyControl: InteractionControl.NoOne
-    }, {
-      conflictFields: ['userId', 'slug']
-    })
+    await Post.upsert(
+      {
+        userId: adminUser.id,
+        slug: 'system.about',
+        content: content,
+        markdownContent: content,
+        content_warning: '',
+        privacy: Privacy.LinkOnly,
+        hierarchyLevel: 0,
+        likeControl: InteractionControl.NoOne,
+        reblogControl: InteractionControl.NoOne,
+        quoteControl: InteractionControl.NoOne,
+        replyControl: InteractionControl.NoOne
+      },
+      {
+        conflictFields: ['userId', 'slug']
+      }
+    )
 
     content = `<h1>Privacy Policy</h1>
 <p>This privacy policy describes how ${completeEnvironment.instanceUrl}
@@ -189,21 +195,24 @@ site.</p>
 <a href="https://github.com/discourse/discourse">Discourse</a> and
 <a href="https://mastodon.scot/privacy-policy">Mastodon</a> privacy policies.</p>`
 
-    await Post.upsert({
-      userId: adminUser.id,
-      slug: 'system.privacy-policy',
-      content: content,
-      markdownContent: content,
-      content_warning: '',
-      privacy: Privacy.LinkOnly,
-      hierarchyLevel: 0,
-      likeControl: InteractionControl.NoOne,
-      reblogControl: InteractionControl.NoOne,
-      quoteControl: InteractionControl.NoOne,
-      replyControl: InteractionControl.NoOne
-    }, {
-      conflictFields: ['userId', 'slug']
-    })
+    await Post.upsert(
+      {
+        userId: adminUser.id,
+        slug: 'system.privacy-policy',
+        content: content,
+        markdownContent: content,
+        content_warning: '',
+        privacy: Privacy.LinkOnly,
+        hierarchyLevel: 0,
+        likeControl: InteractionControl.NoOne,
+        reblogControl: InteractionControl.NoOne,
+        quoteControl: InteractionControl.NoOne,
+        replyControl: InteractionControl.NoOne
+      },
+      {
+        conflictFields: ['userId', 'slug']
+      }
+    )
   }
 }
 

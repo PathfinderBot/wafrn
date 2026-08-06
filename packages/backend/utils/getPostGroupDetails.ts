@@ -7,7 +7,7 @@ export default async function getPostGroupDetails(postGroup: any[]) {
   const postIds: string[] = postGroup.map((elem) => elem.rootId)
 
   // Get count of posts for each rootId
-  const queryCounts = await sequelize.query(
+  const queryCounts = (await sequelize.query(
     `
     SELECT 
       "rootId",
@@ -21,7 +21,7 @@ export default async function getPostGroupDetails(postGroup: any[]) {
       replacements: { postIds: postIds },
       type: QueryTypes.SELECT
     }
-  ) as Array<{ rootId: string; notes: number }>
+  )) as Array<{ rootId: string; notes: number }>
 
   // Create a map for quick lookup
   const notesMap = new Map<string, number>()

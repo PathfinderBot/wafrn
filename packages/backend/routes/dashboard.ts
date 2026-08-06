@@ -58,14 +58,16 @@ export default function dashboardRoutes(app: Application) {
         baseUserOptions.find((opt) => opt.optionName === name)?.optionValue === 'true'
       const disableReplies = getBaseOption('wafrn.disableReplies')
       const disableBsky = getBaseOption('wafrn.disableBsky')
-      const disableRepliesOr = disableReplies ? [
-        {
-          isReblog: true
-        },
-        {
-          isReply: false
-        }
-      ] : []
+      const disableRepliesOr = disableReplies
+        ? [
+            {
+              isReblog: true
+            },
+            {
+              isReply: false
+            }
+          ]
+        : []
 
       if (disableBsky) {
         disableRepliesOr.push({
@@ -319,7 +321,7 @@ export default function dashboardRoutes(app: Application) {
               )
             ]
           }
-          break;
+          break
         }
         case 30: {
           // drafts
@@ -327,7 +329,7 @@ export default function dashboardRoutes(app: Application) {
             userId: posterId,
             privacy: Privacy.Draft
           }
-          break;
+          break
         }
       }
       // we get the list of posts
@@ -354,7 +356,7 @@ export default function dashboardRoutes(app: Application) {
         limit: POSTS_PER_PAGE,
         attributes: ['id', 'createdAt'],
         subQuery: false,
-        replacements: { posterId: posterId || '00000000-0000-0000-0000-000000000000' },
+        replacements: { posterId: posterId || '00000000-0000-0000-0000-000000000000' },
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
           [Op.or]: [
