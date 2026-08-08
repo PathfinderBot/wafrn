@@ -41,17 +41,27 @@ http://{$MEDIA_DOMAIN}, {$MEDIA_DOMAIN} {
 # -----------------------
 http://{$CACHE_DOMAIN}, {$CACHE_DOMAIN} {
 
-    header Cache-Control "public, max-age=3600"
-
     handle /api/cache* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
             lb_policy least_conn
+
+            @cacheable status 2xx
+            handle_response @cacheable {
+                header Cache-Control "public, max-age=3600"
+                copy_response
+            }
         }
     }
 
     handle /api/v2/cache/* {
         reverse_proxy {$BACKEND_HOST:-backend:9000} {
             lb_policy least_conn
+
+            @cacheable status 2xx
+            handle_response @cacheable {
+                header Cache-Control "public, max-age=3600"
+                copy_response
+            }
         }
     }
 }
