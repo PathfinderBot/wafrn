@@ -66,8 +66,8 @@ http://{$DOMAIN_NAME}, {$DOMAIN_NAME} {
 
     header * {
         X-Clacks-Overhead "GNU Terry Pratchett"
-        Service-Worker-Allowed: "/",
-        Cache-Control: no-cache, must-revalidate
+        Service-Worker-Allowed "/"
+        Cache-Control "no-cache, must-revalidate"
         Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; script-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval'; script-src-attr 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' data: 'unsafe-inline'; style-src-elem 'self' data: 'unsafe-inline'; style-src-attr 'self' data: 'unsafe-inline'; img-src 'self' data: blob: https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; media-src 'self' data: blob: https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; connect-src 'self' https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; object-src 'self' https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; frame-src 'self' https://{$CACHE_DOMAIN} https://{$MEDIA_DOMAIN}; worker-src 'self' blob:; frame-ancestors 'self'; upgrade-insecure-requests; block-all-mixed-content; manifest-src 'self'"
         }
 
