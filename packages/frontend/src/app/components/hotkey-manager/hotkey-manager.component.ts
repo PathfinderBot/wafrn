@@ -16,7 +16,6 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faKeyboard, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { TranslateModule, TranslateService, _ } from '@ngx-translate/core'
 import { animationFrames, filter, fromEvent, map, merge, Subject, takeUntil, takeWhile } from 'rxjs'
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { HotkeyAction, HotkeyService } from '../../services/hotkey.service'
 import { EditorService } from '../../services/editor.service'
 import { GlobalKeydownService, CallbackDictionary } from '../../services/global-keydown.service'
@@ -61,7 +60,7 @@ let smoothScroll = signal(true)
 
 @Component({
   selector: 'app-hotkey-manager',
-  imports: [MatButtonModule, FontAwesomeModule, MatTooltipModule, BrowserAnimationsModule],
+  imports: [MatButtonModule, FontAwesomeModule, MatTooltipModule],
   templateUrl: './hotkey-manager.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './hotkey-manager.component.scss'
