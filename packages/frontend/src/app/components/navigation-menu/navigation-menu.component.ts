@@ -223,7 +223,8 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
       this.notificationsService.updateCount()
     })
 
-    this.pwaPage = window.matchMedia('(display-mode: standalone)').matches
+    this.pwaPage =
+      window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true
 
     // Focus overlay evil fix
     fromEvent(document, 'keydown').subscribe(() => (this.keyboardActive = true))
