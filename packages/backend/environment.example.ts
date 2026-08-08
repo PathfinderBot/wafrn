@@ -137,7 +137,6 @@ export const baseEnvironment: Environment = {
     disablePWA: process.env.FRONTEND_DISABLE_PWA == 'true',
     maintenance: process.env.FRONTEND_MAINTENANCE == 'true',
     enableRawOutput: process.env.ENABLE_RAW_OUTPUT == 'true',
-    registrationLevel: process.env.REGISTRATION_LEVEL || 'PUBLIC',
     privateInstanceRegistrationText:
       process.env.REGISTRATIONS_DISABLED_TEXT ||
       'This instance is a private instance, and does not allow registrations',

@@ -1,6 +1,6 @@
 import { Application, Response } from 'express'
 import { Op } from 'sequelize'
-import { MfaDetails, User, sequelize } from '../models/index.js'
+import { MfaDetails, User, UserOptions, sequelize } from '../models/index.js'
 import { InviteCode } from '../models/inviteCode.js'
 import { adminToken, authenticateToken } from '../utils/authenticateToken.js'
 import generateRandomString from '../utils/generateRandomString.js'
@@ -31,6 +31,11 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { syncBskyAccountData } from '../atproto/utils/syncBskyAccountData.js'
 import { createBskyAppPassword, forceUpdateBskyEmail, serviceUrl, updateBskyPassword } from '../services/bskyAccount.js'
+import {
+  applyBlueskyRegistrationOption,
+  BLUESKY_REGISTRATION_OPTION_NAME,
+  BlueskyRegistrationOption
+} from '../utils/blueskyRegistrationOption.js'
 
 const markdownConverter = new showdown.Converter({
   simplifiedAutoLink: true,
@@ -141,6 +146,14 @@ function authRoutes(app: Application) {
           let inviteCode: InviteCode | undefined
           if (!emailExists) {
             const id = randomUUID()
+            const parsedBlueskyOption = parseInt(req.body.blueskyOption, 10)
+            const blueskyOption = [
+              BlueskyRegistrationOption.NoThanks,
+              BlueskyRegistrationOption.CreateNew,
+              BlueskyRegistrationOption.BringOwn
+            ].includes(parsedBlueskyOption)
+              ? (parsedBlueskyOption as BlueskyRegistrationOption)
+              : BlueskyRegistrationOption.NoThanks
             if (completeEnvironment.registrationLevel === 'INVITE') {
               // we get invite code first
               if (!req.body.inviteCode) {
@@ -238,6 +251,14 @@ function authRoutes(app: Application) {
 `
                 })
             await Promise.all([userWithEmail, emailSent])
+            if (blueskyOption !== BlueskyRegistrationOption.NoThanks) {
+              await UserOptions.create({
+                userId: id,
+                optionName: BLUESKY_REGISTRATION_OPTION_NAME,
+                optionValue: String(blueskyOption),
+                public: false
+              })
+            }
             await generateUserKeyPairQueue.add('generateUserKeyPair', {
               userId: (await userWithEmail).id
             })
@@ -346,7 +367,7 @@ function authRoutes(app: Application) {
         if (!completeEnvironment.reviewRegistrations) {
           user.activated = true
           subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`
-          body = '<p>;D</p>'
+          body = '<p>;D</p>' + (await applyBlueskyRegistrationOption(user))
         } else {
           subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewd by an admin!`
           body = `\

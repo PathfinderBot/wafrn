@@ -15,6 +15,7 @@ import { federatePostHasBeenEdited } from '../activitypub/editPost.js'
 import { BlockedIps } from '../models/blockedIp.js'
 import { getQueue } from '../utils/queues.js'
 import type { SendEmailCampaignJobData } from '../queueProcessors/sendEmailCampaign.js'
+import { applyBlueskyRegistrationOption } from '../utils/blueskyRegistrationOption.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -441,14 +442,17 @@ export default function adminRoutes(app: Application) {
       const userToActivate = await User.scope('full').findByPk(req.body.id)
       if (userToActivate && userToActivate.email) {
         userToActivate.activated = true
-        const emailPromise = sendEmail({
-          email: userToActivate.email,
-          subject: `Your account at ${completeEnvironment.frontendUrl} has been activated`,
-          body: `\
+        ;(async () => {
+          const blueskyRegistrationEmailAddition = await applyBlueskyRegistrationOption(userToActivate)
+          const emailPromise = sendEmail({
+            email: userToActivate.email as string,
+            subject: `Your account at ${completeEnvironment.frontendUrl} has been activated`,
+            body: `\
 <p>Hello ${userToActivate.url}, your account has been reviewed by our team and is now activated!</p>
-`
-        })
-        Promise.allSettled([emailPromise, userToActivate.save()])
+${blueskyRegistrationEmailAddition}`
+          })
+          await Promise.allSettled([emailPromise, userToActivate.save()])
+        })()
       }
     }
     res.send({ success: true })

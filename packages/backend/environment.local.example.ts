@@ -126,7 +126,6 @@ export const baseEnvironment: Environment = {
     disablePWA: false,
     maintenance: false,
     enableRawOutput: true,
-    registrationLevel: 'PRIVATE',
     privateInstanceRegistrationText: 'test 123',
     minimumAgeToRegister: 18,
     donationUrl: 'http://localhost/about',

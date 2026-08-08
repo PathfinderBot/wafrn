@@ -1,7 +1,3 @@
-@defer (on viewport) {
-  <a class="avatar-container" [blogLink]="disabled() ? undefined : user()" [matTooltip]="user()?.url || ''">
-    <div class="avatar" [style.background-image]="'url(' + avatar() + ')'"></div>
-  </a>
-} @placeholder {
-  <div class="avatar"></div>
-}
+<a class="avatar-container" [blogLink]="disabled() ? undefined : user()" [matTooltip]="user()?.url || ''">
+  <div class="avatar" [style.background-image]="'url(' + avatar() + ')'"></div>
+</a>

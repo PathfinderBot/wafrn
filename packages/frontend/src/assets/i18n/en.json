@@ -69,6 +69,11 @@
     "birthDateHint": "MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not shared with anyone. Minimum registration age varies depending on the instance",
     "gender": "Gender",
     "genderHint": "This actually does not do anything at all",
+    "blueskyOption": "Bluesky",
+    "blueskyOptionHint": "Would you like a Bluesky account too? You can change this later from your settings",
+    "blueskyOptionNo": "No thanks",
+    "blueskyOptionCreate": "Create me a new one",
+    "blueskyOptionBringOwn": "I will migrate my own bluesky account later",
     "uploadAvatar": "Upload your avatar",
     "chooseFile": "Choose File"
   },

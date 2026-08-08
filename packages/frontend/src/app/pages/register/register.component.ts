@@ -55,6 +55,13 @@ export class RegisterComponent {
   privateInstanceRegistrationText = EnvironmentService.environment.privateInstanceRegistrationText
   instanceDomain = new URL(EnvironmentService.environment.frontUrl).hostname
   isAdmin = false
+  blueskyEnabled = EnvironmentService.environment.enableBsky
+
+  blueskyOptions: { value: string; label: string }[] = [
+    { value: '0', label: 'register.blueskyOptionNo' },
+    { value: '1', label: 'register.blueskyOptionCreate' },
+    { value: '2', label: 'register.blueskyOptionBringOwn' }
+  ]
 
   // Font Awesome icons
   faUserPlus = faUserPlus
@@ -368,6 +375,7 @@ export class RegisterComponent {
     captchaResponse: new UntypedFormControl('', []),
     avatar: new UntypedFormControl('', []),
     confirmReadAbout: new FormControl(false, [Validators.requiredTrue]),
+    blueskyOption: new UntypedFormControl('0', [Validators.required]),
     ...(this.registrationLevel === 'INVITE'
       ? {
           inviteCode: new UntypedFormControl(this.inviteCode ?? '', [Validators.required])
