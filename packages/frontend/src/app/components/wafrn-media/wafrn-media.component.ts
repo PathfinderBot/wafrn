@@ -10,6 +10,12 @@ import {
   inject,
   ChangeDetectionStrategy
 } from '@angular/core'
+import { MatCardModule } from '@angular/material/card'
+import { MatButtonModule } from '@angular/material/button'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { TranslateModule } from '@ngx-translate/core'
+import { LinkPreviewComponent } from '../link-preview/link-preview.component'
+import { SafePipe } from '../../pipes/safe.pipe'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { EnvironmentService } from '../../services/environment.service'
 import { MediaService } from '../../services/media.service'
@@ -22,10 +28,10 @@ type FitMode = 'contain' | 'cover'
 
 @Component({
   selector: 'app-wafrn-media',
+  imports: [MatCardModule, MatButtonModule, FontAwesomeModule, LinkPreviewComponent, TranslateModule, SafePipe],
   templateUrl: './wafrn-media.component.html',
   styleUrls: ['./wafrn-media.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class WafrnMediaComponent implements OnInit, AfterViewInit {
   private mediaService = inject(MediaService)

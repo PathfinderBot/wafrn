@@ -3,11 +3,11 @@ import { RouterModule } from '@angular/router'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { EnvironmentService } from '../../services/environment.service'
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { BlogLinkModule } from '../../directives/blog-link/blog-link.module'
+import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
 
 @Component({
   selector: 'app-avatar-small',
-  imports: [RouterModule, BlogLinkModule, MatTooltipModule],
+  imports: [RouterModule, BlogLinkDirective, MatTooltipModule],
   templateUrl: './avatar-small.component.html',
   styleUrl: './avatar-small.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

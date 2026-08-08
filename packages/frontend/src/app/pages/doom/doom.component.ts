@@ -5,8 +5,7 @@ import { SimpleTitleService } from '../../services/simple-title.service'
   selector: 'app-doom',
   templateUrl: './doom.component.html',
   styleUrls: ['./doom.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class DoomComponent {
   doomFrame = viewChild<ElementRef<HTMLIFrameElement>>('doom')

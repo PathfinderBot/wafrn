@@ -1,6 +1,6 @@
 import { Ask } from './ask'
 import { Emoji } from './emoji'
-import { InteractionControlType } from './InteractionControl'
+import { InteractionControlType } from './interaction-control'
 import { SimplifiedUser } from './simplified-user'
 
 export interface unlinkedPosts {

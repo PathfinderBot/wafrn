@@ -33,8 +33,8 @@ import { AvatarSmallComponent } from '../../avatar-small/avatar-small.component'
 import { PostActionsComponent } from '../../post-actions/post-actions.component'
 import sanitize from 'sanitize-html'
 import { TranslatePipe } from '@ngx-translate/core'
-import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
-import { PostLinkModule } from '../../../directives/post-link/post-link.module'
+import { BlogLinkDirective } from '../../../directives/blog-link/blog-link.directive'
+import { PostLinkDirective } from '../../../directives/post-link/post-link.directive'
 import { SimpleDialogService } from '../../../services/simple-dialog.service'
 
 @Component({
@@ -48,8 +48,8 @@ import { SimpleDialogService } from '../../../services/simple-dialog.service'
     FontAwesomeModule,
     MatButtonModule,
     MatTooltipModule,
-    PostLinkModule,
-    BlogLinkModule,
+    PostLinkDirective,
+    BlogLinkDirective,
     TranslatePipe
   ],
   templateUrl: './post-header.component.html',

@@ -1,7 +1,14 @@
-import { ViewportScroller } from '@angular/common'
+import { CommonModule, ViewportScroller } from '@angular/common'
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { Meta } from '@angular/platform-browser'
 import { Router, NavigationSkipped } from '@angular/router'
+import { TranslateModule } from '@ngx-translate/core'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { PostListComponent } from '../../components/post-list/post-list.component'
+import { ForumComponent } from '../forum/forum.component'
 import { Subscription, Subject, throttleTime, asyncScheduler, filter } from 'rxjs'
 import { SnappyCreate, SnappyShow, SnappyHide } from '../../components/snappy/snappy-life'
 import { ProcessedPost } from '../../interfaces/processed-post'
@@ -13,10 +20,19 @@ import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-dashboard',
+  imports: [
+    CommonModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    FontAwesomeModule,
+    ForumComponent,
+    MatCardModule,
+    PostListComponent,
+    TranslateModule
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, SnappyShow, SnappyHide {
   private dashboardService = inject(DashboardService)

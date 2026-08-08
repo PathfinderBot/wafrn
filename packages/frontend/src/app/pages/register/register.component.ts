@@ -1,5 +1,17 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
-import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { MatCardModule } from '@angular/material/card'
+import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatButtonModule } from '@angular/material/button'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { MatSelectModule } from '@angular/material/select'
+import { TranslateModule } from '@ngx-translate/core'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatCheckbox } from '@angular/material/checkbox'
+import { InfoCardComponent } from '../../components/info-card/info-card.component'
 import { faArrowRight, faEye, faEyeSlash, faUpload, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { Router } from '@angular/router'
 import { EnvironmentService } from '../../services/environment.service'
@@ -10,10 +22,25 @@ import { SimpleDialogService } from '../../services/simple-dialog.service'
 
 @Component({
   selector: 'app-register',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FontAwesomeModule,
+    MatSelectModule,
+    InfoCardComponent,
+    MatProgressSpinnerModule,
+    TranslateModule,
+    MatCheckbox
+  ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class RegisterComponent {
   private loginService = inject(LoginService)

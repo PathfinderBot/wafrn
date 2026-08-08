@@ -1,16 +1,33 @@
 import { Component, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core'
-import { MatTableDataSource } from '@angular/material/table'
-import { MatPaginator } from '@angular/material/paginator'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MatTableDataSource, MatTableModule } from '@angular/material/table'
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
+import { MatCardModule } from '@angular/material/card'
+import { MatInputModule } from '@angular/material/input'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatButtonModule } from '@angular/material/button'
+import { TranslateModule } from '@ngx-translate/core'
 import { server } from '../../../interfaces/servers'
 import { AdminService } from '../../../services/admin.service'
 import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-server-list',
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTableModule,
+    MatCardModule,
+    MatPaginatorModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    TranslateModule
+  ],
   templateUrl: './server-list.component.html',
   styleUrls: ['./server-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class ServerListComponent implements OnInit {
   private adminService = inject(AdminService)

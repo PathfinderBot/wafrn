@@ -9,10 +9,22 @@ import {
   inject,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { UntypedFormGroup, UntypedFormControl, FormControl, Validators } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, FormControl, Validators } from '@angular/forms'
+import { RouterModule } from '@angular/router'
+import { MatCardModule } from '@angular/material/card'
+import { MatButtonModule } from '@angular/material/button'
+import { MatInputModule } from '@angular/material/input'
+import { MatSelectModule } from '@angular/material/select'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatTabsModule } from '@angular/material/tabs'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faPlus, faXmark } from '@fortawesome/free-solid-svg-icons'
-import { TranslateService } from '@ngx-translate/core'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { EmojiCollectionsComponent } from '../../../components/emoji-collections/emoji-collections.component'
+import { UserSelectorComponent } from '../../../components/user-selector/user-selector.component'
 import { Emoji } from '../../../interfaces/emoji'
 import { DashboardService } from '../../../services/dashboard.service'
 import { JwtService } from '../../../services/jwt.service'
@@ -33,10 +45,27 @@ import {
 
 @Component({
   selector: 'app-edit-profile',
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatInputModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    EmojiCollectionsComponent,
+    MatExpansionModule,
+    TranslateModule,
+    MatTabsModule,
+    UserSelectorComponent,
+    MatProgressSpinnerModule,
+    FontAwesomeModule
+  ],
   templateUrl: './edit-profile.component.html',
   styleUrls: ['./edit-profile.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class EditProfileComponent implements OnInit {
   private jwtService = inject(JwtService)

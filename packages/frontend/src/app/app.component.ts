@@ -17,19 +17,21 @@ import { SwPush } from '@angular/service-worker'
 import { Title } from '@angular/platform-browser'
 import { GlobalData } from './services/global-data.service'
 import { WebsocketService } from './services/websocket.service'
-import { NavigationError, Router } from '@angular/router'
+import { NavigationError, Router, RouterOutlet } from '@angular/router'
 import { filter, map } from 'rxjs'
 import { MessageService } from './services/message.service'
 import { supportedLanguages } from './lists/languages'
 import { ThemeService } from './services/theme.service'
 import { PostsService } from './services/posts.service'
+import { HotkeyManagerComponent } from './components/hotkey-manager/hotkey-manager.component'
+import { ThemeManagerComponent } from './components/theme-manager/theme-manager.component'
 
 @Component({
   selector: 'app-root',
+  imports: [RouterOutlet, HotkeyManagerComponent, ThemeManagerComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AppComponent implements OnInit {
   private swUpdate = inject(SwUpdate)

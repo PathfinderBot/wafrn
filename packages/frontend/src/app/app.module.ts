@@ -29,7 +29,6 @@ const globalRippleConfig: RippleGlobalOptions = {
   }
 }
 @NgModule({
-  declarations: [AppComponent],
   bootstrap: [AppComponent],
   exports: [],
   imports: [
@@ -40,6 +39,7 @@ const globalRippleConfig: RippleGlobalOptions = {
     ReactiveFormsModule,
     AppRoutingModule,
     MatNativeDateModule,
+    AppComponent,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable

@@ -37,7 +37,7 @@ import { SETTINGS_TOKEN } from '../pages/settings/settings.component'
 import { replyBarItems } from '../components/post-action-buttons/post-action-buttons.component'
 import { SettingConfettiComponent } from '../components/setting-confetti/setting-confetti.component'
 import { Annoyance } from '../components/dialog/confirm-dialog.component'
-import { InteractionControl } from '../interfaces/InteractionControl'
+import { InteractionControl } from '../interfaces/interaction-control'
 
 // All setting keys for use throughout the app
 const settingKeyVariants = [

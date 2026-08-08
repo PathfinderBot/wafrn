@@ -40,7 +40,7 @@ import {
   faEnvelope
 } from '@fortawesome/free-solid-svg-icons'
 import { TranslatePipe } from '@ngx-translate/core'
-import { BlogDetails } from '../../interfaces/blogDetails'
+import { BlogDetails } from '../../interfaces/blog-details'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { BlocksService } from '../../services/blocks.service'
 import { BlogService } from '../../services/blog.service'

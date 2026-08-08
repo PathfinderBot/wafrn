@@ -10,7 +10,19 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { NavigationEnd, Router } from '@angular/router'
+import { CommonModule } from '@angular/common'
+import { MatBadgeModule } from '@angular/material/badge'
+import { MatButtonModule } from '@angular/material/button'
+import { MatDialogModule } from '@angular/material/dialog'
+import { MatListModule } from '@angular/material/list'
+import { MatSidenavModule } from '@angular/material/sidenav'
+import { RouterModule, NavigationEnd, Router } from '@angular/router'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { MatToolbarModule } from '@angular/material/toolbar'
+import { TranslateModule } from '@ngx-translate/core'
+import { ColorSchemeSwitcherComponent } from '../color-scheme-switcher/color-scheme-switcher.component'
+import { MenuItemComponent } from '../menu-item/menu-item.component'
+import { SnappyRouter } from '../snappy/snappy-router.component'
 import { fromEvent, merge, Subscription } from 'rxjs'
 import { toObservable } from '@angular/core/rxjs-interop'
 
@@ -53,7 +65,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 
 import buildData from '../../../buildData.json'
-import { BlogDetails } from '../../interfaces/blogDetails'
+import { BlogDetails } from '../../interfaces/blog-details'
 import { MenuItem, MenuLink } from '../../interfaces/menu-item'
 import { DashboardService } from '../../services/dashboard.service'
 import { EditorService } from '../../services/editor.service'
@@ -67,9 +79,23 @@ import { Action } from '../../interfaces/editor-launcher-data'
 
 @Component({
   selector: 'app-navigation-menu',
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatSidenavModule,
+    MatListModule,
+    MenuItemComponent,
+    MatBadgeModule,
+    FontAwesomeModule,
+    MatButtonModule,
+    MatDialogModule,
+    ColorSchemeSwitcherComponent,
+    SnappyRouter,
+    MatToolbarModule,
+    TranslateModule
+  ],
   templateUrl: './navigation-menu.component.html',
   styleUrls: ['./navigation-menu.component.scss'],
-  standalone: false,
   changeDetection: ChangeDetectionStrategy.Eager,
   encapsulation: ViewEncapsulation.None
 })

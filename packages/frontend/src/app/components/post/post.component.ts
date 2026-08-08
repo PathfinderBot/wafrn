@@ -13,6 +13,21 @@ import {
   OnChanges,
   ChangeDetectionStrategy
 } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { MatCardModule } from '@angular/material/card'
+import { RouterModule } from '@angular/router'
+import { MatButtonModule } from '@angular/material/button'
+import { MatMenuModule } from '@angular/material/menu'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { MatDialogModule } from '@angular/material/dialog'
+import { MatTooltipModule } from '@angular/material/tooltip'
+import { TranslateModule } from '@ngx-translate/core'
+import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
+import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
+import { PostActionsComponent } from '../post-actions/post-actions.component'
+import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
+import { PostHeaderComponent } from './post-header/post-header.component'
+import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
 
 import {
   faArrowUpRightFromSquare,
@@ -37,7 +52,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Subject, Subscription } from 'rxjs'
 import { BottomReplyBarComponent } from '../bottom-reply-bar/bottom-reply-bar.component'
-import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { LoginService } from '../../services/login.service'
 import { PostsService } from '../../services/posts.service'
@@ -47,10 +61,27 @@ import { HotkeyAction } from '../../services/hotkey.service'
 
 @Component({
   selector: 'app-post',
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatCardModule,
+    MatButtonModule,
+    MatMenuModule,
+    FontAwesomeModule,
+    MatDialogModule,
+    MatTooltipModule,
+    PostFragmentComponent,
+    PostActionsComponent,
+    AvatarSmallComponent,
+    PostHeaderComponent,
+    BottomReplyBarComponent,
+    PostRibbonComponent,
+    BlogLinkDirective,
+    TranslateModule
+  ],
   templateUrl: './post.component.html',
   styleUrls: ['./post.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class PostComponent implements OnChanges, OnDestroy {
   postService = inject(PostsService)

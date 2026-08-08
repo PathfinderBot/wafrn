@@ -8,7 +8,7 @@ import { MessageService } from './message.service'
 import { firstValueFrom } from 'rxjs'
 import { unlinkedPosts } from '../interfaces/unlinked-posts'
 import { Emoji } from '../interfaces/emoji'
-import { BlogDetails } from '../interfaces/blogDetails'
+import { BlogDetails } from '../interfaces/blog-details'
 import { Ask } from '../interfaces/ask'
 import { EnvironmentService } from './environment.service'
 

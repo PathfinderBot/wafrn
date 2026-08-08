@@ -1,7 +1,15 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
-import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { MatCardModule } from '@angular/material/card'
+import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatButtonModule } from '@angular/material/button'
+import { MatSelectModule } from '@angular/material/select'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
-import { TranslateService } from '@ngx-translate/core'
 import encodeQR from 'qr'
 import { EnvironmentService } from '../../services/environment.service'
 import { LoginService } from '../../services/login.service'
@@ -9,10 +17,22 @@ import { MessageService } from '../../services/message.service'
 
 @Component({
   selector: 'app-mfa-setup',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatSelectModule,
+    FontAwesomeModule,
+    TranslateModule
+  ],
   templateUrl: './mfa-setup.component.html',
   styleUrls: ['./mfa-setup.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class MfaSetupComponent {
   private loginService = inject(LoginService)

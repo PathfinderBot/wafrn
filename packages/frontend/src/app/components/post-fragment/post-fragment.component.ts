@@ -16,11 +16,11 @@ import { MatButtonModule } from '@angular/material/button'
 import { RouterModule } from '@angular/router'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
-import { PollModule } from '../poll/poll.module'
-import { WafrnMediaModule } from '../wafrn-media/wafrn-media.module'
+import { PollComponent } from '../poll/poll.component'
+import { WafrnMediaComponent } from '../wafrn-media/wafrn-media.component'
 
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { InjectHtmlModule } from '../../directives/inject-html/inject-html.module'
+import { InjectHTMLDirective } from '../../directives/inject-html/inject-html.directive'
 import { Emoji } from '../../interfaces/emoji'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { EnvironmentService } from '../../services/environment.service'
@@ -37,7 +37,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { Subscription } from 'rxjs'
 import Viewer from 'viewerjs'
 import { PostHtmlContentComponent } from '../post/post-html-content/post-html-content.component'
-import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { PostLinkDirective } from '../../directives/post-link/post-link.directive'
 import { ParticleService } from '../../services/particle.service'
 import { SettingsService } from '../../services/settings.service'
 import { SimpleDialogService } from '../../services/simple-dialog.service'
@@ -59,16 +59,16 @@ type EmojiReaction = {
   selector: 'app-post-fragment',
   imports: [
     CommonModule,
-    PollModule,
-    WafrnMediaModule,
+    PollComponent,
+    WafrnMediaComponent,
     RouterModule,
     MatButtonModule,
     MatTooltipModule,
     EmojiReactComponent,
-    InjectHtmlModule,
+    InjectHTMLDirective,
     PostHeaderComponent,
     SingleAskComponent,
-    PostLinkModule,
+    PostLinkDirective,
     TranslateModule,
     PostHtmlContentComponent
   ],

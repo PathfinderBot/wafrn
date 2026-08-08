@@ -16,7 +16,7 @@ import { TranslatePipe } from '@ngx-translate/core'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { BlogHeaderComponent } from '../../../components/blog-header/blog-header.component'
 import { LoaderComponent } from '../../../components/loader/loader.component'
-import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
+import { BlogLinkDirective } from '../../../directives/blog-link/blog-link.directive'
 import { followsResponse } from '../../../interfaces/follows-response'
 import { SimplifiedUser } from '../../../interfaces/simplified-user'
 import { BlogService } from '../../../services/blog.service'
@@ -41,7 +41,7 @@ import { PostsService } from '../../../services/posts.service'
     AvatarSmallComponent,
     FontAwesomeModule,
     MatTooltipModule,
-    BlogLinkModule,
+    BlogLinkDirective,
     TranslatePipe
   ],
   templateUrl: './follows.component.html',

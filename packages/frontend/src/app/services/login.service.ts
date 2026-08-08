@@ -11,9 +11,9 @@ import { EnvironmentService } from './environment.service'
 import { MessageService } from './message.service'
 import { TranslateService } from '@ngx-translate/core'
 import { DashboardService } from './dashboard.service'
-import { BlogDetails } from '../interfaces/blogDetails'
+import { BlogDetails } from '../interfaces/blog-details'
 import { SimpleDialogService } from './simple-dialog.service'
-import { InteractionControl, InteractionControlType } from '../interfaces/InteractionControl'
+import { InteractionControl, InteractionControlType } from '../interfaces/interaction-control'
 
 export type AccountData = {
   token: string

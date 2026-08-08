@@ -2,7 +2,7 @@ import { JsonPipe } from '@angular/common'
 import { ChangeDetectorRef, Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { MatCardModule } from '@angular/material/card'
 import { TranslateModule } from '@ngx-translate/core'
-import { statsReply } from '../../../interfaces/statsReply'
+import { statsReply } from '../../../interfaces/stats-reply'
 import { AdminService } from '../../../services/admin.service'
 import { SimpleTitleService } from '../../../services/simple-title.service'
 

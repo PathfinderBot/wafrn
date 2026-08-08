@@ -1,6 +1,6 @@
 import { Emoji } from './emoji'
-import { FederatedHost } from './federatedHost'
-import { PublicOption } from './publicOption'
+import { FederatedHost } from './federated-host'
+import { PublicOption } from './public-option'
 
 export interface BlogDetails {
   id: string

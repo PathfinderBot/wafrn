@@ -1,6 +1,20 @@
 import { Component, OnDestroy, OnInit, Signal, signal, inject, ChangeDetectionStrategy } from '@angular/core'
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router'
+import { MatCardModule } from '@angular/material/card'
+import { MatButtonModule } from '@angular/material/button'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatListModule } from '@angular/material/list'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatTabsModule } from '@angular/material/tabs'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { TranslateModule } from '@ngx-translate/core'
+import { PostComponent } from '../../components/post/post.component'
+import { UserSelectorComponent } from '../../components/user-selector/user-selector.component'
+import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { Subscription, filter } from 'rxjs'
 import { ProcessedPost } from '../../interfaces/processed-post'
@@ -14,10 +28,28 @@ import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-search',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    PostComponent,
+    MatCardModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FontAwesomeModule,
+    MatListModule,
+    MatProgressSpinnerModule,
+    MatTabsModule,
+    BlogLinkDirective,
+    MatExpansionModule,
+    UserSelectorComponent,
+    TranslateModule
+  ],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class SearchComponent implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService)

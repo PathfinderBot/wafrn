@@ -4,7 +4,7 @@ import { Injectable, inject } from '@angular/core'
 import { server } from '../interfaces/servers'
 import { firstValueFrom } from 'rxjs'
 import { SimplifiedUser } from '../interfaces/simplified-user'
-import { statsReply } from '../interfaces/statsReply'
+import { statsReply } from '../interfaces/stats-reply'
 import { EnvironmentService } from './environment.service'
 
 export type UserReport = {

@@ -4,8 +4,7 @@ import { SnappyService } from '../../components/snappy/snappy.service'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 
 @Directive({
-  selector: '[blogLink]',
-  standalone: false
+  selector: '[blogLink]'
 })
 export class BlogLinkDirective implements OnChanges {
   private readonly host = inject(ElementRef)

@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faImage, faUpload } from '@fortawesome/free-solid-svg-icons'
-import { SettingsService } from '../services/settings.service'
+import { SettingsService } from '../../services/settings.service'
 
 // yes, I am rewriting file-upload just so it can have text and emit a different type
 

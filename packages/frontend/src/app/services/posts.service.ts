@@ -8,7 +8,7 @@ import { BehaviorSubject, firstValueFrom, from, lastValueFrom, Subject } from 'r
 import { JwtService } from './jwt.service'
 import { basicPost, PostEmojiReaction, unlinkedPosts } from '../interfaces/unlinked-posts'
 import { SimplifiedUser } from '../interfaces/simplified-user'
-import { UserOptions } from '../interfaces/userOptions'
+import { UserOptions } from '../interfaces/user-options'
 import { Emoji } from '../interfaces/emoji'
 import { EmojiCollection } from '../interfaces/emoji-collection'
 import { MessageService } from './message.service'

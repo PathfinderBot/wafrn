@@ -1,11 +1,23 @@
 import { NgModule } from '@angular/core'
 import { PreloadAllModules, RouteReuseStrategy, RouterModule, Routes } from '@angular/router'
 import { NavigationMenuComponent } from './components/navigation-menu/navigation-menu.component'
-import { NavigationMenuModule } from './components/navigation-menu/navigation-menu.module'
 import { isAdminGuard } from './guards/is-admin.guard'
 import { loginRequiredGuard } from './guards/login-required.guard'
-import { CustomReuseStrategy } from './services/routing.service'
+import { CustomReuseStrategy, ReuseableRouteType } from './services/routing.service'
 import { userLoggedGuard } from './guards/user-logged.guard'
+
+const searchRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./pages/search/search.component').then((m) => m.SearchComponent),
+    data: { reuseRoute: true, routeType: ReuseableRouteType.Feed }
+  },
+  {
+    path: ':term',
+    loadComponent: () => import('./pages/search/search.component').then((m) => m.SearchComponent),
+    data: { reuseRoute: true, routeType: ReuseableRouteType.Feed }
+  }
+]
 
 const routes: Routes = [
   {
@@ -22,7 +34,7 @@ const routes: Routes = [
       },
       {
         path: 'register',
-        loadChildren: () => import('./pages/register/register.module').then((m) => m.RegisterModule)
+        loadComponent: () => import('./pages/register/register.component').then((m) => m.RegisterComponent)
       },
       {
         path: 'checkMail',
@@ -30,7 +42,8 @@ const routes: Routes = [
       },
       {
         path: 'about',
-        loadChildren: () => import('./pages/about/about.module').then((m) => m.AboutModule)
+        loadComponent: () => import('./pages/about/about.component').then((m) => m.AboutComponent),
+        data: { title: 'system.about' }
       },
       {
         path: 'privacy',
@@ -38,34 +51,71 @@ const routes: Routes = [
       },
       {
         path: 'recoverPassword',
-        loadChildren: () =>
-          import('./pages/recover-password/recover-password.module').then((m) => m.RecoverPasswordModule)
+        loadComponent: () =>
+          import('./pages/recover-password/recover-password.component').then((m) => m.RecoverPasswordComponent)
       },
       {
         path: 'mfaSetup',
-        loadChildren: () => import('./pages/mfa-setup/mfa-setup.module').then((m) => m.MfaSetupModule)
+        loadComponent: () => import('./pages/mfa-setup/mfa-setup.component').then((m) => m.MfaSetupComponent)
       },
       {
         path: 'dashboard/search',
-        loadChildren: () => import('./pages/search/search.module').then((m) => m.SearchModule)
+        children: searchRoutes
       },
       {
         path: 'dashboard/notifications',
-        loadChildren: () => import('./pages/notifications/notifications.module').then((m) => m.NotificationsModule)
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./pages/notifications/notifications.component').then((m) => m.NotificationsComponent),
+            canActivate: [loginRequiredGuard]
+          },
+          {
+            path: 'detached',
+            loadComponent: () =>
+              import('./pages/notifications/notifications.component').then((m) => m.NotificationsComponent),
+            canActivate: [loginRequiredGuard]
+          }
+        ]
       },
       {
         path: 'dashboard',
-        loadChildren: () => import('./pages/dashboard/dashboard.module').then((m) => m.DashboardModule),
-        data: { reuseRoute: false } // We reuse the children, but not this route specifically.
+        data: { reuseRoute: false }, // We reuse the children, but not this route specifically.
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+            canActivate: [loginRequiredGuard],
+            data: { reuseRoute: true, routeType: ReuseableRouteType.Feed }
+          },
+          {
+            path: 'explore',
+            loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+            canActivate: [loginRequiredGuard],
+            data: { reuseRoute: true, routeType: ReuseableRouteType.Feed }
+          },
+          {
+            path: 'exploreLocal',
+            loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+            data: { reuseRoute: true, routeType: ReuseableRouteType.Feed }
+          },
+          {
+            path: 'private',
+            loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+            canActivate: [loginRequiredGuard]
+          }
+        ]
       },
       {
-        path: 'activate',
-        loadChildren: () =>
-          import('./pages/activate-account/activate-account.module').then((m) => m.ActivateAccountModule)
+        path: 'activate/:email/:activationCode',
+        loadComponent: () =>
+          import('./pages/activate-account/activate-account.component').then((m) => m.ActivateAccountComponent)
       },
       {
-        path: 'resetPassword',
-        loadChildren: () => import('./pages/reset-password/reset-password.module').then((m) => m.ResetPasswordModule)
+        path: 'resetPassword/:email/:resetCode',
+        loadComponent: () =>
+          import('./pages/reset-password/reset-password.component').then((m) => m.ResetPasswordComponent)
       },
       {
         path: 'post/:id',
@@ -81,8 +131,28 @@ const routes: Routes = [
       },
       {
         path: 'blog',
-        loadChildren: () => import('./pages/view-blog/view-blog.module').then((m) => m.ViewBlogModule),
-        data: { reuseRoute: false } // BUG ON THIS ONE. THIS ONE GOES INTO A LOOP
+        data: { reuseRoute: false }, // BUG ON THIS ONE. THIS ONE GOES INTO A LOOP
+        children: [
+          {
+            path: ':url',
+            loadComponent: () => import('./pages/view-blog/view-blog.component').then((m) => m.ViewBlogComponent),
+            data: { reuseRoute: true }
+          },
+          {
+            path: ':url/ask',
+            loadComponent: () => import('./pages/view-blog/view-blog.component').then((m) => m.ViewBlogComponent)
+          },
+          {
+            path: ':url/followers',
+            loadComponent: () =>
+              import('./pages/profile/follows/follows.component').then((m) => m.FollowsComponent)
+          },
+          {
+            path: ':url/following',
+            loadComponent: () =>
+              import('./pages/profile/follows/follows.component').then((m) => m.FollowsComponent)
+          }
+        ]
       },
       {
         path: 'profile',
@@ -96,11 +166,11 @@ const routes: Routes = [
       },
       {
         path: 'login',
-        loadChildren: () => import('./pages/login/login.module').then((m) => m.LoginModule)
+        loadComponent: () => import('./pages/login/login.component').then((m) => m.LoginComponent)
       },
       {
         path: 'login/mfa',
-        loadChildren: () => import('./pages/login-mfa/login-mfa.module').then((m) => m.LoginMfaModule)
+        loadComponent: () => import('./pages/login-mfa/login-mfa.component').then((m) => m.LoginMfaComponent)
       },
       {
         path: 'admin',
@@ -109,7 +179,7 @@ const routes: Routes = [
       },
       {
         path: 'doom',
-        loadChildren: () => import('./pages/doom/doom.module').then((m) => m.DoomModule)
+        loadComponent: () => import('./pages/doom/doom.component').then((m) => m.DoomComponent)
       },
       {
         path: 'editor',
@@ -122,11 +192,11 @@ const routes: Routes = [
       },
       {
         path: 'authorize_interaction',
-        loadChildren: () => import('./pages/search/search.module').then((m) => m.SearchModule)
+        children: searchRoutes
       },
       {
         path: '**',
-        loadChildren: () => import('./pages/pagenotfound/pagenotfound.module').then((m) => m.PagenotfoundModule)
+        loadComponent: () => import('./pages/pagenotfound/pagenotfound.component').then((m) => m.PagenotfoundComponent)
       }
     ]
   }
@@ -140,7 +210,7 @@ const routes: Routes = [
       anchorScrolling: 'enabled',
       scrollPositionRestoration: 'enabled'
     }),
-    NavigationMenuModule
+    NavigationMenuComponent
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: CustomReuseStrategy }],
   exports: [RouterModule]

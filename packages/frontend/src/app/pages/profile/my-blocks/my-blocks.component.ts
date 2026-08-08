@@ -10,7 +10,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table'
 import { RouterModule } from '@angular/router'
 import { TranslatePipe } from '@ngx-translate/core'
 import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
-import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
+import { BlogLinkDirective } from '../../../directives/blog-link/blog-link.directive'
 import { UserBlockMute } from '../../../services/admin.service'
 import { BlocksService } from '../../../services/blocks.service'
 import { SimpleTitleService } from '../../../services/simple-title.service'
@@ -29,7 +29,7 @@ import { SimpleTitleService } from '../../../services/simple-title.service'
     AvatarSmallComponent,
     TranslatePipe,
     DatePipe,
-    BlogLinkModule
+    BlogLinkDirective
   ],
   templateUrl: './my-blocks.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
