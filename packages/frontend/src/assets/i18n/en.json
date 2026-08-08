@@ -73,7 +73,7 @@
     "blueskyOptionHint": "Would you like a Bluesky account too? You can change this later from your settings",
     "blueskyOptionNo": "No thanks",
     "blueskyOptionCreate": "Create me a new one",
-    "blueskyOptionBringOwn": "I will migrate my own bluesky account later",
+    "blueskyOptionBringOwn": "I might migrate my existing bluesky account later",
     "uploadAvatar": "Upload your avatar",
     "chooseFile": "Choose File"
   },
