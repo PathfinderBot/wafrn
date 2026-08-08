@@ -6,7 +6,7 @@ import { pipeline } from 'stream/promises'
 import { Job } from 'bullmq'
 import getUserAgent from '../utils/getUserAgent.js'
 import { getServerFromDid } from '../atproto/utils/getServerFromDid.js'
-import { logger } from '../utils/logger.js'
+import { logger, summarizeAxiosEror } from '../utils/logger.js'
 import axios from 'axios'
 import { getMimeType } from 'stream-mime-type'
 import { spawn } from 'child_process'
@@ -160,7 +160,11 @@ export async function downloadMedia(job: Job<DownloadJobPayload>) {
   }
 
   readStream.on('error', (error) => {
-    logger.debug({ message: 'downloadMedia readStream error (likely aborted after timeout)', mediaUrl, error })
+    logger.debug({
+      message: 'downloadMedia readStream error (likely aborted after timeout)',
+      mediaUrl,
+      error: summarizeAxiosEror(error)
+    })
   })
 
   const head = await readHeadWithTimeout(readStream, MIME_SNIFF_BYTES, MEDIA_FETCH_TIMEOUT_MS)

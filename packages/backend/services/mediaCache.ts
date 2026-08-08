@@ -2,7 +2,7 @@ import { Response } from 'express'
 import crypto from 'crypto'
 import fs from 'fs'
 import { Job, ParentOptions } from 'bullmq'
-import { logger } from '../utils/logger.js'
+import { logger, summarizeAxiosEror } from '../utils/logger.js'
 import { redisCache } from '../utils/redis.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { downloadMedia } from '../queueProcessors/downloadMedia.js'
@@ -102,7 +102,7 @@ async function getMediaFromUrl(
     logger.debug({
       message: 'Error with cacher',
       url: mediaUrl,
-      error: error
+      error: summarizeAxiosEror(error)
     })
     if (res) {
       res.sendStatus(500)
