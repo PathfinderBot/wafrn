@@ -46,6 +46,8 @@ import searchRoutes from './routes/search.js'
 import silencePostRoutes from './routes/silencePost.js'
 import statusRoutes from './routes/status.js'
 import { userRoutes } from './routes/users.js'
+import { authRoutes } from './routes/auth.js'
+import { bskyRoutes } from './routes/bsky.js'
 import checkIpBlocked from './utils/checkIpBlocked.js'
 import overrideContentType from './utils/overrideContentType.js'
 import swagger from 'swagger-ui-express'
@@ -56,7 +58,7 @@ import websocketRoutes from './routes/websocket.js'
 import { followHashtagRoutes } from './routes/followHashtags.js'
 import { completeEnvironment } from './utils/backendOptions.js'
 import cron from 'node-cron'
-import { nukeBannedUsers } from './utils/maintenanceTasks/nukeBannedUsers.js'
+import { nukeBannedUsers } from './maintenanceTasks/nukeBannedUsers.js'
 import { sequelize } from './models/sequelize.js'
 import getIp from './utils/getIP.js'
 
@@ -132,6 +134,8 @@ app.use('/api/myIp', (req: Request, res: Response) => {
 })
 
 userRoutes(app)
+authRoutes(app)
+bskyRoutes(app)
 followsRoutes(app)
 blockRoutes(app)
 notificationRoutes(app)

@@ -22,7 +22,7 @@ import {
   getMentionedUserIds,
   getQuotes,
   getTags
-} from '../utils/baseQueryNew.js'
+} from '../services/baseQueryNew.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import { Privacy } from '../models/post.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'

@@ -18,13 +18,13 @@ import { getQueue } from '../utils/queues.js'
 import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
 import _ from 'underscore'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { LdSignature } from '../utils/activitypub/rsa2017.js'
-import { deletePostCommon } from '../utils/deletePost.js'
+import { LdSignature } from '../activitypub/rsa2017.js'
+import { deletePostCommon } from '../services/deletePost.js'
 import { redisCache } from '../utils/redis.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
-import { LITEPUB_CONTEXT_PATH } from '../utils/activitypub/contexts.js'
+import { LITEPUB_CONTEXT_PATH } from '../activitypub/contexts.js'
 
 const deletePostQueue = getQueue('deletePostQueue')
 

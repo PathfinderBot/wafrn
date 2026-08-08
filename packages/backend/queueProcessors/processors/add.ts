@@ -1,0 +1,16 @@
+import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
+import { User } from '../../models/user.js'
+import { getPostThreadRecursive } from '../../activitypub/getPostThreadRecursive.js'
+import { signAndAccept } from '../../activitypub/signAndAccept.js'
+
+async function AddActivity(body: activityPubObject, remoteUser: User, user: User) {
+  const apObject: activityPubObject = body
+  const postToFeature = await getPostThreadRecursive(user, apObject.object)
+  if (postToFeature) {
+    postToFeature.featured = new Date()
+    await postToFeature.save()
+  }
+  // await signAndAccept({ body: body }, remoteUser, user)
+}
+
+export { AddActivity }

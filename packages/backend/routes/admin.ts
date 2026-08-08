@@ -11,10 +11,10 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { InviteCode } from '../models/inviteCode.js'
 import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
-import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
+import { federatePostHasBeenEdited } from '../activitypub/editPost.js'
 import { BlockedIps } from '../models/blockedIp.js'
 import { getQueue } from '../utils/queues.js'
-import type { SendEmailCampaignJobData } from '../utils/queueProcessors/sendEmailCampaign.js'
+import type { SendEmailCampaignJobData } from '../queueProcessors/sendEmailCampaign.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {

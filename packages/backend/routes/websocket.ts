@@ -8,7 +8,7 @@ import { Job, Queue, Worker } from 'bullmq'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import EventEmitter from 'events'
 import { User } from '../models/index.js'
-import { sendEmailCampaign, sendEmailCampaignUser } from '../utils/queueProcessors/sendEmailCampaign.js'
+import { sendEmailCampaign, sendEmailCampaignUser } from '../queueProcessors/sendEmailCampaign.js'
 
 const HEARTBEAT_INTERVAL_MS = 30000
 

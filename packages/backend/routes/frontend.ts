@@ -4,16 +4,16 @@ import { Ask, Emoji, FederatedHost, Media, Post, Quotes, User, UserOptions, sequ
 import fs from 'fs'
 import dompurify from 'isomorphic-dompurify'
 import { redisCache } from '../utils/redis.js'
-import { getCheckFediverseSignatureFunction } from '../utils/activitypub/checkFediverseSignature.js'
+import { getCheckFediverseSignatureFunction } from '../activitypub/checkFediverseSignature.js'
 import { SignedRequest } from '../interfaces/fediverse/signedRequest.js'
-import { handlePostRequest } from '../utils/activitypub/handlePostRequest.js'
+import { handlePostRequest } from '../activitypub/handlePostRequest.js'
 import { Privacy } from '../models/post.js'
-import { getPostHtml } from '../utils/getPostHtml.js'
+import { getPostHtml } from '../services/getPostHtml.js'
 import { logger } from '../utils/logger.js'
 import { Feed } from 'feed'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
-import { getCheckContentNegotiation } from '../utils/activitypub/checkContentNegotiation.js'
+import { getCheckContentNegotiation } from '../activitypub/checkContentNegotiation.js'
 
 const cacheOptions = {
   etag: false,

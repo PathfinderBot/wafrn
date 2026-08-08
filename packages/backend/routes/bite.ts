@@ -6,11 +6,11 @@ import { Post } from '../models/post.js'
 import { User } from '../models/user.js'
 import { logger } from '../utils/logger.js'
 import { UserBitesPostRelation } from '../models/userBitesPostRelation.js'
-import { createNotification } from '../utils/pushNotifications.js'
+import { createNotification } from '../services/pushNotifications.js'
 import { Bites } from '../models/bites.js'
-import { bitePostRemote, biteUserRemote } from '../utils/activitypub/bite.js'
+import { bitePostRemote, biteUserRemote } from '../activitypub/bite.js'
 import { biteLimiter } from '../utils/rateLimiters.js'
-import sendBiteBsky from '../utils/atproto/sendBiteBsky.js'
+import sendBiteBsky from '../atproto/utils/sendBiteBsky.js'
 
 export default function biteRoutes(app: Application) {
   app.post(

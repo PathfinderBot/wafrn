@@ -19,7 +19,7 @@ import {
   wafrnContext,
   LITEPUB_CONTEXT_PATH,
   LEGACY_LITEPUB_CONTEXT_PATH
-} from '../../utils/activitypub/contexts.js'
+} from '../../activitypub/contexts.js'
 const cacher = new Cacher()
 
 function wellKnownRoutes(app: Application) {

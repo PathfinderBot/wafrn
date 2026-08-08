@@ -3,7 +3,7 @@ import { User } from '../../models/index.js'
 import { redisCache } from '../../utils/redis.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { logger } from '../../utils/logger.js'
-import { getAdminAtprotoSession } from '../../utils/atproto/getAdminAtprotoSession.js'
+import { getAdminAtprotoSession } from './getAdminAtprotoSession.js'
 import handleAgentLoginFail from './handleAgentLoginFail.js'
 import { wait } from '../../utils/wait.js'
 

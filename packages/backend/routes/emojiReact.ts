@@ -3,10 +3,10 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { Emoji, EmojiReaction, Post, User } from '../models/index.js'
 import { logger } from '../utils/logger.js'
-import { emojiReactRemote } from '../utils/activitypub/likePost.js'
+import { emojiReactRemote } from '../activitypub/likePost.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
-import { createNotification } from '../utils/pushNotifications.js'
+import { createNotification } from '../services/pushNotifications.js'
 
 export default function emojiReactRoutes(app: Application) {
   app.post(
