@@ -2,6 +2,10 @@
   visibility: hidden;
 }
 
+.post-placeholder {
+  min-height: 100px;
+}
+
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(max(160px, 0%), 1fr));
