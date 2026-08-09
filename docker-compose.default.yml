@@ -108,6 +108,7 @@ services:
     command: "npm exec tsx migrate.ts init-container"
 
   db:
+    image: codeberg.org/wafrn/wafrn-db:main
     build:
       context: monitoring/database
       dockerfile: Dockerfile
@@ -235,6 +236,7 @@ services:
       GF_SMTP_ENABLED: false
 
   pgwatch:
+    image: codeberg.org/wafrn/wafrn-pgwatch:main
     build:
       context: monitoring/pgwatch
       dockerfile: Dockerfile
