@@ -128,6 +128,13 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   rawOutputEnabled = EnvironmentService.environment.enableRawOutput
   instanceHostname = new URL(EnvironmentService.environment.frontUrl).hostname
 
+  atprotoProfileUrl = computed<string>(() => {
+    const did = this.blogDetails()?.bskyDid
+    if (!did) return ''
+    const dest = this.settingsService.values().atprotoLinkDestination || 'bsky.app'
+    return `https://${dest}/profile/${did}`
+  })
+
   fediComp = computed<{ name: string; value: string }[]>(() => {
     const fediAttachment = this.blogDetails()?.publicOptions.find(
       (elem) => elem.optionName == 'fediverse.public.attachment'

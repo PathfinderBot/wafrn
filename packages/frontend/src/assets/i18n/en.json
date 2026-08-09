@@ -343,6 +343,7 @@
     "remoteProfileLoggedInWarning": "As this user is from a remote instance, the shown information may be incomplete.",
     "remoteProfileLoggedOutWarning": "To see external users you need to be logged in. You can view their profile on their actual instance.",
     "viewOnRemoteInstance": "View on remote instance",
+    "viewOnAtproto": "View on Atproto",
     "postCount": "Post Count",
     "following": "Following",
     "followers": "Followers",

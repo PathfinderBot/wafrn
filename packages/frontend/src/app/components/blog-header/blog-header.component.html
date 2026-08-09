@@ -11,6 +11,17 @@
       </div>
       <div class="flex">
         <div>
+          @if (atprotoProfileUrl()) {
+            <a
+              matButton="outlined"
+              style="width: 40px; padding: 0; margin-right: 4px"
+              [href]="atprotoProfileUrl()"
+              target="_blank"
+              matTooltip="{{ 'blog.viewOnAtproto' | translate }}"
+            >
+              <fa-icon [fixedWidth]="true" [icon]="bskyIcon"></fa-icon>
+            </a>
+          }
           @if (rawOutputEnabled && blog) {
             <button
               matButton="outlined"
@@ -196,7 +207,7 @@
         @if (splittedUrl[1]) {
           <span class="blog-url">@{{ splittedUrl[1] || '-' }}</span>
         }
-        @if (blog?.alternateUrl) {
+        @if (blog?.alternateUrl && blog.url.startsWith('@')) {
           •
           <span class="blog-url">
             @if (blog?.isBskyPrimary) {
