@@ -3,6 +3,7 @@ import { Op } from 'sequelize'
 import { wait } from '../../utils/wait.js'
 import { logger } from '../../utils/logger.js'
 import { getDeletedUser } from '../../utils/cacheGetters/getDeletedUser.js'
+import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { getDidDoc } from './getDidDoc.js'
 import { getRemoteActor } from '../../activitypub/getRemoteActor.js'
@@ -78,6 +79,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
     return (await getDeletedUser()) as User
   }
   let handle = inputHandle
+  const normalizedHandleUrl = '@' + handle.replace(/^@/, '')
   let userFound =
     handle == 'handle.invalid'
       ? undefined
@@ -87,8 +89,8 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
               {
                 bskyDid: handle
               },
-              sequelize.where(sequelize.fn('lower', sequelize.col('url')), handle.toLowerCase()),
-              sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), handle.toLowerCase())
+              sequelize.where(sequelize.fn('lower', sequelize.col('url')), normalizedHandleUrl.toLowerCase()),
+              sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), normalizedHandleUrl.toLowerCase())
             ]
           }
         })
@@ -102,30 +104,30 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
   const doc = await getDidDoc(did, options?.ignoreCache == true)
   if (userFound) {
     avatarString = userFound.avatar
+  }
 
-    // we check if it's bridgy fed pds by getting did doc of course
-    const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
-    if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
-      // bridgy user. find the alsoknownas user
-      const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
-      let user: User | undefined = undefined
-      for (const fediUser of allHttpsAlsoKnownAs) {
-        const tempUser = await getRemoteActor(fediUser, userFound, true)
-        if (tempUser) {
-          user = tempUser
-          break
-        }
+  const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
+  if (allHttpsAlsoKnownAs.length > 0) {
+    const requestingUser = userFound ?? (await getAdminUser())
+    let user: User | undefined = undefined
+    for (const fediUser of allHttpsAlsoKnownAs) {
+      const tempUser = await getRemoteActor(fediUser, requestingUser, true)
+      if (tempUser && tempUser.url !== completeEnvironment.deletedUser) {
+        user = tempUser
+        break
       }
-      if (user) {
-        // found remote fedi user, now merge
+    }
+    if (user) {
+      if (userFound) {
+        // we already had a local (non-fediverse) record for this handle, merge it in
         await mergeUsersQueue.add('mergeUsers', {
           primaryUserId: user.id,
           userToMergeId: userFound.id
         })
-
-        // and return the user
-        return user
       }
+
+      // and return the fediverse user
+      return user
     }
   }
   // TODO check if current user exist

@@ -127,13 +127,12 @@ async function mergeUser(job: Job) {
     }
   )
 
-  const newRemoteId = userToMerge.remoteId || primaryUser.remoteId
-  const did = userToMerge.bskyDid || primaryUser.bskyDid
   // now we update the user to merge to decouple the remote post and mark it as deleted
   // we will not delete it so if somethings wrong admins can still recover info
-  if (userToMerge.bskyDid) {
+  if (!primaryUser.bskyDid && userToMerge.bskyDid) {
     primaryUser.bskyDid = userToMerge.bskyDid
-  } else if (userToMerge.remoteId) {
+  }
+  if (!primaryUser.remoteId && userToMerge.remoteId) {
     primaryUser.remoteId = userToMerge.remoteId
     primaryUser.remoteInbox = userToMerge.remoteInbox
     primaryUser.remoteMentionUrl = userToMerge.remoteMentionUrl
@@ -142,9 +141,6 @@ async function mergeUser(job: Job) {
     primaryUser.followingCollectionUrl = userToMerge.followingCollectionUrl
     primaryUser.isBskyPrimary = true
   }
-
-  primaryUser.remoteId = newRemoteId
-  primaryUser.bskyDid = did
 
   primaryUser.alternateUrl = userToMerge.url
 
