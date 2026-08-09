@@ -61,7 +61,11 @@ export class AppComponent implements OnInit {
     GlobalData.appDefaultTitle = this.title
 
     this.translateService.addLangs([...supportedLanguages])
-    this.translateService.setDefaultLang('en')
+    const environmentDefaultLanguage = EnvironmentService.environment.defaultLanguageCode
+    const isSupportedLanguage =
+      typeof environmentDefaultLanguage === 'string' &&
+      (supportedLanguages as readonly string[]).includes(environmentDefaultLanguage)
+    this.translateService.setDefaultLang(isSupportedLanguage ? environmentDefaultLanguage : 'en')
 
     // User specified language
     const userLanguage = localStorage?.getItem('appLanguage')

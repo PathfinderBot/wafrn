@@ -144,6 +144,7 @@ export const baseEnvironment: Environment = {
     donationUrl: process.env.DONATION_URL || '',
     disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
     bubbleHostsShowType: process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC',
-    blockedHostsShowType: process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN'
+    blockedHostsShowType: process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN',
+    defaultLanguageCode: process.env.DEFAULT_LANGUAGE_CODE || 'en'
   }
 }

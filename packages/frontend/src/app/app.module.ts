@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http'
 import { HotkeyManagerComponent } from './components/hotkey-manager/hotkey-manager.component'
 import buildData from '../buildData.json'
 import { ThemeManagerComponent } from './components/theme-manager/theme-manager.component'
-import { catchError, of, switchMap, tap } from 'rxjs'
+import { catchError, of, switchMap } from 'rxjs'
 import { EnvironmentService } from './services/environment.service'
 import { supportedLanguages, type SupportedLanguage } from './lists/languages'
 import { FallbackTranslateLoader } from './loaders/fallback-translate.loader'
@@ -69,24 +69,32 @@ const globalRippleConfig: RippleGlobalOptions = {
 
       const langs = [...supportedLanguages]
       translateService.addLangs(langs)
-      translateService.setDefaultLang('en')
+
+      const isSupportedLanguage = (lang: unknown): lang is SupportedLanguage =>
+        typeof lang === 'string' && langs.includes(lang as SupportedLanguage)
 
       const userLanguage = typeof localStorage !== 'undefined' ? localStorage.getItem('appLanguage') : null
-      const isSupportedLanguage = (lang: string | null): lang is SupportedLanguage =>
-        typeof lang === 'string' && langs.includes(lang as SupportedLanguage)
-      const languageToUse = isSupportedLanguage(userLanguage)
-        ? userLanguage
-        : (translateService.getDefaultLang() as SupportedLanguage)
-      document.documentElement.lang = languageToUse
 
-      return translateService.use(languageToUse).pipe(
+      return http.get('/api/environment').pipe(
         catchError((error) => {
-          console.error('Translation load failed; falling back to default language', error)
-          return of(null)
+          console.error('Failed to load environment', error)
+          return of({})
         }),
-        switchMap(() => http.get('/api/environment')),
-        tap((data: any) => {
+        switchMap((data: any) => {
           environmentService.replaceEnvironment(data)
+
+          const defaultLanguage = isSupportedLanguage(data?.defaultLanguageCode) ? data.defaultLanguageCode : 'en'
+          translateService.setDefaultLang(defaultLanguage)
+
+          const languageToUse = isSupportedLanguage(userLanguage) ? userLanguage : defaultLanguage
+          document.documentElement.lang = languageToUse
+
+          return translateService.use(languageToUse).pipe(
+            catchError((error) => {
+              console.error('Translation load failed; falling back to default language', error)
+              return of(null)
+            })
+          )
         })
       )
     })

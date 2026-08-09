@@ -144,6 +144,12 @@ FRONTEND_DESCRIPTION=Wafrn is a federated social media inspired by tumblr that c
 
 Once updated you'll need to rebuild your containers to get these picked up.
 
+You can also set the language the frontend loads by default for visitors who haven't picked one yet (it still falls back to `en` if the value isn't a supported language code):
+
+```bash
+DEFAULT_LANGUAGE_CODE=en
+```
+
 ### Frontend overrides (NEW, BETTER, FASTER)
 
 There is a folder called `packages/frontend/runtime-overrides`. Any file you put here will override anything in the wafrn frontend files.

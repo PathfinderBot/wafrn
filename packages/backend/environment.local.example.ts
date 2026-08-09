@@ -129,6 +129,7 @@ export const baseEnvironment: Environment = {
     privateInstanceRegistrationText: 'test 123',
     minimumAgeToRegister: 18,
     donationUrl: 'http://localhost/about',
-    disableShowingBlockedServers: true
+    disableShowingBlockedServers: true,
+    defaultLanguageCode: 'en'
   }
 }
