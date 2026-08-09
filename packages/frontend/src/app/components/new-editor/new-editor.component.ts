@@ -413,12 +413,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.emojiSuggestions.length = 0
     this.suggestionLoading.set(false)
 
-    const textToMatch = (' ' + newText?.slice(cursorPosition - 250, cursorPosition).replaceAll('\n', ' ')) as string
+    const textToMatch = (' ' +
+      newText?.slice(Math.max(0, cursorPosition - 250), cursorPosition).replaceAll('\n', ' ')) as string
     const match = textToMatch
       .match(/[\n\r\s]?[@:][\w-\.]+@?[\w-\.]*$/)
       ?.at(0)
       ?.trim()
-    const trailingSpace = newText?.endsWith(' ')
+    const trailingSpace = cursorPosition > 0 && newText?.charAt(cursorPosition - 1) === ' '
     if (!match || trailingSpace) {
       this.suggestionMatches.set(false)
       return
@@ -463,7 +464,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   insertMention(user: { img: string; text: string }) {
     let initialPart = (' ' + this.postCreatorForm.value.content?.slice(0, this.cursorTextPosition)) as string
     const userUrl = user.text.startsWith('@') ? user.text : '@' + user.text
-    initialPart = initialPart.replace(/[[@][A-Z0-9a-z_.@-]*$/i, userUrl)
+    initialPart = initialPart.replace(/[@][A-Z0-9a-z_.@-]*$/i, userUrl)
     let finalPart = this.postCreatorForm.value.content?.slice(this.cursorTextPosition) as string
     this.postCreatorForm.controls['content'].patchValue(initialPart.trim() + ' ' + finalPart.trim())
     this.postContent()?.nativeElement.focus()
@@ -473,7 +474,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   insertEmoji(emoji: EmojiSuggestion) {
     let initialPart = (' ' + this.postCreatorForm.value.content?.slice(0, this.cursorTextPosition)) as string
-    initialPart = initialPart.replace(/[[:][A-Z0-9a-z_.@-]*$/i, emoji.id)
+    initialPart = initialPart.replace(/[:][A-Z0-9a-z_.@-]*$/i, emoji.id)
     let finalPart = this.postCreatorForm.value.content?.slice(this.cursorTextPosition) as string
     this.postCreatorForm.controls['content'].patchValue(initialPart.trim() + ' ' + finalPart.trim())
     this.postContent()?.nativeElement.focus()
