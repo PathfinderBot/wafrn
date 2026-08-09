@@ -24,7 +24,12 @@ import dompurify from 'isomorphic-dompurify'
 import { Queue } from 'bullmq'
 import { bulkCreateNotifications } from '../services/pushNotifications.js'
 import { getDeletedUser } from '../utils/cacheGetters/getDeletedUser.js'
-import { AutomaticToManualApprovalEquivalent, InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
+import {
+  AutomaticToManualApprovalEquivalent,
+  InteractionControl,
+  InteractionControlType,
+  Privacy
+} from '../models/post.js'
 import { getPostThreadPDSDirect, processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 import * as cheerio from 'cheerio'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
@@ -341,10 +346,11 @@ async function getPostThreadRecursive(
               postPetition.interactionPolicy.canAnnounce.automaticApproval || []
             )
             const manualListCanAnnounce = postPetition.interactionPolicy.canAnnounce.manualApproval || []
-            // if the server declares no automaticApproval audience but does declare a manualApproval one,
-            // treat announces as requiring manual approval (FEP-6fce ReplyRequest/AnnounceRequest flow)
-            const announceRequiresManualApproval = autoListCanAnnounce.length === 0 && manualListCanAnnounce.length > 0
-            const listCanAnnounce = announceRequiresManualApproval ? manualListCanAnnounce : autoListCanAnnounce
+            const listCanAnnounce = autoListCanAnnounce.concat(manualListCanAnnounce)
+            const announceRequiresManualApproval =
+              manualListCanAnnounce.length > 0 &&
+              !autoListCanAnnounce.includes(publicList) &&
+              !autoListCanAnnounce.includes(sameAsOpList)
             replyControl.reblogControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
@@ -398,10 +404,11 @@ async function getPostThreadRecursive(
               postPetition.interactionPolicy.canReply.automaticApproval || []
             )
             const manualListCanReply = postPetition.interactionPolicy.canReply.manualApproval || []
-            // if the server declares no automaticApproval audience but does declare a manualApproval one,
-            // treat replies as requiring manual approval (FEP-6fce ReplyRequest/AnnounceRequest flow)
-            const replyRequiresManualApproval = autoListCanReply.length === 0 && manualListCanReply.length > 0
-            const listCanReply = replyRequiresManualApproval ? manualListCanReply : autoListCanReply
+            const listCanReply = autoListCanReply.concat(manualListCanReply)
+            const replyRequiresManualApproval =
+              manualListCanReply.length > 0 &&
+              !autoListCanReply.includes(publicList) &&
+              !autoListCanReply.includes(sameAsOpList)
             replyControl.replyControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanReply.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanReply.includes(remoteUser.followingCollectionUrl)
