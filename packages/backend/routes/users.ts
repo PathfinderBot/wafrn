@@ -33,6 +33,7 @@ import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
 import { getAvaiableEmojisUncached } from '../utils/getAvaiableEmojisUncached.js'
 import { getMutedUsers } from '../utils/cacheGetters/getMutedUsers.js'
 import { getAvaiableEmojisCache } from '../utils/cacheGetters/getAvaiableEmojis.js'
+import { clearUserCache } from '../utils/clearUserCache.js'
 import { rejectremoteFollow } from '../activitypub/rejectRemoteFollow.js'
 import { acceptRemoteFollow } from '../activitypub/acceptRemoteFollow.js'
 import showdown from 'showdown'
@@ -143,7 +144,7 @@ function userRoutes(app: Application) {
   app.post(
     '/api/editProfile',
     authenticateToken,
-    uploadHandler().fields([
+    uploadHandler(undefined, undefined, 2).fields([
       { name: 'avatar', maxCount: 1 },
       { name: 'headerImage', maxCount: 1 }
     ]),
@@ -215,6 +216,7 @@ function userRoutes(app: Application) {
           await user.removeEmojis()
           user.setEmojis([...new Set(userEmojis)])
           redisCache.del('userOptions:' + posterId)
+          await clearUserCache(posterId)
           await user.save()
 
           await updateProfileOptions(optionJSON, posterId)

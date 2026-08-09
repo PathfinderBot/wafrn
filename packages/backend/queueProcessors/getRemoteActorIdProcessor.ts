@@ -16,6 +16,7 @@ import { getDidDoc } from '../atproto/utils/getDidDoc.js'
 import getUserAgent from '../utils/getUserAgent.js'
 import { getUserIdFromRemoteId } from '../utils/cacheGetters/getUserIdFromRemoteId.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
+import { clearUserCache } from '../utils/clearUserCache.js'
 
 const mergeUsersQueue = getQueue('mergeUsers')
 
@@ -157,6 +158,7 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
             if (userRes) {
               userRes.set(userData)
               await userRes.save()
+              await clearUserCache(userRes.id)
             } else {
               redisCache.del('userRemoteId:' + actorUrl.toLocaleLowerCase())
             }
@@ -165,6 +167,7 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
           if (existingUsers && existingUsers[0]) {
             existingUsers[0].set(userData)
             await existingUsers[0].save()
+            await clearUserCache(existingUsers[0].id)
           } else {
             userRes = await User.create(userData)
           }

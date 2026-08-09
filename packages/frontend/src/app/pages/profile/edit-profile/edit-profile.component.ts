@@ -314,15 +314,15 @@ export class EditProfileComponent implements OnInit {
         this.editProfileForm.controls['showNotificationsFrom'].patchValue(parseInt(localStorageNotificationsFrom))
       }
       const localStorageNotifyQuotes = localStorage.getItem('notifyQuotes')
-      if (localStorageNotificationsFrom) {
+      if (localStorageNotifyQuotes) {
         this.editProfileForm.controls['notifyQuotes'].patchValue(localStorageNotifyQuotes == 'true')
       }
       const localStorageNotifyMentions = localStorage.getItem('notifyMentions')
-      if (localStorageNotificationsFrom) {
+      if (localStorageNotifyMentions) {
         this.editProfileForm.controls['notifyMentions'].patchValue(localStorageNotifyMentions == 'true')
       }
       const localStorageNotifyReactions = localStorage.getItem('notifyReactions')
-      if (localStorageNotificationsFrom) {
+      if (localStorageNotifyReactions) {
         this.editProfileForm.controls['notifyReactions'].patchValue(localStorageNotifyReactions == 'true')
       }
 

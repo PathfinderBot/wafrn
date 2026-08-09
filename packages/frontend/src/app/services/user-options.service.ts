@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
-import { BehaviorSubject, firstValueFrom } from 'rxjs'
+import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs'
 import { JwtService } from './jwt.service'
 import { UserOptions } from '../interfaces/user-options'
 import { Emoji } from '../interfaces/emoji'
@@ -20,6 +20,7 @@ export class UserOptionsService {
   private simpleDialogService = inject(SimpleDialogService)
 
   public updateFollowers: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
+  public optionsSynced = new Subject<void>()
 
   keyboardEmojis: Emoji[] = emojis
     .map((emoji) => {
@@ -111,6 +112,7 @@ export class UserOptionsService {
       options.forEach((option) => {
         localStorage.setItem(option.optionName.split('wafrn.')[1], option.optionValue)
       })
+      this.optionsSynced.next()
     }
     if (followsAndBlocks.silencedPosts) {
       this.silencedPostsIds = followsAndBlocks.silencedPosts

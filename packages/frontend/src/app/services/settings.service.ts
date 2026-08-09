@@ -1173,8 +1173,14 @@ export class SettingsService {
     fromEvent(window, 'storage')
       .pipe(debounceTime(500))
       .subscribe(() => {
+        if (this.settingsModified()) return
         this.values.set(Object.assign(this.getDefaultSettings(), this.getLocalStorageValues()))
       })
+
+    this.userOptionsService.optionsSynced.subscribe(() => {
+      if (this.settingsModified()) return
+      this.values.set(Object.assign({ ...this.values() }, this.getLocalStorageValues()))
+    })
   }
 
   private getLocalStorageValues(): SettingValues {

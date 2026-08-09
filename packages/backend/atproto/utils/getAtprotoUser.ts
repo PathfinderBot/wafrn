@@ -14,6 +14,7 @@ import { resolveHandle } from './resolveHandleToDid.js'
 import getUserAgent from '../../utils/getUserAgent.js'
 import { redisCache } from '../../utils/redis.js'
 import { assertUrlResolvesPublic } from '../../utils/ssrfProtection.js'
+import { clearUserCache } from '../../utils/clearUserCache.js'
 
 const mergeUsersQueue = getQueue('mergeUsers')
 
@@ -266,6 +267,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
 
       userFound.set(newData)
       await userFound.save()
+      await clearUserCache(userFound.id)
     } else {
       try {
         userFound = await User.create(newDataTmp)
