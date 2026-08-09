@@ -22,7 +22,7 @@ import { filter, map } from 'rxjs'
 import { MessageService } from './services/message.service'
 import { supportedLanguages } from './lists/languages'
 import { ThemeService } from './services/theme.service'
-import { PostsService } from './services/posts.service'
+import { UserOptionsService } from './services/user-options.service'
 import { HotkeyManagerComponent } from './components/hotkey-manager/hotkey-manager.component'
 import { ThemeManagerComponent } from './components/theme-manager/theme-manager.component'
 
@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
   private router = inject(Router)
   private messages = inject(MessageService)
   private titleService = inject(Title)
-  private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
 
   title = 'wafrn'
 
@@ -379,6 +379,6 @@ export class AppComponent implements OnInit {
     }
     */
 
-    this.postService.loadFollowers().then(() => {})
+    this.userOptionsService.loadFollowers().then(() => {})
   }
 }

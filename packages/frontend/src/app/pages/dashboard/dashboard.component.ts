@@ -15,7 +15,7 @@ import { ProcessedPost } from '../../interfaces/processed-post'
 import { DashboardService } from '../../services/dashboard.service'
 import { JwtService } from '../../services/jwt.service'
 import { MessageService } from '../../services/message.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   private dashboardService = inject(DashboardService)
   private jwtService = inject(JwtService)
   private router = inject(Router)
-  private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private metaTagService = inject(Meta)
   private readonly viewportScroller = inject(ViewportScroller)
@@ -140,8 +140,8 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
         this.reloadPosts()
       })
 
-    this.updateFollowersSubscription = this.postService.updateFollowers.subscribe(() => {
-      if (this.postService.followedUserIds.length <= 1 && this.level === 1 && false) {
+    this.updateFollowersSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      if (this.userOptionsService.followedUserIds.length <= 1 && this.level === 1 && false) {
         // if the user follows NO ONE we take them to the explore page!
         this.messages.add({
           severity: 'info',
@@ -208,8 +208,8 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
         if (this.hideQuotesLevel == 3) {
           if (
             post.some((elem) => {
-              !this.postService.followedUserIds.includes(elem.userId) ||
-                (this.postService.usersQuotesDisabled.includes(elem.userId) && elem.quotes && elem.quotes.length)
+              !this.userOptionsService.followedUserIds.includes(elem.userId) ||
+                (this.userOptionsService.usersQuotesDisabled.includes(elem.userId) && elem.quotes && elem.quotes.length)
             })
           ) {
             return true
@@ -240,10 +240,10 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
           (superMutedWords.length > 0 &&
             superMutedWords.some((supermuteWord) => textOfPosts.includes(supermuteWord))) ||
           (!localStorage.getItem('displayMentionsOfBlockedUsersFromOtherUsers') === true &&
-            this.postService.blockedUserIds.length > 0 &&
+            this.userOptionsService.blockedUserIds.length > 0 &&
             post.some(
               (elem) =>
-                (elem.mentionPost?.filter((mention) => this.postService.blockedUserIds.includes(mention.id)) || [])
+                (elem.mentionPost?.filter((mention) => this.userOptionsService.blockedUserIds.includes(mention.id)) || [])
                   .length > 0
             ))
         ) {
@@ -260,7 +260,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
           finalPost.tags.length == 0 &&
           !finalPost.quotes.length &&
           !finalPost.content_warning &&
-          this.postService.usersRewootsDisabled.includes(finalPost.userId)
+          this.userOptionsService.usersRewootsDisabled.includes(finalPost.userId)
         ) {
           return false
         }

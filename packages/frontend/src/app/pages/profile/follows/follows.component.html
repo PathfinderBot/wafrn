@@ -37,7 +37,7 @@
               mat-stroked-button
               color="accent"
               class="follow-button flex-shrink-0"
-              (click)="postService.followUser(element.id)"
+              (click)="userOptionsService.followUser(element.id)"
             >
               {{ 'blog.followUser' | translate }}
             </button>
@@ -47,7 +47,7 @@
               mat-stroked-button
               color="accent"
               class="follow-button flex-shrink-0"
-              (click)="postService.unfollowUser(element.id)"
+              (click)="userOptionsService.unfollowUser(element.id)"
             >
               {{ 'post-header.awaitingApproval' | translate }}
             </button>

@@ -1,15 +1,15 @@
 import { TestBed } from '@angular/core/testing'
-import { PostsService } from './posts.service'
+import { PostRenderingService } from './post-rendering.service'
 import { EnvironmentService } from './environment.service'
 import { ProcessedPost } from '../interfaces/processed-post'
 
-describe('PostsService trailing hashtag stripping', () => {
-  let service: PostsService
+describe('PostRenderingService trailing hashtag stripping', () => {
+  let service: PostRenderingService
 
   beforeEach(() => {
     TestBed.configureTestingModule({})
     EnvironmentService.environment.frontUrl = 'https://wafrn.vercel.app'
-    service = TestBed.inject(PostsService)
+    service = TestBed.inject(PostRenderingService)
   })
 
   function basePost(content: string, tagNames: string[]): ProcessedPost {

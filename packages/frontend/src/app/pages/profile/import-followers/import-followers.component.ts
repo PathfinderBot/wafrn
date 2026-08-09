@@ -12,7 +12,7 @@ import { lastValueFrom } from 'rxjs'
 import { FollowListElem } from '../../../interfaces/follow-list-elem'
 import { EnvironmentService } from '../../../services/environment.service'
 import { MessageService } from '../../../services/message.service'
-import { PostsService } from '../../../services/posts.service'
+import { UserOptionsService } from '../../../services/user-options.service'
 
 @Component({
   selector: 'app-import-followers',
@@ -33,7 +33,7 @@ import { PostsService } from '../../../services/posts.service'
 })
 export class ImportFollowersComponent {
   private http = inject(HttpClient)
-  private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private cdr = inject(ChangeDetectorRef)
 
@@ -111,7 +111,7 @@ export class ImportFollowersComponent {
   async followEveryone() {
     this.step = this.step + 1
     for await (const user of this.response.foundUsers) {
-      const res = await this.postService.followUser(user.id)
+      const res = await this.userOptionsService.followUser(user.id)
       if (!res) {
         this.failedFollows.push(user.url)
       }

@@ -57,7 +57,7 @@
         class="border-round-md search-button"
       >
         {{
-          (postService.followedHashtags.includes(currentSearch.toLowerCase()) ? 'search.unfollow' : 'search.follow')
+          (userOptionsService.followedHashtags.includes(currentSearch.toLowerCase()) ? 'search.unfollow' : 'search.follow')
             | translate
         }}
         #{{ currentSearch }}

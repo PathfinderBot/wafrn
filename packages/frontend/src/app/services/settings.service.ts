@@ -22,7 +22,7 @@ import { UtilsService } from './utils.service'
 import { HttpClient } from '@angular/common/http'
 import { EnvironmentService } from './environment.service'
 import { catchError, debounceTime, filter, fromEvent, lastValueFrom, of, Subject, timeout } from 'rxjs'
-import { PostsService } from './posts.service'
+import { UserOptionsService } from './user-options.service'
 import { MessageService } from './message.service'
 import { LoginService } from './login.service'
 import { SettingsProfileComponent } from '../pages/settings/settings-profile/settings-profile.component'
@@ -195,7 +195,7 @@ export type DropListData = Record<string, DropListDataEntry>
 export class SettingsService {
   private dashboardService = inject(DashboardService)
   private loginService = inject(LoginService)
-  private postsService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private http = inject(HttpClient)
   private utils = inject(UtilsService)
@@ -1254,7 +1254,7 @@ export class SettingsService {
       )
     )
     if (res.success) {
-      await this.postsService.loadFollowers()
+      await this.userOptionsService.loadFollowers()
       await this.updateMultipleAccountData()
       this.messages.add({
         severity: 'success',

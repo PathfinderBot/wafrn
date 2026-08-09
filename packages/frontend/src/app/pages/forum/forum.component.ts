@@ -26,6 +26,7 @@ import { EnvironmentService } from '../../services/environment.service'
 import { ForumService } from '../../services/forum.service'
 import { LoginService } from '../../services/login.service'
 import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
@@ -55,6 +56,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private forumService = inject(ForumService)
   readonly loginService = inject(LoginService)
   private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private readonly dashboardService = inject(DashboardService)
   private readonly router = inject(Router)
   private readonly snappy = inject(SnappyRouter)
@@ -88,13 +90,13 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private readonly route = inject(ActivatedRoute)
   homeIcon = faHome
   constructor() {
-    this.followedUsers = this.postService.followedUserIds
-    this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
-    this.updateFollowsSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followedUsers = this.userOptionsService.followedUserIds
+    this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
+    this.updateFollowsSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
-    this.postService.loadFollowers()
+    this.userOptionsService.loadFollowers()
   }
 
   snOnCreate(): void {

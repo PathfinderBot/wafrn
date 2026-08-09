@@ -7,12 +7,21 @@ import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { WafrnMediaComponent } from '../wafrn-media/wafrn-media.component'
 import { MockComponent, MockModule } from 'ng-mocks'
 import { signal } from '@angular/core'
-import { ProcessedPost } from 'src/app/interfaces/processed-post'
+import { ProcessedPost } from '../../interfaces/processed-post'
+import { SimplifiedUser } from '../../interfaces/simplified-user'
+import { InteractionControl } from '../../interfaces/interaction-control'
 import { BehaviorSubject } from 'rxjs'
 
 describe('PostFragmentComponent', () => {
   let component: PostFragmentComponent
   let fixture: ComponentFixture<PostFragmentComponent>
+
+  const mockUser: SimplifiedUser = {
+    avatar: '',
+    url: '',
+    name: 'testUser',
+    id: '1'
+  }
 
   const createMockProcessedPost = (): ProcessedPost => ({
     ask: undefined,
@@ -27,13 +36,27 @@ describe('PostFragmentComponent', () => {
     privacy: 0,
     questionPoll: undefined,
     quotes: [],
+    parentCollection: [],
     remotePostId: '',
     tags: [],
     title: '',
     updatedAt: new Date(),
-    user: undefined,
+    user: mockUser,
     userId: '',
     userLikesPostRelations: [],
+    markdownContent: '',
+    isReblog: false,
+    hierarchyLevel: 0,
+    bookmarkers: [],
+    canReply: true,
+    featured: false,
+    canQuote: true,
+    canLike: true,
+    canReblog: true,
+    replyControl: InteractionControl.Anyone,
+    reblogControl: InteractionControl.Anyone,
+    quoteControl: InteractionControl.Anyone,
+    likeControl: InteractionControl.Anyone,
     id: '1',
     content: 'No medias attached and ![media-1] string',
     content_warning: ''

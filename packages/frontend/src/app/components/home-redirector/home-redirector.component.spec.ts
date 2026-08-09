@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { Router } from '@angular/router'
 
 import { HomeRedirectorComponent } from './home-redirector.component'
 
@@ -8,7 +9,8 @@ describe('HomeRedirectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HomeRedirectorComponent]
+      imports: [HomeRedirectorComponent],
+      providers: [{ provide: Router, useValue: { navigate: () => Promise.resolve(true) } }]
     }).compileComponents()
 
     fixture = TestBed.createComponent(HomeRedirectorComponent)

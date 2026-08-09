@@ -36,3 +36,20 @@ jobs:
 
       - run: npm run type-check
         working-directory: ./packages/backend
+
+  frontend-test:
+    name: Run frontend unit tests
+    runs-on: docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm install
+        working-directory: ./packages/frontend
+
+      - run: npm test
+        working-directory: ./packages/frontend

@@ -18,7 +18,7 @@
     "frontend:develop:development": "npm run prebuild && cd packages/frontend && ng serve --configuration devdevelopment",
     "frontend:build": "npm run prebuild && cd packages/frontend && ng build",
     "frontend:deploy": "npm run prebuild && cd packages/frontend && ng build && rm -rf ../../frontend && mv dist/wafrn/browser ../../frontend",
-    "frontend:test": "cd packages/frontend && jest",
+    "frontend:test": "cd packages/frontend && npm test",
     "frontend:translations:patch": "cd packages/frontend && tsx utils/patch-translations.ts",
     "frontend:translations:format": "cd packages/frontend && prettier src/assets/i18n/*.json --write",
     "prebuild": "cd packages/frontend && tsx utils/prebuild.ts",

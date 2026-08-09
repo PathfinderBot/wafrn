@@ -77,7 +77,7 @@ import { JwtService } from '../../services/jwt.service'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
 import { ParticleService } from '../../services/particle.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SettingsService } from '../../services/settings.service'
 import { Language } from '../../interfaces/language'
 
@@ -123,7 +123,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService)
   private editorService = inject(EditorService)
   private loginService = inject(LoginService)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   settingsService = inject(SettingsService)
   private jwtService = inject(JwtService)
   private router = inject(Router)
@@ -306,12 +306,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       this.contentWarning = this.data.post.content_warning ?? ''
       this.privacy = Math.max(this.data.post.privacy, this.privacy)
     }
-    this.emojiSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.emojiCollections.set([...this.postService.emojiCollections])
+    this.emojiSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.emojiCollections.set([...this.userOptionsService.emojiCollections])
       this.fuse.setCollection(this.emojiProcessed())
-      this.languages = this.postService.languages
+      this.languages = this.userOptionsService.languages
     })
-    this.postService.loadFollowers()
+    this.userOptionsService.loadFollowers()
     const currentUserId = this.jwtService.getTokenData()?.userId
     if (this.data?.post?.mentionPost && this.data.post.mentionPost.length > 0) {
       const mentionedUsersSet = new Set(this.data.post.mentionPost.filter((elem) => elem.id != currentUserId))

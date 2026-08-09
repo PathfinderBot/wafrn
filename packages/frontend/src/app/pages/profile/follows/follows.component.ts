@@ -22,7 +22,7 @@ import { SimplifiedUser } from '../../../interfaces/simplified-user'
 import { BlogService } from '../../../services/blog.service'
 import { DashboardService } from '../../../services/dashboard.service'
 import { LoginService } from '../../../services/login.service'
-import { PostsService } from '../../../services/posts.service'
+import { UserOptionsService } from '../../../services/user-options.service'
 
 @Component({
   selector: 'app-follows',
@@ -51,7 +51,7 @@ import { PostsService } from '../../../services/posts.service'
 export class FollowsComponent implements OnInit, OnDestroy {
   activatedRoute = inject(ActivatedRoute)
   private router = inject(Router)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   private dashboardService = inject(DashboardService)
   private blogService = inject(BlogService)
 
@@ -77,9 +77,9 @@ export class FollowsComponent implements OnInit, OnDestroy {
     const loginService = inject(LoginService)
 
     this.myId = loginService.getLoggedUserUUID()
-    this.followsSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followsSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
     this.navigationSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))

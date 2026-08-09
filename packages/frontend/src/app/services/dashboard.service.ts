@@ -4,6 +4,8 @@ import { EventEmitter, Injectable, inject } from '@angular/core'
 import { ProcessedPost } from '../interfaces/processed-post'
 import { SimplifiedUser } from '../interfaces/simplified-user'
 import { PostsService } from './posts.service'
+import { PostRenderingService } from './post-rendering.service'
+import { UserOptionsService } from './user-options.service'
 import { MessageService } from './message.service'
 import { firstValueFrom } from 'rxjs'
 import { unlinkedPosts } from '../interfaces/unlinked-posts'
@@ -18,6 +20,8 @@ import { EnvironmentService } from './environment.service'
 export class DashboardService {
   private http = inject(HttpClient)
   private postService = inject(PostsService)
+  private postRenderingService = inject(PostRenderingService)
+  private userOptionsService = inject(UserOptionsService)
   private messageService = inject(MessageService)
 
   public scrollEventEmitter: EventEmitter<string> = new EventEmitter()
@@ -31,7 +35,7 @@ export class DashboardService {
   }
 
   async getDashboardPage(date: Date, level: number, page?: number): Promise<ProcessedPost[][]> {
-    this.postService.loadFollowers()
+    this.userOptionsService.loadFollowers()
     let result: ProcessedPost[][] = []
     let petitionData: HttpParams = new HttpParams()
     this.startScrollDate = date
@@ -44,8 +48,8 @@ export class DashboardService {
         params: petitionData
       })
     )
-    result = this.postService.processPostNew(dashboardPetition)
-    result = result.filter((post) => !this.postService.postContainsBlockedOrMuted(post, true))
+    result = this.postRenderingService.processPostNew(dashboardPetition)
+    result = result.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, true))
     dashboardPetition.rewootIds.forEach((id) => {
       this.postService.rewootedPosts().add(id)
     })
@@ -85,8 +89,8 @@ export class DashboardService {
       })
     )
     if (dashboardPetition) {
-      postResult = this.postService.processPostNew(dashboardPetition.posts)
-      postResult = postResult.filter((post) => !this.postService.postContainsBlockedOrMuted(post, false))
+      postResult = this.postRenderingService.processPostNew(dashboardPetition.posts)
+      postResult = postResult.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, false))
     } else {
       // TODO show error message
       this.messageService.add({
@@ -144,14 +148,14 @@ export class DashboardService {
         })
       )
       if (dashboardPetition) {
-        result = this.postService.processPostNew(dashboardPetition)
+        result = this.postRenderingService.processPostNew(dashboardPetition)
         this.startScrollDate = new Date(
           Math.min(...result.map((elem) => new Date(elem[elem.length - 1].createdAt).getTime())) - 1
         )
         if (result.length === 0) {
           this.startScrollDate = new Date(0)
         }
-        result = result.filter((post) => !this.postService.postContainsBlockedOrMuted(post, false))
+        result = result.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, false))
       } else {
         this.messageService.add({
           severity: 'error',
@@ -174,8 +178,8 @@ export class DashboardService {
     res.nameMarkdown = res.name
     if (res.emojis && !ignoreEmojis) {
       res.emojis.forEach((emoji: Emoji) => {
-        res.name = res.name.replaceAll(emoji.name, this.postService.emojiToHtml(emoji))
-        res.description = res.description.replaceAll(emoji.name, this.postService.emojiToHtml(emoji))
+        res.name = res.name.replaceAll(emoji.name, this.postRenderingService.emojiToHtml(emoji))
+        res.description = res.description.replaceAll(emoji.name, this.postRenderingService.emojiToHtml(emoji))
       })
     }
     return res
@@ -186,7 +190,7 @@ export class DashboardService {
       this.http.get<unlinkedPosts>(`${this.baseUrl}/article/${userUrl ? `${userUrl}/` : ''}${slug}`)
     )
 
-    const result = this.postService.processPostNew(petition)
+    const result = this.postRenderingService.processPostNew(petition)
 
     return result[0]
   }
@@ -194,7 +198,7 @@ export class DashboardService {
   async getPostV2(id: string): Promise<ProcessedPost[]> {
     const petition = await firstValueFrom(this.http.get<unlinkedPosts>(`${this.baseUrl}/v2/post/${id}`))
 
-    const result = this.postService.processPostNew(petition)
+    const result = this.postRenderingService.processPostNew(petition)
 
     return result[0]
   }

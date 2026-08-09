@@ -9,7 +9,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { LoaderComponent } from '../../components/loader/loader.component'
 import { DashboardService } from '../../services/dashboard.service'
 import { MessageService } from '../../services/message.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
@@ -30,7 +30,7 @@ import { SimpleTitleService } from '../../services/simple-title.service'
   styleUrl: './manage-followed-hashtags.component.scss'
 })
 export class ManageFollowedHashtagsComponent {
-  postsService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   private dashboardService = inject(DashboardService)
   private messageService = inject(MessageService)
   private translateService = inject(TranslateService)
@@ -42,7 +42,7 @@ export class ManageFollowedHashtagsComponent {
 
     simpleTitle.set('menu.settings.followedHashtags')
     // we force update of the lists
-    this.postsService.loadFollowers().then(() => {
+    this.userOptionsService.loadFollowers().then(() => {
       this.loading = false
     })
   }
@@ -62,7 +62,7 @@ export class ManageFollowedHashtagsComponent {
           )
         : this.translateService.instant('manageFollowedHashtags.messages.error')
     })
-    await this.postsService.loadFollowers()
+    await this.userOptionsService.loadFollowers()
     this.loading = false
   }
 }

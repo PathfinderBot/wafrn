@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs'
 import { Emoji } from '../../interfaces/emoji'
 import { EmojiCollection } from '../../interfaces/emoji-collection'
 import { EnvironmentService } from '../../services/environment.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { ScrollingModule } from '@angular/cdk/scrolling'
 import { TranslatePipe } from '@ngx-translate/core'
 
@@ -49,7 +49,7 @@ enum EmojiRenderType {
   styleUrl: './emoji-collections.component.scss'
 })
 export class EmojiCollectionsComponent implements AfterViewInit, OnDestroy {
-  private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
 
   @ViewChild('emojiContainer')
   emojiElement: ElementRef<HTMLElement> | undefined
@@ -141,8 +141,8 @@ export class EmojiCollectionsComponent implements AfterViewInit, OnDestroy {
   baseEmojisUrl = '/api/uploads'
 
   constructor() {
-    this.subscription = this.postService.updateFollowers.subscribe(() => {
-      this.emojiCollections = this.postService.emojiCollections
+    this.subscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.emojiCollections = this.userOptionsService.emojiCollections
       this.updateDimensions() // Must be called to update the computed signal vcRows (JANK AND EVIL)
     })
   }

@@ -55,6 +55,7 @@ import { BottomReplyBarComponent } from '../bottom-reply-bar/bottom-reply-bar.co
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { LoginService } from '../../services/login.service'
 import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { EnvironmentService } from '../../services/environment.service'
 import { HotkeyAction } from '../../services/hotkey.service'
@@ -85,6 +86,7 @@ import { HotkeyAction } from '../../services/hotkey.service'
 })
 export class PostComponent implements OnChanges, OnDestroy {
   postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   private readonly loginService = inject(LoginService)
 
   post = input.required<ProcessedPost[]>()
@@ -188,9 +190,9 @@ export class PostComponent implements OnChanges, OnDestroy {
     if (this.loginService.loggedIn.value) {
       this.myId = loginService.getLoggedUserUUID()
     }
-    this.updateFollowersSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.updateFollowersSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
   }
 
@@ -200,8 +202,8 @@ export class PostComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(): void {
-    this.followedUsers = this.postService.followedUserIds
-    this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followedUsers = this.userOptionsService.followedUserIds
+    this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
 
     // Do not auto-expand ultra-hell threads
     const threadIsExtremelyLong = this.post().length - this.postsExpanded > 50

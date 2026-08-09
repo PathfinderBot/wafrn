@@ -28,7 +28,7 @@ import { DateTime } from 'luxon'
 import { ProcessedPost } from '../../../interfaces/processed-post'
 import { LoginService } from '../../../services/login.service'
 import { MessageService } from '../../../services/message.service'
-import { PostsService } from '../../../services/posts.service'
+import { UserOptionsService } from '../../../services/user-options.service'
 import { AvatarSmallComponent } from '../../avatar-small/avatar-small.component'
 import { PostActionsComponent } from '../../post-actions/post-actions.component'
 import sanitize from 'sanitize-html'
@@ -57,7 +57,7 @@ import { SimpleDialogService } from '../../../services/simple-dialog.service'
   styleUrl: './post-header.component.scss'
 })
 export class PostHeaderComponent implements OnChanges {
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private simpleDialog = inject(SimpleDialogService)
   protected loginService = inject(LoginService)
@@ -120,7 +120,7 @@ export class PostHeaderComponent implements OnChanges {
 
     if (!confirm) return
 
-    const response = await this.postService.followUser(post.userId)
+    const response = await this.userOptionsService.followUser(post.userId)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -138,7 +138,7 @@ export class PostHeaderComponent implements OnChanges {
   }
 
   async cancelFollowUser(post: ProcessedPost) {
-    const response = await this.postService.unfollowUser(post.userId)
+    const response = await this.userOptionsService.unfollowUser(post.userId)
     if (response) {
       this.messages.add({
         severity: 'success',

@@ -23,7 +23,7 @@ import { DashboardService } from '../../services/dashboard.service'
 import { EnvironmentService } from '../../services/environment.service'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
@@ -54,7 +54,7 @@ import { SimpleTitleService } from '../../services/simple-title.service'
 export class SearchComponent implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService)
   private messages = inject(MessageService)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   protected loginService = inject(LoginService)
   private activatedRoute = inject(ActivatedRoute)
 
@@ -91,9 +91,9 @@ export class SearchComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.ngOnInit()
       })
-    this.updateFollowersSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.updateFollowersSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
   }
   ngOnDestroy(): void {
@@ -102,8 +102,8 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.followedUsers = this.postService.followedUserIds
-    this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followedUsers = this.userOptionsService.followedUserIds
+    this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     if (this.activatedRoute.snapshot.queryParamMap.get('uri')) {
       this.searchForm.patchValue({
         search: this.activatedRoute.snapshot.queryParamMap.get('uri')
@@ -176,7 +176,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   async followUser(id: string) {
-    const response = await this.postService.followUser(id)
+    const response = await this.userOptionsService.followUser(id)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -191,7 +191,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   async unfollowUser(id: string) {
-    const response = await this.postService.unfollowUser(id)
+    const response = await this.userOptionsService.unfollowUser(id)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -209,18 +209,18 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.loading.set(true)
     let success = await this.dashboardService.manageHashtagSubscription(
       tag,
-      !this.postService.followedHashtags.includes(tag.toLowerCase())
+      !this.userOptionsService.followedHashtags.includes(tag.toLowerCase())
     )
     if (success) {
       this.messages.add({
         severity: 'success',
         summary:
-          (this.postService.followedHashtags.includes(tag.toLowerCase())
+          (this.userOptionsService.followedHashtags.includes(tag.toLowerCase())
             ? 'You no longer follow the tag #'
             : 'You now follow the tag #') + tag
       })
     }
-    await this.postService.loadFollowers()
+    await this.userOptionsService.loadFollowers()
     this.loading.set(false)
   }
 
