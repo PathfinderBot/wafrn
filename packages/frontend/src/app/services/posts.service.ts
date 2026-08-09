@@ -867,6 +867,12 @@ export class PostsService {
       sanitized = parsedAsHTML.documentElement.innerHTML
     })
 
+    if (post.tags?.length) {
+      const tagNames = new Set(post.tags.map((tag) => tag.tagName.toLowerCase()))
+      this.stripTrailingHashtagLinks(parsedAsHTML.body, tagNames)
+      sanitized = parsedAsHTML.documentElement.innerHTML
+    }
+
     sanitized = sanitized.replaceAll(this.wafrnMediaRegex, '')
 
     let emojiset = new Set<string>()
@@ -882,6 +888,44 @@ export class PostsService {
 
   getPostContentSanitized(content: string): string {
     return sanitizeHtml(content)
+  }
+
+  private stripTrailingHashtagLinks(root: Element, tagNames: Set<string>): void {
+    let node = root.lastChild
+    while (node) {
+      const prev = node.previousSibling
+      if (node.nodeType === Node.TEXT_NODE) {
+        if ((node.textContent || '').trim()) break
+        node.remove()
+        node = prev
+        continue
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) break
+      const el = node as Element
+      if (el.tagName === 'BR') {
+        el.remove()
+        node = prev
+        continue
+      }
+      if (el.tagName === 'A') {
+        const text = (el.textContent || '').trim().replace(/^#/, '').toLowerCase()
+        if (text && tagNames.has(text)) {
+          el.remove()
+          node = prev
+          continue
+        }
+        break
+      }
+      if (['P', 'DIV', 'SMALL', 'SPAN'].includes(el.tagName)) {
+        this.stripTrailingHashtagLinks(el, tagNames)
+        if (!(el.textContent || '').trim()) {
+          el.remove()
+          node = prev
+          continue
+        }
+      }
+      break
+    }
   }
 
   async loadRepliesFromFediverse(id: string) {
