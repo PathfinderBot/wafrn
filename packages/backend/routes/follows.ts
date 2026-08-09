@@ -100,16 +100,31 @@ export default function followsRoutes(app: Application) {
               followedId: userUnfollowed.id
             }
           })
-          if (follow?.bskyUri) {
+          let bskyFollowUriToDelete = follow?.bskyUri ?? null
+          if (!bskyFollowUriToDelete && userUnfollowed.isBlueskyUser && userUnfollowed.bskyDid) {
+            // Follows rows created/repaired by the bsky sync job never had bskyUri populated.
+            // Fall back to asking bsky directly for the AT-URI of our follow record before giving up.
+            const user = await User.findByPk(posterId)
+            if (user?.bskyDid) {
+              try {
+                const agent = await getAtProtoSession(user)
+                const profile = await agent.getProfile({ actor: userUnfollowed.bskyDid })
+                bskyFollowUriToDelete = profile.data.viewer?.following ?? null
+              } catch (error) {
+                logger.info({ message: 'error resolving missing bsky follow uri while unfollowing', error })
+              }
+            }
+          }
+          if (bskyFollowUriToDelete) {
             const user = await User.findByPk(posterId)
             if (user) {
               const agent = await getAtProtoSession(user)
-              await agent.deleteFollow(follow.bskyUri)
+              await agent.deleteFollow(bskyFollowUriToDelete)
               // we rather follow too many than not enough for a bit, cache will do the rest
               await forceUpdateCacheDidsAtThread({})
             }
           }
-          userUnfollowed.removeFollower(posterId)
+          await userUnfollowed.removeFollower(posterId)
           redisCache.del('follows:full:' + posterId)
           redisCache.del('follows:local:' + posterId)
           redisCache.del('follows:notYetAcceptedFollows:' + posterId)
