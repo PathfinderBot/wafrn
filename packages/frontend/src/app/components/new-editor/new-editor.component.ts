@@ -66,7 +66,7 @@ import { BlogDetails } from '../../interfaces/blog-details'
 import { EditorData } from '../../interfaces/editor-data'
 import { Emoji } from '../../interfaces/emoji'
 import { EmojiCollection } from '../../interfaces/emoji-collection'
-import { InteractionControl } from '../../interfaces/interaction-control'
+import { InteractionControl, requiresManualApproval } from '../../interfaces/interaction-control'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { QuestionPollQuestion } from '../../interfaces/question-poll'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
@@ -514,6 +514,10 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   get idPostToReblog() {
     return this.data?.post?.id
+  }
+
+  get showManualApprovalReplyWarning() {
+    return !this.editing && requiresManualApproval(this.data?.post?.replyControl)
   }
 
   async uploadImage(media: WafrnMedia) {

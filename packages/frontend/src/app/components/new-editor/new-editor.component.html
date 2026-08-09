@@ -120,6 +120,11 @@
       </section>
     }
 
+    @if (showManualApprovalReplyWarning) {
+      <app-info-card [type]="'caution'" addClass="mb-3">
+        {{ 'editor.manualApprovalReplyWarning' | translate }}
+      </app-info-card>
+    }
     @if (privacy === 10) {
       <app-info-card [type]="'caution'" addClass="mb-3">
         {{ 'editor.directMessageWarning' | translate }}
