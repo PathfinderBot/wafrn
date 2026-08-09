@@ -7,6 +7,7 @@ import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { getDidDoc } from './getDidDoc.js'
 import { getRemoteActor } from '../../activitypub/getRemoteActor.js'
+import { getPetitionSigned } from '../../activitypub/getPetitionSigned.js'
 import { getQueue } from '../../utils/queues.js'
 import { getServerFromDid } from './getServerFromDid.js'
 import { resolveHandle } from './resolveHandleToDid.js'
@@ -106,11 +107,24 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
     avatarString = userFound.avatar
   }
 
+  const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
+  const isKnownBridgyPds = !!(bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy'))
   const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
   if (allHttpsAlsoKnownAs.length > 0) {
     const requestingUser = userFound ?? (await getAdminUser())
+    const atUri = doc?.alsoKnownAs?.find((x) => x.startsWith('at://'))
+    const validDidReferences = [did, `at://${did}`, ...(atUri ? [atUri] : [])]
     let user: User | undefined = undefined
     for (const fediUser of allHttpsAlsoKnownAs) {
+      let trusted = isKnownBridgyPds
+      if (!trusted && requestingUser) {
+        const actorPetition = await getPetitionSigned(requestingUser, fediUser)
+        const reciprocalAlsoKnownAs: string[] = actorPetition?.alsoKnownAs ?? []
+        trusted = reciprocalAlsoKnownAs.some((x) => validDidReferences.includes(x))
+      }
+      if (!trusted) {
+        continue
+      }
       const tempUser = await getRemoteActor(fediUser, requestingUser, true)
       if (tempUser && tempUser.url !== completeEnvironment.deletedUser) {
         user = tempUser
