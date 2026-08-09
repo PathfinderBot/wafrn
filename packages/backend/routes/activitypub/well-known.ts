@@ -14,12 +14,7 @@ import { redisCache } from '../../utils/redis.js'
 import { version } from 'os'
 import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 import { getLocalUserByUrlCache } from './activitypub.js'
-import {
-  id_v1,
-  wafrnContext,
-  LITEPUB_CONTEXT_PATH,
-  LEGACY_LITEPUB_CONTEXT_PATH
-} from '../../activitypub/contexts.js'
+import { id_v1, wafrnContext, ALL_LITEPUB_CONTEXT_PATHS } from '../../activitypub/contexts.js'
 const cacher = new Cacher()
 
 function wellKnownRoutes(app: Application) {
@@ -286,8 +281,10 @@ function wellKnownRoutes(app: Application) {
     res.end()
   })
 
-  app.get(LITEPUB_CONTEXT_PATH, (req: Request, res: Response) => res.json(wafrnContext))
-  app.get(LEGACY_LITEPUB_CONTEXT_PATH, (req: Request, res: Response) => res.json(wafrnContext))
+  // serve every context path we've ever used (current + all legacy ones) with the current wafrnContext
+  ALL_LITEPUB_CONTEXT_PATHS.forEach((path) =>
+    app.get(path, (req: Request, res: Response) => res.json(wafrnContext))
+  )
   app.get('/contexts/identity-v1.jsonld', (req: Request, res: Response) => res.json(id_v1))
 }
 

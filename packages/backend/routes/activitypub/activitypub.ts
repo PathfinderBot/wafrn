@@ -127,6 +127,36 @@ async function getQuoteByQuoterAndQuotedPostIdCache(
     return undefined
   }
 }
+
+// FEP-6fce: backs the reply_request/announce_request/reply_authorization/announce_authorization routes
+// below. Note: unlike the quote getters above, nested associations here are read without a further
+// `.dataValues` hop (`post.dataValues.parent.user`, not `post.dataValues.parent.dataValues.user`), since
+// that second hop only exists on the live Sequelize instance (cache miss) and not on the plain object we
+// get back from JSON.parse on a cache hit.
+async function getPostForInteractionRequestCache(postId: string): Promise<any | undefined> {
+  const cacheKey = `postInteractionRequest:${postId}`
+  let cacheResult = await redisCache.get(cacheKey)
+  if (!cacheResult) {
+    const post: any = await Post.findByPk(postId, {
+      include: [
+        { model: User, as: 'user' },
+        { model: Post, as: 'parent', include: [{ model: User, as: 'user' }] }
+      ]
+    })
+    if (post) {
+      await redisCache.set(cacheKey, JSON.stringify(post.dataValues), 'EX', 300)
+      return { dataValues: post.dataValues }
+    }
+    await redisCache.set(cacheKey, 'null', 'EX', 60)
+    return undefined
+  }
+  if (cacheResult === 'null') return undefined
+  try {
+    return { dataValues: JSON.parse(cacheResult) }
+  } catch (e) {
+    return undefined
+  }
+}
 // all the stuff related to activitypub goes here
 
 function activityPubRoutes(app: Application) {
@@ -507,6 +537,110 @@ function activityPubRoutes(app: Application) {
           attributedTo: `${completeEnvironment.frontendUrl}/fediverse/blog/${quote.dataValues.quotedPost.dataValues.user.url}`,
           interactingObject: await getPostUrlForQuote(quote.dataValues.quoterPost),
           interactionTarget: await getPostUrlForQuote(quote.dataValues.quotedPost)
+        } as unknown as activityPubObject
+        res.send(objectToSend)
+      } else {
+        res.sendStatus(404)
+      }
+    }
+  )
+
+  // FEP-6fce: dereferenceable copies of the requests/authorizations we send out for manualApproval
+  // replies and reblogs, mirroring the quote_request/quote_authorization routes above.
+  app.get(
+    '/fediverse/reply_request/:id',
+    getCheckFediverseSignatureFunction(true),
+    async (req: SignedRequest, res: Response) => {
+      const post: any = await getPostForInteractionRequestCache(req.params.id)
+      const data = post?.dataValues
+      if (data?.parent) {
+        const objectToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          ],
+          actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${data.user.url.toLowerCase()}`,
+          id: `${completeEnvironment.frontendUrl}/fediverse/reply_request/${data.id}`,
+          type: 'ReplyRequest',
+          object: data.parent.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.parent.id}`,
+          instrument: `${completeEnvironment.frontendUrl}/fediverse/post/${data.id}`
+        }
+        res.send(objectToSend)
+      } else {
+        res.sendStatus(404)
+      }
+    }
+  )
+
+  app.get(
+    '/fediverse/announce_request/:id',
+    getCheckFediverseSignatureFunction(true),
+    async (req: SignedRequest, res: Response) => {
+      const post: any = await getPostForInteractionRequestCache(req.params.id)
+      const data = post?.dataValues
+      if (data?.parent) {
+        const objectToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          ],
+          actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${data.user.url.toLowerCase()}`,
+          id: `${completeEnvironment.frontendUrl}/fediverse/announce_request/${data.id}`,
+          type: 'AnnounceRequest',
+          object: data.parent.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.parent.id}`,
+          instrument: `${completeEnvironment.frontendUrl}/fediverse/post/${data.id}`
+        }
+        res.send(objectToSend)
+      } else {
+        res.sendStatus(404)
+      }
+    }
+  )
+
+  app.get(
+    '/fediverse/reply_authorization/:id',
+    getCheckFediverseSignatureFunction(true),
+    async (req: SignedRequest, res: Response) => {
+      const post: any = await getPostForInteractionRequestCache(req.params.id)
+      const data = post?.dataValues
+      if (data?.parent) {
+        const objectToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          ],
+          id: `${completeEnvironment.frontendUrl}/fediverse/reply_authorization/${data.id}`,
+          type: 'ReplyAuthorization',
+          attributedTo: `${completeEnvironment.frontendUrl}/fediverse/blog/${data.parent.user.url.toLowerCase()}`,
+          interactingObject: data.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.id}`,
+          interactionTarget:
+            data.parent.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.parent.id}`
+        } as unknown as activityPubObject
+        res.send(objectToSend)
+      } else {
+        res.sendStatus(404)
+      }
+    }
+  )
+
+  app.get(
+    '/fediverse/announce_authorization/:id',
+    getCheckFediverseSignatureFunction(true),
+    async (req: SignedRequest, res: Response) => {
+      const post: any = await getPostForInteractionRequestCache(req.params.id)
+      const data = post?.dataValues
+      if (data?.parent) {
+        const objectToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+          ],
+          id: `${completeEnvironment.frontendUrl}/fediverse/announce_authorization/${data.id}`,
+          type: 'AnnounceAuthorization',
+          attributedTo: `${completeEnvironment.frontendUrl}/fediverse/blog/${data.parent.user.url.toLowerCase()}`,
+          interactingObject: data.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.id}`,
+          interactionTarget:
+            data.parent.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.parent.id}`
         } as unknown as activityPubObject
         res.send(objectToSend)
       } else {

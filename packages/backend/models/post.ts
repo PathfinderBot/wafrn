@@ -65,12 +65,44 @@ export const InteractionControl = {
   FollowersFollowingAndMentioned: 6,
   MentionedUsersOnly: 7,
   NoOne: 8,
+  // manual-approval counterparts of the values above (FEP-6fce "manualApproval"): the same audience,
+  // but the interaction is held (waitToSendPost) until the target owner sends/receives an Accept.
+  AnyoneManualApproval: 9,
+  FollowersManualApproval: 10,
+  FollowingManualApproval: 11,
+  FollowersAndFollowingManualApproval: 12,
+  FollowersAndMentionedManualApproval: 13,
+  FollowingAndMentionedManualApproval: 14,
+  FollowersFollowingAndMentionedManualApproval: 15,
+  MentionedUsersOnlyManualApproval: 16,
   SameAsOp: 100 // this one is bsky exclusive and its gona be FUN (a headache). This only applies to REPLIES. Nothing else.
 }
 
 export type PrivacyType = (typeof Privacy)[keyof typeof Privacy]
 
 export type InteractionControlType = (typeof InteractionControl)[keyof typeof InteractionControl]
+
+// maps each manualApproval variant to the automaticApproval value that defines its audience
+export const ManualApprovalToAutomaticEquivalent: Partial<Record<InteractionControlType, InteractionControlType>> = {
+  [InteractionControl.AnyoneManualApproval]: InteractionControl.Anyone,
+  [InteractionControl.FollowersManualApproval]: InteractionControl.Followers,
+  [InteractionControl.FollowingManualApproval]: InteractionControl.Following,
+  [InteractionControl.FollowersAndFollowingManualApproval]: InteractionControl.FollowersAndFollowing,
+  [InteractionControl.FollowersAndMentionedManualApproval]: InteractionControl.FollowersAndMentioned,
+  [InteractionControl.FollowingAndMentionedManualApproval]: InteractionControl.FollowingAndMentioned,
+  [InteractionControl.FollowersFollowingAndMentionedManualApproval]: InteractionControl.FollowersFollowingAndMentioned,
+  [InteractionControl.MentionedUsersOnlyManualApproval]: InteractionControl.MentionedUsersOnly
+}
+
+// reverse of the above, used when parsing a remote interactionPolicy's manualApproval list
+export const AutomaticToManualApprovalEquivalent: Partial<Record<InteractionControlType, InteractionControlType>> =
+  Object.fromEntries(
+    Object.entries(ManualApprovalToAutomaticEquivalent).map(([manual, automatic]) => [automatic as number, Number(manual)])
+  )
+
+export function requiresManualApproval(control: InteractionControlType): boolean {
+  return control in ManualApprovalToAutomaticEquivalent
+}
 
 export interface PostAttributes {
   id?: string
@@ -102,6 +134,7 @@ export interface PostAttributes {
   isReply?: boolean
   waitToSendPost?: boolean
   language: string | undefined
+  authorizationUrl?: string | null
 }
 
 @Table({
@@ -212,6 +245,16 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     defaultValue: false
   })
   declare waitToSendPost: boolean
+
+  // FEP-6fce ReplyAuthorization/AnnounceAuthorization URL received from the parent post's owner once a
+  // manual-approval reply/reblog held by waitToSendPost gets accepted. Attached to outgoing federation as
+  // replyAuthorization/announceAuthorization so third servers can verify the interaction was approved.
+  @Column({
+    allowNull: true,
+    type: DataType.STRING,
+    defaultValue: null
+  })
+  declare authorizationUrl: string | null
 
   @ForeignKey(() => User)
   @Column({

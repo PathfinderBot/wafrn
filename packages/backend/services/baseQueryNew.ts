@@ -26,7 +26,7 @@ import getPosstGroupDetails from './getPostGroupDetails.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import { Queue } from 'bullmq'
 import { completeEnvironment } from '../utils/backendOptions.js'
-import { InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
+import { InteractionControl, InteractionControlType, ManualApprovalToAutomaticEquivalent, Privacy } from '../models/post.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { checkBskyLabelersNSFW } from '../atproto/utils/checkBskyLabelerNSFW.js'
 import { isAdult } from '../utils/isAdult.js'
@@ -515,7 +515,8 @@ async function canInteract(
   mentionsInput?: { usersMentioned: string[]; postMentionRelation: any[] },
   postInput?: any
 ): Promise<boolean> {
-  if (level == InteractionControl.Anyone) {
+  const effectiveLevel: InteractionControlType = ManualApprovalToAutomaticEquivalent[level] ?? level
+  if (effectiveLevel == InteractionControl.Anyone) {
     return true
   }
   let usersFollowing = userFollowingInput ? userFollowingInput : getFollowedsIds(userId)
@@ -538,7 +539,7 @@ async function canInteract(
       return true
     }
     // we order the switch cases by complexity (number of conditions)
-    switch (level) {
+    switch (effectiveLevel) {
       case InteractionControl.NoOne: {
         // we already check if user is from poster himself. This is a special one for bsky
         res = false

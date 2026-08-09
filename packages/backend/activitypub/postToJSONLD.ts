@@ -5,7 +5,13 @@ import { fediverseTag } from '../interfaces/fediverse/tags.js'
 import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
 import { emojiToAPTag } from './emojiToAPTag.js'
 import { getPostAndUserFromPostId } from '../utils/cacheGetters/getPostAndUserFromPostId.js'
-import { InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
+import {
+  InteractionControl,
+  InteractionControlType,
+  ManualApprovalToAutomaticEquivalent,
+  Privacy,
+  requiresManualApproval
+} from '../models/post.js'
 import { redisCache } from '../utils/redis.js'
 import { htmlToMfm } from './htmlToMfm.js'
 import showdown from 'showdown'
@@ -274,21 +280,31 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
     misskeyQuoteURL = null
   }
   let canReply: string[] = []
-  let canAnnounce: string[] = []
+  const canReplyManual: string[] = []
+  const canAnnounce: string[] = []
+  const canAnnounceManual: string[] = []
   let canLike: string[] = []
 
   const canReplyValue: InteractionControlType = post.replyControl
   const canAnnounceValue: InteractionControlType = post.reblogControl
-  const canLikeValue: InteractionControlType = post.likeControl
+  // likes are not (yet) part of the manualApproval flow, so a manual value here is just treated as its
+  // automaticApproval equivalent
+  const canLikeValue: InteractionControlType = ManualApprovalToAutomaticEquivalent[post.likeControl] ?? post.likeControl
   const publicString = 'https://www.w3.org/ns/activitystreams#Public'
+
+  const canReplyRequiresManualApproval = requiresManualApproval(canReplyValue)
+  const effectiveReplyValue: InteractionControlType = canReplyRequiresManualApproval
+    ? (ManualApprovalToAutomaticEquivalent[canReplyValue] as InteractionControlType)
+    : canReplyValue
+  const replyAudience = canReplyRequiresManualApproval ? canReplyManual : canReply
   // canreply:
-  if ([InteractionControl.Anyone].includes(canReplyValue)) {
-    canReply.push(publicString)
+  if ([InteractionControl.Anyone].includes(effectiveReplyValue)) {
+    replyAudience.push(publicString)
   }
-  if ([InteractionControl.SameAsOp].includes(canReplyValue)) {
-    canReply.push('sameAsInitialPost')
+  if ([InteractionControl.SameAsOp].includes(effectiveReplyValue)) {
+    replyAudience.push('sameAsInitialPost')
   }
-  // mentionedUsers will always bee able to reply
+  // mentionedUsers will always bee able to reply automatically, regardless of manualApproval settings
   canReply = canReply.concat(mentionedUsers)
   if (
     [
@@ -296,9 +312,9 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
       InteractionControl.FollowersAndFollowing,
       InteractionControl.FollowersAndMentioned,
       InteractionControl.FollowersFollowingAndMentioned
-    ].includes(canReplyValue)
+    ].includes(effectiveReplyValue)
   ) {
-    canReply = canReply.concat(stringMyFollowers)
+    replyAudience.push(stringMyFollowers)
   }
   if (
     [
@@ -306,13 +322,18 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
       InteractionControl.FollowingAndMentioned,
       InteractionControl.FollowersFollowingAndMentioned,
       InteractionControl.FollowersAndFollowing
-    ].includes(canReplyValue)
+    ].includes(effectiveReplyValue)
   ) {
-    canReply = canReply.concat(stringMyFollowing)
+    replyAudience.push(stringMyFollowing)
   }
 
-  if (canAnnounceValue === InteractionControl.Anyone) {
-    canAnnounce.push(publicString)
+  const canAnnounceRequiresManualApproval = requiresManualApproval(canAnnounceValue)
+  const effectiveAnnounceValue: InteractionControlType = canAnnounceRequiresManualApproval
+    ? (ManualApprovalToAutomaticEquivalent[canAnnounceValue] as InteractionControlType)
+    : canAnnounceValue
+  const announceAudience = canAnnounceRequiresManualApproval ? canAnnounceManual : canAnnounce
+  if (effectiveAnnounceValue === InteractionControl.Anyone) {
+    announceAudience.push(publicString)
   } else {
     // mentionedUsers
     if (
@@ -321,9 +342,9 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
         InteractionControl.FollowersAndMentioned,
         InteractionControl.FollowingAndMentioned,
         InteractionControl.FollowersFollowingAndMentioned
-      ].includes(canAnnounceValue)
+      ].includes(effectiveAnnounceValue)
     ) {
-      canAnnounce = canAnnounce.concat(mentionedUsers)
+      announceAudience.push(...mentionedUsers)
     }
     if (
       [
@@ -331,9 +352,9 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
         InteractionControl.FollowersAndFollowing,
         InteractionControl.FollowersAndMentioned,
         InteractionControl.FollowersFollowingAndMentioned
-      ].includes(canAnnounceValue)
+      ].includes(effectiveAnnounceValue)
     ) {
-      canAnnounce = canAnnounce.concat(stringMyFollowers)
+      announceAudience.push(stringMyFollowers)
     }
     if (
       [
@@ -341,9 +362,9 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
         InteractionControl.FollowingAndMentioned,
         InteractionControl.FollowersFollowingAndMentioned,
         InteractionControl.FollowersAndFollowing
-      ].includes(canAnnounceValue)
+      ].includes(effectiveAnnounceValue)
     ) {
-      canAnnounce = canAnnounce.concat(stringMyFollowing)
+      announceAudience.push(stringMyFollowing)
     }
   }
 
@@ -436,6 +457,7 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
       quoteUri: misskeyQuoteURL,
       quote: misskeyQuoteURL,
       quoteAuthorization: quoteAuthorization,
+      replyAuthorization: post.authorizationUrl || undefined,
       // conversation: conversationString,
       content: (standardMentionsContent + processedContent + tagsAndQuotes).replace(lineBreaksAtEndRegex, ''),
       attachment: postMedias
@@ -475,10 +497,12 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
           automaticApproval: canLike
         },
         canReply: {
-          automaticApproval: canReply
+          automaticApproval: canReply,
+          ...(canReplyManual.length ? { manualApproval: canReplyManual } : {})
         },
         canAnnounce: {
-          automaticApproval: canAnnounce
+          automaticApproval: canAnnounce,
+          ...(canAnnounceManual.length ? { manualApproval: canAnnounceManual } : {})
         }
       }
     }
@@ -516,7 +540,8 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
             ? ['https://www.w3.org/ns/activitystreams#Public']
             : [stringMyFollowers],
       cc: [`${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`, stringMyFollowers],
-      object: parentPostString
+      object: parentPostString,
+      ...(post.authorizationUrl ? { announceAuthorization: post.authorizationUrl } : {})
     }
   }
   await redisCache.set('postToJsonLD:' + postId, JSON.stringify(postAsJSONLD), 'EX', 300)

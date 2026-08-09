@@ -24,7 +24,7 @@ import dompurify from 'isomorphic-dompurify'
 import { Queue } from 'bullmq'
 import { bulkCreateNotifications } from '../services/pushNotifications.js'
 import { getDeletedUser } from '../utils/cacheGetters/getDeletedUser.js'
-import { InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
+import { AutomaticToManualApprovalEquivalent, InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
 import { getPostThreadPDSDirect, processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 import * as cheerio from 'cheerio'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
@@ -337,9 +337,14 @@ async function getPostThreadRecursive(
           const sameAsOpList = 'sameAsInitialPost'
           // canAnnounce
           if (postPetition.interactionPolicy.canAnnounce) {
-            const listCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(
+            const autoListCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(
               postPetition.interactionPolicy.canAnnounce.automaticApproval || []
             )
+            const manualListCanAnnounce = postPetition.interactionPolicy.canAnnounce.manualApproval || []
+            // if the server declares no automaticApproval audience but does declare a manualApproval one,
+            // treat announces as requiring manual approval (FEP-6fce ReplyRequest/AnnounceRequest flow)
+            const announceRequiresManualApproval = autoListCanAnnounce.length === 0 && manualListCanAnnounce.length > 0
+            const listCanAnnounce = announceRequiresManualApproval ? manualListCanAnnounce : autoListCanAnnounce
             replyControl.reblogControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
@@ -357,6 +362,10 @@ async function getPostThreadRecursive(
             }
             if (listCanAnnounce.includes(sameAsOpList)) {
               replyControl.reblogControl = InteractionControl.SameAsOp
+            }
+            if (announceRequiresManualApproval) {
+              replyControl.reblogControl =
+                AutomaticToManualApprovalEquivalent[replyControl.reblogControl] ?? replyControl.reblogControl
             }
           }
 
@@ -385,9 +394,14 @@ async function getPostThreadRecursive(
           }
 
           if (postPetition.interactionPolicy.canReply) {
-            const listCanReply = (postPetition.interactionPolicy.canReply.always || []).concat(
+            const autoListCanReply = (postPetition.interactionPolicy.canReply.always || []).concat(
               postPetition.interactionPolicy.canReply.automaticApproval || []
             )
+            const manualListCanReply = postPetition.interactionPolicy.canReply.manualApproval || []
+            // if the server declares no automaticApproval audience but does declare a manualApproval one,
+            // treat replies as requiring manual approval (FEP-6fce ReplyRequest/AnnounceRequest flow)
+            const replyRequiresManualApproval = autoListCanReply.length === 0 && manualListCanReply.length > 0
+            const listCanReply = replyRequiresManualApproval ? manualListCanReply : autoListCanReply
             replyControl.replyControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanReply.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanReply.includes(remoteUser.followingCollectionUrl)
@@ -405,6 +419,10 @@ async function getPostThreadRecursive(
             }
             if (listCanReply.includes(sameAsOpList)) {
               replyControl.replyControl = InteractionControl.SameAsOp
+            }
+            if (replyRequiresManualApproval) {
+              replyControl.replyControl =
+                AutomaticToManualApprovalEquivalent[replyControl.replyControl] ?? replyControl.replyControl
             }
           }
 

@@ -30,7 +30,7 @@ import showdown from 'showdown'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
 import dompurify from 'isomorphic-dompurify'
-import { InteractionControl, Privacy, PrivacyType } from '../models/post.js'
+import { InteractionControl, Privacy, PrivacyType, requiresManualApproval } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
@@ -589,6 +589,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             mentionsToAdd.length === 0 &&
             (req.body.tags ? req.body.tags.trim : '') == ''
           )
+          let manualApprovalPending = false
           if (parent) {
             const control = isReblog ? parent.reblogControl : parent.replyControl
             if (!(await canInteract(control, posterId, parent.id))) {
@@ -597,6 +598,13 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
                 success: false,
                 message: `This post has interaction controls and you do not have permisions to ${isReblog ? 'reblog' : 'reply to'} it`
               })
+            }
+            // FEP-6fce: the owner is always auto-allowed, and mentioned users can always reply
+            // automatically (this only applies to replies, not reblogs), so neither is held pending.
+            if (requiresManualApproval(control) && parent.userId !== posterId) {
+              const parentMentions = isReblog ? [] : await parent.getMentionPost()
+              const posterIsMentionedByParent = parentMentions.some((mentioned: any) => mentioned.id === posterId)
+              manualApprovalPending = !posterIsMentionedByParent
             }
           }
           if (postToBeQuoted) {
@@ -626,7 +634,8 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             likeControl: req.body.canLike || InteractionControl.Anyone,
             isReply: parent ? parent.isReply || parent.userId != posterId : false,
             isBskyExclusive: parent ? parent.isBskyExclusive : false,
-            language: filterLanguageCode(req.body.language)
+            language: filterLanguageCode(req.body.language),
+            waitToSendPost: manualApprovalPending
           })
         }
 
