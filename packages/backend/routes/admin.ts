@@ -11,10 +11,11 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { InviteCode } from '../models/inviteCode.js'
 import { generateRandomStringInviteCode } from '../utils/generateRandomString.js'
-import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
+import { federatePostHasBeenEdited } from '../activitypub/editPost.js'
 import { BlockedIps } from '../models/blockedIp.js'
 import { getQueue } from '../utils/queues.js'
-import type { SendEmailCampaignJobData } from '../utils/queueProcessors/sendEmailCampaign.js'
+import type { SendEmailCampaignJobData } from '../queueProcessors/sendEmailCampaign.js'
+import { applyBlueskyRegistrationOption } from '../utils/blueskyRegistrationOption.js'
 
 export default function adminRoutes(app: Application) {
   app.get('/api/admin/server-list', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -25,23 +26,21 @@ export default function adminRoutes(app: Application) {
 
   if (completeEnvironment.registrationLevel === 'INVITE') {
     app.get('/api/admin/invite-codes', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-      const inviteCodes = await InviteCode.findAll();
+      const inviteCodes = await InviteCode.findAll()
       const usersInvolved = await User.findAll({
         where: {
           id: {
             [Op.in]: [
-              ...inviteCodes.map(x => x.createdByUserId),
-              ...inviteCodes.map(x => x.usedByUserId ?? '').filter(x => !!x)
+              ...inviteCodes.map((x) => x.createdByUserId),
+              ...inviteCodes.map((x) => x.usedByUserId ?? '').filter((x) => !!x)
             ]
           }
         },
-        order: [
-          ['createdAt', 'DESC']
-        ]
+        order: [['createdAt', 'DESC']]
       })
-      const inviteCodesMapped = inviteCodes.map(x => ({
-        createdBy: usersInvolved.find(y => y.id === x.createdByUserId),
-        usedBy: usersInvolved.find(y => y.id === x.usedByUserId),
+      const inviteCodesMapped = inviteCodes.map((x) => ({
+        createdBy: usersInvolved.find((y) => y.id === x.createdByUserId),
+        usedBy: usersInvolved.find((y) => y.id === x.usedByUserId),
         isUsedOrExpired: x.isUsedOrExpired,
         updatedAt: x.updatedAt,
         createdAt: x.createdAt,
@@ -53,22 +52,27 @@ export default function adminRoutes(app: Application) {
       })
     })
 
-    app.post('/api/admin/create-invite-code', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-      if (!req.jwtData) return res.sendStatus(401)
+    app.post(
+      '/api/admin/create-invite-code',
+      authenticateToken,
+      adminToken,
+      async (req: AuthorizedRequest, res: Response) => {
+        if (!req.jwtData) return res.sendStatus(401)
 
-      const petitionBody: {
-        code?: string,
-        expirationDate: string
-      } = req.body
+        const petitionBody: {
+          code?: string
+          expirationDate: string
+        } = req.body
 
-      const inviteCode = await InviteCode.create({
-        code: petitionBody.code?.trim() ? petitionBody.code : generateRandomStringInviteCode(),
-        expirationDate: new Date(petitionBody.expirationDate),
-        createdByUserId: req.jwtData.userId
-      })
+        const inviteCode = await InviteCode.create({
+          code: petitionBody.code?.trim() ? petitionBody.code : generateRandomStringInviteCode(),
+          expirationDate: new Date(petitionBody.expirationDate),
+          createdByUserId: req.jwtData.userId
+        })
 
-      res.send(inviteCode)
-    })
+        res.send(inviteCode)
+      }
+    )
   }
 
   app.post('/api/admin/server-update', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
@@ -246,7 +250,11 @@ export default function adminRoutes(app: Application) {
         user: elem.user,
         postId: elem.postId,
         post: elem.post,
-        reportedUserId: elem.reportedUserId ? elem.reportedUserId : (elem.post ? elem.post.userId : '00000000-0000-0000-0000-000000000000'),
+        reportedUserId: elem.reportedUserId
+          ? elem.reportedUserId
+          : elem.post
+            ? elem.post.userId
+            : '00000000-0000-0000-0000-000000000000',
         reportedUser: reporteduser,
         createdAt: elem.createdAt
       }
@@ -412,7 +420,7 @@ export default function adminRoutes(app: Application) {
   )
 
   app.post('/api/admin/blockIp', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-    const ipToBlock = req.body.ipToBlock as string;
+    const ipToBlock = req.body.ipToBlock as string
     if (ipToBlock) {
       await BlockedIps.create({
         ip: ipToBlock
@@ -421,9 +429,8 @@ export default function adminRoutes(app: Application) {
       res.send({
         success: true
       })
-
     } else {
-      res.status(400);
+      res.status(400)
       res.send({
         message: 'Missing ipToBlock data, you doofus'
       })
@@ -435,14 +442,17 @@ export default function adminRoutes(app: Application) {
       const userToActivate = await User.scope('full').findByPk(req.body.id)
       if (userToActivate && userToActivate.email) {
         userToActivate.activated = true
-        const emailPromise = sendEmail({
-          email: userToActivate.email,
-          subject: `Your account at ${completeEnvironment.frontendUrl} has been activated`,
-          body: `\
+        ;(async () => {
+          const blueskyRegistrationEmailAddition = await applyBlueskyRegistrationOption(userToActivate)
+          const emailPromise = sendEmail({
+            email: userToActivate.email as string,
+            subject: `Your account at ${completeEnvironment.frontendUrl} has been activated`,
+            body: `\
 <p>Hello ${userToActivate.url}, your account has been reviewed by our team and is now activated!</p>
-`
-        })
-        Promise.allSettled([emailPromise, userToActivate.save()])
+${blueskyRegistrationEmailAddition}`
+          })
+          await Promise.allSettled([emailPromise, userToActivate.save()])
+        })()
       }
     }
     res.send({ success: true })
@@ -505,16 +515,17 @@ We just need a confirmation. Sorry for this and thanks.</p>
     const post = await Post.findByPk(postId)
     if (post) {
       post.content_warning = 'Mod team forced CW: ' + content_warning
-      await post.save();
-      await federatePostHasBeenEdited(post);
+      await post.save()
+      await federatePostHasBeenEdited(post)
       await PostReport.update(
         {
           resolved: true
-        }, {
-        where: {
-          postId: post.id
+        },
+        {
+          where: {
+            postId: post.id
+          }
         }
-      }
       )
       res.send({ success: true })
     } else {
@@ -522,38 +533,42 @@ We just need a confirmation. Sorry for this and thanks.</p>
     }
   })
 
-  app.post('/api/admin/sendEmailCampaign', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
-    const petitionBody: SendEmailCampaignJobData = req.body
-    const subject = typeof petitionBody?.subject === 'string' ? petitionBody.subject.trim() : ''
-    const body = typeof petitionBody?.body === 'string' ? petitionBody.body.trim() : ''
-    const test = req.body.test
-    if (!subject || !body) {
-      res.status(400)
-      return res.send({
-        message: 'Missing subject or body'
-      })
-    }
-    if (test) {
-      const user = (await User.scope('full').findByPk(req.jwtData?.userId)) as User
-      await sendEmail({ email: user.email as string, subject, body })
-      res.send({
-        success: true,
-        jobId: undefined
-      })
-    } else {
-      const queue = getQueue<SendEmailCampaignJobData>('prepareSendCampaign')
-      const job = await queue.add('prepareSendCampaign', {
-        subject,
-        body,
-        createdByUserId: req.jwtData?.userId
-      })
+  app.post(
+    '/api/admin/sendEmailCampaign',
+    authenticateToken,
+    adminToken,
+    async (req: AuthorizedRequest, res: Response) => {
+      const petitionBody: SendEmailCampaignJobData = req.body
+      const subject = typeof petitionBody?.subject === 'string' ? petitionBody.subject.trim() : ''
+      const body = typeof petitionBody?.body === 'string' ? petitionBody.body.trim() : ''
+      const test = req.body.test
+      if (!subject || !body) {
+        res.status(400)
+        return res.send({
+          message: 'Missing subject or body'
+        })
+      }
+      if (test) {
+        const user = (await User.scope('full').findByPk(req.jwtData?.userId)) as User
+        await sendEmail({ email: user.email as string, subject, body })
+        res.send({
+          success: true,
+          jobId: undefined
+        })
+      } else {
+        const queue = getQueue<SendEmailCampaignJobData>('prepareSendCampaign')
+        const job = await queue.add('prepareSendCampaign', {
+          subject,
+          body,
+          createdByUserId: req.jwtData?.userId
+        })
 
-      res.status(202)
-      res.send({
-        success: true,
-        jobId: job.id
-      })
+        res.status(202)
+        res.send({
+          success: true,
+          jobId: job.id
+        })
+      }
     }
-
-  })
+  )
 }

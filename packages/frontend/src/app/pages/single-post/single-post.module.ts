@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterModule, Routes } from '@angular/router'
-import { PostModule } from '../../components/post/post.module'
-import { PagenotfoundModule } from '../pagenotfound/pagenotfound.module'
+import { PostComponent } from '../../components/post/post.component'
+import { PagenotfoundComponent } from '../pagenotfound/pagenotfound.component'
 import { MatTableModule } from '@angular/material/table'
 import { MatPaginatorModule } from '@angular/material/paginator'
 import { MatCardModule } from '@angular/material/card'
@@ -28,8 +28,8 @@ const routes: Routes = [
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
-    PostModule,
-    PagenotfoundModule,
+    PostComponent,
+    PagenotfoundComponent,
     MatTableModule,
     MatPaginatorModule,
     MatCardModule,

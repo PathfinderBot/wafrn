@@ -13,12 +13,12 @@ const imageStorage = multer.diskStorage({
   }
 })
 
-function uploadHandler(extensionsRegex?: RegExp, storage?: multer.StorageEngine) {
+function uploadHandler(extensionsRegex?: RegExp, storage?: multer.StorageEngine, maxFiles = 1) {
   return multer({
     storage: storage ? storage : imageStorage,
     limits: {
       fileSize: completeEnvironment.uploadLimit * 1024 * 1024,
-      files: 1
+      files: maxFiles
     },
     fileFilter(req, file, cb) {
       const name = file.originalname.toLowerCase()

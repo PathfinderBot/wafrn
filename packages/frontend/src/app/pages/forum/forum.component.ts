@@ -14,12 +14,11 @@ import { LoaderComponent } from '../../components/loader/loader.component'
 import { PostFragmentComponent } from '../../components/post-fragment/post-fragment.component'
 import { PostRibbonComponent } from '../../components/post-ribbon/post-ribbon.component'
 import { PostHeaderComponent } from '../../components/post/post-header/post-header.component'
-import { PostModule } from '../../components/post/post.module'
+import { PostComponent } from '../../components/post/post.component'
 import { SnappyCreate } from '../../components/snappy/snappy-life'
 import { SnappyRouter, snappyInject } from '../../components/snappy/snappy-router.component'
-import { BlogLinkModule } from '../../directives/blog-link/blog-link.module'
-import { SnappyPostData } from '../../directives/post-link/post-link.directive'
-import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
+import { PostLinkDirective, SnappyPostData } from '../../directives/post-link/post-link.directive'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { DashboardService } from '../../services/dashboard.service'
@@ -27,6 +26,7 @@ import { EnvironmentService } from '../../services/environment.service'
 import { ForumService } from '../../services/forum.service'
 import { LoginService } from '../../services/login.service'
 import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
@@ -39,13 +39,13 @@ import { SimpleTitleService } from '../../services/simple-title.service'
     MatCardModule,
     MatButtonModule,
     PostHeaderComponent,
-    PostModule,
+    PostComponent,
     FontAwesomeModule,
     MatPaginatorModule,
     BottomReplyBarComponent,
     PostRibbonComponent,
-    PostLinkModule,
-    BlogLinkModule,
+    PostLinkDirective,
+    BlogLinkDirective,
     TranslatePipe
   ],
   templateUrl: './forum.component.html',
@@ -56,6 +56,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private forumService = inject(ForumService)
   readonly loginService = inject(LoginService)
   private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private readonly dashboardService = inject(DashboardService)
   private readonly router = inject(Router)
   private readonly snappy = inject(SnappyRouter)
@@ -89,13 +90,13 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private readonly route = inject(ActivatedRoute)
   homeIcon = faHome
   constructor() {
-    this.followedUsers = this.postService.followedUserIds
-    this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
-    this.updateFollowsSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followedUsers = this.userOptionsService.followedUserIds
+    this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
+    this.updateFollowsSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
-    this.postService.loadFollowers()
+    this.userOptionsService.loadFollowers()
   }
 
   snOnCreate(): void {

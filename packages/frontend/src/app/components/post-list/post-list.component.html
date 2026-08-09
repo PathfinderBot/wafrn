@@ -1,10 +1,14 @@
 @if (displayMode() === 'card') {
   @for (post of posts(); track $index) {
-    <app-post
-      [post]="post"
-      [active]="postIsActive() && $index === selectedPost"
-      [actionSubscription]="postActionSubject"
-    ></app-post>
+    @defer (on viewport) {
+      <app-post
+        [post]="post"
+        [active]="postIsActive() && $index === selectedPost"
+        [actionSubscription]="postActionSubject"
+      ></app-post>
+    } @placeholder {
+      <div class="post-placeholder"></div>
+    }
   }
 } @else if (displayMode() === 'grid') {
   <div class="p-0 media-grid wafrn-container post-card">

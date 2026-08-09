@@ -1,88 +1,76 @@
-import {
-  Model,
-  Table,
-  Column,
-  DataType,
-  ForeignKey,
-  HasMany,
-  BelongsToMany,
-  BelongsTo,
-} from "sequelize-typescript";
-import { EmojiReaction } from "./emojiReaction.js";
-import { User } from "./user.js";
-import { UserEmojiRelation } from "./userEmojiRelation.js";
-import { Post } from "./post.js";
-import { PostEmojiRelations } from "./postEmojiRelations.js";
-import { EmojiCollection } from "./emojiCollection.js";
-import { Notification } from "./notification.js";
+import { Model, Table, Column, DataType, ForeignKey, HasMany, BelongsToMany, BelongsTo } from 'sequelize-typescript'
+import { EmojiReaction } from './emojiReaction.js'
+import { User } from './user.js'
+import { UserEmojiRelation } from './userEmojiRelation.js'
+import { Post } from './post.js'
+import { PostEmojiRelations } from './postEmojiRelations.js'
+import { EmojiCollection } from './emojiCollection.js'
+import { Notification } from './notification.js'
 
 export interface EmojiAttributes {
-  id?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  name?: string;
-  url?: string;
-  external?: boolean;
-  emojiCollectionId?: string;
-  uuid?: string;
+  id?: string
+  createdAt?: Date
+  updatedAt?: Date
+  name?: string
+  url?: string
+  external?: boolean
+  emojiCollectionId?: string
+  uuid?: string
 }
 
 @Table({
-  tableName: "emojis",
-  modelName: "emojis",
-  timestamps: true,
+  tableName: 'emojis',
+  modelName: 'emojis',
+  timestamps: true
 })
-export class Emoji
-  extends Model<EmojiAttributes, EmojiAttributes>
-  implements EmojiAttributes
-{
+export class Emoji extends Model<EmojiAttributes, EmojiAttributes> implements EmojiAttributes {
   @Column({
     primaryKey: true,
-    type: DataType.STRING(255),
+    type: DataType.STRING(255)
   })
-  declare id: string;
+  declare id: string
 
   @Column({
     allowNull: true,
-    type: DataType.STRING(255),
+    type: DataType.STRING(255)
   })
-  declare name: string;
+  declare name: string
 
   @Column({
     allowNull: true,
-    type: DataType.STRING,
+    type: DataType.STRING
   })
-  declare url: string;
+  declare url: string
 
   @Column({
     allowNull: true,
-    type: DataType.BOOLEAN,
+    type: DataType.BOOLEAN
   })
-  declare external: boolean;
+  declare external: boolean
 
   @ForeignKey(() => EmojiCollection)
   @Column({
     allowNull: true,
-    type: DataType.UUID,
+    type: DataType.UUID
   })
-  declare emojiCollectionId: string;
+  declare emojiCollectionId: string
 
   @Column({
     allowNull: false,
     type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    defaultValue: DataType.UUIDV4
   })
-  declare uuid: string;
+  declare uuid: string
 
   @HasMany(() => EmojiReaction)
-  declare emojiReactions: EmojiReaction[];
+  declare emojiReactions: EmojiReaction[]
 
   @BelongsToMany(() => User, () => UserEmojiRelation)
-  declare users: User[];
+  declare users: User[]
 
   @BelongsToMany(() => Post, () => PostEmojiRelations)
-  declare posts: Post[];
+  declare posts: Post[]
 
-  @BelongsTo(() => EmojiCollection, "emojiCollectionId")
-  declare emojiCollection: EmojiCollection;
+  @BelongsTo(() => EmojiCollection, 'emojiCollectionId')
+  declare emojiCollection: EmojiCollection
 }

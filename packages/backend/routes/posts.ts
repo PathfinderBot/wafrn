@@ -19,16 +19,16 @@ import { logger } from '../utils/logger.js'
 import { createPostLimiter, navigationRateLimiter } from '../utils/rateLimiters.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import optionalAuthentication from '../utils/optionalAuthentication.js'
-import { getPetitionSigned } from '../utils/activitypub/getPetitionSigned.js'
-import { getPostThreadRecursive } from '../utils/activitypub/getPostThreadRecursive.js'
-import { canInteract, getUnjointedPosts } from '../utils/baseQueryNew.js'
-import { federatePostHasBeenEdited } from '../utils/activitypub/editPost.js'
-import { getAvaiableEmojis } from '../utils/getAvaiableEmojis.js'
+import { getPetitionSigned } from '../activitypub/getPetitionSigned.js'
+import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
+import { canInteract, getUnjointedPosts } from '../services/baseQueryNew.js'
+import { federatePostHasBeenEdited } from '../activitypub/editPost.js'
+import { getAvaiableEmojisUncached } from '../utils/getAvaiableEmojisUncached.js'
 import { redisCache } from '../utils/redis.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import showdown from 'showdown'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
-import { bulkCreateNotifications, createNotification } from '../utils/pushNotifications.js'
+import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
 import dompurify from 'isomorphic-dompurify'
 import { InteractionControl, Privacy, PrivacyType } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -420,7 +420,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
             : ''
         let mediaToAdd: any[] = []
-        const avaiableEmojis = await getAvaiableEmojis()
+        const avaiableEmojis = await getAvaiableEmojisUncached()
         // we parse the content and we search emojis:
         const emojisToAdd = avaiableEmojis?.filter((emoji: any) => req.body.content.includes(emoji.name))
 

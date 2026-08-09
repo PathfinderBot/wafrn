@@ -69,6 +69,11 @@
     "birthDateHint": "MM/DD/YYYY - Your birthday date is required for legal reasons in the european union and USA. Its not shared with anyone. Minimum registration age varies depending on the instance",
     "gender": "Gender",
     "genderHint": "This actually does not do anything at all",
+    "blueskyOption": "Bluesky",
+    "blueskyOptionHint": "Would you like a Bluesky account too? You can change this later from your settings",
+    "blueskyOptionNo": "No thanks",
+    "blueskyOptionCreate": "Create me a new one",
+    "blueskyOptionBringOwn": "I might migrate my existing bluesky account later",
     "uploadAvatar": "Upload your avatar",
     "chooseFile": "Choose File"
   },
@@ -217,6 +222,7 @@
     "more": "More",
     "silencedPosts": "Silenced Woots",
     "bookmarkedPosts": "Bookmarked woots",
+    "myDrafts": "My drafts",
     "settings": {
       "title": "Settings",
       "follows": "Manage followers",
@@ -766,7 +772,9 @@
       "hideRewoots": "Hide rewoots made by this user",
       "unhideRewoots": "Unhide rewoots made by this user",
       "unhideQuotes": "Unhide quotes from this user",
-      "hideQuotes": "Hide quotes from this user"
+      "hideQuotes": "Hide quotes from this user",
+      "hideReplies": "Hide replies made by this user",
+      "unhideReplies": "Unhide replies made by this user"
     },
     "report": {
       "reportUserTitle": "Report User",
@@ -1065,6 +1073,11 @@
   },
   "dashboard": {
     "notFollowingAnyone": "You dont seem to be following anyone!",
-    "exploreLinks": "<a href=\"/dashboard/exploreLocal\">Click here to go to the explore page</a>"
+    "exploreLinks": "<a href=\"/dashboard/exploreLocal\">Click here to go to the explore page</a>",
+    "noPostsFound": "No posts found here!",
+    "noPrivateMessages": "You have no private messages!",
+    "noSilencedPosts": "No silenced woots to show!",
+    "noDrafts": "You have no drafts!",
+    "noBookmarkedPosts": "You have no bookmarked woots!"
   }
 }

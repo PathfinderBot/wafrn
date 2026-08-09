@@ -1,7 +1,7 @@
 <mat-card class="p-3 mb-6 lg:mx-4 scalein wafrn-container" style="text-align: center">
   <h2>{{ 'manageFollowedHashtags.title' | translate }}</h2>
   @if (!loading) {
-    @for (hashtag of postsService.followedHashtags; track $index) {
+    @for (hashtag of userOptionsService.followedHashtags; track $index) {
       <div>
         <a [routerLink]="['/dashboard/search/' + hashtag]">#{{ hashtag }}</a>
         <button

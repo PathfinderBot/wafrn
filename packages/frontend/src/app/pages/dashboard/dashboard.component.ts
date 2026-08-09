@@ -1,28 +1,44 @@
-import { ViewportScroller } from '@angular/common'
+import { CommonModule, ViewportScroller } from '@angular/common'
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { Meta } from '@angular/platform-browser'
 import { Router, NavigationSkipped } from '@angular/router'
+import { TranslateModule } from '@ngx-translate/core'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { PostListComponent } from '../../components/post-list/post-list.component'
+import { ForumComponent } from '../forum/forum.component'
 import { Subscription, Subject, throttleTime, asyncScheduler, filter } from 'rxjs'
 import { SnappyCreate, SnappyShow, SnappyHide } from '../../components/snappy/snappy-life'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { DashboardService } from '../../services/dashboard.service'
 import { JwtService } from '../../services/jwt.service'
 import { MessageService } from '../../services/message.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-dashboard',
+  imports: [
+    CommonModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    FontAwesomeModule,
+    ForumComponent,
+    MatCardModule,
+    PostListComponent,
+    TranslateModule
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, SnappyShow, SnappyHide {
   private dashboardService = inject(DashboardService)
   private jwtService = inject(JwtService)
   private router = inject(Router)
-  private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private metaTagService = inject(Meta)
   private readonly viewportScroller = inject(ViewportScroller)
@@ -38,6 +54,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   level = 1
   timestamp = new Date().getTime()
   title = 'menu.dashboard'
+  emptyMessage = 'dashboard.notFollowingAnyone'
   updateFollowersSubscription?: Subscription
   navigationSubscription!: Subscription
   scroll = 0
@@ -81,22 +98,32 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     if (purePath.endsWith('explore')) {
       this.level = 0
       this.title = 'menu.exploreFediverse'
+      this.emptyMessage = 'dashboard.noPostsFound'
     }
     if (purePath.endsWith('exploreLocal')) {
       this.level = 2
       this.title = 'menu.exploreWafrn'
+      this.emptyMessage = 'dashboard.noPostsFound'
     }
     if (purePath.endsWith('private')) {
       this.level = 10
       this.title = 'menu.privateMessages'
+      this.emptyMessage = 'dashboard.noPrivateMessages'
     }
     if (purePath.endsWith('silencedPosts')) {
       this.level = 25
       this.title = 'menu.silencedPosts'
+      this.emptyMessage = 'dashboard.noSilencedPosts'
     }
     if (purePath.endsWith('bookmarkedPosts')) {
       this.level = 50
       this.title = 'menu.bookmarkedPosts'
+      this.emptyMessage = 'dashboard.noBookmarkedPosts'
+    }
+    if (purePath.endsWith('myDrafts')) {
+      this.level = 30
+      this.title = 'menu.myDrafts'
+      this.emptyMessage = 'dashboard.noDrafts'
     }
     this.simpleTitle.set(this.title)
   }
@@ -124,8 +151,8 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
         this.reloadPosts()
       })
 
-    this.updateFollowersSubscription = this.postService.updateFollowers.subscribe(() => {
-      if (this.postService.followedUserIds.length <= 1 && this.level === 1 && false) {
+    this.updateFollowersSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      if (this.userOptionsService.followedUserIds.length <= 1 && this.level === 1 && false) {
         // if the user follows NO ONE we take them to the explore page!
         this.messages.add({
           severity: 'info',
@@ -192,8 +219,8 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
         if (this.hideQuotesLevel == 3) {
           if (
             post.some((elem) => {
-              !this.postService.followedUserIds.includes(elem.userId) ||
-                (this.postService.usersQuotesDisabled.includes(elem.userId) && elem.quotes && elem.quotes.length)
+              !this.userOptionsService.followedUserIds.includes(elem.userId) ||
+                (this.userOptionsService.usersQuotesDisabled.includes(elem.userId) && elem.quotes && elem.quotes.length)
             })
           ) {
             return true
@@ -224,10 +251,10 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
           (superMutedWords.length > 0 &&
             superMutedWords.some((supermuteWord) => textOfPosts.includes(supermuteWord))) ||
           (!localStorage.getItem('displayMentionsOfBlockedUsersFromOtherUsers') === true &&
-            this.postService.blockedUserIds.length > 0 &&
+            this.userOptionsService.blockedUserIds.length > 0 &&
             post.some(
               (elem) =>
-                (elem.mentionPost?.filter((mention) => this.postService.blockedUserIds.includes(mention.id)) || [])
+                (elem.mentionPost?.filter((mention) => this.userOptionsService.blockedUserIds.includes(mention.id)) || [])
                   .length > 0
             ))
         ) {
@@ -244,7 +271,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
           finalPost.tags.length == 0 &&
           !finalPost.quotes.length &&
           !finalPost.content_warning &&
-          this.postService.usersRewootsDisabled.includes(finalPost.userId)
+          this.userOptionsService.usersRewootsDisabled.includes(finalPost.userId)
         ) {
           return false
         }

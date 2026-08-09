@@ -85,6 +85,17 @@
           }
         </mat-select>
       </mat-form-field>
+      @if (blueskyEnabled) {
+        <mat-form-field class="w-full mb-3" subscriptSizing="dynamic">
+          <mat-label>{{ 'register.blueskyOption' | translate }}</mat-label>
+          <mat-hint>{{ 'register.blueskyOptionHint' | translate }}</mat-hint>
+          <mat-select formControlName="blueskyOption">
+            @for (option of blueskyOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label | translate }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
       <div class="pt-2 px-3 pb-2 border-round-md" style="border: 1px solid #999">
         <label for="avatar" class="block font-medium mb-2">{{ 'register.uploadAvatar' | translate }}</label>
         <div class="flex flex-row align-content-center">

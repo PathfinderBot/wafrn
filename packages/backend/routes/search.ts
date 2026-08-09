@@ -4,11 +4,11 @@ import { Emoji, Post, PostTag, User, UserEmojiRelation } from '../models/index.j
 import { sequelize } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 
-import { searchRemoteUser } from '../utils/activitypub/searchRemoteUser.js'
+import { searchRemoteUser } from '../activitypub/searchRemoteUser.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { getPostThreadRecursive } from '../utils/activitypub/getPostThreadRecursive.js'
+import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
-import { getUnjointedPosts } from '../utils/baseQueryNew.js'
+import { getUnjointedPosts } from '../services/baseQueryNew.js'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
 import { logger } from '../utils/logger.js'
 import { Privacy } from '../models/post.js'
@@ -42,14 +42,8 @@ export default function searchRoutes(app: Application) {
         attributes: ['url', 'avatar', 'name', 'description', 'remoteId', 'bskyDid', 'federatedHostId', 'id'],
         where: {
           [Op.or]: [
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("url")),
-              forceSearchUser
-            ),
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("alternateUrl")),
-              forceSearchUser
-            )
+            sequelize.where(sequelize.fn('lower', sequelize.col('url')), forceSearchUser),
+            sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), forceSearchUser)
           ]
         }
       })
@@ -58,13 +52,13 @@ export default function searchRoutes(app: Application) {
       }
     }
     try {
-      const url = new URL(searchTerm);
+      const url = new URL(searchTerm)
       // remove search params and hashes
-      url.search = "";
-      url.hash = "";
+      url.search = ''
+      url.hash = ''
 
-      urlString = url.href;
-    } catch (error) { }
+      urlString = url.href
+    } catch (error) {}
     if ((urlString || searchTerm.startsWith('at://')) && !page) {
       // we force fetch said remote post. Nothing eslse!
       const userPoster = await User.findByPk(posterId)
@@ -73,19 +67,17 @@ export default function searchRoutes(app: Application) {
           completeEnvironment.enableBsky &&
           userPoster.enableBsky &&
           userPoster.bskyDid &&
-          ((urlString.toLowerCase().includes('/profile/') &&
-            urlString.toLowerCase().includes('/post/')) ||
-            searchTerm.startsWith('at://')
-          )
+          ((urlString.toLowerCase().includes('/profile/') && urlString.toLowerCase().includes('/post/')) ||
+            searchTerm.startsWith('at://'))
         ) {
           // try resolving as bsky post
           try {
             let uri = searchTerm
             if (!searchTerm.startsWith('at://')) {
-              urlString = decodeURIComponent(urlString); // done this due to red dwarf
-              const profileAndPost = urlString.includes('app.bsky.feed.post') ?
-                urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/') :
-                urlString.split('/profile/')[1].split('/post/')
+              urlString = decodeURIComponent(urlString) // done this due to red dwarf
+              const profileAndPost = urlString.includes('app.bsky.feed.post')
+                ? urlString.split('aturi.to/')[1].split('/app.bsky.feed.post/')
+                : urlString.split('/profile/')[1].split('/post/')
               let bskyProfile = profileAndPost[0]
               const bskyUri = profileAndPost[1]
               if (!bskyProfile.startsWith('did:')) {
@@ -167,16 +159,9 @@ export default function searchRoutes(app: Application) {
             [Op.ne]: true
           },
           [Op.or]: [
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("url")),
-              searchTerm
-            ),
-            sequelize.where(
-              sequelize.fn("lower", sequelize.col("alternateUrl")),
-              searchTerm
-            )
+            sequelize.where(sequelize.fn('lower', sequelize.col('url')), searchTerm),
+            sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), searchTerm)
           ]
-
         }
       })
     if (page == 0) {

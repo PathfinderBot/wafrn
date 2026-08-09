@@ -91,9 +91,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -115,15 +113,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "null"
-              ],
+              "params": ["null"],
               "type": "fill"
             }
           ],
@@ -139,9 +133,7 @@
           "select": [
             [
               {
-                "params": [
-                  "total_relation_size_b"
-                ],
+                "params": ["total_relation_size_b"],
                 "type": "field"
               },
               {
@@ -279,9 +271,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -303,15 +293,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -326,9 +312,7 @@
           "select": [
             [
               {
-                "params": [
-                  "seq_scan"
-                ],
+                "params": ["seq_scan"],
                 "type": "field"
               },
               {
@@ -336,9 +320,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -441,9 +423,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -465,15 +445,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -488,9 +464,7 @@
           "select": [
             [
               {
-                "params": [
-                  "n_tup_ins"
-                ],
+                "params": ["n_tup_ins"],
                 "type": "field"
               },
               {
@@ -498,9 +472,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -603,9 +575,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -627,15 +597,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$interval"
-              ],
+              "params": ["$interval"],
               "type": "time"
             },
             {
-              "params": [
-                "null"
-              ],
+              "params": ["null"],
               "type": "fill"
             }
           ],
@@ -651,9 +617,7 @@
           "select": [
             [
               {
-                "params": [
-                  "heap_blks_hit"
-                ],
+                "params": ["heap_blks_hit"],
                 "type": "field"
               },
               {
@@ -661,9 +625,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "10s"
-                ],
+                "params": ["10s"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -765,9 +727,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -789,21 +749,15 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "index_name"
-              ],
+              "params": ["index_name"],
               "type": "tag"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -818,9 +772,7 @@
           "select": [
             [
               {
-                "params": [
-                  "idx_scan"
-                ],
+                "params": ["idx_scan"],
                 "type": "field"
               },
               {
@@ -828,9 +780,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1m"
-                ],
+                "params": ["1m"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -912,9 +862,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -938,9 +886,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -1015,9 +961,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -1041,9 +985,7 @@
           "select": [
             [
               {
-                "params": [
-                  "value"
-                ],
+                "params": ["value"],
                 "type": "column"
               }
             ]
@@ -1099,9 +1041,7 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
@@ -1236,17 +1176,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
   "title": "Table details",

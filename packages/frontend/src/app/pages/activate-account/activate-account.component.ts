@@ -8,8 +8,7 @@ import { MessageService } from '../../services/message.service'
   selector: 'app-activate-account',
   templateUrl: './activate-account.component.html',
   styleUrls: ['./activate-account.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class ActivateAccountComponent implements OnInit {
   private activeRoute = inject(ActivatedRoute)

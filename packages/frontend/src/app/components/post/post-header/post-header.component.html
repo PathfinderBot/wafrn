@@ -41,15 +41,15 @@
           </span>
         }
         @if (
-          !postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) &&
-          !postService.followedUserIds.includes(fragment.userId) &&
+          !userOptionsService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) &&
+          !userOptionsService.followedUserIds.includes(fragment.userId) &&
           loggedIn
         ) {
           <button mat-button class="text-sm follow-button" style="text-wrap: nowrap" (click)="followUser(fragment)">
             {{ 'post-header.follow' | translate }}
           </button>
         }
-        @if (postService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) && loggedIn) {
+        @if (userOptionsService.notYetAcceptedFollowedUsersIds.includes(fragment.userId) && loggedIn) {
           <button mat-button class="text-sm follow-button" (click)="cancelFollowUser(fragment)">
             {{ 'post-header.awaitingApproval' | translate }}
           </button>

@@ -1,9 +1,9 @@
 on:
   push:
     branches:
-      - 'main'
-      - 'preproduction'
-      - 'development'
+      - "main"
+      - "preproduction"
+      - "development"
 
 env:
   REGISTRY: codeberg.org
@@ -37,9 +37,60 @@ jobs:
         run: npm run type-check
         working-directory: ./packages/backend
 
+  backend-test:
+    name: Run backend unit tests
+    runs-on: docker
+    env:
+      DOMAIN_NAME: localhost
+      FRONTEND_MEDIA_URL: http://localhost/api/uploads
+      FRONTEND_CACHE_URL: http://localhost
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Generate template config
+        working-directory: ./packages/backend
+        run: |
+          cp environment.example.ts environment.ts
+          perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' environment.ts
+          perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' environment.ts
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./packages/backend
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./packages/backend
+
+  frontend-test:
+    name: Run frontend unit tests
+    runs-on: docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./packages/frontend
+
+      - name: Run tests
+        run: npm test
+        working-directory: ./packages/frontend
+
   build-backend:
     name: Build and push containers
-    needs: tsc
+    needs: [tsc, backend-test, frontend-test]
     strategy:
       matrix:
         include:
@@ -49,9 +100,6 @@ jobs:
           - package: backend
             dockerfile: packages/backend/Dockerfile
             context: .
-          - package: grafana
-            dockerfile: monitoring/grafana/Dockerfile
-            context: monitoring/grafana
 
     permissions:
       contents: read
@@ -86,7 +134,63 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build and push
-        if: matrix.package != 'grafana' || github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+
+  rebuild-main-branch:
+    name: Rebuild main branch containers
+    needs: tsc
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        include:
+          - package: grafana
+            dockerfile: monitoring/grafana/Dockerfile
+            context: monitoring/grafana
+          - package: db
+            dockerfile: monitoring/database/Dockerfile
+            context: monitoring/database
+          - package: pgwatch
+            dockerfile: monitoring/pgwatch/Dockerfile
+            context: monitoring/pgwatch
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    runs-on: docker
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.package }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha
+      - name: Login to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.image_token }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}

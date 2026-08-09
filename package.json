@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.08.01-HOTFIX2",
+  "version": "2026.08.03",
   "description": "wafrn",
   "main": "index.ts",
   "scripts": {
@@ -12,13 +12,14 @@
     "backend:worker": "cd packages/backend && tsx utils/workers.ts",
     "backend:serve": "cd packages/backend && tsx index.ts",
     "backend:cohostImport": "cd packages/backend && tsx utils/maintenanceTasks/importcohost.ts",
+    "backend:test": "cd packages/backend && npm test",
     "frontend:serve": "npm run prebuild && cd packages/frontend && ng serve",
     "frontend:develop": "npm run prebuild && cd packages/frontend && ng serve --configuration development",
     "frontend:develop:prod": "npm run prebuild && cd packages/frontend && ng serve --configuration devprod",
     "frontend:develop:development": "npm run prebuild && cd packages/frontend && ng serve --configuration devdevelopment",
     "frontend:build": "npm run prebuild && cd packages/frontend && ng build",
     "frontend:deploy": "npm run prebuild && cd packages/frontend && ng build && rm -rf ../../frontend && mv dist/wafrn/browser ../../frontend",
-    "frontend:test": "cd packages/frontend && jest",
+    "frontend:test": "cd packages/frontend && npm test",
     "frontend:translations:patch": "cd packages/frontend && tsx utils/patch-translations.ts",
     "frontend:translations:format": "cd packages/frontend && prettier src/assets/i18n/*.json --write",
     "prebuild": "cd packages/frontend && tsx utils/prebuild.ts",

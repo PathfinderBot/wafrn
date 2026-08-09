@@ -34,7 +34,7 @@ export default function silencePostRoutes(app: Application) {
     if (idPostToUnsilence) {
       const postToSilence = await Post.findOne({
         where: {
-          id: idPostToUnsilence,
+          id: idPostToUnsilence
         }
       })
       if (postToSilence) {

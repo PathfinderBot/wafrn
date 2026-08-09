@@ -137,7 +137,6 @@ export const baseEnvironment: Environment = {
     disablePWA: process.env.FRONTEND_DISABLE_PWA == 'true',
     maintenance: process.env.FRONTEND_MAINTENANCE == 'true',
     enableRawOutput: process.env.ENABLE_RAW_OUTPUT == 'true',
-    registrationLevel: process.env.REGISTRATION_LEVEL || 'PUBLIC',
     privateInstanceRegistrationText:
       process.env.REGISTRATIONS_DISABLED_TEXT ||
       'This instance is a private instance, and does not allow registrations',
@@ -145,6 +144,7 @@ export const baseEnvironment: Environment = {
     donationUrl: process.env.DONATION_URL || '',
     disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
     bubbleHostsShowType: process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC',
-    blockedHostsShowType: process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN'
+    blockedHostsShowType: process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN',
+    defaultLanguageCode: process.env.DEFAULT_LANGUAGE_CODE || 'en'
   }
 }

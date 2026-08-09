@@ -1,15 +1,28 @@
 import { Component, input, OnInit, Signal, inject, ChangeDetectionStrategy } from '@angular/core'
-import { FormControl, UntypedFormGroup, Validators } from '@angular/forms'
-import { QuestionPoll } from '../../interfaces/questionPoll'
+import { FormControl, FormsModule, ReactiveFormsModule, UntypedFormGroup, Validators } from '@angular/forms'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { MatButtonModule } from '@angular/material/button'
+import { MatRadioModule } from '@angular/material/radio'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { TranslateModule } from '@ngx-translate/core'
+import { QuestionPoll } from '../../interfaces/question-poll'
 import { LoginService } from '../../services/login.service'
 import { PostsService } from '../../services/posts.service'
 
 @Component({
   selector: 'app-poll',
+  imports: [
+    MatProgressBarModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatButtonModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    TranslateModule
+  ],
   templateUrl: './poll.component.html',
   styleUrls: ['./poll.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class PollComponent implements OnInit {
   protected loginService = inject(LoginService)

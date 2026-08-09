@@ -1,4 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { MatCardModule } from '@angular/material/card'
+import { MatButtonModule } from '@angular/material/button'
+import { TranslateModule } from '@ngx-translate/core'
+import { LoaderComponent } from '../../components/loader/loader.component'
+import { ForumComponent } from '../forum/forum.component'
 import { EnvironmentService } from '../../services/environment.service'
 import { JwtService } from '../../services/jwt.service'
 import { SimpleSeoService } from '../../services/simple-seo.service'
@@ -7,10 +13,10 @@ import { UtilsService } from '../../services/utils.service'
 
 @Component({
   selector: 'app-about',
+  imports: [CommonModule, MatCardModule, MatButtonModule, LoaderComponent, ForumComponent, TranslateModule],
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AboutComponent implements OnInit {
   private simpleTitle = inject(SimpleTitleService)

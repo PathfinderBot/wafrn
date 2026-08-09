@@ -151,6 +151,9 @@
                   "with": "src/environments/environment.devdevelopment.ts"
                 }
               ]
+            },
+            "test": {
+              "polyfills": ["zone.js", "zone.js/testing"]
             }
           },
           "defaultConfiguration": "production"
@@ -187,10 +190,12 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:jest",
+          "builder": "@angular/build:unit-test",
           "options": {
+            "buildTarget": "wafrn:build:development,test",
             "tsConfig": "tsconfig.spec.json",
-            "polyfills": ["zone.js", "zone.js/testing"]
+            "runner": "vitest",
+            "setupFiles": ["src/setup-vitest.ts"]
           }
         },
         "lint": {

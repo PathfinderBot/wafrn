@@ -6,7 +6,7 @@ import { SimplifiedUser } from '../interfaces/simplified-user'
 import { EmojiRelations, Media, NotificationRaw, Quote, Tag, basicPost } from '../interfaces/unlinked-posts'
 import { UserNotifications } from '../interfaces/user-notifications'
 import { ProcessedPost } from '../interfaces/processed-post'
-import { PostsService } from './posts.service'
+import { PostRenderingService } from './post-rendering.service'
 import { EnvironmentService } from './environment.service'
 import { Emoji } from '../interfaces/emoji'
 import { Ask } from '../interfaces/ask'
@@ -30,7 +30,7 @@ export type NotificationData = {
 export class NotificationsService {
   private http = inject(HttpClient)
   private jwt = inject(JwtService)
-  private postService = inject(PostsService)
+  private postRenderingService = inject(PostRenderingService)
   private settings = inject(SettingsService)
   private audioService = inject(AudioService)
   private loginService = inject(LoginService)
@@ -132,7 +132,7 @@ export class NotificationsService {
       } else {
         this.uniqueDate = new Date(0)
       }
-      const processed = this.postService.processPostNew({
+      const processed = this.postRenderingService.processPostNew({
         posts: petition.posts,
         emojiRelations: petition.emojiRelations,
         mentions: [],
@@ -160,7 +160,7 @@ export class NotificationsService {
         usr.name = usr.name.replaceAll('‏', '')
         userEmojis.forEach((elem) => {
           if (elem) {
-            usr.name = usr.name.replaceAll(elem.name, this.postService.emojiToHtml(elem))
+            usr.name = usr.name.replaceAll(elem.name, this.postRenderingService.emojiToHtml(elem))
           }
         })
         this.userMap.set(usr.id, usr)

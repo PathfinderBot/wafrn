@@ -3,15 +3,15 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 
 import { Notification, Post, User, UserLikesPostRelations } from '../models/index.js'
 import { logger } from '../utils/logger.js'
-import { likePostRemote } from '../utils/activitypub/likePost.js'
+import { likePostRemote } from '../activitypub/likePost.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { Model } from 'sequelize'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
-import { createNotification } from '../utils/pushNotifications.js'
+import { createNotification } from '../services/pushNotifications.js'
 import { InteractionControl } from '../models/post.js'
-import { canInteract } from '../utils/baseQueryNew.js'
+import { canInteract } from '../services/baseQueryNew.js'
 
 export default function likeRoutes(app: Application) {
   app.post('/api/like', authenticateToken, forceUpdateLastActive, async (req: AuthorizedRequest, res: Response) => {
@@ -42,7 +42,7 @@ export default function likeRoutes(app: Application) {
       const like = await likePromise
       if (userId && user && post && !like) {
         // TODO check if user can LIKE post.
-        if (!await canInteract(post.likeControl, userId, post.id)) {
+        if (!(await canInteract(post.likeControl, userId, post.id))) {
           res.status(403)
           return res.send({
             success: false,

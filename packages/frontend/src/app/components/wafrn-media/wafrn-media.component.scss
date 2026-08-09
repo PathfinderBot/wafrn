@@ -126,6 +126,13 @@ audio {
   width: 100%;
 }
 
+.link-preview-placeholder {
+  min-height: 100px;
+  background: var(--mat-sys-surface-container);
+  border-radius: var(--mat-sys-corner-extra-small);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
 .media-container.fit-cover {
   height: 100%;
 

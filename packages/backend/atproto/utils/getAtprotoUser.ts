@@ -3,15 +3,18 @@ import { Op } from 'sequelize'
 import { wait } from '../../utils/wait.js'
 import { logger } from '../../utils/logger.js'
 import { getDeletedUser } from '../../utils/cacheGetters/getDeletedUser.js'
+import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
-import { getDidDoc } from '../../utils/atproto/getDidDoc.js'
-import { getRemoteActor } from '../../utils/activitypub/getRemoteActor.js'
+import { getDidDoc } from './getDidDoc.js'
+import { getRemoteActor } from '../../activitypub/getRemoteActor.js'
+import { getPetitionSigned } from '../../activitypub/getPetitionSigned.js'
 import { getQueue } from '../../utils/queues.js'
-import { getServerFromDid } from '../../utils/atproto/getServerFromDid.js'
-import { resolveHandle } from '../../utils/atproto/resolveHandleToDid.js'
+import { getServerFromDid } from './getServerFromDid.js'
+import { resolveHandle } from './resolveHandleToDid.js'
 import getUserAgent from '../../utils/getUserAgent.js'
 import { redisCache } from '../../utils/redis.js'
 import { assertUrlResolvesPublic } from '../../utils/ssrfProtection.js'
+import { clearUserCache } from '../../utils/clearUserCache.js'
 
 const mergeUsersQueue = getQueue('mergeUsers')
 
@@ -78,6 +81,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
     return (await getDeletedUser()) as User
   }
   let handle = inputHandle
+  const normalizedHandleUrl = '@' + handle.replace(/^@/, '')
   let userFound =
     handle == 'handle.invalid'
       ? undefined
@@ -87,13 +91,79 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
               {
                 bskyDid: handle
               },
-              sequelize.where(sequelize.fn('lower', sequelize.col('url')), handle.toLowerCase()),
-              sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), handle.toLowerCase())
+              sequelize.where(sequelize.fn('lower', sequelize.col('url')), normalizedHandleUrl.toLowerCase()),
+              sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), normalizedHandleUrl.toLowerCase())
             ]
           }
         })
   // sometimes we can get the dids and if its a local user we just return it and thats it
   if (userFound && userFound.email) {
+    if (userFound.bskyDid) {
+      try {
+        const doc = await getDidDoc(userFound.bskyDid, options?.ignoreCache == true)
+        const currentHandle = doc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+        if (currentHandle && userFound.alternateUrl !== '@' + currentHandle) {
+          const newAlternateUrl = '@' + currentHandle
+          const lowerNewAlternateUrl = newAlternateUrl.toLowerCase()
+
+          // free up anyone squatting the value on alternateUrl, no questions asked
+          const alternateUrlConflict = await User.findOne({
+            where: {
+              id: { [Op.ne]: userFound.id },
+              [Op.and]: sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), lowerNewAlternateUrl)
+            }
+          })
+          if (alternateUrlConflict) {
+            alternateUrlConflict.alternateUrl = undefined
+            await alternateUrlConflict.save()
+          }
+
+          const urlConflict = await User.findOne({
+            where: {
+              id: { [Op.ne]: userFound.id },
+              [Op.and]: sequelize.where(sequelize.fn('lower', sequelize.col('url')), lowerNewAlternateUrl)
+            }
+          })
+
+          let canUpdate = true
+          if (urlConflict) {
+            if (urlConflict.email) {
+              // another local user owns that url, leave everyone alone
+              canUpdate = false
+            } else {
+              // bsky-mirrored user: force a refresh, it might just have moved on already
+              try {
+                const refreshedConflict = urlConflict.bskyDid
+                  ? await getAtprotoUser(urlConflict.bskyDid, { ignoreCache: true })
+                  : undefined
+                if (!refreshedConflict || refreshedConflict.url.toLowerCase() === lowerNewAlternateUrl) {
+                  throw new Error('Conflicting bsky-mirrored user url did not change after forced refresh')
+                }
+              } catch (error) {
+                logger.debug({
+                  message: 'Forced refresh of conflicting bsky-mirrored user failed, marking its url invalid',
+                  userId: urlConflict.id,
+                  error
+                })
+                urlConflict.url = `@handle.invalid_${urlConflict.bskyDid}_${new Date().getTime()}`
+                await urlConflict.save()
+              }
+            }
+          }
+
+          if (canUpdate) {
+            userFound.alternateUrl = newAlternateUrl
+            await userFound.save()
+          }
+        }
+      } catch (error) {
+        logger.debug({
+          message: 'Problem checking bsky handle for local user',
+          userId: userFound.id,
+          error
+        })
+      }
+    }
     return (await User.findByPk(userFound.id)) as User
   }
   const did = handle.startsWith('did:')
@@ -102,30 +172,43 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
   const doc = await getDidDoc(did, options?.ignoreCache == true)
   if (userFound) {
     avatarString = userFound.avatar
+  }
 
-    // we check if it's bridgy fed pds by getting did doc of course
-    const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
-    if (bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy')) {
-      // bridgy user. find the alsoknownas user
-      const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
-      let user: User | undefined = undefined
-      for (const fediUser of allHttpsAlsoKnownAs) {
-        const tempUser = await getRemoteActor(fediUser, userFound, true)
-        if (tempUser) {
-          user = tempUser
-          break
-        }
+  const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
+  const isKnownBridgyPds = !!(bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy'))
+  const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
+  if (allHttpsAlsoKnownAs.length > 0) {
+    const requestingUser = userFound ?? (await getAdminUser())
+    const atUri = doc?.alsoKnownAs?.find((x) => x.startsWith('at://'))
+    const validDidReferences = [did, `at://${did}`, ...(atUri ? [atUri] : [])]
+    let user: User | undefined = undefined
+    for (const fediUser of allHttpsAlsoKnownAs) {
+      let trusted = isKnownBridgyPds
+      if (!trusted && requestingUser) {
+        const actorPetition = await getPetitionSigned(requestingUser, fediUser)
+        const reciprocalAlsoKnownAs: string[] = actorPetition?.alsoKnownAs ?? []
+        trusted = reciprocalAlsoKnownAs.some((x) => validDidReferences.includes(x))
       }
-      if (user) {
-        // found remote fedi user, now merge
+      if (!trusted) {
+        continue
+      }
+      const tempUser = await getRemoteActor(fediUser, requestingUser, true)
+      if (tempUser && tempUser.url !== completeEnvironment.deletedUser) {
+        user = tempUser
+        break
+      }
+    }
+    if (user) {
+      if (userFound) {
+        // we already had a local (non-fediverse) record for this handle, merge it in
         await mergeUsersQueue.add('mergeUsers', {
           primaryUserId: user.id,
           userToMergeId: userFound.id
         })
-
-        // and return the user
-        return user
       }
+
+      // and return the fediverse user
+      return user
     }
   }
   // TODO check if current user exist
@@ -250,6 +333,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
 
       userFound.set(newData)
       await userFound.save()
+      await clearUserCache(userFound.id)
     } else {
       try {
         userFound = await User.create(newDataTmp)

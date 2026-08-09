@@ -17,7 +17,7 @@ import { SimplifiedUser } from '../interfaces/simplified-user'
 import { Router } from '@angular/router'
 import { AUTH_OVERRIDE } from '../interceptors/wafrn-auth.interceptor'
 import { SimpleDialogService } from './simple-dialog.service'
-import { InteractionControlType } from '../interfaces/InteractionControl'
+import { InteractionControlType } from '../interfaces/interaction-control'
 
 @Injectable({
   providedIn: 'root'

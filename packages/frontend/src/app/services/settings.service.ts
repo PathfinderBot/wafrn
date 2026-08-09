@@ -22,7 +22,7 @@ import { UtilsService } from './utils.service'
 import { HttpClient } from '@angular/common/http'
 import { EnvironmentService } from './environment.service'
 import { catchError, debounceTime, filter, fromEvent, lastValueFrom, of, Subject, timeout } from 'rxjs'
-import { PostsService } from './posts.service'
+import { UserOptionsService } from './user-options.service'
 import { MessageService } from './message.service'
 import { LoginService } from './login.service'
 import { SettingsProfileComponent } from '../pages/settings/settings-profile/settings-profile.component'
@@ -37,7 +37,7 @@ import { SETTINGS_TOKEN } from '../pages/settings/settings.component'
 import { replyBarItems } from '../components/post-action-buttons/post-action-buttons.component'
 import { SettingConfettiComponent } from '../components/setting-confetti/setting-confetti.component'
 import { Annoyance } from '../components/dialog/confirm-dialog.component'
-import { InteractionControl } from '../interfaces/InteractionControl'
+import { InteractionControl } from '../interfaces/interaction-control'
 
 // All setting keys for use throughout the app
 const settingKeyVariants = [
@@ -195,7 +195,7 @@ export type DropListData = Record<string, DropListDataEntry>
 export class SettingsService {
   private dashboardService = inject(DashboardService)
   private loginService = inject(LoginService)
-  private postsService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private http = inject(HttpClient)
   private utils = inject(UtilsService)
@@ -1173,8 +1173,14 @@ export class SettingsService {
     fromEvent(window, 'storage')
       .pipe(debounceTime(500))
       .subscribe(() => {
+        if (this.settingsModified()) return
         this.values.set(Object.assign(this.getDefaultSettings(), this.getLocalStorageValues()))
       })
+
+    this.userOptionsService.optionsSynced.subscribe(() => {
+      if (this.settingsModified()) return
+      this.values.set(Object.assign({ ...this.values() }, this.getLocalStorageValues()))
+    })
   }
 
   private getLocalStorageValues(): SettingValues {
@@ -1254,7 +1260,7 @@ export class SettingsService {
       )
     )
     if (res.success) {
-      await this.postsService.loadFollowers()
+      await this.userOptionsService.loadFollowers()
       await this.updateMultipleAccountData()
       this.messages.add({
         severity: 'success',

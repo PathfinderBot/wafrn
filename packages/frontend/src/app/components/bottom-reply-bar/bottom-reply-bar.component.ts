@@ -3,12 +3,12 @@ import { MatButtonModule } from '@angular/material/button'
 import { RouterModule } from '@angular/router'
 import { PostActionButtonsComponent } from '../post-action-buttons/post-action-buttons.component'
 import { TranslateModule } from '@ngx-translate/core'
-import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { PostLinkDirective } from '../../directives/post-link/post-link.directive'
 import { ProcessedPost } from '../../interfaces/processed-post'
 
 @Component({
   selector: 'app-bottom-reply-bar',
-  imports: [RouterModule, MatButtonModule, PostLinkModule, PostActionButtonsComponent, TranslateModule],
+  imports: [RouterModule, MatButtonModule, PostLinkDirective, PostActionButtonsComponent, TranslateModule],
   templateUrl: './bottom-reply-bar.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './bottom-reply-bar.component.scss'

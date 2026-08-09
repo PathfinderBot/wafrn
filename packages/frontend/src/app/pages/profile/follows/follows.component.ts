@@ -1,3 +1,4 @@
+import { ScrollingModule } from '@angular/cdk/scrolling'
 import { CommonModule } from '@angular/common'
 import { Component, OnDestroy, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core'
 import { FormsModule } from '@angular/forms'
@@ -15,13 +16,13 @@ import { TranslatePipe } from '@ngx-translate/core'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { BlogHeaderComponent } from '../../../components/blog-header/blog-header.component'
 import { LoaderComponent } from '../../../components/loader/loader.component'
-import { BlogLinkModule } from '../../../directives/blog-link/blog-link.module'
+import { BlogLinkDirective } from '../../../directives/blog-link/blog-link.directive'
 import { followsResponse } from '../../../interfaces/follows-response'
 import { SimplifiedUser } from '../../../interfaces/simplified-user'
 import { BlogService } from '../../../services/blog.service'
 import { DashboardService } from '../../../services/dashboard.service'
 import { LoginService } from '../../../services/login.service'
-import { PostsService } from '../../../services/posts.service'
+import { UserOptionsService } from '../../../services/user-options.service'
 
 @Component({
   selector: 'app-follows',
@@ -31,6 +32,7 @@ import { PostsService } from '../../../services/posts.service'
     BlogHeaderComponent,
     MatTableModule,
     MatPaginatorModule,
+    ScrollingModule,
     FormsModule,
     MatCardModule,
     MatInputModule,
@@ -39,7 +41,7 @@ import { PostsService } from '../../../services/posts.service'
     AvatarSmallComponent,
     FontAwesomeModule,
     MatTooltipModule,
-    BlogLinkModule,
+    BlogLinkDirective,
     TranslatePipe
   ],
   templateUrl: './follows.component.html',
@@ -49,7 +51,7 @@ import { PostsService } from '../../../services/posts.service'
 export class FollowsComponent implements OnInit, OnDestroy {
   activatedRoute = inject(ActivatedRoute)
   private router = inject(Router)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   private dashboardService = inject(DashboardService)
   private blogService = inject(BlogService)
 
@@ -75,9 +77,9 @@ export class FollowsComponent implements OnInit, OnDestroy {
     const loginService = inject(LoginService)
 
     this.myId = loginService.getLoggedUserUUID()
-    this.followsSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followsSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
     this.navigationSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))

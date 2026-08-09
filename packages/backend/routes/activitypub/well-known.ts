@@ -14,6 +14,12 @@ import { redisCache } from '../../utils/redis.js'
 import { version } from 'os'
 import { getAdminUser } from '../../utils/getAdminAndDeletedUser.js'
 import { getLocalUserByUrlCache } from './activitypub.js'
+import {
+  id_v1,
+  wafrnContext,
+  LITEPUB_CONTEXT_PATH,
+  LEGACY_LITEPUB_CONTEXT_PATH
+} from '../../activitypub/contexts.js'
 const cacher = new Cacher()
 
 function wellKnownRoutes(app: Application) {
@@ -58,8 +64,8 @@ function wellKnownRoutes(app: Application) {
           ]
         }
         res.set({
-          "content-type": "application/jrd+json; charset=utf-8",
-        });
+          'content-type': 'application/jrd+json; charset=utf-8'
+        })
         res.send(response)
       } else {
         return404(res)
@@ -72,8 +78,8 @@ function wellKnownRoutes(app: Application) {
 
   app.get('/.well-known/nodeinfo', (req, res) => {
     res.set({
-      "content-type": "application/activity+json",
-    });
+      'content-type': 'application/activity+json'
+    })
     res.send({
       links: [
         {
@@ -87,8 +93,8 @@ function wellKnownRoutes(app: Application) {
 
   app.get('/.well-known/nodeinfo/2.0', async (req, res) => {
     res.set({
-      "content-type": "application/activity+json",
-    });
+      'content-type': 'application/activity+json'
+    })
     const cacheResult = await redisCache.get('nodeInfoData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))
@@ -103,7 +109,7 @@ function wellKnownRoutes(app: Application) {
         activated: true
       }
     })
-    const adminUser = await getAdminUser();
+    const adminUser = await getAdminUser()
     const activeUsersSixMonths = await User.count({
       where: {
         id: {
@@ -187,7 +193,7 @@ function wellKnownRoutes(app: Application) {
         adminAccount: `https://${completeEnvironment.instanceUrl}/fediverse/blog/${adminUser.url}`,
         themeColor: '#96d8d1',
         emailRequiredForSignup: true,
-        disableRegistration: completeEnvironment.registrationLevel == 'PRIVATE',
+        disableRegistration: completeEnvironment.registrationLevel == 'PRIVATE'
       }
     }
     redisCache.set('nodeInfoData', JSON.stringify(result), 'EX', 3600 * 48)
@@ -223,8 +229,8 @@ function wellKnownRoutes(app: Application) {
   })
   app.get('/api/v1/instance', async (req, res) => {
     res.set({
-      "content-type": "application/activity+json",
-    });
+      'content-type': 'application/activity+json'
+    })
     const cacheResult = await redisCache.get('instanceData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))
@@ -257,7 +263,7 @@ function wellKnownRoutes(app: Application) {
         avatar: completeEnvironment.mediaUrl + adminUser.avatar,
         avatar_static: completeEnvironment.mediaUrl + adminUser.avatar,
         banner: completeEnvironment.mediaUrl + adminUser.headerImage,
-        banner_static: completeEnvironment.mediaUrl + adminUser.headerImage,
+        banner_static: completeEnvironment.mediaUrl + adminUser.headerImage
       }
     }
     redisCache.set('instanceData', JSON.stringify(result), 'EX', 3600 * 48)
@@ -267,18 +273,22 @@ function wellKnownRoutes(app: Application) {
 
   app.get('/api/v1/instance/peers', async (req, res) => {
     res.set({
-      "content-type": "application/activity+json",
-    });
+      'content-type': 'application/activity+json'
+    })
     const cacheResult = await redisCache.get('instancePeerData')
     if (cacheResult) {
       return res.send(JSON.parse(cacheResult))
     }
     const hosts = await FederatedHost.findAll()
-    const result = hosts.map(h => h.displayName)
+    const result = hosts.map((h) => h.displayName)
     redisCache.set('instancePeerData', JSON.stringify(result), 'EX', 3600 * 48)
     res.send(result)
     res.end()
   })
+
+  app.get(LITEPUB_CONTEXT_PATH, (req: Request, res: Response) => res.json(wafrnContext))
+  app.get(LEGACY_LITEPUB_CONTEXT_PATH, (req: Request, res: Response) => res.json(wafrnContext))
+  app.get('/contexts/identity-v1.jsonld', (req: Request, res: Response) => res.json(id_v1))
 }
 
 export { wellKnownRoutes }

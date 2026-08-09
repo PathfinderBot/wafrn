@@ -1,6 +1,20 @@
 import { Component, OnDestroy, OnInit, Signal, signal, inject, ChangeDetectionStrategy } from '@angular/core'
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router'
+import { MatCardModule } from '@angular/material/card'
+import { MatButtonModule } from '@angular/material/button'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatListModule } from '@angular/material/list'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatTabsModule } from '@angular/material/tabs'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { TranslateModule } from '@ngx-translate/core'
+import { PostComponent } from '../../components/post/post.component'
+import { UserSelectorComponent } from '../../components/user-selector/user-selector.component'
+import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
 import { faSearch } from '@fortawesome/free-solid-svg-icons'
 import { Subscription, filter } from 'rxjs'
 import { ProcessedPost } from '../../interfaces/processed-post'
@@ -9,20 +23,38 @@ import { DashboardService } from '../../services/dashboard.service'
 import { EnvironmentService } from '../../services/environment.service'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-search',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    PostComponent,
+    MatCardModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FontAwesomeModule,
+    MatListModule,
+    MatProgressSpinnerModule,
+    MatTabsModule,
+    BlogLinkDirective,
+    MatExpansionModule,
+    UserSelectorComponent,
+    TranslateModule
+  ],
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class SearchComponent implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService)
   private messages = inject(MessageService)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   protected loginService = inject(LoginService)
   private activatedRoute = inject(ActivatedRoute)
 
@@ -59,9 +91,9 @@ export class SearchComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.ngOnInit()
       })
-    this.updateFollowersSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.followedUsers = this.postService.followedUserIds
-      this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.updateFollowersSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.followedUsers = this.userOptionsService.followedUserIds
+      this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     })
   }
   ngOnDestroy(): void {
@@ -70,8 +102,8 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.followedUsers = this.postService.followedUserIds
-    this.notYetAcceptedFollows = this.postService.notYetAcceptedFollowedUsersIds
+    this.followedUsers = this.userOptionsService.followedUserIds
+    this.notYetAcceptedFollows = this.userOptionsService.notYetAcceptedFollowedUsersIds
     if (this.activatedRoute.snapshot.queryParamMap.get('uri')) {
       this.searchForm.patchValue({
         search: this.activatedRoute.snapshot.queryParamMap.get('uri')
@@ -144,7 +176,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   async followUser(id: string) {
-    const response = await this.postService.followUser(id)
+    const response = await this.userOptionsService.followUser(id)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -159,7 +191,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   async unfollowUser(id: string) {
-    const response = await this.postService.unfollowUser(id)
+    const response = await this.userOptionsService.unfollowUser(id)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -177,18 +209,18 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.loading.set(true)
     let success = await this.dashboardService.manageHashtagSubscription(
       tag,
-      !this.postService.followedHashtags.includes(tag.toLowerCase())
+      !this.userOptionsService.followedHashtags.includes(tag.toLowerCase())
     )
     if (success) {
       this.messages.add({
         severity: 'success',
         summary:
-          (this.postService.followedHashtags.includes(tag.toLowerCase())
+          (this.userOptionsService.followedHashtags.includes(tag.toLowerCase())
             ? 'You no longer follow the tag #'
             : 'You now follow the tag #') + tag
       })
     }
-    await this.postService.loadFollowers()
+    await this.userOptionsService.loadFollowers()
     this.loading.set(false)
   }
 

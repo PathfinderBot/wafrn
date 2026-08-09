@@ -2,15 +2,15 @@ import { Application, Response } from 'express'
 import { Follows, Notification, User } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 import { logger } from '../utils/logger.js'
-import {  } from '../utils/activitypub/remoteFollow.js'
-import { remoteUnfollow } from '../utils/activitypub/remoteUnfollow.js'
-import {  } from 'sequelize'
+import {} from '../activitypub/remoteFollow.js'
+import { remoteUnfollow } from '../activitypub/remoteUnfollow.js'
+import {} from 'sequelize'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { follow } from '../utils/follow.js'
+import { follow } from '../services/follow.js'
 import { redisCache } from '../utils/redis.js'
-import {  } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
+import {} from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
-import {  } from '../utils/cacheGetters/getMutedPosts.js'
+import {} from '../utils/cacheGetters/getMutedPosts.js'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js'
@@ -47,7 +47,7 @@ export default function followsRoutes(app: Application) {
           if (followResult.validationStatus == 'valid') {
             bskyFollowResult = followResult
             await forceUpdateCacheDidsAtThread({
-              addFollowedDid: userToBeFollowed.bskyDid as string,
+              addFollowedDid: userToBeFollowed.bskyDid as string
             })
           } else {
             return res.sendStatus(500)
@@ -100,16 +100,31 @@ export default function followsRoutes(app: Application) {
               followedId: userUnfollowed.id
             }
           })
-          if (follow?.bskyUri) {
+          let bskyFollowUriToDelete = follow?.bskyUri ?? null
+          if (!bskyFollowUriToDelete && userUnfollowed.isBlueskyUser && userUnfollowed.bskyDid) {
+            // Follows rows created/repaired by the bsky sync job never had bskyUri populated.
+            // Fall back to asking bsky directly for the AT-URI of our follow record before giving up.
+            const user = await User.findByPk(posterId)
+            if (user?.bskyDid) {
+              try {
+                const agent = await getAtProtoSession(user)
+                const profile = await agent.getProfile({ actor: userUnfollowed.bskyDid })
+                bskyFollowUriToDelete = profile.data.viewer?.following ?? null
+              } catch (error) {
+                logger.info({ message: 'error resolving missing bsky follow uri while unfollowing', error })
+              }
+            }
+          }
+          if (bskyFollowUriToDelete) {
             const user = await User.findByPk(posterId)
             if (user) {
               const agent = await getAtProtoSession(user)
-              await agent.deleteFollow(follow.bskyUri)
+              await agent.deleteFollow(bskyFollowUriToDelete)
               // we rather follow too many than not enough for a bit, cache will do the rest
               await forceUpdateCacheDidsAtThread({})
             }
           }
-          userUnfollowed.removeFollower(posterId)
+          await userUnfollowed.removeFollower(posterId)
           redisCache.del('follows:full:' + posterId)
           redisCache.del('follows:local:' + posterId)
           redisCache.del('follows:notYetAcceptedFollows:' + posterId)
@@ -130,6 +145,7 @@ export default function followsRoutes(app: Application) {
 
     const posterId = req.jwtData?.userId
     const muteQuotes = req.body?.muteQuotes
+    const hideReplies = req.body?.hideReplies
     const userId = req.body?.userId
     if (posterId && userId) {
       const existingFollow = await Follows.findOne({
@@ -140,10 +156,12 @@ export default function followsRoutes(app: Application) {
       })
       if (existingFollow) {
         success = true
-        if (!muteQuotes) {
-          existingFollow.muteRewoots = !existingFollow.muteRewoots
-        } else {
+        if (hideReplies) {
+          existingFollow.hideReplies = !existingFollow.hideReplies
+        } else if (muteQuotes) {
           existingFollow.muteQuotes = !existingFollow.muteQuotes
+        } else {
+          existingFollow.muteRewoots = !existingFollow.muteRewoots
         }
         await existingFollow.save()
       }

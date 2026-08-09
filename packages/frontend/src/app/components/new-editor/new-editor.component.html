@@ -1,4 +1,4 @@
-@let showBlueskyOptions = postService.enableBluesky && (!data?.post || data?.post?.bskyUri) && privacy === 0;
+@let showBlueskyOptions = userOptionsService.enableBluesky && (!data?.post || data?.post?.bskyUri) && privacy === 0;
 <mat-card appearance="outlined" class="pb-3 mb-4 lg:mx-4 wafrn-container wafrn-post-editor">
   <div class="pt-3 px-3 below-editor-toolbar">
     <div class="below-editor-toolbar-leftside">
@@ -12,7 +12,7 @@
         attr.aria-label="{{ 'editor.ariaLabelWootPrivacy' | translate }}"
         class="input-height-btn"
         [matTooltip]="getPrivacyIconName()"
-        [disabled]="editing"
+        [disabled]="privacyEditingDisabled"
       >
         <fa-icon size="lg" [icon]="getPrivacyIcon()"></fa-icon>
       </button>

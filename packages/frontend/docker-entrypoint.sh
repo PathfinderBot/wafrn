@@ -16,6 +16,13 @@ perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/index.html
 perl -pi -e 's/\$\{\{([_A-Z]+):-(.*)\}\}/$ENV{$1}||$2/ge' /var/www/html/frontend/manifest.webmanifest
 perl -pi -e 's/\$\{\{([_A-Z]+)\}\}/$ENV{$1}/g' /var/www/html/frontend/manifest.webmanifest
 
+for f in index.html manifest.webmanifest; do
+  hash=$(sha1sum "/var/www/html/frontend/$f" | awk '{ print $1 }')
+  tmp_file=$(mktemp)
+  jq --arg key "/$f" --arg hash "$hash" '.hashTable[$key] = $hash' /var/www/html/frontend/ngsw.json > "$tmp_file"
+  mv "$tmp_file" /var/www/html/frontend/ngsw.json
+done
+
 /overrides.sh /overrides /var/www/html/frontend/ngsw.json
 
 exec "$@"

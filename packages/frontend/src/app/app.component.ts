@@ -17,19 +17,21 @@ import { SwPush } from '@angular/service-worker'
 import { Title } from '@angular/platform-browser'
 import { GlobalData } from './services/global-data.service'
 import { WebsocketService } from './services/websocket.service'
-import { NavigationError, Router } from '@angular/router'
+import { NavigationError, Router, RouterOutlet } from '@angular/router'
 import { filter, map } from 'rxjs'
 import { MessageService } from './services/message.service'
 import { supportedLanguages } from './lists/languages'
 import { ThemeService } from './services/theme.service'
-import { PostsService } from './services/posts.service'
+import { UserOptionsService } from './services/user-options.service'
+import { HotkeyManagerComponent } from './components/hotkey-manager/hotkey-manager.component'
+import { ThemeManagerComponent } from './components/theme-manager/theme-manager.component'
 
 @Component({
   selector: 'app-root',
+  imports: [RouterOutlet, HotkeyManagerComponent, ThemeManagerComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class AppComponent implements OnInit {
   private swUpdate = inject(SwUpdate)
@@ -43,7 +45,7 @@ export class AppComponent implements OnInit {
   private router = inject(Router)
   private messages = inject(MessageService)
   private titleService = inject(Title)
-  private postService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
 
   title = 'wafrn'
 
@@ -59,7 +61,11 @@ export class AppComponent implements OnInit {
     GlobalData.appDefaultTitle = this.title
 
     this.translateService.addLangs([...supportedLanguages])
-    this.translateService.setDefaultLang('en')
+    const environmentDefaultLanguage = EnvironmentService.environment.defaultLanguageCode
+    const isSupportedLanguage =
+      typeof environmentDefaultLanguage === 'string' &&
+      (supportedLanguages as readonly string[]).includes(environmentDefaultLanguage)
+    this.translateService.setDefaultLang(isSupportedLanguage ? environmentDefaultLanguage : 'en')
 
     // User specified language
     const userLanguage = localStorage?.getItem('appLanguage')
@@ -377,6 +383,6 @@ export class AppComponent implements OnInit {
     }
     */
 
-    this.postService.loadFollowers().then(() => {})
+    this.userOptionsService.loadFollowers().then(() => {})
   }
 }

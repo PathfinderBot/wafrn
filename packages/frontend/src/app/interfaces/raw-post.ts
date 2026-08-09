@@ -3,7 +3,7 @@ import { WafrnMedia } from './wafrn-media'
 import { Tag } from './tag'
 import { WafrnMention } from './wafrn-mention'
 import { Emoji } from './emoji'
-import { QuestionPoll } from './questionPoll'
+import { QuestionPoll } from './question-poll'
 
 export interface RawPost {
   id: string

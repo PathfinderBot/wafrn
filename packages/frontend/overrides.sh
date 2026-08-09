@@ -46,6 +46,6 @@ rm -f "${tmp_file}.new"
 copy_target=$(dirname "$HASH_TABLE_FILE")
 
 # once hashes have been replaced, copy the overrides to the original folder
-cp -af "$OVERRIDES_FOLDER"/* "$copy_target"
+cp -rf "$OVERRIDES_FOLDER"/* "$copy_target"
 
 echo "Done! updated $HASH_TABLE_FILE with the new hashes"
