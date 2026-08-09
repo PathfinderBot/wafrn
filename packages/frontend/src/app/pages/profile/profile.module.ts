@@ -44,6 +44,10 @@ import { loginRequiredGuard } from '../../guards/login-required.guard'
         loadComponent: () => import('../../pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
       {
+        path: 'myDrafts',
+        loadComponent: () => import('../../pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
+      },
+      {
         path: 'importFollows',
         loadComponent: () =>
           import('./import-followers/import-followers.component').then((m) => m.ImportFollowersComponent)

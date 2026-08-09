@@ -54,6 +54,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   level = 1
   timestamp = new Date().getTime()
   title = 'menu.dashboard'
+  emptyMessage = 'dashboard.notFollowingAnyone'
   updateFollowersSubscription?: Subscription
   navigationSubscription!: Subscription
   scroll = 0
@@ -97,22 +98,32 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     if (purePath.endsWith('explore')) {
       this.level = 0
       this.title = 'menu.exploreFediverse'
+      this.emptyMessage = 'dashboard.noPostsFound'
     }
     if (purePath.endsWith('exploreLocal')) {
       this.level = 2
       this.title = 'menu.exploreWafrn'
+      this.emptyMessage = 'dashboard.noPostsFound'
     }
     if (purePath.endsWith('private')) {
       this.level = 10
       this.title = 'menu.privateMessages'
+      this.emptyMessage = 'dashboard.noPrivateMessages'
     }
     if (purePath.endsWith('silencedPosts')) {
       this.level = 25
       this.title = 'menu.silencedPosts'
+      this.emptyMessage = 'dashboard.noSilencedPosts'
     }
     if (purePath.endsWith('bookmarkedPosts')) {
       this.level = 50
       this.title = 'menu.bookmarkedPosts'
+      this.emptyMessage = 'dashboard.noBookmarkedPosts'
+    }
+    if (purePath.endsWith('myDrafts')) {
+      this.level = 30
+      this.title = 'menu.myDrafts'
+      this.emptyMessage = 'dashboard.noDrafts'
     }
     this.simpleTitle.set(this.title)
   }

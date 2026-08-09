@@ -39,7 +39,8 @@ import {
   faPencil,
   faQuestion,
   faAngleDown,
-  faMessage
+  faMessage,
+  faFileLines
 } from '@fortawesome/free-solid-svg-icons'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
@@ -137,7 +138,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     { level: 2, name: 'This instance only', icon: faServer },
     { level: 1, name: 'Followers only', icon: faUser },
     { level: 10, name: 'Direct Message', icon: faEnvelope },
-    { level: 20, name: 'Link Only', icon: faNewspaper }
+    { level: 20, name: 'Link Only', icon: faNewspaper },
+    { level: 30, name: 'Draft', icon: faFileLines }
   ]
   quoteOpen = false
   data: EditorData | undefined
@@ -491,6 +493,11 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   get privacyOption() {
     return this.privacyOptions.find((elem) => elem.level === this.privacy)
+  }
+
+  get privacyEditingDisabled() {
+    // Drafts (level 30) can always have their privacy changed, so they can be published later
+    return this.editing && this.data?.post?.privacy !== 30
   }
 
   getPrivacyIcon() {

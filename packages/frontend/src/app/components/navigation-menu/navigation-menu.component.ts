@@ -61,7 +61,8 @@ import {
   faInbox,
   faVolumeXmark,
   faBellSlash,
-  faRoadBarrier
+  faRoadBarrier,
+  faFileLines
 } from '@fortawesome/free-solid-svg-icons'
 
 import buildData from '../../../buildData.json'
@@ -537,6 +538,15 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
             icon: faBellSlash,
             visible: () => this.loginService.loggedIn.value,
             routerLink: '/profile/silencedPosts',
+            command: () => {
+              this.hideMenu()
+            }
+          },
+          {
+            label: 'menu.myDrafts',
+            icon: faFileLines,
+            visible: () => this.loginService.loggedIn.value,
+            routerLink: '/profile/myDrafts',
             command: () => {
               this.hideMenu()
             }

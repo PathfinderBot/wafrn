@@ -12,7 +12,7 @@
         attr.aria-label="{{ 'editor.ariaLabelWootPrivacy' | translate }}"
         class="input-height-btn"
         [matTooltip]="getPrivacyIconName()"
-        [disabled]="editing"
+        [disabled]="privacyEditingDisabled"
       >
         <fa-icon size="lg" [icon]="getPrivacyIcon()"></fa-icon>
       </button>

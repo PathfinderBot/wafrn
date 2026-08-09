@@ -222,6 +222,7 @@
     "more": "More",
     "silencedPosts": "Silenced Woots",
     "bookmarkedPosts": "Bookmarked woots",
+    "myDrafts": "My drafts",
     "settings": {
       "title": "Settings",
       "follows": "Manage followers",
@@ -1072,6 +1073,11 @@
   },
   "dashboard": {
     "notFollowingAnyone": "You dont seem to be following anyone!",
-    "exploreLinks": "<a href=\"/dashboard/exploreLocal\">Click here to go to the explore page</a>"
+    "exploreLinks": "<a href=\"/dashboard/exploreLocal\">Click here to go to the explore page</a>",
+    "noPostsFound": "No posts found here!",
+    "noPrivateMessages": "You have no private messages!",
+    "noSilencedPosts": "No silenced woots to show!",
+    "noDrafts": "You have no drafts!",
+    "noBookmarkedPosts": "You have no bookmarked woots!"
   }
 }
