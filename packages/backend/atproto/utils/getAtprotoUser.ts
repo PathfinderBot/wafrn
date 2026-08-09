@@ -98,6 +98,72 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
         })
   // sometimes we can get the dids and if its a local user we just return it and thats it
   if (userFound && userFound.email) {
+    if (userFound.bskyDid) {
+      try {
+        const doc = await getDidDoc(userFound.bskyDid, options?.ignoreCache == true)
+        const currentHandle = doc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+        if (currentHandle && userFound.alternateUrl !== '@' + currentHandle) {
+          const newAlternateUrl = '@' + currentHandle
+          const lowerNewAlternateUrl = newAlternateUrl.toLowerCase()
+
+          // free up anyone squatting the value on alternateUrl, no questions asked
+          const alternateUrlConflict = await User.findOne({
+            where: {
+              id: { [Op.ne]: userFound.id },
+              [Op.and]: sequelize.where(sequelize.fn('lower', sequelize.col('alternateUrl')), lowerNewAlternateUrl)
+            }
+          })
+          if (alternateUrlConflict) {
+            alternateUrlConflict.alternateUrl = undefined
+            await alternateUrlConflict.save()
+          }
+
+          const urlConflict = await User.findOne({
+            where: {
+              id: { [Op.ne]: userFound.id },
+              [Op.and]: sequelize.where(sequelize.fn('lower', sequelize.col('url')), lowerNewAlternateUrl)
+            }
+          })
+
+          let canUpdate = true
+          if (urlConflict) {
+            if (urlConflict.email) {
+              // another local user owns that url, leave everyone alone
+              canUpdate = false
+            } else {
+              // bsky-mirrored user: force a refresh, it might just have moved on already
+              try {
+                const refreshedConflict = urlConflict.bskyDid
+                  ? await getAtprotoUser(urlConflict.bskyDid, { ignoreCache: true })
+                  : undefined
+                if (!refreshedConflict || refreshedConflict.url.toLowerCase() === lowerNewAlternateUrl) {
+                  throw new Error('Conflicting bsky-mirrored user url did not change after forced refresh')
+                }
+              } catch (error) {
+                logger.debug({
+                  message: 'Forced refresh of conflicting bsky-mirrored user failed, marking its url invalid',
+                  userId: urlConflict.id,
+                  error
+                })
+                urlConflict.url = `@handle.invalid_${urlConflict.bskyDid}_${new Date().getTime()}`
+                await urlConflict.save()
+              }
+            }
+          }
+
+          if (canUpdate) {
+            userFound.alternateUrl = newAlternateUrl
+            await userFound.save()
+          }
+        }
+      } catch (error) {
+        logger.debug({
+          message: 'Problem checking bsky handle for local user',
+          userId: userFound.id,
+          error
+        })
+      }
+    }
     return (await User.findByPk(userFound.id)) as User
   }
   const did = handle.startsWith('did:')

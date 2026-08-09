@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { RouterModule } from '@angular/router'
 import { MatCardModule } from '@angular/material/card'
 import { MatDatepickerModule } from '@angular/material/datepicker'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -19,6 +20,7 @@ import { MessageService } from '../../services/message.service'
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterModule,
     MatCardModule,
     MatDatepickerModule,
     MatFormFieldModule,
