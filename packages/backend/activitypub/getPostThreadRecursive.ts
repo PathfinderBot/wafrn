@@ -795,20 +795,18 @@ async function getPostThreadRecursive(
         try {
           await addAsksToPost(newPost, fediTags)
         } catch (error) {}
-        if (mentionedUsersIds.length != 0) {
-          // check if detached
-          if (parent?.detached) {
-            detachedReply = true
-          }
-          if (!detachedReply && parent && (await getAllLocalUserIdsSet()).has(parent.userId)) {
-            detachedReply = !(await canInteract(parent.replyControl, newPost.userId, parent.id))
-          }
-          if (detachedReply) {
-            newPost.detached = true
-            await newPost.save()
-          }
-          await processMentions(newPost, mentionedUsersIds, detachedReply)
+        // check if detached
+        if (parent?.detached) {
+          detachedReply = true
         }
+        if (!detachedReply && parent && (await getAllLocalUserIdsSet()).has(parent.userId)) {
+          detachedReply = !(await canInteract(parent.replyControl, newPost.userId, parent.id))
+        }
+        if (detachedReply) {
+          newPost.detached = true
+          await newPost.save()
+        }
+        await processMentions(newPost, mentionedUsersIds, detachedReply)
         await loadPoll(remotePostObject, newPost, user)
         const postCleanContent = dompurify.sanitize(newPost.content, { ALLOWED_TAGS: [] }).trim()
         const mentions = await newPost.getMentionPost()

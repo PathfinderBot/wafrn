@@ -17,7 +17,7 @@ async function UpdateActivity(body: activityPubObject, remoteUser: User, user: U
           remotePostId: apObject.id
         }
       })
-      await getPostThreadRecursive(user, apObject.id, apObject.object, localPost ? localPost.id : undefined)
+      await getPostThreadRecursive(user, apObject.id, apObject, localPost ? localPost.id : undefined)
       // await signAndAccept({ body: body }, remoteUser, user)
       break
     }
