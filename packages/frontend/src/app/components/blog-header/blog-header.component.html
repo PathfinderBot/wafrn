@@ -11,7 +11,7 @@
       </div>
       <div class="flex">
         <div>
-          @if (atprotoProfileUrl()) {
+          @if (atprotoProfileUrl() && isMe) {
             <a
               matButton="outlined"
               style="width: 40px; padding: 0; margin-right: 4px"
@@ -93,6 +93,14 @@
             }
           </div>
           <mat-menu #menu="matMenu" xPosition="before">
+            @if (blog.isBlueskyUser && atprotoProfileUrl()) {
+              <a [href]="atprotoProfileUrl()" target="_blank" mat-menu-item>
+                <span class="flex gap-2">
+                  <fa-icon [fixedWidth]="true" [icon]="bskyIcon"></fa-icon>
+                  {{ 'blog.viewOnAtproto' | translate }}
+                </span>
+              </a>
+            }
             @if (!blog.muted) {
               <button (click)="muteAccount()" mat-menu-item class="dangerous-option">
                 <span class="flex gap-2">
