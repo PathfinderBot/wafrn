@@ -49,6 +49,9 @@ export class AudioService {
     const source = this.audioContext.createBufferSource()
     const soundFile = audioMap[name]
     try {
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume()
+      }
       let audio = this.audios.get(soundFile)
       if (!audio) {
         const audioFile = await fetch(soundFile)

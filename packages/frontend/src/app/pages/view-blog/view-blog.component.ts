@@ -285,7 +285,6 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
 
     this.loading.set(true)
     const currentTab = this.activeTabName()
-    console.log(currentTab)
     const tmpPosts = await this.dashboardService.getBlogPage(
       page,
       this.blogUrl,
