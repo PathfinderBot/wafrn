@@ -15,7 +15,7 @@ import {
   PostTag
 } from '../models/index.js'
 import { Job } from 'bullmq'
-import { Privacy } from '../models/post.js'
+import { InteractionControl, Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getQueue } from '../utils/queues.js'
 import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
@@ -84,9 +84,16 @@ async function prepareSendRemotePostWorker(job: Job) {
     // so the post actually stays held until the parent owner's Accept comes back.
     if (post.waitToSendPost) {
       const immediateParent = parents.find((elem) => elem.id === post.parentId)
-      if (immediateParent?.user?.remoteInbox) {
+      // a SameAsOp replyControl means the immediate parent is only relaying the root post's policy - the
+      // root's owner is the one who actually has to Accept/Reject, so that's who we ask (mirrors
+      // canInteract's own SameAsOp handling, and the equivalent resolution in routes/posts.ts).
+      const isSameAsOp = !post.isReblog && immediateParent?.replyControl === InteractionControl.SameAsOp
+      const requestTarget = isSameAsOp
+        ? (parents.find((elem) => elem.id === immediateParent?.rootId) ?? immediateParent)
+        : immediateParent
+      if (requestTarget?.user?.remoteInbox) {
         const parentUrl =
-          immediateParent.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${immediateParent.id}`
+          requestTarget.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${requestTarget.id}`
         const requestType = post.isReblog ? 'AnnounceRequest' : 'ReplyRequest'
         const requestPathSegment = post.isReblog ? 'announce_request' : 'reply_request'
         const requestToSend: activityPubObject = {
@@ -99,10 +106,10 @@ async function prepareSendRemotePostWorker(job: Job) {
           type: requestType,
           object: parentUrl,
           instrument: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
-          to: [immediateParent.user.remoteId || parentUrl]
+          to: [requestTarget.user.remoteId || parentUrl]
         }
         try {
-          await postPetitionSigned(requestToSend, localUser, immediateParent.user.remoteInbox)
+          await postPetitionSigned(requestToSend, localUser, requestTarget.user.remoteInbox)
         } catch (error) {
           logger.info({
             message: `Error sending ${requestType}`,

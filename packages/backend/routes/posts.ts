@@ -590,6 +590,9 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             (req.body.tags ? req.body.tags.trim : '') == ''
           )
           let manualApprovalPending = false
+          // a top-level parent (nothing above it in the thread) has no rootId of its own - it IS the root,
+          // so fall back to it directly instead of looking up a rootId that doesn't exist
+          const initialPost = parent ? (parent.rootId ? await Post.findByPk(parent.rootId) : parent) : undefined
           if (parent) {
             const control = isReblog ? parent.reblogControl : parent.replyControl
             if (!(await canInteract(control, posterId, parent.id))) {
@@ -599,9 +602,11 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
                 message: `This post has interaction controls and you do not have permisions to ${isReblog ? 'reblog' : 'reply to'} it`
               })
             }
-            // FEP-6fce: the owner is always auto-allowed, and mentioned users can always reply
-            // automatically (this only applies to replies, not reblogs), so neither is held pending.
-            if (requiresManualApproval(control) && parent.userId !== posterId) {
+
+            const policyPost =
+              !isReblog && control === InteractionControl.SameAsOp && initialPost ? initialPost : parent
+            const effectiveControl = isReblog ? parent.reblogControl : policyPost.replyControl
+            if (requiresManualApproval(effectiveControl) && policyPost.userId !== posterId) {
               const parentMentions = isReblog ? [] : await parent.getMentionPost()
               const posterIsMentionedByParent = parentMentions.some((mentioned: any) => mentioned.id === posterId)
               manualApprovalPending = !posterIsMentionedByParent
@@ -617,7 +622,6 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          const initialPost = parent ? await Post.findByPk(parent.rootId as string) : undefined
           if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }

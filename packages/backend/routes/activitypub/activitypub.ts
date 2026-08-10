@@ -1,7 +1,7 @@
 import { Application, Request, Response } from 'express'
 import { Op } from 'sequelize'
 import { User, Emoji, sequelize, Quotes, Post } from '../../models/index.js'
-import { Privacy } from '../../models/post.js'
+import { InteractionControl, Privacy } from '../../models/post.js'
 import { getCheckFediverseSignatureFunction } from '../../activitypub/checkFediverseSignature.js'
 import { return404 } from '../../utils/return404.js'
 import { getQueue } from '../../utils/queues.js'
@@ -140,7 +140,15 @@ async function getPostForInteractionRequestCache(postId: string): Promise<any | 
     const post: any = await Post.findByPk(postId, {
       include: [
         { model: User, as: 'user' },
-        { model: Post, as: 'parent', include: [{ model: User, as: 'user' }] }
+        {
+          model: Post,
+          as: 'parent',
+          include: [
+            { model: User, as: 'user' },
+            // needed to resolve a SameAsOp parent.replyControl down to the root post's own policy/owner
+            { model: Post, as: 'root', include: [{ model: User, as: 'user' }] }
+          ]
+        }
       ]
     })
     if (post) {
@@ -554,6 +562,11 @@ function activityPubRoutes(app: Application) {
       const post: any = await getPostForInteractionRequestCache(req.params.id)
       const data = post?.dataValues
       if (data?.parent) {
+        // a SameAsOp parent only relays the root post's policy - reconstruct against the same target
+        // (the root) that prepareSendRemotePost.ts actually sent the request to.
+        const requestTarget = data.parent.replyControl === InteractionControl.SameAsOp && data.parent.root
+          ? data.parent.root
+          : data.parent
         const objectToSend: activityPubObject = {
           '@context': [
             'https://www.w3.org/ns/activitystreams',
@@ -562,7 +575,7 @@ function activityPubRoutes(app: Application) {
           actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${data.user.url.toLowerCase()}`,
           id: `${completeEnvironment.frontendUrl}/fediverse/reply_request/${data.id}`,
           type: 'ReplyRequest',
-          object: data.parent.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${data.parent.id}`,
+          object: requestTarget.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${requestTarget.id}`,
           instrument: `${completeEnvironment.frontendUrl}/fediverse/post/${data.id}`
         }
         res.send(objectToSend)
