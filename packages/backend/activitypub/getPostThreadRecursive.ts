@@ -38,6 +38,7 @@ import { canInteract } from '../services/baseQueryNew.js'
 import { getAllLocalUserIdsSet } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { getQueue } from '../utils/queues.js'
 import { filterLanguageCode } from '../utils/languages.js'
+import extractMediaFromHtmlPost from '../services/extractMediaFromHtmlPost.js'
 
 const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
@@ -513,6 +514,14 @@ async function getPostThreadRecursive(
               postTextContent = '' + postTextContent + `<a href="${remoteFile.href}" >${remoteFile.href}</a>`
             }
           }
+        }
+        if (!remoteUser.banned || options?.allowMediaFromBanned) {
+          postTextContent = await extractMediaFromHtmlPost(
+            postTextContent,
+            medias,
+            postPetition,
+            remoteUserServerBaned || remoteUser.banned ? (await deletedUser)?.id : remoteUser.id
+          )
         }
         const lemmyName = postPetition.name ? postPetition.name : ''
         postTextContent = postTextContent ? postTextContent : `<p>${lemmyName}</p>`
