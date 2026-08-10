@@ -132,6 +132,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@atproto/dev-env": "^0.5.44",
     "@types/node": "^25.6.0",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.13.0",

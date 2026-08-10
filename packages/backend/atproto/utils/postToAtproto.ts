@@ -140,7 +140,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         }
       ]
     })
-    if (quotedPost?.bskyUri) {
+    if (quotedPost?.bskyUri && quotedPost?.bskyCid) {
       bskyQuote = {
         $type: 'app.bsky.embed.record',
         record: {
@@ -561,15 +561,16 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     // ok this post is in reply to something
     const parent = await Post.findByPk(post.parentId)
     const rootPost = await Post.findByPk(post.rootId as string)
-
-    res.reply = {
-      root: {
-        uri: rootPost?.bskyUri,
-        cid: rootPost?.bskyCid
-      },
-      parent: {
-        uri: parent?.bskyUri,
-        cid: parent?.bskyCid
+    if (parent?.bskyUri && parent?.bskyCid && rootPost?.bskyUri && rootPost?.bskyCid) {
+      res.reply = {
+        root: {
+          uri: rootPost.bskyUri,
+          cid: rootPost.bskyCid
+        },
+        parent: {
+          uri: parent.bskyUri,
+          cid: parent.bskyCid
+        }
       }
     }
   }
