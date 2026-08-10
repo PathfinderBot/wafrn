@@ -68,7 +68,6 @@ export class NotificationsComponent implements OnInit {
   }
 
   async loadNotificationsV2(page: number) {
-    console.log(window.location.href)
     const notifications = await this.notificationsService.getNotificationsScrollV2(
       page,
       window.location.href.endsWith('detached')

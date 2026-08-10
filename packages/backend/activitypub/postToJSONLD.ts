@@ -279,7 +279,7 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
   if (misskeyQuoteURL?.startsWith('https://bsky.app/')) {
     misskeyQuoteURL = null
   }
-  let canReply: string[] = []
+  const canReply: string[] = []
   const canReplyManual: string[] = []
   const canAnnounce: string[] = []
   const canAnnounceManual: string[] = []
@@ -305,7 +305,7 @@ ${(await htmlToMfm(ask.question)).replaceAll('[', '').replaceAll(']', '')}]]\n\n
     replyAudience.push('sameAsInitialPost')
   }
   // mentionedUsers will always bee able to reply automatically, regardless of manualApproval settings
-  canReply = canReply.concat(mentionedUsers)
+  canReply.push(...mentionedUsers)
   if (
     [
       InteractionControl.Followers,

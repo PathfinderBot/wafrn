@@ -128,11 +128,7 @@ async function getQuoteByQuoterAndQuotedPostIdCache(
   }
 }
 
-// FEP-6fce: backs the reply_request/announce_request/reply_authorization/announce_authorization routes
-// below. Note: unlike the quote getters above, nested associations here are read without a further
-// `.dataValues` hop (`post.dataValues.parent.user`, not `post.dataValues.parent.dataValues.user`), since
-// that second hop only exists on the live Sequelize instance (cache miss) and not on the plain object we
-// get back from JSON.parse on a cache hit.
+
 async function getPostForInteractionRequestCache(postId: string): Promise<any | undefined> {
   const cacheKey = `postInteractionRequest:${postId}`
   let cacheResult = await redisCache.get(cacheKey)
@@ -145,7 +141,6 @@ async function getPostForInteractionRequestCache(postId: string): Promise<any | 
           as: 'parent',
           include: [
             { model: User, as: 'user' },
-            // needed to resolve a SameAsOp parent.replyControl down to the root post's own policy/owner
             { model: Post, as: 'root', include: [{ model: User, as: 'user' }] }
           ]
         }
