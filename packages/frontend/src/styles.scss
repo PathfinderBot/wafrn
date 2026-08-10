@@ -325,13 +325,12 @@ body {
 
 /* Horizontal Media Carousel. Disabled by default. */
 .media-gallery.media-carousel {
-  --media-height: clamp(512px, 40vh, 900px);
-  // --media-width: clamp(512px, 60vw, 1200px);
-  --media-width: fit-content;
+  --media-height: max(fit-content, 256px);
+  --media-width: max(fit-content, 256px);
   flex-direction: row !important;
+  align-items: center;
   gap: 12px !important;
   scrollbar-width: auto;
-  // scroll snap!!!
   overflow-x: scroll;
   scroll-snap-type: x mandatory;
 
@@ -339,6 +338,8 @@ body {
   app-wafrn-media {
     box-sizing: border-box;
     width: var(--media-width);
+    height: 100%;
+    max-height: 90dvh;
     flex-shrink: 0;
     border-radius: var(--mat-sys-corner-small);
     max-width: 95%;
@@ -353,12 +354,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: var(--media-height);
-    width: var(--media-width);
-    img {
-      height: var(--media-height);
-      width: var(--media-width);
-    }
+    height: 100%;
+    width: fit-content;
     border-radius: var(--mat-sys-corner-small);
   }
 
@@ -367,7 +364,7 @@ body {
   }
 
   .displayed-image {
-    // height: var(--media-height);
+    height: var(--media-height);
     border-radius: var(--mat-sys-corner-small) !important;
   }
 }
