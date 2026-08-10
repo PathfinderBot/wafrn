@@ -36,7 +36,7 @@
     "@ngx-translate/core": "^16.0.4",
     "@ngx-translate/http-loader": "^16.0.1",
     "@tsparticles/confetti": "^4.3.2",
-    "@wafrn/blend": "^0.2.6",
+    "@wafrn/blend": "^0.3.0",
     "blurhash": "^2.0.5",
     "core-js": "^3.37.0",
     "esbuild": "0.25.0",

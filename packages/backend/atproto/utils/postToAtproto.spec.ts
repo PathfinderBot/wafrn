@@ -98,6 +98,10 @@ vi.mock('../../utils/optimizeMedia.js', () => ({
 
 const { postToAtproto } = await import('./postToAtproto.js')
 
+// These tests can take long because network is used even if its an internal PDS
+// so lets put a high timeout
+vi.setConfig({ testTimeout: 30_000 })
+
 let network: TestNetworkNoAppView
 // due library shenanigans, we need to use any on tests. HEY WE GOT TESTS DONT COMPLAIN
 let agent: ReturnType<TestNetworkNoAppView['pds']['getAgent']>

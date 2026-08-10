@@ -38,7 +38,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { TranslatePipe } from '@ngx-translate/core'
 import { delay, firstValueFrom, of, Subject, switchMap, takeUntil } from 'rxjs'
-import { PostLinkDirective } from '../../directives/post-link/post-link.directive'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { DashboardService } from '../../services/dashboard.service'
 import { DeletePostService } from '../../services/delete-post.service'
@@ -60,7 +59,6 @@ export type ReplyBarItem = replyBarItemsVariants[number]
     FontAwesomeModule,
     MatButtonModule,
     MatTooltipModule,
-    PostLinkDirective,
     MatMenuModule,
     TranslatePipe
   ],

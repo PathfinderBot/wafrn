@@ -20,7 +20,6 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { TranslateModule } from '@ngx-translate/core'
 import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
-import { PostLinkDirective } from '../../../directives/post-link/post-link.directive'
 import { ReportFilter, parseReportFilter } from '../../../grammars/report-grammar'
 import { AdminService, UserReport } from '../../../services/admin.service'
 import { DeletePostService } from '../../../services/delete-post.service'
@@ -40,7 +39,6 @@ import { SimpleTitleService } from '../../../services/simple-title.service'
     MatCheckboxModule,
     MatButtonModule,
     AvatarSmallComponent,
-    PostLinkDirective,
     TranslateModule,
     MatExpansionModule
   ],

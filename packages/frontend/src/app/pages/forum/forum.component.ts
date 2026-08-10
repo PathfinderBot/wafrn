@@ -17,7 +17,6 @@ import { PostHeaderComponent } from '../../components/post/post-header/post-head
 import { PostComponent } from '../../components/post/post.component'
 import { SnappyCreate } from '../../components/snappy/snappy-life'
 import { SnappyRouter, snappyInject } from '../../components/snappy/snappy-router.component'
-import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
 import { PostLinkDirective, SnappyPostData } from '../../directives/post-link/post-link.directive'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
@@ -45,7 +44,6 @@ import { SimpleTitleService } from '../../services/simple-title.service'
     BottomReplyBarComponent,
     PostRibbonComponent,
     PostLinkDirective,
-    BlogLinkDirective,
     TranslatePipe
   ],
   templateUrl: './forum.component.html',

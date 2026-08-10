@@ -8,7 +8,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { CommonModule, DatePipe } from '@angular/common'
+import { CommonModule } from '@angular/common'
 import { Meta } from '@angular/platform-browser'
 import { ActivatedRoute, RouterModule } from '@angular/router'
 import {
@@ -30,12 +30,9 @@ import { MatButtonModule } from '@angular/material/button'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { MatMenuModule } from '@angular/material/menu'
 import { TranslatePipe } from '@ngx-translate/core'
-import { LoaderComponent } from '../../components/loader/loader.component'
 import { BlogHeaderComponent } from '../../components/blog-header/blog-header.component'
 import { InfoCardComponent } from '../../components/info-card/info-card.component'
 import { PagenotfoundComponent } from '../pagenotfound/pagenotfound.component'
-import { ForumComponent } from '../forum/forum.component'
-import { PostComponent } from '../../components/post/post.component'
 import { PostListComponent } from '../../components/post-list/post-list.component'
 import { SnappyHide, SnappyShow } from '../../components/snappy/snappy-life'
 import { SnappyRouter, snappyInject } from '../../components/snappy/snappy-router.component'
@@ -57,21 +54,17 @@ import { ThemeService } from '../../services/theme.service'
   imports: [
     CommonModule,
     RouterModule,
-    PostComponent,
     MatProgressSpinnerModule,
     MatCardModule,
     MatButtonModule,
     FontAwesomeModule,
     MatMenuModule,
-    LoaderComponent,
     BlogHeaderComponent,
     InfoCardComponent,
     PagenotfoundComponent,
-    ForumComponent,
     PostListComponent,
     MatTabsModule,
-    TranslatePipe,
-    DatePipe
+    TranslatePipe
   ],
   templateUrl: './view-blog.component.html',
   styleUrls: ['./view-blog.component.scss'],

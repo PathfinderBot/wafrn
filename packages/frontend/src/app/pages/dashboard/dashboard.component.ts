@@ -8,7 +8,6 @@ import { MatCardModule } from '@angular/material/card'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { PostListComponent } from '../../components/post-list/post-list.component'
-import { ForumComponent } from '../forum/forum.component'
 import { Subscription, Subject, throttleTime, asyncScheduler, filter } from 'rxjs'
 import { SnappyCreate, SnappyShow, SnappyHide } from '../../components/snappy/snappy-life'
 import { ProcessedPost } from '../../interfaces/processed-post'
@@ -25,7 +24,6 @@ import { SimpleTitleService } from '../../services/simple-title.service'
     MatProgressSpinnerModule,
     MatButtonModule,
     FontAwesomeModule,
-    ForumComponent,
     MatCardModule,
     PostListComponent,
     TranslateModule
