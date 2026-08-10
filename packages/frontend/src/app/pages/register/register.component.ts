@@ -11,8 +11,10 @@ import { MatSelectModule } from '@angular/material/select'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatCheckbox } from '@angular/material/checkbox'
+import { MatStepperModule } from '@angular/material/stepper'
+import { MatIconModule } from '@angular/material/icon'
 import { InfoCardComponent } from '../../components/info-card/info-card.component'
-import { faArrowRight, faEye, faEyeSlash, faUpload, faUserPlus } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRight, faEye, faEyeSlash, faUpload, faUserPlus, faPenToSquare } from '@fortawesome/free-solid-svg-icons'
 import { Router } from '@angular/router'
 import { EnvironmentService } from '../../services/environment.service'
 import { JwtService } from '../../services/jwt.service'
@@ -31,6 +33,8 @@ import { SimpleDialogService } from '../../services/simple-dialog.service'
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatStepperModule,
+    MatIconModule,
     FontAwesomeModule,
     MatSelectModule,
     InfoCardComponent,
@@ -69,6 +73,7 @@ export class RegisterComponent {
   faEyeSlash = faEyeSlash
   faUpload = faUpload
   submitIcon = faArrowRight
+  editIcon = faPenToSquare
 
   minimumRegistrationDate: Date
   minDate: Date
