@@ -74,8 +74,11 @@ vi.mock('fs/promises', async (importOriginal) => {
 })
 
 vi.mock('sharp', () => ({
-  default: vi.fn(() => ({
-    metadata: vi.fn().mockResolvedValue({ width: 800, height: 600, pages: 1 })
+  default: vi.fn((path: string) => ({
+    metadata: () =>
+      typeof path === 'string' && path.includes('broken')
+        ? Promise.reject(new Error('unsupported image format'))
+        : Promise.resolve({ width: 800, height: 600, pages: 1 })
   }))
 }))
 
@@ -154,5 +157,59 @@ describe('postToAtproto against a real local PDS', () => {
       rkey: written.uri.split('/').pop()!
     })
     expect((fetched.data.value as Record<string, { $type?: string }>).embed?.$type).toBe('app.bsky.embed.images')
+  })
+
+  // what totaly not an example post
+  it('creates a post for a long, many-image submission that mentions several fedi users', async () => {
+    const longPostWithManyMentions = `This is going to be a long post with many images. Click on "See complete post at…" or "Open remote link" or similar for the full experience.
+
+This is Minka, my fursona, a pretty standard furry-ish kemonomimi (at least compared to my other characters). Co-designed by @arkenaya.eurosky.social and Shadin Art (Twitter: shadin_art), she has two refsheets because… because I could, that's the reason.
+
+Even if it appears that way, it's not "gloves" or "boots": the white fur grows naturally on the limbs, and otherwise has a dark grey skin.
+
+There isn't much backstory to it, this is supposed to be a "blank" persona character, an "avatar of sorts". Kind of.
+
+Additional art by Feff @feff, Ponzu @8931ponzu (@8931ponzu.bsky.social), Rikaたそ (twitter: felicitarika), smillerbee (twitter: smillerber1).
+
+Full Vsona profile and more art at https://vsona.vgen.co/minka`
+
+    const post = buildPost({ content: longPostWithManyMentions })
+    mediaFindAllMock.mockResolvedValue(
+      Array.from({ length: 12 }, (_, i) => buildMedia({ id: `m${i}`, url: `m${i}.jpg`, mediaOrder: i }))
+    )
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+
+    expect(written.uri).toMatch(/^at:\/\//)
+    const fetched = await agent.com.atproto.repo.getRecord({
+      repo: agent.session!.did,
+      collection: 'app.bsky.feed.post',
+      rkey: written.uri.split('/').pop()!
+    })
+    // *some* embed (an external link card) rather than posting with no embed at all.
+    expect((fetched.data.value as Record<string, { $type?: string }>).embed).toBeTruthy()
+  })
+
+  it('skips a single broken image instead of failing the whole post', async () => {
+    const post = buildPost({ content: '<p>gallery with one bad file</p>' })
+    mediaFindAllMock.mockResolvedValue([
+      buildMedia({ id: 'good-1', url: 'good-1.jpg', mediaOrder: 0 }),
+      buildMedia({ id: 'good-2', url: 'good-2.jpg', mediaOrder: 1 }),
+      buildMedia({ id: 'broken', url: 'broken.jpg', mediaOrder: 2 }),
+      buildMedia({ id: 'good-3', url: 'good-3.jpg', mediaOrder: 3 })
+    ])
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+
+    const fetched = await agent.com.atproto.repo.getRecord({
+      repo: agent.session!.did,
+      collection: 'app.bsky.feed.post',
+      rkey: written.uri.split('/').pop()!
+    })
+    const value = fetched.data.value as Record<string, { $type?: string; images?: unknown[] }>
+    expect(value.embed?.$type).toBe('app.bsky.embed.images')
+    expect(value.embed?.images).toHaveLength(3)
   })
 })

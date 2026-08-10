@@ -167,7 +167,7 @@ async function sendPostBsky(job: Job) {
       }
       await post.save()
     } catch (error) {
-      logger.debug({ message: `Error sending post to bluesky`, error })
+      logger.error({ message: `Error sending post ${post.id} to bluesky`, error })
     }
   }
   if (post) {

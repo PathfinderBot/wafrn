@@ -268,9 +268,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       postShortened = true
       break
-    } else if (nextLength > postMax) {
+    } else if (nextLength > postMax - textOnlyShortenerLength) {
       const currentTextLength = encoder.encode(builder.text).byteLength
-      const lengthLeft = postMax - currentTextLength - textOnlyShortenerLength
+      const lengthLeft = Math.max(0, postMax - currentTextLength - textOnlyShortenerLength)
       if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
       else builder.addText(token.raw.slice(0, lengthLeft))
 
@@ -399,6 +399,21 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
   let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {
+    try {
+      return await processMediaForBsky(media)
+    } catch (error) {
+      logger.error({
+        message: `Error processing media ${media.id} for Bluesky post ${post.id}; skipping this attachment so the rest of the post can still go out`,
+        error
+      })
+      return undefined
+    }
+  })
+  const bskyMedias = (await Promise.all(bskyMediaPromises)).filter(
+    (media): media is NonNullable<Awaited<ReturnType<typeof processMediaForBsky>>> => media !== undefined
+  )
+
+  async function processMediaForBsky(media: Media) {
     let file = await fs.readFile('uploads/' + media.url)
     let isVideo = media.mediaType?.startsWith('video/')
     let fileToDelete: string | undefined
@@ -495,10 +510,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       }
     }
     return { media, blob: data.blob }
-  })
-  const bskyMedias = await Promise.all(bskyMediaPromises)
+  }
   const isNotValidMedia = bskyMedias.some((media) => media.media.mediaType?.includes('pdf'))
-  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4 && !isNotValidMedia) {
+  if (bskyMedias.length && bskyMedias.length <= 4 && !isNotValidMedia) {
     const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
     if (video) {
       res.embed = {
@@ -524,7 +538,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       }
     }
     // Shortening when media is present is handled earlier
-  } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
+  } else if (postShortened || bskyMedias.length > 4 || isNotValidMedia) {
     // If we have more than 4 media and they are all images (no videos/pdf),
     // post as a gallery embed (new app.bsky.embed.gallery). Otherwise fallback to external link.
     const onlyImages =
