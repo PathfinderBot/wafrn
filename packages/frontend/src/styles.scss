@@ -325,8 +325,8 @@ body {
 
 /* Horizontal Media Carousel. Disabled by default. */
 .media-gallery.media-carousel {
-  --media-height: max(fit-content, 256px);
-  --media-width: max(fit-content, 256px);
+  --media-height: max(fit-content, 512px);
+  --media-width: max(fit-content, 512px);
   flex-direction: row !important;
   align-items: center;
   gap: 12px !important;
@@ -365,6 +365,7 @@ body {
 
   .displayed-image {
     height: var(--media-height);
+    width: var(--media-width);
     border-radius: var(--mat-sys-corner-small) !important;
   }
 }
