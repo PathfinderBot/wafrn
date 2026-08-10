@@ -73,6 +73,6 @@
     "tslib": "^2.6.3",
     "typescript-eslint": "8.0.0-alpha.38",
     "vitest": "^4.0.8",
-    "vlitejs": "^7.0.0"
+    "vlitejs": "^8.1.1"
   }
 }
