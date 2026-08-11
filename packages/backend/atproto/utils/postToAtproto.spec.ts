@@ -195,6 +195,39 @@ Full Vsona profile and more art at https://vsona.vgen.co/minka`
     expect((fetched.data.value as Record<string, { $type?: string }>).embed).toBeTruthy()
   })
 
+  it('sends the post tags in the native bsky `tags` field, in addition to the fedi-only fullTags', async () => {
+    const post = buildPost({
+      content: '<p>Witchsky has tags now</p>',
+      tags: [{ tagName: 'WitchskyApp' }, { tagName: 'new features' }, { tagName: 'hype!' }]
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+
+    const fetched = await agent.com.atproto.repo.getRecord({
+      repo: agent.session!.did,
+      collection: 'app.bsky.feed.post',
+      rkey: written.uri.split('/').pop()!
+    })
+    const value = fetched.data.value as Record<string, unknown>
+    expect(value.tags).toEqual(['WitchskyApp', 'new features', 'hype!'])
+    expect(value.fullTags).toBe('WitchskyApp\nnew features\nhype!')
+  })
+
+  it('omits the `tags` field entirely when the post has no tags', async () => {
+    const post = buildPost({ content: '<p>no tags here</p>' })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+
+    const fetched = await agent.com.atproto.repo.getRecord({
+      repo: agent.session!.did,
+      collection: 'app.bsky.feed.post',
+      rkey: written.uri.split('/').pop()!
+    })
+    expect((fetched.data.value as Record<string, unknown>).tags).toBeUndefined()
+  })
+
   it('skips a single broken image instead of failing the whole post', async () => {
     const post = buildPost({ content: '<p>gallery with one bad file</p>' })
     mediaFindAllMock.mockResolvedValue([

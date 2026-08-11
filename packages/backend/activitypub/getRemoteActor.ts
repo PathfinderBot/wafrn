@@ -112,10 +112,12 @@ async function getRemoteActor(
       await queue.add(
         'getRemoteActorId',
         { actorUrl: actorUrl, userId: user.id, forceUpdate: true },
-        {
-          jobId: actorUrl.replaceAll(':', '_').replaceAll('/', '_'),
-          priority: 2097151
-        }
+        forceUpdate
+          ? { priority: 2097151 }
+          : {
+              jobId: actorUrl.replaceAll(':', '_').replaceAll('/', '_'),
+              priority: 2097151
+            }
       )
     }
   }

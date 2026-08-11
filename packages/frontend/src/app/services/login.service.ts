@@ -368,6 +368,7 @@ export class LoginService {
       disableForceAltText: 'wafrn.disableForceAltText',
       federateWithThreads: 'wafrn.federateWithThreads',
       asksLevel: 'wafrn.public.asks',
+      allowBitesFrom: 'wafrn.public.allowBitesFrom',
       forceClassicLogo: 'wafrn.forceClassicLogo',
       defaultPostEditorPrivacy: 'wafrn.defaultPostEditorPrivacy',
       defaultPostRewootPrivacy: 'wafrn.defaultPostRewootPrivacy',

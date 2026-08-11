@@ -329,13 +329,27 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       optionName: 'fediverse.public.attachment'
     }
   })
+  const allowBitesFromDb = await UserOptions.findAll({
+    where: {
+      userId: {
+        [Op.in]: userIds
+      },
+      optionName: 'wafrn.public.allowBitesFrom'
+    }
+  })
   const usersMap: Map<string, User> = new Map()
   const usersPronounsMap: Map<string, string | undefined> = new Map()
+  const usersAllowBitesFromMap: Map<string, string> = new Map()
   for (const att of fediAttachmentsDb) {
     const fediAttachments: { name: string; value: string }[] = JSON.parse(att.optionValue)
     const pronouns = fediAttachments.find((elem) => elem.name.toLowerCase() === 'pronouns')?.value
     if (!pronouns) continue
     usersPronounsMap.set(att.userId, pronouns)
+  }
+  for (const opt of allowBitesFromDb) {
+    if (opt.optionValue && opt.optionValue !== '1') {
+      usersAllowBitesFromMap.set(opt.userId, opt.optionValue)
+    }
   }
   for (const usr of await users) {
     usersMap.set(usr.id, usr)
@@ -464,13 +478,15 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       .filter((elem) => !!elem)
       .map((x) => {
         const pronouns = usersPronounsMap.get(x.id)
+        const allowBitesFrom = usersAllowBitesFromMap.get(x.id)
         return {
           ...x,
           ...(pronouns
             ? {
                 pronouns
               }
-            : {})
+            : {}),
+          ...(allowBitesFrom ? { allowBitesFrom } : {})
         }
       }),
     polls: pollsFiltered.filter((elem) => !!elem),

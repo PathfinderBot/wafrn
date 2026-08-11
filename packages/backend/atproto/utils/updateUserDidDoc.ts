@@ -6,12 +6,13 @@ import { Secp256k1PrivateKey } from '@atcute/crypto'
 import { logger } from '../../utils/logger.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import getUserAgent from '../../utils/getUserAgent.js'
+import { getRealAtHandle } from './didDocAliases.js'
 
 async function updateUserDidDoc(user: User) {
   try {
     logger.debug('updating ' + user.url)
     const didDoc = await getDidDoc(user.bskyDid ?? '')
-    const handle = didDoc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+    const handle = getRealAtHandle(didDoc?.alsoKnownAs)
     if (!handle) {
       logger.debug(`No handle starting with at:// found in DID doc for user ${user.url}. Aborting update.`)
       return

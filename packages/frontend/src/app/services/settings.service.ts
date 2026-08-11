@@ -47,6 +47,7 @@ const settingKeyVariants = [
   'manuallyAcceptsFollows',
   'hideFollows',
   'hideProfileNotLoggedIn',
+  'allowBitesFrom',
   'disableEmailNotifications',
   'showNotificationsFrom',
   'notifyMentions',
@@ -242,6 +243,19 @@ export class SettingsService {
       profileOption: true,
       type: 'checkbox',
       default: false
+    },
+    allowBitesFrom: {
+      key: 'allowBitesFrom',
+      translationKey: 'settings.allowBitesFrom',
+      serverKey: 'wafrn.public.allowBitesFrom',
+      localStorageKey: 'public.allowBitesFrom',
+      type: 'select',
+      default: '1',
+      variants: {
+        '1': 'profile.preferences.notifyFrom.everyone',
+        '2': 'profile.preferences.notifyFrom.followers',
+        '3': 'profile.preferences.notifyFrom.following'
+      }
     },
     disableEmailNotifications: {
       key: 'disableEmailNotifications',
@@ -1046,6 +1060,7 @@ export class SettingsService {
         { type: 'key', value: 'enableAnonymousAsks' },
         { type: 'key', value: 'hideProfileNotLoggedIn' },
         { type: 'key', value: 'hideFollows' },
+        { type: 'key', value: 'allowBitesFrom' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },

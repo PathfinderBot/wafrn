@@ -79,20 +79,25 @@ export class EditProfileComponent implements OnInit {
   img: File | undefined = undefined
   headerImg: File | undefined = undefined
   privacyOptions = [
-    { level: 0, name: 'Public' },
-    { level: 1, name: 'Followers only' },
-    { level: 2, name: 'This instance only' },
-    { level: 3, name: 'Unlisted' }
+    { level: 0, name: 'profile.privacy.privacyOptions.public' },
+    { level: 1, name: 'profile.privacy.privacyOptions.followersOnly' },
+    { level: 2, name: 'profile.privacy.privacyOptions.instanceOnly' },
+    { level: 3, name: 'profile.privacy.privacyOptions.unlisted' }
   ]
   askOptions = [
-    { level: 1, name: 'Allow anon asks' },
-    { level: 2, name: 'Only allow asks from identified users' },
-    { level: 3, name: 'Disable asks' }
+    { level: 1, name: 'profile.privacy.askOptions.allowAnon' },
+    { level: 2, name: 'profile.privacy.askOptions.onlyIdentified' },
+    { level: 3, name: 'profile.privacy.askOptions.disabled' }
   ]
   rssOptions = [
-    { level: 0, name: 'No' },
-    { level: 1, name: 'Only articles (Feature still in the works)' },
-    { level: 2, name: 'Yes for all my posts' }
+    { level: 0, name: 'profile.privacy.rssOptionsList.no' },
+    { level: 1, name: 'profile.privacy.rssOptionsList.articlesOnly' },
+    { level: 2, name: 'profile.privacy.rssOptionsList.yes' }
+  ]
+  bitesOptions = [
+    { level: 1, name: 'profile.privacy.bitesOptions.everyone' },
+    { level: 2, name: 'profile.privacy.bitesOptions.myFollowers' },
+    { level: 3, name: 'profile.privacy.bitesOptions.peopleIFollow' }
   ]
 
   selectedIndex: WritableSignal<number> = signal<number>(0)
@@ -120,6 +125,7 @@ export class EditProfileComponent implements OnInit {
     manuallyAcceptsFollows: new FormControl(false),
     hideFollows: new FormControl(false),
     hideProfileNotLoggedIn: new FormControl(false),
+    allowBitesFrom: new FormControl(1),
     forceOldEditor: new FormControl(false),
     mutedWords: new FormControl(''),
     superMutedWords: new FormControl(''),
@@ -252,6 +258,10 @@ export class EditProfileComponent implements OnInit {
       } catch (_) {}
       const askLevel = publicOptions.find((elem) => elem.optionName == 'wafrn.public.asks')
       this.editProfileForm.controls['asksLevel'].patchValue(askLevel ? parseInt(askLevel.optionValue) : 2)
+      const allowBitesFrom = publicOptions.find((elem) => elem.optionName == 'wafrn.public.allowBitesFrom')
+      this.editProfileForm.controls['allowBitesFrom'].patchValue(
+        allowBitesFrom ? parseInt(allowBitesFrom.optionValue) : 1
+      )
       this.editProfileForm.controls['forceClassicAudioPlayer'].patchValue(
         this.mediaService.checkForceClassicAudioPlayer()
       )

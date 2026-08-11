@@ -5,6 +5,7 @@ import { sequelize } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 
 import { searchRemoteUser } from '../activitypub/searchRemoteUser.js'
+import { getRemoteActor } from '../activitypub/getRemoteActor.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
@@ -110,6 +111,20 @@ export default function searchRoutes(app: Application) {
             message: `Error in search obtaining fedi post ${searchTerm}`,
             error
           })
+        }
+
+        if ((postsIds as string[]).length === 0) {
+          try {
+            const remoteUser = await getRemoteActor(urlString, userPoster, true)
+            if (remoteUser && remoteUser.url !== completeEnvironment.deletedUser) {
+              users = [remoteUser]
+            }
+          } catch (error) {
+            logger.debug({
+              message: `Error in search obtaining fedi user ${searchTerm}`,
+              error
+            })
+          }
         }
       }
     } else {

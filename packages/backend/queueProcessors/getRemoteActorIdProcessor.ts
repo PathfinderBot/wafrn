@@ -268,6 +268,35 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
               public: true
             })
           }
+          await UserOptions.destroy({
+            where: {
+              userId: userRes.id,
+              optionName: 'wafrn.public.allowBitesFrom'
+            }
+          })
+          const canBiteValues: string[] = userPetition?.canBite
+            ? Array.isArray(userPetition.canBite)
+              ? userPetition.canBite
+              : [userPetition.canBite]
+            : []
+          const canBitePublic = canBiteValues.includes('https://www.w3.org/ns/activitystreams#Public')
+          if (!canBitePublic) {
+            const modes: string[] = []
+            if (userPetition.followers && canBiteValues.includes(userPetition.followers)) {
+              modes.push('2')
+            }
+            if (userPetition.following && canBiteValues.includes(userPetition.following)) {
+              modes.push('3')
+            }
+            if (modes.length) {
+              await UserOptions.create({
+                userId: userRes.id,
+                optionName: 'wafrn.public.allowBitesFrom',
+                optionValue: modes.join(','),
+                public: true
+              })
+            }
+          }
         }
         res = userRes?.id ? userRes.id : await getDeletedUser()
         try {

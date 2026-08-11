@@ -103,7 +103,7 @@
           </span>
         </button>
       }
-      @if (!isMyPost) {
+      @if (!isMyPost && canBitePost()) {
         <a (click)="bitePost()" mat-menu-item>
           <span class="post-actions-menu-span-content">
             {{ 'post-actions.bitePost' | translate }}

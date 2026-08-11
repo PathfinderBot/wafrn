@@ -144,6 +144,17 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     }
     return []
   })
+
+  allowsBites = computed<boolean>(() => {
+    const blog = this.blogDetails()
+    if (!blog) return true
+    const allowBitesOption = blog.publicOptions.find((elem) => elem.optionName == 'wafrn.public.allowBitesFrom')
+    const modes = (allowBitesOption?.optionValue || '1').split(',')
+    if (modes.includes('1')) return true
+    if (modes.includes('2') && this.userOptionsService.followedUserIds.includes(blog.id)) return true
+    if (modes.includes('3') && this.userOptionsService.myFollowers.includes(blog.id)) return true
+    return false
+  })
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails()
     if (blog === undefined) return

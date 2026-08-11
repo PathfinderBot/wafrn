@@ -11,6 +11,7 @@ import { Bites } from '../models/bites.js'
 import { bitePostRemote, biteUserRemote } from '../activitypub/bite.js'
 import { biteLimiter } from '../utils/rateLimiters.js'
 import sendBiteBsky from '../atproto/utils/sendBiteBsky.js'
+import { userAllowsBiteFrom } from '../utils/allowsBites.js'
 
 export default function biteRoutes(app: Application) {
   app.post(
@@ -43,6 +44,10 @@ export default function biteRoutes(app: Application) {
         if (!post) return res.status(404).send({ message: 'Post not found' })
 
         if (post.userId === userId) return res.status(400).send({ message: "You can't bite your own post" })
+
+        if (!(await userAllowsBiteFrom(post.userId, userId))) {
+          return res.status(403).send({ message: 'This user does not accept bites' })
+        }
 
         const bittenPost = await UserBitesPostRelation.create({
           userId: userId,
@@ -112,6 +117,10 @@ export default function biteRoutes(app: Application) {
         if (!bitten) return res.status(404).send({ message: 'User to be bitten not found' })
 
         if (bittenId === biterId) return res.status(400).send({ message: "You can't bite yourself" })
+
+        if (!(await userAllowsBiteFrom(bittenId, biterId))) {
+          return res.status(403).send({ message: 'This user does not accept bites' })
+        }
 
         await Bites.create({
           biterId: biterId,

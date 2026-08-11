@@ -152,8 +152,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
 
   const contentWarning = post.content_warning ? `[${post.content_warning.trim()}]\n` : ''
-  const tags = (await post.getPostTags()).map((elem) => elem.tagName).join('\n')
-  const tagText = (await post.getPostTags()).map((elem) => `#${elem.tagName.trim().replaceAll(' ', '-')}`).join(' ')
+  const postTags = (await post.getPostTags()).map((elem) => elem.tagName)
+  const tags = postTags.join('\n')
+  const tagText = postTags.map((elem) => `#${elem.trim().replaceAll(' ', '-')}`).join(' ')
   let postText: string = dompurify.sanitize(
     (
       contentWarning +
@@ -394,6 +395,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     createdAt: new Date(post.createdAt).toISOString(),
     fullText: fullText,
     fullTags: tags,
+    ...(postTags.length > 0 ? { tags: postTags } : {}),
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
     via: `Wafrn${completeEnvironment.defaultSEOData.title.toLowerCase() !== 'wafrn' ? ` (${completeEnvironment.defaultSEOData.title})` : ''}`
   }

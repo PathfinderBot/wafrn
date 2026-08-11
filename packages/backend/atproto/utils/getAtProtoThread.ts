@@ -450,6 +450,9 @@ async function processSinglePost(uri: string, forceUpdate = false, depth = 0): P
       postText = postText ? postText.replaceAll('\n', '<br>') : ''
     }
 
+    // witchsky posts can carry an array of "additional hashtags" outside of the post text/facets (post.tags)
+    tags = mergePostTags(tags, post.tags)
+
     const labels = getPostLabels(postPetitionPds.value as AppBskyFeedPost.Main)
     let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
     if (!cw && postCreator.NSFW) {
@@ -755,6 +758,12 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   return null
 }
 
+/** Merges tags detected in the post body (hashtags, fullTags) with `post.tags`,
+ * bsky's array of additional hashtags that live outside the post text/facets. */
+function mergePostTags(bodyTags: string[], recordTags?: string[]): string[] {
+  return Array.from(new Set([...bodyTags, ...(recordTags ?? [])]))
+}
+
 // TODO improve this so we get better nsfw messages lol
 function getPostLabels(post: AppBskyFeedPost.Main) {
   const labels = new Set<string>()
@@ -994,5 +1003,6 @@ export {
   getPostThreadPDSDirect,
   getPostInteractionLevels,
   processReplies,
-  hasFediverseMirrorMetadata
+  hasFediverseMirrorMetadata,
+  mergePostTags
 }

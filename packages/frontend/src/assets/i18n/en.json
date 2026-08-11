@@ -436,8 +436,30 @@
       "options": "Options",
       "disableEmailNotifications": "Disable email notifications",
       "hideFollows": "Hide my follows and followers",
+      "allowBitesFrom": "Who can bite me",
       "hideProfileNotLoggedInDescription": "Hide profile to not logged in users and search (this will only apply to your profile IN this wafrn, not to\nyour woots nor other fedi instances or bluesky)",
-      "rssOptions": "Enable RSS and microfront for my blog page"
+      "rssOptions": "Enable RSS and microfront for my blog page",
+      "privacyOptions": {
+        "public": "Public",
+        "followersOnly": "Followers only",
+        "instanceOnly": "This instance only",
+        "unlisted": "Unlisted"
+      },
+      "askOptions": {
+        "allowAnon": "Allow anon asks",
+        "onlyIdentified": "Only allow asks from identified users",
+        "disabled": "Disable asks"
+      },
+      "rssOptionsList": {
+        "no": "No",
+        "articlesOnly": "Only articles (Feature still in the works)",
+        "yes": "Yes for all my posts"
+      },
+      "bitesOptions": {
+        "everyone": "Everyone",
+        "myFollowers": "My followers",
+        "peopleIFollow": "People I follow"
+      }
     },
     "security": {
       "header": "Security Settings",
@@ -636,6 +658,7 @@
     "hideProfileNotLoggedIn": "Hide profile to users who are not logged in",
     "hideProfileNotLoggedInDescription": "Only applies to your profile in this server and Bluesky, not on your woots, and on other servers. Note that Bluesky/Atproto clients can ignore this and show your profile anyways.",
     "hideFollows": "Hide my follows and followers",
+    "allowBitesFrom": "Who can bite me",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",

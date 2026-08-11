@@ -45,7 +45,7 @@
                 <fa-icon [fixedWidth]="true" [icon]="envelopeIcon"></fa-icon>
               </button>
             }
-            @if (loggedIn) {
+            @if (loggedIn && allowsBites()) {
               <button
                 matButton="outlined"
                 style="width: 40px; padding: 0; margin-right: 4px"
