@@ -28,7 +28,8 @@ vi.mock('../../utils/backendOptions.js', () => ({
     frontendUrl: 'https://instance.test',
     mediaUrl: 'https://instance.test/api/uploads',
     adminEmail: 'admin@instance.test',
-    defaultSEOData: { title: 'wafrn' }
+    defaultSEOData: { title: 'wafrn' },
+    databaseConnectionString: 'postgresql://root:root@localhost:5432/wafrn'
   }
 }))
 
