@@ -69,10 +69,10 @@ jobs:
       FRONTEND_CACHE_URL: http://localhost
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-      POSTGRES_HOST: localhost
+      POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DBNAME: wafrn
-      REDIS_HOST: localhost
+      REDIS_HOST: redis
       REDIS_PORT: 6379
     steps:
       - name: Checkout repository
