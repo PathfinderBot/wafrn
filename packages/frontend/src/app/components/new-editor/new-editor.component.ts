@@ -148,6 +148,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   baseMediaUrl = EnvironmentService.environment.baseMediaUrl
   userSelectionMentionValue = ''
   contentWarning = ''
+  blueskySelfLabel = ''
   enablePrivacyEdition = true
   pollQuestions: QuestionPollQuestion[] = []
   disableImageUploadButton = false
@@ -230,6 +231,28 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       viewValue: this.translateService.instant('editor.interactionControl.noOneCanQuote')
     }
   ]
+  blueskySelfLabelOptions = [
+    {
+      value: '',
+      viewValue: this.translateService.instant('editor.blueskySelfLabelNone')
+    },
+    {
+      value: 'sexual',
+      viewValue: this.translateService.instant('editor.blueskySelfLabelSexual')
+    },
+    {
+      value: 'nudity',
+      viewValue: this.translateService.instant('editor.blueskySelfLabelNudity')
+    },
+    {
+      value: 'porn',
+      viewValue: this.translateService.instant('editor.blueskySelfLabelPorn')
+    },
+    {
+      value: 'graphic-media',
+      viewValue: this.translateService.instant('editor.blueskySelfLabelGraphicMedia')
+    }
+  ]
   canReplyOptions = [
     {
       value: InteractionControl.Anyone,
@@ -306,6 +329,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     }
     if (this.data?.post) {
       this.contentWarning = this.data.post.content_warning ?? ''
+      this.blueskySelfLabel = this.data.post.blueskySelfLabel ?? ''
       this.privacy = Math.max(this.data.post.privacy, this.privacy)
     }
     this.emojiSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
@@ -357,6 +381,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
         this.postCreatorForm.controls['content'].patchValue(this.data.post.content)
       }
       this.contentWarning = this.data.post.content_warning ?? ''
+      this.blueskySelfLabel = this.data.post.blueskySelfLabel ?? ''
       this.tags = this.data.post.tags.map((tag) => tag.tagName).join(',')
       this.uploadedMedias = this.data.post.medias ? this.data.post.medias.filter((elem) => elem.mediaOrder < 9999) : []
       this.privacy = this.data.post.privacy
@@ -673,6 +698,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       tags: tagsToSend,
       idPostToReblog: this.editing ? undefined : this.idPostToReblog,
       contentWarning: this.contentWarning,
+      blueskySelfLabel: this.blueskySelfLabel || undefined,
       idPostToEdit: this.editing ? this.idPostToReblog : undefined,
       idPosToQuote: this.data?.quote?.id,
       ask: this.data?.ask,
@@ -808,6 +834,22 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.mentionedUsers.splice(index, 1)
   }
 
+  onBlueskySelfLabelChange(value: string | undefined): void {
+    const previousValue = this.blueskySelfLabel
+    // only auto-update the CW text if it's empty or still matches what the previous chip filled in -
+    // once the user edits it by hand it no longer tracks the chip selection. the fill text is the raw label
+    // value (eg "sexual") rather than the translated chip label, since the backend skips the redundant [CW]
+    // prefix on bluesky when the CW text matches the self-label it already applies
+    const cwFollowsChipSelection = this.contentWarning.trim() === '' || this.contentWarning.trim() === previousValue
+
+    this.blueskySelfLabel = value ?? ''
+
+    if (cwFollowsChipSelection) {
+      this.contentWarning = value ?? ''
+      this.showContentWarning = true
+    }
+  }
+
   openEmojiSelection(): void {
     const textarea = document.getElementById('postCreatorContent') as HTMLTextAreaElement
     const pos = textarea.selectionStart
@@ -824,7 +866,10 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   calculateBskyPostLength() {
-    const cwText = this.contentWarning.length > 0 ? `[${this.contentWarning.trim()}]\n` : ''
+    const cwTextIsDefaultBlueskyLabel =
+      !!this.blueskySelfLabel && this.contentWarning.trim().toLowerCase() === this.blueskySelfLabel.toLowerCase()
+    const cwText =
+      this.contentWarning.length > 0 && !cwTextIsDefaultBlueskyLabel ? `[${this.contentWarning.trim()}]\n` : ''
     const tagText =
       this.tags.length > 0
         ? `\n${this.tags
@@ -832,10 +877,16 @@ export class NewEditorComponent implements OnInit, OnDestroy {
             .map((elem) => '#' + elem)
             .join(' ')}`
         : ''
+    const placeholderPostId = '00000000-0000-0000-0000-000000000000'
     const askText = this.data?.ask
-      ? (this.data.ask.user ? this.data.ask.user.url : 'anonymous') + ' asked: ' + this.data.ask.question + '\n\n'
+      ? `[${this.data.ask.user ? this.data.ask.user.name : 'Anonymous'} asked:](${EnvironmentService.environment.frontUrl}/fediverse/post/${placeholderPostId}) ${this.data.ask.question}\n\n`
       : ''
-    const fediQuoteText = this.data?.quote && !this.data.quote.bskyUri ? '\nRE: ' + this.data?.quote.remotePostId : ''
+    const fediQuoteText =
+      this.data?.quote && !this.data.quote.bskyUri
+        ? '\nRE: ' +
+          (this.data.quote.remotePostId ||
+            `${EnvironmentService.environment.frontUrl}/fediverse/post/${this.data.quote.id}`)
+        : ''
     const inputText = `${askText}${cwText}${this.removeMarkdown(
       this.postCreatorForm.controls['content'].value as string
     ).trim()}${tagText}${fediQuoteText}`

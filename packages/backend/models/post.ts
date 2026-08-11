@@ -44,6 +44,8 @@ import {
 } from 'sequelize'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { sequelize } from './sequelize.js'
+export const BlueskySelfLabels = ['porn', 'sexual', 'nudity', 'graphic-media'] as const
+export type BlueskySelfLabel = (typeof BlueskySelfLabels)[number]
 
 export const Privacy = {
   Public: 0,
@@ -109,6 +111,7 @@ export interface PostAttributes {
   createdAt?: Date
   updatedAt?: Date
   content_warning?: string | null
+  blueskySelfLabel?: BlueskySelfLabel | null
   content?: string
   markdownContent?: string
   title?: string
@@ -155,6 +158,12 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     type: DataType.STRING
   })
   declare content_warning: string
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING
+  })
+  declare blueskySelfLabel: BlueskySelfLabel | null
 
   @Column({
     allowNull: true,

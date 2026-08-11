@@ -59,6 +59,7 @@ export class EditorService implements OnDestroy {
     tags?: string
     idPostToReblog?: string
     contentWarning?: string
+    blueskySelfLabel?: string
     idPostToEdit?: string
     idPosToQuote?: string
     ask?: Ask
@@ -79,6 +80,7 @@ export class EditorService implements OnDestroy {
             tags: options.tags,
             privacy: options.privacy,
             content_warning: options.contentWarning ?? '',
+            blueskySelfLabel: options.blueskySelfLabel,
             idPostToEdit: options.idPostToEdit,
             postToQuote: options.idPosToQuote,
             ask: options.ask?.id,

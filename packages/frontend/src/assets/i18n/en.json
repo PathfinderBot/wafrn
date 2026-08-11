@@ -317,7 +317,13 @@
     "usernameLabel": "Wooting as",
     "noResults": "No results.",
     "quotable": "Who can quote",
-    "whoCanReply": "Who can reply"
+    "whoCanReply": "Who can reply",
+    "blueskySelfLabel": "Bluesky content warning type",
+    "blueskySelfLabelNone": "None",
+    "blueskySelfLabelPorn": "Porn",
+    "blueskySelfLabelSexual": "Sexual",
+    "blueskySelfLabelNudity": "Nudity",
+    "blueskySelfLabelGraphicMedia": "Graphic media"
   },
   "blog": {
     "tabWoots": "Woots",

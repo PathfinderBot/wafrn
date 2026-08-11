@@ -1,5 +1,6 @@
 import { BskyAgent, RichText } from '@atproto/api'
 import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
+import { BlueskySelfLabels } from '../../models/post.js'
 import fs from 'fs/promises'
 import { getPostUrlForQuote } from '../../activitypub/postToJSONLD.js'
 import RichtextBuilder from '@atcute/bluesky-richtext-builder'
@@ -151,7 +152,12 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
   }
 
-  const contentWarning = post.content_warning ? `[${post.content_warning.trim()}]\n` : ''
+  const rawContentWarning = post.content_warning?.trim() ?? ''
+  // when the CW text is just the default text of the chosen bluesky self-label (eg "sexual"), the structured
+  // atproto label already conveys it, so we skip the redundant [CW] prefix in the post text on bluesky
+  const cwTextIsDefaultBlueskyLabel =
+    !!post.blueskySelfLabel && rawContentWarning.toLowerCase() === post.blueskySelfLabel.toLowerCase()
+  const contentWarning = rawContentWarning && !cwTextIsDefaultBlueskyLabel ? `[${rawContentWarning}]\n` : ''
   const postTags = (await post.getPostTags()).map((elem) => elem.tagName)
   const tags = postTags.join('\n')
   const tagText = postTags.map((elem) => `#${elem.trim().replaceAll(' ', '-')}`).join(' ')
@@ -346,10 +352,13 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
   postText = builder.text
 
-  if (contentWarning != '' || medias.some((media) => media.NSFW)) {
+  if (rawContentWarning != '' || medias.some((media) => media.NSFW)) {
+    const selfLabelValue = (BlueskySelfLabels as readonly string[]).includes(post.blueskySelfLabel as string)
+      ? (post.blueskySelfLabel as string)
+      : 'graphic-media'
     labels = {
       $type: 'com.atproto.label.defs#selfLabels',
-      values: [{ val: 'graphic-media' }]
+      values: [{ val: selfLabelValue }]
     }
   }
 

@@ -141,6 +141,20 @@
       </app-info-card>
     }
     @if (showContentWarning || contentWarning || settings.autoAddContentWarning) {
+      @if (showBlueskyOptions) {
+        <section class="px-3 my-2">
+          <div class="mb-1">{{ 'editor.blueskySelfLabel' | translate }}</div>
+          <mat-chip-listbox
+            [(ngModel)]="blueskySelfLabel"
+            (change)="onBlueskySelfLabelChange($event.value)"
+            [attr.aria-label]="'editor.blueskySelfLabel' | translate"
+          >
+            @for (option of blueskySelfLabelOptions; track $index) {
+              <mat-chip-option [value]="option.value">{{ option.viewValue }}</mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </section>
+      }
       <section class="px-3 my-2">
         <mat-form-field class="w-full transition-size mat-form-field-no-padding" appearance="outline">
           <mat-label>{{ 'editor.contentWarningLabel' | translate }}</mat-label>

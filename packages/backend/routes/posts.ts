@@ -30,7 +30,7 @@ import showdown from 'showdown'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
 import dompurify from 'isomorphic-dompurify'
-import { InteractionControl, Privacy, PrivacyType, requiresManualApproval } from '../models/post.js'
+import { BlueskySelfLabels, InteractionControl, Privacy, PrivacyType, requiresManualApproval } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
@@ -419,6 +419,9 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           : posterUser?.NSFW
             ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
             : ''
+        const blueskySelfLabel = (BlueskySelfLabels as readonly string[]).includes(req.body.blueskySelfLabel)
+          ? req.body.blueskySelfLabel
+          : null
         let mediaToAdd: any[] = []
         const avaiableEmojis = await getAvaiableEmojisUncached()
         // we parse the content and we search emojis:
@@ -573,6 +576,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           post.content = content
           post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
+          post.blueskySelfLabel = blueskySelfLabel
           post.privacy = bodyPrivacy
           post.language = filterLanguageCode(req.body.language)
           await post.save()
@@ -628,6 +632,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           post = await Post.create({
             content,
             content_warning,
+            blueskySelfLabel,
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,
