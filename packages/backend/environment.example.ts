@@ -17,7 +17,7 @@ export const baseEnvironment: Environment = {
   // this was a dev thing. leave to true unless you are doing stuff in local or your media url is yourinstance/uploads (not recomended)
   removeFolderNameFromFileUploads: true,
   // we use now postgresql.
-  databaseConnectionString: `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DBNAME}`,
+  databaseConnectionString: `postgresql://${process.env.POSTGRES_USER || 'root'}:${process.env.POSTGRES_PASSWORD || 'root'}@${process.env.POSTGRES_HOST || 'localhost'}:${process.env.POSTGRES_PORT || '5432'}/${process.env.POSTGRES_DBNAME || 'wafrn'}`,
   listenIp: process.env.LISTEN_IP || '0.0.0.0',
   port: parseInt(process.env.PORT || '9000'),
   // In the case of you wantint to put fedi petitions in another thread, use a different port here. You will have to update your apache config
