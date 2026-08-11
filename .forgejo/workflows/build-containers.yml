@@ -40,10 +40,40 @@ jobs:
   backend-test:
     name: Run backend unit tests
     runs-on: docker
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: wafrn
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:8.4
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     env:
       DOMAIN_NAME: localhost
       FRONTEND_MEDIA_URL: http://localhost/api/uploads
       FRONTEND_CACHE_URL: http://localhost
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DBNAME: wafrn
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -62,6 +92,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./packages/backend
+
+      - name: Run database migrations
+        run: npx tsx migrate.ts init-container
         working-directory: ./packages/backend
 
       - name: Run tests

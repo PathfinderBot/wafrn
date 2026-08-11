@@ -12,6 +12,7 @@
     "db:rollback": "tsx migrate.ts down",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:ci-local": "bash scripts/test-ci-local.sh",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "prettier-format": "prettier --config .prettierrc '**/*.ts' --write"
