@@ -8,7 +8,7 @@
     <mat-checkbox formControlName="anonymous">{{ 'ask-dialog-content.askAnonymously' | translate }}</mat-checkbox>
   }
 
-  <button [disabled]="!askForm.valid" mat-flat-button class="w-full my-2" type="submit">
+  <button [disabled]="!askForm.valid || submitting" mat-flat-button class="w-full my-2" type="submit">
     {{ 'ask-dialog-content.askButtonText' | translate }}
   </button>
 </form>

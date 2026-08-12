@@ -802,6 +802,9 @@ function userRoutes(app: Application) {
         userAsked: userRecivingAsk.id,
         userAsker: userAsking
       })
+      res.send({
+        success: true
+      })
       await createNotification(
         {
           notificationType: 'ASK',
@@ -815,9 +818,6 @@ function userRoutes(app: Application) {
           postContent: sanitizedQuestion
         }
       )
-      res.send({
-        success: true
-      })
     } else {
       // user can not recive an ask here so we say nope.avi
       res.send({

@@ -53,17 +53,29 @@ export class AskDialogContentComponent implements OnInit {
     anonymous: new FormControl(true)
   })
 
+  submitting = false
+
   async onSubmit() {
-    const res: any = await this.blogService.askuser(this.data.details.url, this.askForm.value)
-    if (res.success) {
-      this.messages.add({
-        severity: 'success',
-        summary: 'You asked the user!'
-      })
-      this.particle.emojiReact('❓')
-      this.dialogRef.close()
-    } else {
+    if (this.submitting) {
+      return
+    }
+    this.submitting = true
+    try {
+      const res: any = await this.blogService.askuser(this.data.details.url, this.askForm.value)
+      if (res.success) {
+        this.messages.add({
+          severity: 'success',
+          summary: 'You asked the user!'
+        })
+        this.particle.emojiReact('❓')
+        this.dialogRef.close()
+      } else {
+        this.messages.add({ severity: 'error', summary: 'Something went wrong' })
+        this.submitting = false
+      }
+    } catch (error) {
       this.messages.add({ severity: 'error', summary: 'Something went wrong' })
+      this.submitting = false
     }
   }
 }
