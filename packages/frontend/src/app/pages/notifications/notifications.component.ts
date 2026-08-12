@@ -89,7 +89,7 @@ export class NotificationsComponent implements OnInit {
 
   reblogToNotification(
     reblog: Reblog,
-    type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE'
+    type: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE' | 'ASK'
   ): UserNotifications {
     if (!reblog.user) {
       console.log(`ERROR WITH ${type}`)

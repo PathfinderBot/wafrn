@@ -6,7 +6,16 @@ import { MatCardModule } from '@angular/material/card'
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
 import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
-import { faAt, faCheck, faCookieBite, faHeart, faQuoteLeft, faRepeat, faUser } from '@fortawesome/free-solid-svg-icons'
+import {
+  faAt,
+  faCheck,
+  faCircleQuestion,
+  faCookieBite,
+  faHeart,
+  faQuoteLeft,
+  faRepeat,
+  faUser
+} from '@fortawesome/free-solid-svg-icons'
 import { UserNotifications } from '../../interfaces/user-notifications'
 import { EnvironmentService } from '../../services/environment.service'
 
@@ -30,7 +39,8 @@ export class SingleNotificationComponent implements OnInit {
     ['QUOTE']: faQuoteLeft,
     ['EMOJIREACT']: faCheck,
     ['USERBITE']: faCookieBite,
-    ['POSTBITE']: faCookieBite
+    ['POSTBITE']: faCookieBite,
+    ['ASK']: faCircleQuestion
   }
 
   constructor() {}

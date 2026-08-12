@@ -29,6 +29,7 @@ import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import showdown from 'showdown'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
+import { notifyAdminsOfReports } from '../services/reportNotifications.js'
 import dompurify from 'isomorphic-dompurify'
 import { BlueskySelfLabels, InteractionControl, Privacy, PrivacyType, requiresManualApproval } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -855,6 +856,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
         })
         success = true
         res.send(report)
+        await notifyAdminsOfReports([{ reporterId: posterId, postId: req.body.postId }], req.body.description)
       }
     } catch (error) {
       logger.error(error)

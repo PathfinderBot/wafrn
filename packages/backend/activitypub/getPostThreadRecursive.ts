@@ -22,7 +22,7 @@ import { loadPoll } from './loadPollFromPost.js'
 import { getApObjectPrivacy } from './getPrivacy.js'
 import dompurify from 'isomorphic-dompurify'
 import { Queue } from 'bullmq'
-import { bulkCreateNotifications } from '../services/pushNotifications.js'
+import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
 import { getDeletedUser } from '../utils/cacheGetters/getDeletedUser.js'
 import {
   AutomaticToManualApprovalEquivalent,
@@ -849,13 +849,26 @@ async function getPostThreadRecursive(
           if (askContent.startsWith('@' + completeEnvironment.instanceUrl)) {
             askContent = askContent.split('@' + completeEnvironment.instanceUrl)[1]
           }
+          const sanitizedAskContent = dompurify.sanitize(askContent, { ALLOWED_TAGS: [] })
           await Ask.create({
-            question: dompurify.sanitize(askContent, { ALLOWED_TAGS: [] }),
+            question: sanitizedAskContent,
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,
             apObject: JSON.stringify(postPetition)
           })
+          await createNotification(
+            {
+              notificationType: 'ASK',
+              userId: newPost.userId,
+              notifiedUserId: mentions[0].id,
+              detached: false
+            },
+            {
+              userUrl: remoteUser.url,
+              postContent: sanitizedAskContent
+            }
+          )
         }
 
         if (existingBskyPost) {

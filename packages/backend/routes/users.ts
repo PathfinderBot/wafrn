@@ -38,6 +38,7 @@ import { rejectremoteFollow } from '../activitypub/rejectRemoteFollow.js'
 import { acceptRemoteFollow } from '../activitypub/acceptRemoteFollow.js'
 import showdown from 'showdown'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
+import { createNotification } from '../services/pushNotifications.js'
 import dompurify from 'isomorphic-dompurify'
 import { getFollowedHashtags } from '../utils/cacheGetters/getFollowedHashtags.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -792,14 +793,28 @@ function userRoutes(app: Application) {
       }
 
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
+      const sanitizedQuestion = dompurify.sanitize(question, { ALLOWED_TAGS: [] })
       await Ask.create({
-        question: dompurify.sanitize(question, { ALLOWED_TAGS: [] }),
+        question: sanitizedQuestion,
         apObject: null,
         creationIp: getIp(req),
         answered: false,
         userAsked: userRecivingAsk.id,
         userAsker: userAsking
       })
+      await createNotification(
+        {
+          notificationType: 'ASK',
+          // anonymous asks have no asker; use the "no user" placeholder id used elsewhere in the codebase
+          userId: userAsking ?? '00000000-0000-0000-0000-000000000000',
+          notifiedUserId: userRecivingAsk.id,
+          detached: false
+        },
+        {
+          userUrl: userAsking ? (await User.findByPk(userAsking))?.url : undefined,
+          postContent: sanitizedQuestion
+        }
+      )
       res.send({
         success: true
       })

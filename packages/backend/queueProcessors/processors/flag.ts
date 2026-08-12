@@ -6,6 +6,7 @@ import { Post, PostReport, User } from '../../models/index.js'
 import { logger } from '../../utils/logger.js'
 import sendEmail from '../../utils/sendEmail.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
+import { notifyAdminsOfReports } from '../../services/reportNotifications.js'
 
 async function flagActivity(body: activityPubObject, remoteUser: User, user: User) {
   const apObject: activityPubObject = body
@@ -51,6 +52,10 @@ async function flagActivity(body: activityPubObject, remoteUser: User, user: Use
           postId: elem
         }
       })
+    )
+    await notifyAdminsOfReports(
+      foundPostsIds.map((postId) => ({ reporterId: remoteUser.id, postId })),
+      apObject.content ?? ''
     )
   }
 }

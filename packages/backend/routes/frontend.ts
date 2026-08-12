@@ -359,7 +359,7 @@ const postSearchAttributes = async function (options?: { id?: string; onlyArticl
       },
       {
         model: Media,
-        attributes: ['NSFW', 'url', 'external', 'description']
+        attributes: ['NSFW', 'url', 'external', 'description', 'mediaOrder']
       },
       {
         model: Emoji,
@@ -449,7 +449,9 @@ async function getPostSEOCache(id: string): Promise<MetaTagOptions & { content?:
     res.description = `${contentSanitized}${quotedPostContent}${askedPostContent}`.substring(0, 300)
   }
 
-  const safeMedia = post.medias.filter((media) => media.NSFW === false)
+  const safeMedia = post.medias
+    .filter((media) => media.NSFW === false)
+    .sort((a, b) => a.mediaOrder - b.mediaOrder)
   // Only send back the first image (maybe multiple later?)
   const firstSafeMedia = safeMedia.at(0)
   if (firstSafeMedia) {

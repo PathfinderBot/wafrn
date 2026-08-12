@@ -325,8 +325,8 @@ body {
 
 /* Horizontal Media Carousel. Disabled by default. */
 .media-gallery.media-carousel {
-  --media-height: max(fit-content, 512px);
-  --media-width: max(fit-content, 512px);
+  --media-height: clamp(512px, 60dvh, 900px);
+  --media-width: clamp(512px, 60dvh, 900px);
   flex-direction: row !important;
   align-items: center;
   gap: 12px !important;
@@ -364,8 +364,8 @@ body {
   }
 
   .displayed-image {
-    height: var(--media-height);
-    width: var(--media-width);
+    height: var(--media-height) !important;
+    width: var(--media-width) !important;
     border-radius: var(--mat-sys-corner-small) !important;
   }
 }
