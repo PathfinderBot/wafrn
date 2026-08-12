@@ -61,6 +61,20 @@ export class PendingUsersComponent {
     this.reloadList()
   }
 
+  async rejectUser(user: SimplifiedUser) {
+    const res = await this.simpleDialog.createPromptDialog({
+      title: 'dialog.admin.rejectUserTitle',
+      titleSuffix: user.url,
+      content: 'dialog.admin.rejectUserReasonDescription',
+      label: 'dialog.admin.rejectUserReasonLabel'
+    })
+
+    if (!res?.confirmed || !res.value) return
+
+    await this.adminService.rejectUser(user.id, res.value)
+    this.reloadList()
+  }
+
   async blockIp(user: SimplifiedUser) {
     const confirm = await this.simpleDialog.createConfirmDialog({
       title: 'dialog.admin.blockIpTitle',

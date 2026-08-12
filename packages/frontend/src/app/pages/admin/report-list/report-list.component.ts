@@ -168,7 +168,8 @@ export class ReportListComponent implements OnInit {
       return
     }
     reason = dialogRes.value
-    this.adminService.forceCWPost(postId, reason)
+    await this.adminService.forceCWPost(postId, reason)
+    this.loadReports()
   }
 
   async forceNSFW(report: UserReport) {
@@ -285,5 +286,6 @@ ${group.length !== 1 ? ')' : ''}`
 
   async deletePost(id: string) {
     await this.deletePostService.deletePost(id)
+    this.loadReports()
   }
 }

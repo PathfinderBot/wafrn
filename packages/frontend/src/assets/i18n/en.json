@@ -745,6 +745,9 @@
       "requireExtraStepsDescription": "User will be sent an email with additional steps.",
       "userUsedVPNTitle": "Mark user as using a VPN",
       "userUsedVPNDescription": "User will be sent an email that VPNs are not allowed and their registration will be deleted.",
+      "rejectUserTitle": "Reject registration",
+      "rejectUserReasonLabel": "Reason",
+      "rejectUserReasonDescription": "User will receive this reason in their rejection email and their registration will be deleted.",
       "promptBanTitle": "Ban",
       "promptForceCwPostTitle": "Force CW on woot",
       "promptBanReasonLabel": "Reason",
@@ -1022,6 +1025,7 @@
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
       "userUsedVPN": "User used VPN",
+      "rejectUser": "Reject user",
       "blockIp": "Block IP",
       "usersLoader": "users",
       "noUsersPending": "No users pending approval!"

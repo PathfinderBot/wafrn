@@ -17,6 +17,7 @@ import getUserAgent from '../utils/getUserAgent.js'
 import { getUserIdFromRemoteId } from '../utils/cacheGetters/getUserIdFromRemoteId.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { clearUserCache } from '../utils/clearUserCache.js'
+import { clearStaleBskyIdentity } from '../atproto/utils/getAtprotoUser.js'
 
 const mergeUsersQueue = getQueue('mergeUsers')
 
@@ -171,6 +172,9 @@ async function getRemoteActorIdProcessor(job: Job): Promise<string | null> {
           } else {
             userRes = await User.create(userData)
           }
+        }
+        if (userRes?.bskyDid) {
+          await clearStaleBskyIdentity(userRes)
         }
         if (userRes && userRes.id && userRes.url != completeEnvironment.deletedUser && userPetition) {
           try {
