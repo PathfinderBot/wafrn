@@ -153,10 +153,12 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
 
   const rawContentWarning = post.content_warning?.trim() ?? ''
-  // when the CW text is just the default text of the chosen bluesky self-label (eg "sexual"), the structured
-  // atproto label already conveys it, so we skip the redundant [CW] prefix in the post text on bluesky
+  // when the CW text is just the default text of one of the chosen bluesky self-labels (eg "sexual" or
+  // "graphic-media"), the structured atproto label already conveys it, so we skip the redundant [CW] prefix
+  // in the post text on bluesky
   const cwTextIsDefaultBlueskyLabel =
-    !!post.blueskySelfLabel && rawContentWarning.toLowerCase() === post.blueskySelfLabel.toLowerCase()
+    (!!post.blueskySelfLabel && rawContentWarning.toLowerCase() === post.blueskySelfLabel.toLowerCase()) ||
+    (post.blueskyGraphicMedia && rawContentWarning.toLowerCase() === 'graphic-media')
   const contentWarning = rawContentWarning && !cwTextIsDefaultBlueskyLabel ? `[${rawContentWarning}]\n` : ''
   const postTags = (await post.getPostTags()).map((elem) => elem.tagName)
   const tags = postTags.join('\n')
@@ -353,12 +355,21 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   postText = builder.text
 
   if (rawContentWarning != '' || medias.some((media) => media.NSFW)) {
-    const selfLabelValue = (BlueskySelfLabels as readonly string[]).includes(post.blueskySelfLabel as string)
-      ? (post.blueskySelfLabel as string)
-      : 'graphic-media'
+    // sexual-content labels (porn/sexual/nudity) are mutually exclusive with each other on bluesky, but
+    // graphic-media is an independent axis and can be combined with any of them
+    const selfLabelValues: string[] = []
+    if ((BlueskySelfLabels as readonly string[]).includes(post.blueskySelfLabel as string)) {
+      selfLabelValues.push(post.blueskySelfLabel as string)
+    }
+    if (post.blueskyGraphicMedia) {
+      selfLabelValues.push('graphic-media')
+    }
+    if (selfLabelValues.length === 0) {
+      selfLabelValues.push('graphic-media')
+    }
     labels = {
       $type: 'com.atproto.label.defs#selfLabels',
-      values: [{ val: selfLabelValue }]
+      values: selfLabelValues.map((val) => ({ val }))
     }
   }
 

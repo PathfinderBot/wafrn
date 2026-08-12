@@ -423,6 +423,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
         const blueskySelfLabel = (BlueskySelfLabels as readonly string[]).includes(req.body.blueskySelfLabel)
           ? req.body.blueskySelfLabel
           : null
+        const blueskyGraphicMedia = !!req.body.blueskyGraphicMedia
         let mediaToAdd: any[] = []
         const avaiableEmojis = await getAvaiableEmojisUncached()
         // we parse the content and we search emojis:
@@ -578,6 +579,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
           post.blueskySelfLabel = blueskySelfLabel
+          post.blueskyGraphicMedia = blueskyGraphicMedia
           post.privacy = bodyPrivacy
           post.language = filterLanguageCode(req.body.language)
           await post.save()
@@ -634,6 +636,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             content,
             content_warning,
             blueskySelfLabel,
+            blueskyGraphicMedia,
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,

@@ -120,6 +120,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   lockIcon = faLock
   movedAccountIcon = faPlaneDeparture
   refetchUserIcon = faRefresh
+  profileLinksIcon = faChevronDown
   allowAsk = false
   allowRemoteAsk = false
   isBlueskyUser = false
@@ -129,11 +130,28 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   instanceHostname = new URL(EnvironmentService.environment.frontUrl).hostname
 
   atprotoProfileUrl = computed<string>(() => {
-    const did = this.blogDetails()?.bskyDid
+    const blog = this.blogDetails()
+    const did = blog?.bskyDid
     if (!did) return ''
+    // alternateUrl on ap.brid.gy is just the AP-side mirror of a fedi-native account,
+    // not a genuine atproto identity, so don't link to it as if it were one
+    if (blog.alternateUrl?.toLowerCase().endsWith('ap.brid.gy')) return ''
     const dest = this.settingsService.values().atprotoLinkDestination || 'bsky.app'
     return `https://${dest}/profile/${did}`
   })
+
+  // link to the fediverse instance a remote user originally comes from. Not shown for
+  // users that only exist on the fediverse because of the bsky brid.gy bridge, since
+  // that's just a reflection of their bluesky account rather than a genuine instance
+  fediverseInstanceUrl = computed<string>(() => {
+    const blog = this.blogDetails()
+    if (!blog?.url?.startsWith('@')) return ''
+    if (blog.url.split('@').length !== 3) return ''
+    if (blog.url.toLowerCase().endsWith('brid.gy')) return ''
+    return blog.displayUrl || blog.remoteId
+  })
+
+  showProfileLinksMenu = computed<boolean>(() => !!this.atprotoProfileUrl() || !!this.fediverseInstanceUrl())
 
   fediComp = computed<{ name: string; value: string }[]>(() => {
     const fediAttachment = this.blogDetails()?.publicOptions.find(

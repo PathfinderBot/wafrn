@@ -149,6 +149,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   userSelectionMentionValue = ''
   contentWarning = ''
   blueskySelfLabel = ''
+  blueskyGraphicMedia = false
   enablePrivacyEdition = true
   pollQuestions: QuestionPollQuestion[] = []
   disableImageUploadButton = false
@@ -231,11 +232,10 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       viewValue: this.translateService.instant('editor.interactionControl.noOneCanQuote')
     }
   ]
+  // sexual/nudity/porn are mutually exclusive on bluesky, but graphic-media is an independent axis that can
+  // be combined with any of them - see onBlueskyLabelsChange, which enforces that exclusivity on top of this
+  // multi-select chip list (no explicit "none" chip needed: deselecting all chips already means no label)
   blueskySelfLabelOptions = [
-    {
-      value: '',
-      viewValue: this.translateService.instant('editor.blueskySelfLabelNone')
-    },
     {
       value: 'sexual',
       viewValue: this.translateService.instant('editor.blueskySelfLabelSexual')
@@ -330,6 +330,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     if (this.data?.post) {
       this.contentWarning = this.data.post.content_warning ?? ''
       this.blueskySelfLabel = this.data.post.blueskySelfLabel ?? ''
+      this.blueskyGraphicMedia = this.data.post.blueskyGraphicMedia ?? false
       this.privacy = Math.max(this.data.post.privacy, this.privacy)
     }
     this.emojiSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
@@ -382,6 +383,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       }
       this.contentWarning = this.data.post.content_warning ?? ''
       this.blueskySelfLabel = this.data.post.blueskySelfLabel ?? ''
+      this.blueskyGraphicMedia = this.data.post.blueskyGraphicMedia ?? false
       this.tags = this.data.post.tags.map((tag) => tag.tagName).join(',')
       this.uploadedMedias = this.data.post.medias ? this.data.post.medias.filter((elem) => elem.mediaOrder < 9999) : []
       this.privacy = this.data.post.privacy
@@ -699,6 +701,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       idPostToReblog: this.editing ? undefined : this.idPostToReblog,
       contentWarning: this.contentWarning,
       blueskySelfLabel: this.blueskySelfLabel || undefined,
+      blueskyGraphicMedia: this.blueskyGraphicMedia,
       idPostToEdit: this.editing ? this.idPostToReblog : undefined,
       idPosToQuote: this.data?.quote?.id,
       ask: this.data?.ask,
@@ -834,7 +837,33 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.mentionedUsers.splice(index, 1)
   }
 
-  onBlueskySelfLabelChange(value: string | undefined): void {
+  // combined value backing the multi-select bluesky label chip list (blueskySelfLabel + blueskyGraphicMedia)
+  get selectedBlueskyLabels(): string[] {
+    const result: string[] = []
+    if (this.blueskySelfLabel) result.push(this.blueskySelfLabel)
+    if (this.blueskyGraphicMedia) result.push('graphic-media')
+    return result
+  }
+
+  onBlueskyLabelsChange(newSelection: string[]): void {
+    const sexualGroup = ['sexual', 'nudity', 'porn']
+    const newSexualSelections = newSelection.filter((value) => sexualGroup.includes(value))
+    // sexual/nudity/porn are mutually exclusive on bluesky - if the user just clicked a second one while
+    // another was already active, keep only the newly clicked chip and drop the old one
+    const newlyClickedSexual = newSexualSelections.find((value) => value !== this.blueskySelfLabel)
+    const finalSexualLabel = newSexualSelections.length <= 1 ? (newSexualSelections[0] ?? '') : (newlyClickedSexual ?? '')
+
+    if (finalSexualLabel !== this.blueskySelfLabel) {
+      this.onBlueskySelfLabelChange(finalSexualLabel)
+    }
+
+    const graphicMedia = newSelection.includes('graphic-media')
+    if (graphicMedia !== this.blueskyGraphicMedia) {
+      this.onBlueskyGraphicMediaChange(graphicMedia)
+    }
+  }
+
+  private onBlueskySelfLabelChange(value: string | undefined): void {
     const previousValue = this.blueskySelfLabel
     // only auto-update the CW text if it's empty or still matches what the previous chip filled in -
     // once the user edits it by hand it no longer tracks the chip selection. the fill text is the raw label
@@ -847,6 +876,21 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     if (cwFollowsChipSelection) {
       this.contentWarning = value ?? ''
       this.showContentWarning = true
+    }
+  }
+
+  private onBlueskyGraphicMediaChange(checked: boolean): void {
+    // "graphic-media" is independent from the sexual-content chip above (bluesky allows combining them),
+    // so it gets the same empty-CW auto-fill treatment rather than replacing the chip selection
+    const cwFollowsGraphicMediaLabel = this.contentWarning.trim() === '' || this.contentWarning.trim() === 'graphic-media'
+
+    this.blueskyGraphicMedia = checked
+
+    if (checked && cwFollowsGraphicMediaLabel) {
+      this.contentWarning = 'graphic-media'
+      this.showContentWarning = true
+    } else if (!checked && this.contentWarning.trim() === 'graphic-media') {
+      this.contentWarning = ''
     }
   }
 
@@ -867,7 +911,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   calculateBskyPostLength() {
     const cwTextIsDefaultBlueskyLabel =
-      !!this.blueskySelfLabel && this.contentWarning.trim().toLowerCase() === this.blueskySelfLabel.toLowerCase()
+      (!!this.blueskySelfLabel && this.contentWarning.trim().toLowerCase() === this.blueskySelfLabel.toLowerCase()) ||
+      (this.blueskyGraphicMedia && this.contentWarning.trim().toLowerCase() === 'graphic-media')
     const cwText =
       this.contentWarning.length > 0 && !cwTextIsDefaultBlueskyLabel ? `[${this.contentWarning.trim()}]\n` : ''
     const tagText =

@@ -145,8 +145,9 @@
         <section class="px-3 my-2">
           <div class="mb-1">{{ 'editor.blueskySelfLabel' | translate }}</div>
           <mat-chip-listbox
-            [(ngModel)]="blueskySelfLabel"
-            (change)="onBlueskySelfLabelChange($event.value)"
+            multiple
+            [value]="selectedBlueskyLabels"
+            (change)="onBlueskyLabelsChange($event.value)"
             [attr.aria-label]="'editor.blueskySelfLabel' | translate"
           >
             @for (option of blueskySelfLabelOptions; track $index) {

@@ -12,6 +12,7 @@ export interface ProcessedPost {
   id: string
   content_warning: string
   blueskySelfLabel?: string | null
+  blueskyGraphicMedia?: boolean
   muted_words_cw?: string
   content: string
   title?: string

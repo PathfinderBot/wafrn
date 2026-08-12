@@ -44,7 +44,9 @@ import {
 } from 'sequelize'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { sequelize } from './sequelize.js'
-export const BlueskySelfLabels = ['porn', 'sexual', 'nudity', 'graphic-media'] as const
+// Bluesky's sexual-content labels are mutually exclusive with each other, but "graphic media"
+// (violence/gore) is an independent axis and can be combined with any of them - see blueskyGraphicMedia below.
+export const BlueskySelfLabels = ['porn', 'sexual', 'nudity'] as const
 export type BlueskySelfLabel = (typeof BlueskySelfLabels)[number]
 
 export const Privacy = {
@@ -112,6 +114,7 @@ export interface PostAttributes {
   updatedAt?: Date
   content_warning?: string | null
   blueskySelfLabel?: BlueskySelfLabel | null
+  blueskyGraphicMedia?: boolean
   content?: string
   markdownContent?: string
   title?: string
@@ -164,6 +167,13 @@ export class Post extends Model<PostAttributes, PostAttributes> implements PostA
     type: DataType.STRING
   })
   declare blueskySelfLabel: BlueskySelfLabel | null
+
+  @Column({
+    allowNull: false,
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
+  declare blueskyGraphicMedia: boolean
 
   @Column({
     allowNull: true,
