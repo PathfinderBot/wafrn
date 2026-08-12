@@ -82,7 +82,7 @@
             }
           </div>
           <mat-menu #menu="matMenu" xPosition="before">
-            @if (blog.isBlueskyUser && atprotoProfileUrl()) {
+            @if (atprotoProfileUrl()) {
               <a [href]="atprotoProfileUrl()" target="_blank" mat-menu-item>
                 <span class="flex gap-2">
                   <fa-icon [fixedWidth]="true" [icon]="bskyIcon"></fa-icon>

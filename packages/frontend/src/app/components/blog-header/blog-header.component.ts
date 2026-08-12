@@ -131,18 +131,20 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
 
   atprotoProfileUrl = computed<string>(() => {
     const blog = this.blogDetails()
-    const did = blog?.bskyDid
-    if (!did) return ''
-    // alternateUrl on ap.brid.gy is just the AP-side mirror of a fedi-native account,
-    // not a genuine atproto identity, so don't link to it as if it were one
-    if (blog.alternateUrl?.toLowerCase().endsWith('ap.brid.gy')) return ''
+    if (!blog) return ''
     const dest = this.settingsService.values().atprotoLinkDestination || 'bsky.app'
-    return `https://${dest}/profile/${did}`
+    const did = blog.bskyDid
+    if (did) {
+      if (blog.alternateUrl?.toLowerCase().endsWith('ap.brid.gy')) return ''
+      return `https://${dest}/profile/${did}`
+    }
+    const bskyHandle = [blog.alternateUrl, blog.url].find((value) => value && value.split('@').length === 2)
+    if (!bskyHandle) return ''
+    const handle = bskyHandle.replace(/^@/, '')
+    if (handle.toLowerCase().endsWith('ap.brid.gy')) return ''
+    return `https://${dest}/profile/${handle}`
   })
 
-  // link to the fediverse instance a remote user originally comes from. Not shown for
-  // users that only exist on the fediverse because of the bsky brid.gy bridge, since
-  // that's just a reflection of their bluesky account rather than a genuine instance
   fediverseInstanceUrl = computed<string>(() => {
     const blog = this.blogDetails()
     if (!blog?.url?.startsWith('@')) return ''
