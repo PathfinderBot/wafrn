@@ -79,6 +79,8 @@ export interface Environment {
   bskyConstellationUrl: string
   bskySlingshotUrl: string
   bskyJetstreamUrl: string
+  enableBskyFallbackDashboard: boolean
+  enableBskyFallbackNotifications: boolean
   webpushPrivateKey: string
   webpushPublicKey: string
   webpushEmail: string

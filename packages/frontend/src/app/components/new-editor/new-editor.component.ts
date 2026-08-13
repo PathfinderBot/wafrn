@@ -19,6 +19,7 @@ import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { MatChipsModule } from '@angular/material/chips'
+import { MatButtonToggleModule } from '@angular/material/button-toggle'
 import { FontAwesomeModule, IconDefinition } from '@fortawesome/angular-fontawesome'
 import {
   faClose,
@@ -112,6 +113,7 @@ type EmojiSuggestion = {
     TranslateModule,
     MatBadgeModule,
     MatChipsModule,
+    MatButtonToggleModule,
     MatProgressBarModule,
     MatSelectModule
   ],
@@ -232,9 +234,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       viewValue: this.translateService.instant('editor.interactionControl.noOneCanQuote')
     }
   ]
-  // sexual/nudity/porn are mutually exclusive on bluesky, but graphic-media is an independent axis that can
-  // be combined with any of them - see onBlueskyLabelsChange, which enforces that exclusivity on top of this
-  // multi-select chip list (no explicit "none" chip needed: deselecting all chips already means no label)
+  // sexual/nudity/porn are mutually exclusive on bluesky, but graphic-media is independent
   blueskySelfLabelOptions = [
     {
       value: 'sexual',
@@ -247,12 +247,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     {
       value: 'porn',
       viewValue: this.translateService.instant('editor.blueskySelfLabelPorn')
-    },
-    {
-      value: 'graphic-media',
-      viewValue: this.translateService.instant('editor.blueskySelfLabelGraphicMedia')
     }
   ]
+  blueskyGraphicMediaOption = {
+    value: 'graphic-media',
+    viewValue: this.translateService.instant('editor.blueskySelfLabelGraphicMedia')
+  }
   canReplyOptions = [
     {
       value: InteractionControl.Anyone,
@@ -837,26 +837,24 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.mentionedUsers.splice(index, 1)
   }
 
-  // combined value backing the multi-select bluesky label chip list (blueskySelfLabel + blueskyGraphicMedia)
-  get selectedBlueskyLabels(): string[] {
-    const result: string[] = []
-    if (this.blueskySelfLabel) result.push(this.blueskySelfLabel)
-    if (this.blueskyGraphicMedia) result.push('graphic-media')
-    return result
+  get selectedBlueskySelfLabels(): string[] {
+    return this.blueskySelfLabel ? [this.blueskySelfLabel] : []
   }
 
-  onBlueskyLabelsChange(newSelection: string[]): void {
-    const sexualGroup = ['sexual', 'nudity', 'porn']
-    const newSexualSelections = newSelection.filter((value) => sexualGroup.includes(value))
-    // sexual/nudity/porn are mutually exclusive on bluesky - if the user just clicked a second one while
-    // another was already active, keep only the newly clicked chip and drop the old one
-    const newlyClickedSexual = newSexualSelections.find((value) => value !== this.blueskySelfLabel)
-    const finalSexualLabel = newSexualSelections.length <= 1 ? (newSexualSelections[0] ?? '') : (newlyClickedSexual ?? '')
+  get selectedBlueskyGraphicMediaLabels(): string[] {
+    return this.blueskyGraphicMedia ? ['graphic-media'] : []
+  }
+
+  onBlueskySelfLabelToggleChange(newSelection: string[]): void {
+    const newlyClicked = newSelection.find((value) => value !== this.blueskySelfLabel)
+    const finalSexualLabel = newSelection.length <= 1 ? (newSelection[0] ?? '') : (newlyClicked ?? '')
 
     if (finalSexualLabel !== this.blueskySelfLabel) {
       this.onBlueskySelfLabelChange(finalSexualLabel)
     }
+  }
 
+  onBlueskyGraphicMediaToggleChange(newSelection: string[]): void {
     const graphicMedia = newSelection.includes('graphic-media')
     if (graphicMedia !== this.blueskyGraphicMedia) {
       this.onBlueskyGraphicMediaChange(graphicMedia)
@@ -880,8 +878,6 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   private onBlueskyGraphicMediaChange(checked: boolean): void {
-    // "graphic-media" is independent from the sexual-content chip above (bluesky allows combining them),
-    // so it gets the same empty-CW auto-fill treatment rather than replacing the chip selection
     const cwFollowsGraphicMediaLabel = this.contentWarning.trim() === '' || this.contentWarning.trim() === 'graphic-media'
 
     this.blueskyGraphicMedia = checked

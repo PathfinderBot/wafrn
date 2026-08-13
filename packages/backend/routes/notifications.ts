@@ -271,7 +271,12 @@ function notificationRoutes(app: Application) {
   app.get('/api/v2/notificationsCount', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
     const user = await User.findByPk(userId)
-    if (user?.enableBsky && completeEnvironment.enableBsky && user?.bskyDid) {
+    if (
+      user?.enableBsky &&
+      completeEnvironment.enableBsky &&
+      completeEnvironment.enableBskyFallbackNotifications &&
+      user?.bskyDid
+    ) {
       try {
         /**
          * We do this thing asyncronously, no need to wait. we try obtaining replies, as its the most important bit!

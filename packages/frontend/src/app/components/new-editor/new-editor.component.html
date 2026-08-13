@@ -144,16 +144,28 @@
       @if (showBlueskyOptions) {
         <section class="px-3 my-2">
           <div class="mb-1">{{ 'editor.blueskySelfLabel' | translate }}</div>
-          <mat-chip-listbox
-            multiple
-            [value]="selectedBlueskyLabels"
-            (change)="onBlueskyLabelsChange($event.value)"
-            [attr.aria-label]="'editor.blueskySelfLabel' | translate"
-          >
-            @for (option of blueskySelfLabelOptions; track $index) {
-              <mat-chip-option [value]="option.value">{{ option.viewValue }}</mat-chip-option>
-            }
-          </mat-chip-listbox>
+          <div class="flex gap-2 align-items-center flex-wrap">
+            <mat-button-toggle-group
+              multiple
+              [value]="selectedBlueskySelfLabels"
+              (change)="onBlueskySelfLabelToggleChange($event.value)"
+              [attr.aria-label]="'editor.blueskySelfLabel' | translate"
+            >
+              @for (option of blueskySelfLabelOptions; track $index) {
+                <mat-button-toggle [value]="option.value">{{ option.viewValue }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+            <mat-chip-listbox
+              multiple
+              [value]="selectedBlueskyGraphicMediaLabels"
+              (change)="onBlueskyGraphicMediaToggleChange($event.value)"
+              [attr.aria-label]="'editor.blueskySelfLabel' | translate"
+            >
+              <mat-chip-option [value]="blueskyGraphicMediaOption.value">{{
+                blueskyGraphicMediaOption.viewValue
+              }}</mat-chip-option>
+            </mat-chip-listbox>
+          </div>
         </section>
       }
       <section class="px-3 my-2">

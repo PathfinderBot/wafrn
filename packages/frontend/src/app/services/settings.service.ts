@@ -1120,15 +1120,7 @@ export class SettingsService {
         { type: 'key', value: 'replaceAIWord' },
         { type: 'separator' },
         { type: 'component', value: new ComponentPortal(CrashButtonComponent) },
-        { type: 'link', value: 'menu.settings.superSecretMenu', route: '/doom' },
-        { type: 'separator' },
-        { type: 'header', value: 'Old Settings' },
-        { type: 'link', value: 'Old Settings (deprecated!!)', route: '/profile/edit' },
-        {
-          type: 'description',
-          value:
-            'Old settings are being deprecated but they are still accessible in case the new settings are broken in some way'
-        }
+        { type: 'link', value: 'menu.settings.superSecretMenu', route: '/doom' }
       ]
     }
   ]

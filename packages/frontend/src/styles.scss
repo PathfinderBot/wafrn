@@ -337,9 +337,10 @@ body {
 
   app-wafrn-media {
     box-sizing: border-box;
-    width: var(--media-width);
+    width: fit-content;
     height: 100%;
     max-height: 90dvh;
+    max-width: 85dvw;
     flex-shrink: 0;
     border-radius: var(--mat-sys-corner-small);
     max-width: 95%;
@@ -364,8 +365,10 @@ body {
   }
 
   .displayed-image {
-    height: var(--media-height) !important;
-    width: var(--media-width) !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: var(--media-width) !important;
+    max-height: var(--media-height) !important;
     border-radius: var(--mat-sys-corner-small) !important;
   }
 }

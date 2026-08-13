@@ -11,6 +11,7 @@ import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getUnjointedPosts } from '../services/baseQueryNew.js'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
+import { resolveHandle } from '../atproto/utils/resolveHandleToDid.js'
 import { logger } from '../utils/logger.js'
 import { Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -82,8 +83,8 @@ export default function searchRoutes(app: Application) {
               let bskyProfile = profileAndPost[0]
               const bskyUri = profileAndPost[1]
               if (!bskyProfile.startsWith('did:')) {
-                const profileToGet = await getAtprotoUser(`${bskyProfile}`)
-                if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
+                const resolvedDid = await resolveHandle(bskyProfile, false)
+                if (resolvedDid) bskyProfile = resolvedDid
               }
               uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
             }

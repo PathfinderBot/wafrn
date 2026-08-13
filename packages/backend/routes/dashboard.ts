@@ -157,7 +157,13 @@ export default function dashboardRoutes(app: Application) {
             ])
           const hiddenRepliesUserIds = hiddenRepliesFollows.map((follow) => follow.followedId)
 
-          if (completeEnvironment.enableBsky && user && user.enableBsky && user.bskyDid) {
+          if (
+            completeEnvironment.enableBsky &&
+            completeEnvironment.enableBskyFallbackDashboard &&
+            user &&
+            user.enableBsky &&
+            user.bskyDid
+          ) {
             try {
               // we give bluesky 2.5 seconds to load
               await promiseRace([handleBskyFeed(user, getStartScrollParam(req))], 2500)
