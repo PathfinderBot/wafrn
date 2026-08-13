@@ -213,7 +213,7 @@ function authRoutes(app: Application) {
               emailVerified: false
             }
 
-            const userWithEmail = User.create(user)
+            const userWithEmail = await User.create(user)
 
             if (inviteCode) {
               await follow(id, inviteCode.createdByUserId)
