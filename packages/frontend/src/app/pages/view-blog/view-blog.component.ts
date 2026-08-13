@@ -86,6 +86,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   private cdr = inject(ChangeDetectorRef)
 
   loading = signal<boolean>(true)
+  errorLoadingPosts = signal<boolean>(false)
   noMorePosts = false
   found = true
   requiresLogin = false
@@ -267,6 +268,11 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     this.rateLimitLoadSubject.next()
   }
 
+  retryLoadPosts() {
+    this.errorLoadingPosts.set(false)
+    this.loadPosts(this.currentPage)
+  }
+
   async themeExists(theme: string): Promise<boolean> {
     const res = await firstValueFrom(
       this.http.get(`${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css`, {
@@ -290,14 +296,26 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     }
 
     this.loading.set(true)
+    this.errorLoadingPosts.set(false)
     const currentTab = this.activeTabName()
-    const tmpPosts = await this.dashboardService.getBlogPage(
-      page,
-      this.blogUrl,
-      timeScrollStart,
-      featured,
-      currentTab == 'blog.tabMedia'
-    )
+    let tmpPosts: ProcessedPost[][]
+    try {
+      tmpPosts = await this.dashboardService.getBlogPage(
+        page,
+        this.blogUrl,
+        timeScrollStart,
+        featured,
+        currentTab == 'blog.tabMedia'
+      )
+    } catch (error) {
+      if (!featured) {
+        this.currentPage -= 1
+      }
+      this.loading.set(false)
+      this.errorLoadingPosts.set(true)
+      this.cdr.detectChanges()
+      return
+    }
     const filteredPosts = tmpPosts.filter((post: ProcessedPost[]) => {
       let allFragmentsSeen = true
       post.forEach((component) => {

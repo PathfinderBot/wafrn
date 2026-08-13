@@ -365,7 +365,9 @@
     "selectServerBlocksPage": "Select page of server blocks",
     "requiresLoginTitle": "Login required",
     "requiresLoginMessage": "This profile is only visible to logged in users.",
-    "requiresLoginButton": "Log in"
+    "requiresLoginButton": "Log in",
+    "errorLoadingPosts": "Something went wrong",
+    "retry": "Retry"
   },
   "about": {
     "showBubbledServers": "Show list of bubbled servers",
@@ -1116,6 +1118,8 @@
     "noPrivateMessages": "You have no private messages!",
     "noSilencedPosts": "No silenced woots to show!",
     "noDrafts": "You have no drafts!",
-    "noBookmarkedPosts": "You have no bookmarked woots!"
+    "noBookmarkedPosts": "You have no bookmarked woots!",
+    "errorLoadingPosts": "Something went wrong",
+    "retry": "Retry"
   }
 }

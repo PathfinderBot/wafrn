@@ -51,6 +51,7 @@ export class PostListComponent {
   posts = input.required<ProcessedPost[][]>()
   visible = input<boolean>(true) // Disables keybinds, required due to SnappyRouter so we do not act off screen
   loading = input.required<boolean>()
+  error = input<boolean>(false)
   loadPosts = output<void>()
 
   // Evil way of doing this because signals and jank
@@ -89,7 +90,7 @@ export class PostListComponent {
     afterRenderEffect(() => {
       const becameVisible = !this.visible() && this.visiblePreviousState
       this.visiblePreviousState = this.visible()
-      if (!this.visible() || becameVisible) return
+      if (!this.visible() || becameVisible || this.error()) return
 
       const finishedLoading = !this.loading() && this.loadingPreviousState
       this.loadingPreviousState = this.loading()
@@ -115,8 +116,8 @@ export class PostListComponent {
       if (!this.visible()) return
       const entry = entries[0]
 
-      // Do not send the signal if we're already loading or just loaded
-      if (this.loading() || !entry.isIntersecting) return
+      // Do not send the signal if we're already loading, just loaded, or errored out
+      if (this.loading() || this.error() || !entry.isIntersecting) return
 
       this.loadPosts.emit()
     })

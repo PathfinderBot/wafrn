@@ -7,6 +7,7 @@
   [posts]="posts"
   [visible]="snActive"
   [loading]="loadingPosts"
+  [error]="errorLoadingPosts"
   (loadPosts)="rateLimitLoadPosts()"
 ></app-post-list>
 
@@ -17,6 +18,19 @@
   </mat-card>
 }
 
+@if (errorLoadingPosts) {
+  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
+    <h2>{{ 'dashboard.errorLoadingPosts' | translate }}</h2>
+    <button mat-flat-button (click)="retryLoadPosts()">
+      {{ 'dashboard.retry' | translate }}
+    </button>
+  </mat-card>
+}
+
 <footer class="p-8 flex gap-3 align-items-center">
-  <div [hidden]="loadingPosts || noMorePosts" id="if-you-see-this-load-more-posts" class="m-0 text-lg"></div>
+  <div
+    [hidden]="loadingPosts || noMorePosts || errorLoadingPosts"
+    id="if-you-see-this-load-more-posts"
+    class="m-0 text-lg"
+  ></div>
 </footer>

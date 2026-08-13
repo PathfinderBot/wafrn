@@ -128,44 +128,40 @@ export class DashboardService {
     featured?: boolean,
     mediaOnly?: boolean
   ): Promise<ProcessedPost[][]> {
-    try {
-      let result: ProcessedPost[][] = []
-      if (page === 0) {
-        //if we are starting the scroll, we store the current date
-        this.startScrollDate = new Date(startScrollDate ? parseInt(startScrollDate.toString()) : new Date().getTime())
-      }
-      let petitionData: HttpParams = new HttpParams()
-      petitionData = petitionData.set('page', page.toString())
-      petitionData = petitionData.set('mediaOnly', mediaOnly == true)
-      petitionData = petitionData.set('startScroll', this.startScrollDate.getTime().toString())
-      petitionData = petitionData.set('id', blogId)
-      if (featured) {
-        petitionData = petitionData.set('featured', true)
-      }
-      const dashboardPetition: unlinkedPosts = await firstValueFrom(
-        this.http.get<unlinkedPosts>(`${EnvironmentService.environment.baseUrl}/v2/blog`, {
-          params: petitionData
-        })
-      )
-      if (dashboardPetition) {
-        result = this.postRenderingService.processPostNew(dashboardPetition)
-        this.startScrollDate = new Date(
-          Math.min(...result.map((elem) => new Date(elem[elem.length - 1].createdAt).getTime())) - 1
-        )
-        if (result.length === 0) {
-          this.startScrollDate = new Date(0)
-        }
-        result = result.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, false))
-      } else {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Something went wrong :('
-        })
-      }
-      return result
-    } catch (error) {
-      return [[]]
+    let result: ProcessedPost[][] = []
+    if (page === 0) {
+      //if we are starting the scroll, we store the current date
+      this.startScrollDate = new Date(startScrollDate ? parseInt(startScrollDate.toString()) : new Date().getTime())
     }
+    let petitionData: HttpParams = new HttpParams()
+    petitionData = petitionData.set('page', page.toString())
+    petitionData = petitionData.set('mediaOnly', mediaOnly == true)
+    petitionData = petitionData.set('startScroll', this.startScrollDate.getTime().toString())
+    petitionData = petitionData.set('id', blogId)
+    if (featured) {
+      petitionData = petitionData.set('featured', true)
+    }
+    const dashboardPetition: unlinkedPosts = await firstValueFrom(
+      this.http.get<unlinkedPosts>(`${EnvironmentService.environment.baseUrl}/v2/blog`, {
+        params: petitionData
+      })
+    )
+    if (dashboardPetition) {
+      result = this.postRenderingService.processPostNew(dashboardPetition)
+      this.startScrollDate = new Date(
+        Math.min(...result.map((elem) => new Date(elem[elem.length - 1].createdAt).getTime())) - 1
+      )
+      if (result.length === 0) {
+        this.startScrollDate = new Date(0)
+      }
+      result = result.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, false))
+    } else {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Something went wrong :('
+      })
+    }
+    return result
   }
 
   async getBlogDetails(url: string, ignoreEmojis = false) {

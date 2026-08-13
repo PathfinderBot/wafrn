@@ -45,6 +45,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
 
   loadingPosts = false
   noMorePosts = false
+  errorLoadingPosts = false
   posts: ProcessedPost[][] = []
   viewedPostsNumber = 0
   viewedPostsIds: string[] = []
@@ -181,15 +182,30 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     this.rateLimitLoadSubject.next()
   }
 
+  retryLoadPosts() {
+    this.errorLoadingPosts = false
+    this.loadPosts(this.currentPage)
+  }
+
   async loadPosts(page: number) {
     this.currentPage += 1
     this.loadingPosts = true
+    this.errorLoadingPosts = false
     let scrollDate = new Date(this.timestamp)
     if (page == 0) {
       scrollDate = new Date()
       this.timestamp = scrollDate.getTime()
     }
-    const tmpPosts = await this.dashboardService.getDashboardPage(scrollDate, this.level, page == 0 ? -1 : page)
+    let tmpPosts: ProcessedPost[][]
+    try {
+      tmpPosts = await this.dashboardService.getDashboardPage(scrollDate, this.level, page == 0 ? -1 : page)
+    } catch (error) {
+      this.currentPage -= 1
+      this.loadingPosts = false
+      this.errorLoadingPosts = true
+      this.cdr.detectChanges()
+      return
+    }
     this.noMorePosts = tmpPosts.length === 0
     if (this.noMorePosts && page == 0 && this.level === 1) {
       // no posts, no followers no nothing. lets a go to explore local
