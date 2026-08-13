@@ -362,7 +362,10 @@
     "acceptFollower": "Accept this follower",
     "removeFollower": "Remove this follower",
     "selectFollowsPage": "Select page of follows",
-    "selectServerBlocksPage": "Select page of server blocks"
+    "selectServerBlocksPage": "Select page of server blocks",
+    "requiresLoginTitle": "Login required",
+    "requiresLoginMessage": "This profile is only visible to logged in users.",
+    "requiresLoginButton": "Log in"
   },
   "about": {
     "showBubbledServers": "Show list of bubbled servers",

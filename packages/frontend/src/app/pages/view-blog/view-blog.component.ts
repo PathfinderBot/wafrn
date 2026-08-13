@@ -17,6 +17,7 @@ import {
   faHeart,
   faHeartBroken,
   faHome,
+  faLock,
   faReply,
   faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons'
@@ -87,6 +88,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   loading = signal<boolean>(true)
   noMorePosts = false
   found = true
+  requiresLogin = false
   viewedPosts = 0
   currentPage = 0
   posts: ProcessedPost[][] = []
@@ -106,6 +108,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   quickReblogIcon = faClockRotateLeft
   reportIcon = faTriangleExclamation
   homeIcon = faHome
+  lockIcon = faLock
 
   scrollId!: number
   viewingPost!: WritableSignal<boolean>
@@ -182,8 +185,11 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       this.blogUrl = blogUrl
     }
 
-    const blogResponse = await this.dashboardService.getBlogDetails(this.blogUrl).catch(() => {
+    this.found = true
+    this.requiresLogin = false
+    const blogResponse = await this.dashboardService.getBlogDetails(this.blogUrl).catch((error) => {
       this.found = false
+      this.requiresLogin = error?.status === 403
       this.loading.set(false)
     })
 

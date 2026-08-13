@@ -369,7 +369,7 @@ function userRoutes(app: Application) {
           attributes: ['hideProfileNotLoggedIn']
         })
         if (user?.hideProfileNotLoggedIn) {
-          res.sendStatus(404)
+          res.status(403).send({ status: 'login_required' })
           return
         }
       }

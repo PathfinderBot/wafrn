@@ -1,6 +1,23 @@
 @let loggedIn = this.loginService.loggedIn.value;
 @if (!loading() && !found) {
-  <app-pagenotfound />
+  @if (requiresLogin) {
+    <mat-card class="mb-6 lg:mx-4 mat-card-higher wafrn-container">
+      <mat-card-header class="pb-3 wafrn-container-header">
+        <mat-card-title class="flex gap-2"
+          ><fa-icon [icon]="lockIcon"></fa-icon
+          ><span class="font-medium">{{ 'blog.requiresLoginTitle' | translate }}</span></mat-card-title
+        >
+      </mat-card-header>
+      <section class="my-6 mx-3 text-center">
+        <p>{{ 'blog.requiresLoginMessage' | translate }}</p>
+      </section>
+      <section class="mx-3 mb-3">
+        <a class="w-full" [routerLink]="'/login'" mat-stroked-button>{{ 'blog.requiresLoginButton' | translate }}</a>
+      </section>
+    </mat-card>
+  } @else {
+    <app-pagenotfound />
+  }
 } @else {
   <app-blog-header class="block" [blogDetails]="blogDetails()"></app-blog-header>
   <mat-tab-group
