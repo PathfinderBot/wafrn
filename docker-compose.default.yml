@@ -163,6 +163,8 @@ services:
       PDS_REPORT_SERVICE_URL: "https://mod.bsky.app"
       PDS_REPORT_SERVICE_DID: "did:plc:ar7c4by46qjdydhdevvrndac"
       PDS_CRAWLERS: "https://bsky.network"
+      PDS_RATE_LIMITS_ENABLED: ${PDS_RATE_LIMITS_ENABLED:-false}
+      PDS_RATE_LIMIT_BYPASS_IPS: ${PDS_RATE_LIMIT_BYPASS_IPS:-172.16.0.0/12,127.0.0.1}
       LOG_LEVEL: "debug"
       LOG_ENABLED: true
       PDS_EMAIL_SMTP_URL: ${PDS_EMAIL_SMTP_URL:-smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}}

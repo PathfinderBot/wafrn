@@ -16,17 +16,26 @@ async function flagActivity(body: activityPubObject, remoteUser: User, user: Use
   const reportedUsersUrl = listOfReportedObjects.filter((elem) =>
     elem.startsWith(`${completeEnvironment.frontendUrl}/fediverse/blog/`)
   )
-  const reportedPostsIds = listOfReportedObjects
-    .filter(
-      (elem) =>
-        elem.startsWith(`${completeEnvironment.frontendUrl}/fediverse/activity/post/`) ||
-        elem.startsWith(`${completeEnvironment.frontendUrl}/fediverse/post/`)
-    )
-    .map((elem) =>
-      elem
-        .replaceAll(`${completeEnvironment.frontendUrl}/fediverse/activity/post/`, '')
-        .replaceAll(`${completeEnvironment.frontendUrl}/fediverse/post/`, '')
-    )
+  const escapedFrontendUrl = completeEnvironment.frontendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const postUrlsInContent = [
+    ...(apObject.content ?? '').matchAll(new RegExp(`${escapedFrontendUrl}/fediverse/(?:activity/)?post/([\\w-]+)`, 'g'))
+  ].map((match) => match[1])
+  const reportedPostsIds = Array.from(
+    new Set([
+      ...listOfReportedObjects
+        .filter(
+          (elem) =>
+            elem.startsWith(`${completeEnvironment.frontendUrl}/fediverse/activity/post/`) ||
+            elem.startsWith(`${completeEnvironment.frontendUrl}/fediverse/post/`)
+        )
+        .map((elem) =>
+          elem
+            .replaceAll(`${completeEnvironment.frontendUrl}/fediverse/activity/post/`, '')
+            .replaceAll(`${completeEnvironment.frontendUrl}/fediverse/post/`, '')
+        ),
+      ...postUrlsInContent
+    ])
+  )
   if (reportedPostsIds.length == 0 && reportedUsersUrl.length > 0) {
     await sendEmail({
       email: completeEnvironment.adminEmail,
