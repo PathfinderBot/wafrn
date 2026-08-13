@@ -69,8 +69,6 @@ There is a convenience script that will generate secret values appropriately. To
 bash install/env_secret_setup.sh
 ```
 
-These settings will significantly reduce resource usage, but will also limit performance and functionality. This approach is only recommended for testing or very small personal instances.
-
 Next you'll need to fill in all of the details of your domain. For example if you're trying to run your website under `wafrn.example.com` (and your DNS is already pointing to the computer running docker) you'll need to update the following details:
 
 ```sh
@@ -208,7 +206,7 @@ In your .env file, add this at the end:
 HTTP_PORT=127.0.0.1:8080
 HTTPS_PORT=127.0.0.1:8433
 PDS_HTTP_PORT=127.0.0.1:3000
-AUTO_HTTPS_MODE=auto_https disable_redirects
+AUTO_HTTPS_MODE="auto_https disable_redirects"
 ```
 
 This will make wafrn listen in the port 8080 without forcing https. And the pds on the port 3000.
