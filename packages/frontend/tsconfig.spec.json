@@ -3,9 +3,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jest"]
+    "types": ["vitest/globals"]
   },
-  "files": ["src/test.ts", "src/polyfills.ts"],
+  "files": ["src/polyfills.ts", "src/setup-vitest.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
   "angularCompilerOptions": {
     "extendedDiagnostics": {

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { provideRouter } from '@angular/router'
 
 import { UpdateEmailComponent } from './update-email.component'
 
@@ -8,7 +9,8 @@ describe('UpdateEmailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UpdateEmailComponent]
+      imports: [UpdateEmailComponent],
+      providers: [provideRouter([])]
     }).compileComponents()
 
     fixture = TestBed.createComponent(UpdateEmailComponent)

@@ -5,7 +5,7 @@ import { Route, RouterModule } from '@angular/router'
 const routes: Route[] = [
   {
     path: 'server-list',
-    loadChildren: () => import('./server-list/server-list.module').then((m) => m.ServerListModule)
+    loadComponent: () => import('./server-list/server-list.component').then((m) => m.ServerListComponent)
   },
   {
     path: 'email-campaign',
@@ -13,7 +13,7 @@ const routes: Route[] = [
   },
   {
     path: 'invite-codes',
-    loadChildren: () => import('./invite-codes/invite-codes.module').then((m) => m.InviteCodesModule)
+    loadComponent: () => import('./invite-codes/invite-codes.component').then((m) => m.InviteCodesComponent)
   },
   {
     path: 'user-blocks',
@@ -21,7 +21,7 @@ const routes: Route[] = [
   },
   {
     path: 'user-reports',
-    loadChildren: () => import('./report-list/report-list.module').then((m) => m.ReportListModule)
+    loadComponent: () => import('./report-list/report-list.component').then((m) => m.ReportListComponent)
   },
   {
     path: 'bans',

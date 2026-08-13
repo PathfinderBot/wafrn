@@ -1,5 +1,14 @@
 import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
-import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
+import { RouterModule } from '@angular/router'
+import { MatCardModule } from '@angular/material/card'
+import { MatButtonModule } from '@angular/material/button'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { TranslateModule } from '@ngx-translate/core'
 import { faUser, faEye, faEyeSlash, faArrowRightToBracket, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
@@ -17,10 +26,22 @@ const loginMessageVariants: string[] = [
 
 @Component({
   selector: 'app-login',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FontAwesomeModule,
+    TranslateModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class LoginComponent implements OnInit {
   private loginService = inject(LoginService)

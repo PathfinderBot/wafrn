@@ -9,7 +9,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
 import { faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 
-import { Router } from '@angular/router'
+import { Router, RouterModule } from '@angular/router'
 import { ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
@@ -19,6 +19,7 @@ import { MessageService } from '../../services/message.service'
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

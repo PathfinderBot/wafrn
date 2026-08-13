@@ -107,9 +107,7 @@
       "id": 2,
       "options": {
         "legend": {
-          "calcs": [
-            "sum"
-          ],
+          "calcs": ["sum"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -131,15 +129,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -154,9 +148,7 @@
           "select": [
             [
               {
-                "params": [
-                  "checkpoints_timed"
-                ],
+                "params": ["checkpoints_timed"],
                 "type": "field"
               },
               {
@@ -164,9 +156,7 @@
                 "type": "last"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -261,9 +251,7 @@
       "id": 4,
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -285,15 +273,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1h"
-              ],
+              "params": ["1h"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -308,9 +292,7 @@
           "select": [
             [
               {
-                "params": [
-                  "checkpoint_write_time"
-                ],
+                "params": ["checkpoint_write_time"],
                 "type": "field"
               },
               {
@@ -318,9 +300,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -417,9 +397,7 @@
       "interval": "60m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -441,15 +419,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "5m"
-              ],
+              "params": ["5m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -464,9 +438,7 @@
           "select": [
             [
               {
-                "params": [
-                  "buffers_checkpoint"
-                ],
+                "params": ["buffers_checkpoint"],
                 "type": "field"
               },
               {
@@ -474,9 +446,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -573,9 +543,7 @@
       "interval": "15m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -597,15 +565,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "5m"
-              ],
+              "params": ["5m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -620,9 +584,7 @@
           "select": [
             [
               {
-                "params": [
-                  "blk_read_time"
-                ],
+                "params": ["blk_read_time"],
                 "type": "field"
               },
               {
@@ -630,9 +592,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -730,9 +690,7 @@
       "interval": "",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -754,15 +712,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "15m"
-              ],
+              "params": ["15m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -777,9 +731,7 @@
           "select": [
             [
               {
-                "params": [
-                  "heap_blks_read"
-                ],
+                "params": ["heap_blks_read"],
                 "type": "field"
               },
               {
@@ -787,9 +739,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -852,9 +802,7 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
@@ -990,17 +938,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "",
   "title": "Checkpointer / Bgwriter / Block IO Stats",

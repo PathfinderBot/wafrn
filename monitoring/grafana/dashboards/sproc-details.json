@@ -91,9 +91,7 @@
       "interval": "2m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -115,15 +113,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -138,9 +132,7 @@
           "select": [
             [
               {
-                "params": [
-                  "sp_calls"
-                ],
+                "params": ["sp_calls"],
                 "type": "field"
               },
               {
@@ -148,9 +140,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -243,15 +233,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "auto"
-              ],
+              "params": ["auto"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -266,9 +252,7 @@
           "select": [
             [
               {
-                "params": [
-                  "total_time"
-                ],
+                "params": ["total_time"],
                 "type": "field"
               },
               {
@@ -276,9 +260,7 @@
                 "type": "mean"
               },
               {
-                "params": [
-                  "1h"
-                ],
+                "params": ["1h"],
                 "type": "non_negative_derivative"
               }
             ]
@@ -339,9 +321,7 @@
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
@@ -478,17 +458,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
   "title": "Sproc details",

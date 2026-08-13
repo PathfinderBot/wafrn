@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core'
-import { PostsService } from './posts.service'
+import { UserOptionsService } from './user-options.service'
 import { HttpClient } from '@angular/common/http'
 import { firstValueFrom } from 'rxjs'
 import { EnvironmentService } from './environment.service'
@@ -8,7 +8,7 @@ import { EnvironmentService } from './environment.service'
   providedIn: 'root'
 })
 export class UtilsService {
-  private postsService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private http = inject(HttpClient)
 
   objectToFormData(obj: any): FormData {
@@ -20,7 +20,7 @@ export class UtilsService {
   }
 
   async getSilencedPostIds(): Promise<string[]> {
-    return this.postsService.silencedPostsIds
+    return this.userOptionsService.silencedPostsIds
   }
 
   async getBlockedServers(): Promise<string[]> {

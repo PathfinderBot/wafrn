@@ -16,7 +16,6 @@ Source repo: https://git.gay/freeplay/UserStyles/src/branch/wah/wafrn
 
 /*** LAYOUT */
 @media (min-width: 993px) {
-
   .wafrn-content,
   .wafrn-container {
     max-width: var(--timeline-width);
@@ -273,7 +272,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
           pointer-events: none;
         }
 
-        &+p {
+        & + p {
           display: contents;
         }
       }
@@ -310,7 +309,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
     }
   }
 
-  app-post-header>div {
+  app-post-header > div {
     position: relative;
     isolation: isolate;
     align-items: flex-start;
@@ -319,7 +318,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
     @media (min-width: 600px) {
       gap: 4px;
 
-      >div:first-child {
+      > div:first-child {
         display: grid !important;
         grid-template-columns: auto minmax(0, max-content) 1fr;
         grid-template-rows: auto auto;
@@ -375,7 +374,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
     }
 
     /* right column */
-    >div:last-child {
+    > div:last-child {
       flex-direction: row !important;
       margin-top: 2px;
 
@@ -396,9 +395,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
   app-post-ribbon .user-link
 
   /* app-post-header .date-line a */
-  /* would be nice but the date tooltip appears which can be annoying */
-    {
-
+  /* would be nice but the date tooltip appears which can be annoying */ {
     /* the header row has position relative */
     &::before {
       content: '';
@@ -471,11 +468,11 @@ app-avatar-small:not(.ask-avatar) .avatar {
   }
 
   /* EXPAND BUTTON */
-  .shortened-post~hr {
+  .shortened-post ~ hr {
     display: none;
   }
 
-  .shortened-post~hr~button {
+  .shortened-post ~ hr ~ button {
     height: 0;
     padding: 25px;
     margin: calc(0px - var(--post-padding)) !important;
@@ -569,7 +566,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
       align-items: center;
       gap: 6px;
 
-      >span:nth-child(2) {
+      > span:nth-child(2) {
         /* count */
         font-weight: bold;
       }
@@ -661,7 +658,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
   }
 
   /* profile details */
-  .blog-header-image+div {
+  .blog-header-image + div {
     .gap-3 {
       flex-direction: column;
       align-items: center;
@@ -681,7 +678,7 @@ app-avatar-small:not(.ask-avatar) .avatar {
     margin: 0 !important;
     gap: 0 10px !important;
 
-    >* {
+    > * {
       margin-block: 10px;
     }
   }

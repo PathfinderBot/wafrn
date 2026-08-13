@@ -39,7 +39,8 @@ import {
   faPencil,
   faQuestion,
   faAngleDown,
-  faMessage
+  faMessage,
+  faFileLines
 } from '@fortawesome/free-solid-svg-icons'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
@@ -61,13 +62,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar'
 import Fuse from 'fuse.js'
 import { MatSelectModule } from '@angular/material/select'
 import { Subscription, Subject, debounceTime, from } from 'rxjs'
-import { BlogDetails } from '../../interfaces/blogDetails'
+import { BlogDetails } from '../../interfaces/blog-details'
 import { EditorData } from '../../interfaces/editor-data'
 import { Emoji } from '../../interfaces/emoji'
 import { EmojiCollection } from '../../interfaces/emoji-collection'
-import { InteractionControl } from '../../interfaces/InteractionControl'
+import { InteractionControl } from '../../interfaces/interaction-control'
 import { ProcessedPost } from '../../interfaces/processed-post'
-import { QuestionPollQuestion } from '../../interfaces/questionPoll'
+import { QuestionPollQuestion } from '../../interfaces/question-poll'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { DashboardService } from '../../services/dashboard.service'
@@ -77,7 +78,7 @@ import { JwtService } from '../../services/jwt.service'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
 import { ParticleService } from '../../services/particle.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { SettingsService } from '../../services/settings.service'
 import { Language } from '../../interfaces/language'
 
@@ -123,7 +124,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService)
   private editorService = inject(EditorService)
   private loginService = inject(LoginService)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   settingsService = inject(SettingsService)
   private jwtService = inject(JwtService)
   private router = inject(Router)
@@ -137,7 +138,8 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     { level: 2, name: 'This instance only', icon: faServer },
     { level: 1, name: 'Followers only', icon: faUser },
     { level: 10, name: 'Direct Message', icon: faEnvelope },
-    { level: 20, name: 'Link Only', icon: faNewspaper }
+    { level: 20, name: 'Link Only', icon: faNewspaper },
+    { level: 30, name: 'Draft', icon: faFileLines }
   ]
   quoteOpen = false
   data: EditorData | undefined
@@ -306,12 +308,12 @@ export class NewEditorComponent implements OnInit, OnDestroy {
       this.contentWarning = this.data.post.content_warning ?? ''
       this.privacy = Math.max(this.data.post.privacy, this.privacy)
     }
-    this.emojiSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.emojiCollections.set([...this.postService.emojiCollections])
+    this.emojiSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.emojiCollections.set([...this.userOptionsService.emojiCollections])
       this.fuse.setCollection(this.emojiProcessed())
-      this.languages = this.postService.languages
+      this.languages = this.userOptionsService.languages
     })
-    this.postService.loadFollowers()
+    this.userOptionsService.loadFollowers()
     const currentUserId = this.jwtService.getTokenData()?.userId
     if (this.data?.post?.mentionPost && this.data.post.mentionPost.length > 0) {
       const mentionedUsersSet = new Set(this.data.post.mentionPost.filter((elem) => elem.id != currentUserId))
@@ -413,12 +415,13 @@ export class NewEditorComponent implements OnInit, OnDestroy {
     this.emojiSuggestions.length = 0
     this.suggestionLoading.set(false)
 
-    const textToMatch = (' ' + newText?.slice(cursorPosition - 250, cursorPosition).replaceAll('\n', ' ')) as string
+    const textToMatch = (' ' +
+      newText?.slice(Math.max(0, cursorPosition - 250), cursorPosition).replaceAll('\n', ' ')) as string
     const match = textToMatch
       .match(/[\n\r\s]?[@:][\w-\.]+@?[\w-\.]*$/)
       ?.at(0)
       ?.trim()
-    const trailingSpace = newText?.endsWith(' ')
+    const trailingSpace = cursorPosition > 0 && newText?.charAt(cursorPosition - 1) === ' '
     if (!match || trailingSpace) {
       this.suggestionMatches.set(false)
       return
@@ -463,7 +466,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   insertMention(user: { img: string; text: string }) {
     let initialPart = (' ' + this.postCreatorForm.value.content?.slice(0, this.cursorTextPosition)) as string
     const userUrl = user.text.startsWith('@') ? user.text : '@' + user.text
-    initialPart = initialPart.replace(/[[@][A-Z0-9a-z_.@-]*$/i, userUrl)
+    initialPart = initialPart.replace(/[@][A-Z0-9a-z_.@-]*$/i, userUrl)
     let finalPart = this.postCreatorForm.value.content?.slice(this.cursorTextPosition) as string
     this.postCreatorForm.controls['content'].patchValue(initialPart.trim() + ' ' + finalPart.trim())
     this.postContent()?.nativeElement.focus()
@@ -473,7 +476,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   insertEmoji(emoji: EmojiSuggestion) {
     let initialPart = (' ' + this.postCreatorForm.value.content?.slice(0, this.cursorTextPosition)) as string
-    initialPart = initialPart.replace(/[[:][A-Z0-9a-z_.@-]*$/i, emoji.id)
+    initialPart = initialPart.replace(/[:][A-Z0-9a-z_.@-]*$/i, emoji.id)
     let finalPart = this.postCreatorForm.value.content?.slice(this.cursorTextPosition) as string
     this.postCreatorForm.controls['content'].patchValue(initialPart.trim() + ' ' + finalPart.trim())
     this.postContent()?.nativeElement.focus()
@@ -490,6 +493,11 @@ export class NewEditorComponent implements OnInit, OnDestroy {
 
   get privacyOption() {
     return this.privacyOptions.find((elem) => elem.level === this.privacy)
+  }
+
+  get privacyEditingDisabled() {
+    // Drafts (level 30) can always have their privacy changed, so they can be published later
+    return this.editing && this.data?.post?.privacy !== 30
   }
 
   getPrivacyIcon() {
@@ -948,7 +956,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   }
 
   handleDrag(event: DragEvent) {
-    event.preventDefault();
+    event.preventDefault()
     const isMedia = event.dataTransfer?.types.includes('Files')
     if (isMedia) {
       if (event.type === 'dragenter') {

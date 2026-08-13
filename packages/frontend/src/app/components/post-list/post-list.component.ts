@@ -11,17 +11,16 @@ import {
   inject,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { PostModule } from '../post/post.module'
 import { LoaderComponent } from '../loader/loader.component'
 import { fromEvent, Subject, take, throttleTime } from 'rxjs'
 import { PostComponent } from '../post/post.component'
 import { MatGridListModule } from '@angular/material/grid-list'
 import { DatePipe } from '@angular/common'
-import { WafrnMediaModule } from '../wafrn-media/wafrn-media.module'
+import { WafrnMediaComponent } from '../wafrn-media/wafrn-media.component'
 import { TranslatePipe } from '@ngx-translate/core'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { faPhotoFilm } from '@fortawesome/free-solid-svg-icons'
-import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { PostLinkDirective } from '../../directives/post-link/post-link.directive'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { GlobalData } from '../../services/global-data.service'
 import { HotkeyAction, HotkeyService } from '../../services/hotkey.service'
@@ -32,12 +31,12 @@ export type DisplayMode = 'card' | 'grid'
 @Component({
   selector: 'app-post-list',
   imports: [
-    PostModule,
+    PostComponent,
     LoaderComponent,
     MatGridListModule,
-    WafrnMediaModule,
+    WafrnMediaComponent,
     FontAwesomeModule,
-    PostLinkModule,
+    PostLinkDirective,
     TranslatePipe,
     DatePipe
   ],

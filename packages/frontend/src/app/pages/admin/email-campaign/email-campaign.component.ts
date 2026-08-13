@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card'
 import { MatInputModule } from '@angular/material/input'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { TranslateModule } from '@ngx-translate/core'
-import { InjectHtmlModule } from '../../../directives/inject-html/inject-html.module'
+import { InjectHTMLDirective } from '../../../directives/inject-html/inject-html.directive'
 import { AdminService } from '../../../services/admin.service'
 import { MessageService } from '../../../services/message.service'
 import { SimpleTitleService } from '../../../services/simple-title.service'
@@ -18,7 +18,7 @@ import { SimpleTitleService } from '../../../services/simple-title.service'
     MatCardModule,
     MatInputModule,
     MatProgressBarModule,
-    InjectHtmlModule,
+    InjectHTMLDirective,
     TranslateModule
   ],
   templateUrl: './email-campaign.component.html',

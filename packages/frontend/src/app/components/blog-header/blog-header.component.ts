@@ -28,6 +28,7 @@ import {
   faTriangleExclamation,
   faRepeat,
   faQuoteRight,
+  faReply,
   faCookieBite,
   faCode,
   faPlaneDeparture,
@@ -39,7 +40,7 @@ import {
   faEnvelope
 } from '@fortawesome/free-solid-svg-icons'
 import { TranslatePipe } from '@ngx-translate/core'
-import { BlogDetails } from '../../interfaces/blogDetails'
+import { BlogDetails } from '../../interfaces/blog-details'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
 import { BlocksService } from '../../services/blocks.service'
 import { BlogService } from '../../services/blog.service'
@@ -47,7 +48,7 @@ import { EditorService } from '../../services/editor.service'
 import { EnvironmentService } from '../../services/environment.service'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
-import { PostsService } from '../../services/posts.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { ReportService } from '../../services/report.service'
 import { SettingsService } from '../../services/settings.service'
 import { SimpleDialogService } from '../../services/simple-dialog.service'
@@ -73,7 +74,7 @@ import { InfoCardComponent } from '../info-card/info-card.component'
 })
 export class BlogHeaderComponent implements OnChanges, OnDestroy {
   protected loginService = inject(LoginService)
-  postService = inject(PostsService)
+  userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private editorService = inject(EditorService)
   blockService = inject(BlocksService)
@@ -102,6 +103,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   reportUserIcon = faTriangleExclamation
   disableRewootIcon = faRepeat
   disableQuotesIcon = faQuoteRight
+  disableRepliesIcon = faReply
   rawJsonIcon = faCode
   migratedToUrl = ''
 
@@ -183,7 +185,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   }
 
   async unfollowUser(id: string) {
-    const response = await this.postService.unfollowUser(id)
+    const response = await this.userOptionsService.unfollowUser(id)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -220,7 +222,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       return
     }
 
-    const response = await this.postService.followUser(id)
+    const response = await this.userOptionsService.followUser(id)
     if (response) {
       this.messages.add({
         severity: 'success',
@@ -334,12 +336,18 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   async updateDisableRewoots() {
     const blog = this.blogDetails()
     if (blog === undefined) return
-    await this.postService.updateDisableRewoots(blog.id)
+    await this.userOptionsService.updateDisableRewoots(blog.id)
   }
 
   async updateDisableQuotes() {
     const blog = this.blogDetails()
     if (blog === undefined) return
-    await this.postService.updateDisableQuotes(blog.id)
+    await this.userOptionsService.updateDisableQuotes(blog.id)
+  }
+
+  async updateDisableReplies() {
+    const blog = this.blogDetails()
+    if (blog === undefined) return
+    await this.userOptionsService.updateDisableReplies(blog.id)
   }
 }

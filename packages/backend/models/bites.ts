@@ -1,20 +1,18 @@
-import {
-  Model, Table, Column, DataType, ForeignKey, BelongsTo
-} from "sequelize-typescript";
-import { User } from "./user.js";
+import { Model, Table, Column, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript'
+import { User } from './user.js'
 
 export interface BitesAttributes {
-  id?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  remoteId?: string;
-  biterId: string;
-  bittenId: string;
+  id?: string
+  createdAt?: Date
+  updatedAt?: Date
+  remoteId?: string
+  biterId: string
+  bittenId: string
 }
 
 @Table({
-  tableName: "bites",
-  modelName: "bites",
+  tableName: 'bites',
+  modelName: 'bites',
   timestamps: true
 })
 export class Bites extends Model<BitesAttributes, BitesAttributes> implements BitesAttributes {
@@ -29,23 +27,23 @@ export class Bites extends Model<BitesAttributes, BitesAttributes> implements Bi
     allowNull: true,
     type: DataType.STRING(768)
   })
-  declare remoteId: string;
+  declare remoteId: string
 
   @ForeignKey(() => User)
   @Column({
     type: DataType.UUID
   })
-  declare biterId: string;
+  declare biterId: string
 
   @ForeignKey(() => User)
   @Column({
     type: DataType.UUID
   })
-  declare bittenId: string;
+  declare bittenId: string
 
-  @BelongsTo(() => User, "biterId")
-  declare biter: User;
+  @BelongsTo(() => User, 'biterId')
+  declare biter: User
 
-  @BelongsTo(() => User, "bittenId")
-  declare bitten: User;
+  @BelongsTo(() => User, 'bittenId')
+  declare bitten: User
 }

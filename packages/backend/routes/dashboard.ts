@@ -3,6 +3,7 @@ import optionalAuthentication from '../utils/optionalAuthentication.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import {
   FederatedHost,
+  Follows,
   Post,
   PostMentionsUserRelation,
   PostTag,
@@ -15,11 +16,11 @@ import getStartScrollParam from '../utils/getStartScrollParam.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import getNonFollowedLocalUsersIds from '../utils/cacheGetters/getNotFollowedLocalUsersIds.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
-import { getUnjointedPosts } from '../utils/baseQueryNew.js'
+import { getUnjointedPosts } from '../services/baseQueryNew.js'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
 import { navigationRateLimiter } from '../utils/rateLimiters.js'
 import { Privacy } from '../models/post.js'
-import { getFollowedHashtags } from '../utils/getFollowedHashtags.js'
+import { getFollowedHashtags } from '../utils/cacheGetters/getFollowedHashtags.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
 import { handleBskyFeed } from '../atproto/utils/handleBskyFeed.js'
@@ -57,14 +58,16 @@ export default function dashboardRoutes(app: Application) {
         baseUserOptions.find((opt) => opt.optionName === name)?.optionValue === 'true'
       const disableReplies = getBaseOption('wafrn.disableReplies')
       const disableBsky = getBaseOption('wafrn.disableBsky')
-      const disableRepliesOr = disableReplies ? [
-        {
-          isReblog: true
-        },
-        {
-          isReply: false
-        }
-      ] : []
+      const disableRepliesOr = disableReplies
+        ? [
+            {
+              isReblog: true
+            },
+            {
+              isReply: false
+            }
+          ]
+        : []
 
       if (disableBsky) {
         disableRepliesOr.push({
@@ -133,17 +136,26 @@ export default function dashboardRoutes(app: Application) {
           break
         }
         case 1: {
-          const [user, followedIds, subscribedTags, dbOptionDisableRewootsDashboard] = await Promise.all([
-            User.findByPk(posterId),
-            getFollowedsIds(posterId),
-            getFollowedHashtags(posterId),
-            UserOptions.findOne({
-              where: {
-                userId: posterId,
-                optionName: 'wafrn.disableRewootsDashboard'
-              }
-            })
-          ])
+          const [user, followedIds, subscribedTags, dbOptionDisableRewootsDashboard, hiddenRepliesFollows] =
+            await Promise.all([
+              User.findByPk(posterId),
+              getFollowedsIds(posterId),
+              getFollowedHashtags(posterId),
+              UserOptions.findOne({
+                where: {
+                  userId: posterId,
+                  optionName: 'wafrn.disableRewootsDashboard'
+                }
+              }),
+              Follows.findAll({
+                attributes: ['followedId'],
+                where: {
+                  followerId: posterId,
+                  hideReplies: true
+                }
+              })
+            ])
+          const hiddenRepliesUserIds = hiddenRepliesFollows.map((follow) => follow.followedId)
 
           if (completeEnvironment.enableBsky && user && user.enableBsky && user.bskyDid) {
             try {
@@ -207,6 +219,18 @@ export default function dashboardRoutes(app: Application) {
           if (disableReplies || disableBsky) {
             and.push({
               [Op.or]: disableRepliesOr
+            })
+          }
+
+          if (hiddenRepliesUserIds.length > 0) {
+            and.push({
+              [Op.not]: {
+                [Op.and]: [
+                  { isReply: true },
+                  { isReblog: { [Op.ne]: true } },
+                  { userId: { [Op.in]: hiddenRepliesUserIds } }
+                ]
+              }
             })
           }
 
@@ -297,7 +321,7 @@ export default function dashboardRoutes(app: Application) {
               )
             ]
           }
-          break;
+          break
         }
         case 30: {
           // drafts
@@ -305,7 +329,7 @@ export default function dashboardRoutes(app: Application) {
             userId: posterId,
             privacy: Privacy.Draft
           }
-          break;
+          break
         }
       }
       // we get the list of posts
@@ -332,7 +356,7 @@ export default function dashboardRoutes(app: Application) {
         limit: POSTS_PER_PAGE,
         attributes: ['id', 'createdAt'],
         subQuery: false,
-        replacements: { posterId: posterId || '00000000-0000-0000-0000-000000000000' },
+        replacements: { posterId: posterId || '00000000-0000-0000-0000-000000000000' },
         where: {
           createdAt: { [Op.lt]: getStartScrollParam(req) },
           [Op.or]: [

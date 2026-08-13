@@ -44,16 +44,16 @@
                 <fa-icon [fixedWidth]="true" [icon]="biteUserIcon"></fa-icon>
               </button>
             }
-            @if (!postService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
+            @if (!userOptionsService.notYetAcceptedFollowedUsersIds.includes(blog.id)) {
               <button
                 mat-stroked-button
-                [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
+                [color]="userOptionsService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
                 [ngClass]="{ 'split-button-left': loggedIn }"
                 (click)="
-                  postService.followedUserIds.indexOf(blog.id) === -1 ? followUser(blog.id) : unfollowUser(blog.id)
+                  userOptionsService.followedUserIds.indexOf(blog.id) === -1 ? followUser(blog.id) : unfollowUser(blog.id)
                 "
               >
-                @if (postService.followedUserIds.indexOf(blog.id) === -1) {
+                @if (userOptionsService.followedUserIds.indexOf(blog.id) === -1) {
                   @if (blog.manuallyAcceptsFollows) {
                     <fa-icon [icon]="lockIcon" class="mr-2"></fa-icon>{{ 'blog.requestFollow' | translate }}
                   } @else {
@@ -64,7 +64,7 @@
                 }
               </button>
             }
-            @if (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
+            @if (userOptionsService.notYetAcceptedFollowedUsersIds.includes(blog.id) && loggedIn) {
               <button mat-stroked-button color="accent" class="split-button-left" (click)="unfollowUser(blog.id)">
                 {{ 'post-header.awaitingApproval' | translate }}
               </button>
@@ -74,7 +74,7 @@
                 [attr.aria-label]="'blog.moreOptions' | translate"
                 [matMenuTriggerFor]="menu"
                 mat-stroked-button
-                [color]="postService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
+                [color]="userOptionsService.followedUserIds.indexOf(blog.id) === -1 ? 'primary' : 'warn'"
                 class="split-button-right"
               >
                 <fa-icon [icon]="expandDownIcon"></fa-icon>
@@ -129,10 +129,10 @@
             }
             @if (
               !isMe &&
-              (postService.notYetAcceptedFollowedUsersIds.includes(blog.id) ||
-                postService.followedUserIds.includes(blog.id))
+              (userOptionsService.notYetAcceptedFollowedUsersIds.includes(blog.id) ||
+                userOptionsService.followedUserIds.includes(blog.id))
             ) {
-              @if (postService.usersRewootsDisabled.includes(blog.id)) {
+              @if (userOptionsService.usersRewootsDisabled.includes(blog.id)) {
                 <button mat-menu-item (click)="updateDisableRewoots()">
                   <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon
                   >{{ 'dialog.blog.unhideRewoots' | translate }}
@@ -142,7 +142,7 @@
                   <fa-icon class="mr-2" [icon]="disableRewootIcon"></fa-icon>{{ 'dialog.blog.hideRewoots' | translate }}
                 </button>
               }
-              @if (postService.usersQuotesDisabled.includes(blog.id)) {
+              @if (userOptionsService.usersQuotesDisabled.includes(blog.id)) {
                 <button mat-menu-item (click)="updateDisableQuotes()">
                   <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon
                   >{{ 'dialog.blog.unhideQuotes' | translate }}
@@ -150,6 +150,17 @@
               } @else {
                 <button mat-menu-item (click)="updateDisableQuotes()">
                   <fa-icon class="mr-2" [icon]="disableQuotesIcon"></fa-icon>{{ 'dialog.blog.hideQuotes' | translate }}
+                </button>
+              }
+              @if (userOptionsService.usersRepliesDisabled.includes(blog.id)) {
+                <button mat-menu-item (click)="updateDisableReplies()">
+                  <fa-icon class="mr-2" [icon]="disableRepliesIcon"></fa-icon
+                  >{{ 'dialog.blog.unhideReplies' | translate }}
+                </button>
+              } @else {
+                <button mat-menu-item (click)="updateDisableReplies()">
+                  <fa-icon class="mr-2" [icon]="disableRepliesIcon"></fa-icon
+                  >{{ 'dialog.blog.hideReplies' | translate }}
                 </button>
               }
             }
@@ -223,10 +234,10 @@
             <fa-icon class="mr-2" [icon]="botIcon"></fa-icon>{{ 'blog.botBadge' | translate }}
           </span>
         }
-        @if (!isMe && blog && postService.myFollowers.includes(blog.id)) {
+        @if (!isMe && blog && userOptionsService.myFollowers.includes(blog.id)) {
           <span class="badge follower-badge">
             <fa-icon class="mr-2" [icon]="followerIcon"></fa-icon>
-            @if (postService.followedUserIds.includes(blog.id)) {
+            @if (userOptionsService.followedUserIds.includes(blog.id)) {
               {{ 'blog.mutuals' | translate }}
             } @else {
               {{ 'blog.followsYou' | translate }}

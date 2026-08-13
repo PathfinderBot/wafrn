@@ -1,17 +1,35 @@
 import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core'
-import { MatDialog } from '@angular/material/dialog'
-import { MatPaginator } from '@angular/material/paginator'
-import { MatTableDataSource } from '@angular/material/table'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { MatDialog, MatDialogModule } from '@angular/material/dialog'
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
+import { MatTableDataSource, MatTableModule } from '@angular/material/table'
+import { MatCardModule } from '@angular/material/card'
+import { MatInputModule } from '@angular/material/input'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatButtonModule } from '@angular/material/button'
+import { TranslateModule } from '@ngx-translate/core'
 import { InviteCode, AdminService } from '../../../services/admin.service'
 import { EnvironmentService } from '../../../services/environment.service'
 import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-invite-codes',
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTableModule,
+    MatCardModule,
+    MatPaginatorModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatDialogModule,
+    TranslateModule
+  ],
   templateUrl: './invite-codes.component.html',
   styleUrls: ['./invite-codes.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class InviteCodesComponent implements OnInit {
   ready = false

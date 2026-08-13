@@ -27,6 +27,8 @@ const files = [
   './routes/posts.ts',
   './routes/search.ts',
   './routes/users.ts',
+  './routes/auth.ts',
+  './routes/bsky.ts',
   './routes/admin.ts',
   './routes/blockUserServer.ts',
   './routes/dashboard.ts',

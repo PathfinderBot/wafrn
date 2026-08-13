@@ -16,11 +16,11 @@ import { MatButtonModule } from '@angular/material/button'
 import { RouterModule } from '@angular/router'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
-import { PollModule } from '../poll/poll.module'
-import { WafrnMediaModule } from '../wafrn-media/wafrn-media.module'
+import { PollComponent } from '../poll/poll.component'
+import { WafrnMediaComponent } from '../wafrn-media/wafrn-media.component'
 
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { InjectHtmlModule } from '../../directives/inject-html/inject-html.module'
+import { InjectHTMLDirective } from '../../directives/inject-html/inject-html.directive'
 import { Emoji } from '../../interfaces/emoji'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { EnvironmentService } from '../../services/environment.service'
@@ -28,6 +28,8 @@ import { JwtService } from '../../services/jwt.service'
 import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
 import { PostsService } from '../../services/posts.service'
+import { PostRenderingService } from '../../services/post-rendering.service'
+import { UserOptionsService } from '../../services/user-options.service'
 import { EmojiReactComponent } from '../emoji-react/emoji-react.component'
 import { PostHeaderComponent } from '../post/post-header/post-header.component'
 import { SingleAskComponent } from '../single-ask/single-ask.component'
@@ -37,7 +39,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { Subscription } from 'rxjs'
 import Viewer from 'viewerjs'
 import { PostHtmlContentComponent } from '../post/post-html-content/post-html-content.component'
-import { PostLinkModule } from '../../directives/post-link/post-link.module'
+import { PostLinkDirective } from '../../directives/post-link/post-link.directive'
 import { ParticleService } from '../../services/particle.service'
 import { SettingsService } from '../../services/settings.service'
 import { SimpleDialogService } from '../../services/simple-dialog.service'
@@ -59,16 +61,16 @@ type EmojiReaction = {
   selector: 'app-post-fragment',
   imports: [
     CommonModule,
-    PollModule,
-    WafrnMediaModule,
+    PollComponent,
+    WafrnMediaComponent,
     RouterModule,
     MatButtonModule,
     MatTooltipModule,
     EmojiReactComponent,
-    InjectHtmlModule,
+    InjectHTMLDirective,
     PostHeaderComponent,
     SingleAskComponent,
-    PostLinkModule,
+    PostLinkDirective,
     TranslateModule,
     PostHtmlContentComponent
   ],
@@ -78,6 +80,8 @@ type EmojiReaction = {
 })
 export class PostFragmentComponent implements OnChanges, OnDestroy {
   private postService = inject(PostsService)
+  private postRenderingService = inject(PostRenderingService)
+  private userOptionsService = inject(UserOptionsService)
   private loginService = inject(LoginService)
   private jwtService = inject(JwtService)
   private readonly messages = inject(MessageService)
@@ -109,7 +113,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
   noTagsContent = ''
   wafrnFormattedContent = computed(() => {
     let processedBlock: Array<string | WafrnMedia> = []
-    this.sanitizedContent = this.postService.getPostHtml(this.fragment())
+    this.sanitizedContent = this.postRenderingService.getPostHtml(this.fragment())
     // wafrn silly feature
     if (localStorage.getItem('replaceAIWithCocaine') === 'true') {
       // TODO this should be done in a better way but because we are playing with html... AAAA
@@ -137,7 +141,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
       regexp = new RegExp(regexpString, 'gi')
       this.sanitizedContent = this.sanitizedContent.replaceAll(regexp, `>${replaceAIWord}<`)
     }
-    this.noTagsContent = this.postService.getPostHtml(this.fragment(), [])
+    this.noTagsContent = this.postRenderingService.getPostHtml(this.fragment(), [])
     if (this.fragment().medias && this.fragment().medias?.length > 0) {
       const mediaDetectorRegex = /\!\[media\-([0-9]+)]/gm
       const textDivided = this.sanitizedContent.split(mediaDetectorRegex)
@@ -192,8 +196,8 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.followsSubscription = this.postService.updateFollowers.subscribe(() => {
-      this.postService.emojiCollections.forEach((collection) => {
+    this.followsSubscription = this.userOptionsService.updateFollowers.subscribe(() => {
+      this.userOptionsService.emojiCollections.forEach((collection) => {
         collection.emojis
           .map((e) => e.name)
           .forEach((name) => {
@@ -213,7 +217,7 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
       }
     })
     const mentions = this.fragment().mentionPost
-    let content = this.postService.getPostHtml(this.fragment(), []).toLowerCase()
+    let content = this.postRenderingService.getPostHtml(this.fragment(), []).toLowerCase()
 
     if (mentions) {
       this.mentionPosts = mentions

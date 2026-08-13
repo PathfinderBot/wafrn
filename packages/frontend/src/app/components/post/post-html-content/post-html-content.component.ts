@@ -7,13 +7,13 @@ import {
   WritableSignal,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { InjectHtmlModule } from '../../../directives/inject-html/inject-html.module'
+import { InjectHTMLDirective } from '../../../directives/inject-html/inject-html.directive'
 import { WafrnMedia } from '../../../interfaces/wafrn-media'
 import { Theme, LightDarkMode, AdditionalStyleMode, ThemeService } from '../../../services/theme.service'
 
 @Component({
   selector: 'app-post-html-content',
-  imports: [InjectHtmlModule],
+  imports: [InjectHTMLDirective],
   templateUrl: './post-html-content.component.html',
   styleUrl: './post-html-content.component.scss',
   changeDetection: ChangeDetectionStrategy.Eager,

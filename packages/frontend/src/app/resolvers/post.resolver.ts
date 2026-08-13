@@ -3,7 +3,6 @@ import { Router, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/ro
 import { from, Observable, of } from 'rxjs'
 import { ProcessedPost } from '../interfaces/processed-post'
 import { DashboardService } from '../services/dashboard.service'
-import { PostsService } from '../services/posts.service'
 //import {  } from "rxjs/operators";
 
 @Injectable({

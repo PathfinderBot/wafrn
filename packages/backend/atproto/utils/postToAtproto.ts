@@ -1,7 +1,7 @@
 import { BskyAgent, RichText } from '@atproto/api'
 import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
 import fs from 'fs/promises'
-import { getPostUrlForQuote } from '../../utils/activitypub/postToJSONLD.js'
+import { getPostUrlForQuote } from '../../activitypub/postToJSONLD.js'
 import RichtextBuilder from '@atcute/bluesky-richtext-builder'
 import { Main } from '@atproto/api/dist/client/types/app/bsky/richtext/facet.js'
 import { tokenize } from '@atcute/bluesky-richtext-parser'

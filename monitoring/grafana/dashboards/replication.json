@@ -79,9 +79,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -100,15 +98,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1m"
-              ],
+              "params": ["1m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -124,9 +118,7 @@
           "select": [
             [
               {
-                "params": [
-                  "active"
-                ],
+                "params": ["active"],
                 "type": "field"
               },
               {
@@ -209,9 +201,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -230,15 +220,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1m"
-              ],
+              "params": ["1m"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -254,9 +240,7 @@
           "select": [
             [
               {
-                "params": [
-                  "active"
-                ],
+                "params": ["active"],
                 "type": "field"
               },
               {
@@ -339,9 +323,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -360,15 +342,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -384,9 +362,7 @@
           "select": [
             [
               {
-                "params": [
-                  "replay_lag_b"
-                ],
+                "params": ["replay_lag_b"],
                 "type": "field"
               },
               {
@@ -471,9 +447,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -492,15 +466,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -516,9 +486,7 @@
           "select": [
             [
               {
-                "params": [
-                  "replay_lag_b"
-                ],
+                "params": ["replay_lag_b"],
                 "type": "field"
               },
               {
@@ -607,9 +575,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -628,15 +594,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -652,9 +614,7 @@
           "select": [
             [
               {
-                "params": [
-                  "restart_lsn_lag_b"
-                ],
+                "params": ["restart_lsn_lag_b"],
                 "type": "field"
               },
               {
@@ -737,9 +697,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -758,15 +716,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -782,9 +736,7 @@
           "select": [
             [
               {
-                "params": [
-                  "write_lag_b"
-                ],
+                "params": ["write_lag_b"],
                 "type": "field"
               },
               {
@@ -873,9 +825,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -894,15 +844,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -918,9 +864,7 @@
           "select": [
             [
               {
-                "params": [
-                  "flush_lag_b"
-                ],
+                "params": ["flush_lag_b"],
                 "type": "field"
               },
               {
@@ -1009,9 +953,7 @@
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -1030,15 +972,11 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "1d"
-              ],
+              "params": ["1d"],
               "type": "time"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1054,9 +992,7 @@
           "select": [
             [
               {
-                "params": [
-                  "replay_lag_b"
-                ],
+                "params": ["replay_lag_b"],
                 "type": "field"
               },
               {
@@ -1158,9 +1094,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -1182,27 +1116,19 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "dbname"
-              ],
+              "params": ["dbname"],
               "type": "tag"
             },
             {
-              "params": [
-                "slot_name"
-              ],
+              "params": ["slot_name"],
               "type": "tag"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1218,9 +1144,7 @@
           "select": [
             [
               {
-                "params": [
-                  "restart_lsn_lag_b"
-                ],
+                "params": ["restart_lsn_lag_b"],
                 "type": "field"
               },
               {
@@ -1321,9 +1245,7 @@
       "interval": "2m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -1345,33 +1267,23 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "dbname"
-              ],
+              "params": ["dbname"],
               "type": "tag"
             },
             {
-              "params": [
-                "client_info"
-              ],
+              "params": ["client_info"],
               "type": "tag"
             },
             {
-              "params": [
-                "application_name"
-              ],
+              "params": ["application_name"],
               "type": "tag"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1387,9 +1299,7 @@
           "select": [
             [
               {
-                "params": [
-                  "flush_lag_b"
-                ],
+                "params": ["flush_lag_b"],
                 "type": "field"
               },
               {
@@ -1490,9 +1400,7 @@
       "interval": "15m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -1514,33 +1422,23 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "dbname"
-              ],
+              "params": ["dbname"],
               "type": "tag"
             },
             {
-              "params": [
-                "client_info"
-              ],
+              "params": ["client_info"],
               "type": "tag"
             },
             {
-              "params": [
-                "application_name"
-              ],
+              "params": ["application_name"],
               "type": "tag"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1556,9 +1454,7 @@
           "select": [
             [
               {
-                "params": [
-                  "replay_lag_b"
-                ],
+                "params": ["replay_lag_b"],
                 "type": "field"
               },
               {
@@ -1659,9 +1555,7 @@
       "interval": "5m",
       "options": {
         "legend": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
@@ -1683,33 +1577,23 @@
           "group": [],
           "groupBy": [
             {
-              "params": [
-                "$__interval"
-              ],
+              "params": ["$__interval"],
               "type": "time"
             },
             {
-              "params": [
-                "dbname"
-              ],
+              "params": ["dbname"],
               "type": "tag"
             },
             {
-              "params": [
-                "plugin"
-              ],
+              "params": ["plugin"],
               "type": "tag"
             },
             {
-              "params": [
-                "slot_name"
-              ],
+              "params": ["slot_name"],
               "type": "tag"
             },
             {
-              "params": [
-                "none"
-              ],
+              "params": ["none"],
               "type": "fill"
             }
           ],
@@ -1725,9 +1609,7 @@
           "select": [
             [
               {
-                "params": [
-                  "xmin_age_tx"
-                ],
+                "params": ["xmin_age_tx"],
                 "type": "field"
               },
               {
@@ -1793,20 +1675,14 @@
   ],
   "refresh": false,
   "schemaVersion": 39,
-  "tags": [
-    "pgwatch"
-  ],
+  "tags": ["pgwatch"],
   "templating": {
     "list": [
       {
         "current": {
           "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "text": ["All"],
+          "value": ["$__all"]
         },
         "datasource": {
           "type": "grafana-postgresql-datasource",
@@ -1847,17 +1723,7 @@
       "2h",
       "1d"
     ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
+    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "browser",
   "title": "Replication",

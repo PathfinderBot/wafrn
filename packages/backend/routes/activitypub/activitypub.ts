@@ -2,19 +2,20 @@ import { Application, Request, Response } from 'express'
 import { Op } from 'sequelize'
 import { User, Emoji, sequelize, Quotes, Post } from '../../models/index.js'
 import { Privacy } from '../../models/post.js'
-import { getCheckFediverseSignatureFunction } from '../../utils/activitypub/checkFediverseSignature.js'
+import { getCheckFediverseSignatureFunction } from '../../activitypub/checkFediverseSignature.js'
 import { return404 } from '../../utils/return404.js'
 import { getQueue } from '../../utils/queues.js'
 import { SignedRequest } from '../../interfaces/fediverse/signedRequest.js'
-import { getPostReplies } from '../../utils/activitypub/getPostReplies.js'
+import { getPostReplies } from '../../activitypub/getPostReplies.js'
 import { redisCache } from '../../utils/redis.js'
 import { getFollowedRemoteIds } from '../../utils/cacheGetters/getFollowedRemoteIds.js'
 import { getFollowerRemoteIds } from '../../utils/cacheGetters/getFollowerRemoteIds.js'
 import { checkuserAllowsThreads } from '../../utils/checkUserAllowsThreads.js'
-import { userToJSONLD } from '../../utils/activitypub/userToJSONLD.js'
+import { userToJSONLD } from '../../activitypub/userToJSONLD.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { activityPubObject } from '../../interfaces/fediverse/activityPubObject.js'
-import { getPostUrlForQuote, postToJSONLD } from '../../utils/activitypub/postToJSONLD.js'
+import { getPostUrlForQuote, postToJSONLD } from '../../activitypub/postToJSONLD.js'
+import { LITEPUB_CONTEXT_PATH } from '../../activitypub/contexts.js'
 
 // we get the user from the memory cache. if does not exist we try to find it
 async function getLocalUserByUrl(url: string): Promise<any> {
@@ -43,6 +44,89 @@ function getFeaturedCollectionCacheKey(userId: string): string {
   return `featuredCollection:${userId}`
 }
 
+async function getQuoteByQuoterPostIdCache(quoterPostId: string): Promise<any | undefined> {
+  const cacheKey = `quote:quoterPostId:${quoterPostId}`
+  let cacheResult = await redisCache.get(cacheKey)
+  if (!cacheResult) {
+    const quote: any = await Quotes.findOne({
+      include: [
+        {
+          model: Post,
+          as: 'quotedPost'
+        },
+        {
+          model: Post,
+          as: 'quoterPost',
+          include: [
+            {
+              model: User,
+              as: 'user'
+            }
+          ]
+        }
+      ],
+      where: {
+        quoterPostId
+      }
+    })
+    if (quote) {
+      await redisCache.set(cacheKey, JSON.stringify(quote.dataValues), 'EX', 300)
+      return { dataValues: quote.dataValues }
+    }
+    await redisCache.set(cacheKey, 'null', 'EX', 60)
+    return undefined
+  }
+  if (cacheResult === 'null') return undefined
+  try {
+    return { dataValues: JSON.parse(cacheResult) }
+  } catch (e) {
+    return undefined
+  }
+}
+
+async function getQuoteByQuoterAndQuotedPostIdCache(
+  quoterPostId: string,
+  quotedPostId: string
+): Promise<any | undefined> {
+  const cacheKey = `quote:quoter:${quoterPostId}:quoted:${quotedPostId}`
+  let cacheResult = await redisCache.get(cacheKey)
+  if (!cacheResult) {
+    const quote: any = await Quotes.findOne({
+      include: [
+        {
+          model: Post,
+          as: 'quotedPost',
+          include: [
+            {
+              model: User,
+              as: 'user'
+            }
+          ]
+        },
+        {
+          model: Post,
+          as: 'quoterPost'
+        }
+      ],
+      where: {
+        quoterPostId,
+        quotedPostId
+      }
+    })
+    if (quote) {
+      await redisCache.set(cacheKey, JSON.stringify(quote.dataValues), 'EX', 300)
+      return { dataValues: quote.dataValues }
+    }
+    await redisCache.set(cacheKey, 'null', 'EX', 60)
+    return undefined
+  }
+  if (cacheResult === 'null') return undefined
+  try {
+    return { dataValues: JSON.parse(cacheResult) }
+  } catch (e) {
+    return undefined
+  }
+}
 // all the stuff related to activitypub goes here
 
 function activityPubRoutes(app: Application) {
@@ -387,32 +471,12 @@ function activityPubRoutes(app: Application) {
     '/fediverse/quote_request/:id',
     getCheckFediverseSignatureFunction(true),
     async (req: SignedRequest, res: Response) => {
-      const quote: any = await Quotes.findOne({
-        include: [
-          {
-            model: Post,
-            as: 'quotedPost'
-          },
-          {
-            model: Post,
-            as: 'quoterPost',
-            include: [
-              {
-                model: User,
-                as: 'user'
-              }
-            ]
-          }
-        ],
-        where: {
-          quoterPostId: req.params.id
-        }
-      })
+      const quote: any = await getQuoteByQuoterPostIdCache(req.params.id)
       if (quote) {
         let objectToSend: activityPubObject = {
           '@context': [
             'https://www.w3.org/ns/activitystreams',
-            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
           ],
           actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${quote.dataValues.quoterPost.dataValues.user.url}`,
           id: `${completeEnvironment.frontendUrl}/fediverse/quote_request/${req.params.id}`,
@@ -430,34 +494,13 @@ function activityPubRoutes(app: Application) {
     '/fediverse/quote_authorization/:quoterPostId/:quotedPostId',
     getCheckFediverseSignatureFunction(true),
     async (req: SignedRequest, res: Response) => {
-      const quote: any = await Quotes.findOne({
-        include: [
-          {
-            model: Post,
-            as: 'quotedPost',
-            include: [
-              {
-                model: User,
-                as: 'user'
-              }
-            ]
-          },
-          {
-            model: Post,
-            as: 'quoterPost'
-          }
-        ],
-        where: {
-          quoterPostId: req.params.quoterPostId,
-          quotedPostId: req.params.quotedPostId
-        }
-      })
+      const quote: any = await getQuoteByQuoterAndQuotedPostIdCache(req.params.quoterPostId, req.params.quotedPostId)
       // TODO we currently assume every stored quote is authorized
       if (quote) {
         const objectToSend: activityPubObject = {
           '@context': [
             'https://www.w3.org/ns/activitystreams',
-            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+            `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
           ],
           id: `${completeEnvironment.frontendUrl}/fediverse/quote_authorization/${req.params.quoterPostId}/${req.params.quotedPostId}`,
           type: 'QuoteAuthorization',

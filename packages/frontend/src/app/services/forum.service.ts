@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import { unlinkedPosts } from '../interfaces/unlinked-posts'
 import { PostsService } from './posts.service'
+import { PostRenderingService } from './post-rendering.service'
 import { EnvironmentService } from './environment.service'
 import { ProcessedPost } from '../interfaces/processed-post'
 import { SimplifiedUser } from '../interfaces/simplified-user'
@@ -14,6 +15,7 @@ import { ActivatedRoute } from '@angular/router'
 export class ForumService {
   private http = inject(HttpClient)
   private postService = inject(PostsService)
+  private postRenderingService = inject(PostRenderingService)
 
   async getForumThread(id: string) {
     let response: unlinkedPosts | undefined
@@ -28,8 +30,8 @@ export class ForumService {
       this.postService.rewootedPosts().add(id)
     })
 
-    let processed = this.postService.processPostNew(response)
-    processed = processed.filter((post) => !this.postService.postContainsBlockedOrMuted(post, false))
+    let processed = this.postRenderingService.processPostNew(response)
+    processed = processed.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, false))
     const tmpResult = processed.length ? processed.map((elem) => elem[elem.length - 1]) : []
     const reblogs = tmpResult
       .filter((elem) => elem.isReblog)

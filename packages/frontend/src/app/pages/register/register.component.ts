@@ -1,5 +1,17 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core'
-import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { CommonModule } from '@angular/common'
+import { FormsModule, ReactiveFormsModule, FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms'
+import { MatCardModule } from '@angular/material/card'
+import { MatDatepickerModule } from '@angular/material/datepicker'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
+import { MatButtonModule } from '@angular/material/button'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { MatSelectModule } from '@angular/material/select'
+import { TranslateModule } from '@ngx-translate/core'
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatCheckbox } from '@angular/material/checkbox'
+import { InfoCardComponent } from '../../components/info-card/info-card.component'
 import { faArrowRight, faEye, faEyeSlash, faUpload, faUserPlus } from '@fortawesome/free-solid-svg-icons'
 import { Router } from '@angular/router'
 import { EnvironmentService } from '../../services/environment.service'
@@ -10,10 +22,25 @@ import { SimpleDialogService } from '../../services/simple-dialog.service'
 
 @Component({
   selector: 'app-register',
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FontAwesomeModule,
+    MatSelectModule,
+    InfoCardComponent,
+    MatProgressSpinnerModule,
+    TranslateModule,
+    MatCheckbox
+  ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class RegisterComponent {
   private loginService = inject(LoginService)
@@ -28,6 +55,13 @@ export class RegisterComponent {
   privateInstanceRegistrationText = EnvironmentService.environment.privateInstanceRegistrationText
   instanceDomain = new URL(EnvironmentService.environment.frontUrl).hostname
   isAdmin = false
+  blueskyEnabled = EnvironmentService.environment.enableBsky
+
+  blueskyOptions: { value: string; label: string }[] = [
+    { value: '0', label: 'register.blueskyOptionNo' },
+    { value: '1', label: 'register.blueskyOptionCreate' },
+    { value: '2', label: 'register.blueskyOptionBringOwn' }
+  ]
 
   // Font Awesome icons
   faUserPlus = faUserPlus
@@ -71,6 +105,7 @@ export class RegisterComponent {
     'Everything everywhere all at once',
     'Big scary werewolf that actually has an anxiety disorder and is more scared of you than you are of it',
     'I am just testing a new font',
+    'stained glass windshield',
     'Lost my gender in the war',
     'Gravity',
     'Widsom',
@@ -85,6 +120,7 @@ export class RegisterComponent {
     'Youve got my permission for crung and smilee',
     'The developer of this stolye MY gender',
     'I have a PR with more genders ready',
+    'Thinking about the immortality of the crab',
     'Default',
     'Heterosexual except for GODZILLA',
     'Lesbian knight',
@@ -92,6 +128,7 @@ export class RegisterComponent {
     "I don't have one and I am not interested",
     'this gender is not genuine',
     'Magical Dyke',
+    'blind cat who assumes they have multiple brain cells, never before told they are, in fact, orange',
     'Metalhead. Literaly, its a helmet',
     "I can't afford my gender subscription",
     'STOP CALLING ME I DONT WANT ANY OF THOSE GENDERS I AM NOT INTERESTED',
@@ -100,6 +137,7 @@ export class RegisterComponent {
     'Unicorn',
     'Mine was programmed by Bethesa',
     'I am about to enter in a plane and Im editing wafrn code ',
+    'An awful laptop that not even the most lightweight Linux distro could breathe life into',
     'Go to settings to activate gender',
     'scorpio',
     'Vriska',
@@ -110,10 +148,12 @@ export class RegisterComponent {
     'thing that would terrify HP Lovecraft',
     'Honk',
     'Warhammer 40k fan',
+    'Xbox game running on a Linux computer being played with a third-party controller for maximum sin points',
     'Turtle',
     'Very good mouseboys available NEAR YOU',
     'I am going to kill god',
     'I am a rat',
+    '7 hour long video essay on the molecular structure of bread',
     'A pumpkin full of meat would fix me',
     'Very evil',
     'Too evil',
@@ -124,6 +164,7 @@ export class RegisterComponent {
     'AMONGUS SEXO',
     'sans UNDERTALE',
     "gender isn't real, it can't hurt you",
+    'bowl of cereal but with fizzy soda instead of milk',
     'Yes',
     'No',
     'God',
@@ -134,8 +175,10 @@ export class RegisterComponent {
     'Wait those were quark types',
     'a pale imitation',
     'Jimmy',
+    'bowl of salad but with fizzy soda instead of milk',
     'Home of the Whooper:  West virginia',
     'Wait, you wrote widsom not wisdom before',
+    'a bootleg copy of Portal',
     'Utrechter',
     'This gender has been deprecated and will be removed in a future release. Please transition to a supported gender', // https://types.pl/@132ikl/116715148016786713
     'There are more than two. And they are all mine',
@@ -146,6 +189,7 @@ export class RegisterComponent {
     'This gender will not operate when connected to a device which makes unauthorized copies.',
     'This gender will ONLY operate when connected to a device which makes unauthorized copies.',
     'Cat with disturbingly human lips',
+    'just let me play Doom in the settings menu already',
     'CRINGE CULTURE MADE MANIFEST',
     '[this option intentionally left blank]',
     'Call me a deer the way I stare into the incoming light of a car',
@@ -159,6 +203,9 @@ export class RegisterComponent {
     'I prefer single quotes over double quotes',
     'a tired eepy whatever the fuck',
     "Trademark Dress doesn't exist",
+    'Vegan blood (water with food colouring)',
+    'Carnist tofu (real blood added... just to piss people off?)',
+    'Yes, "colouring" is spelled with a "u"',
     'thanks for watching guys',
     'YOU ARE A TOOL.',
     'illc tryi to rerad mty pogst sbeofore postign then thx',
@@ -167,11 +214,13 @@ export class RegisterComponent {
     'chocolate manufacturing company',
     'My glasses lens popped out again :`(',
     'RetroGamesWeDontOwn_Online.ru',
+    'Game controller with a truly useless thumbstick on the back that isn´t even mapped to anything',
     'm',
     'whatever it is, its MINE',
     'Quarter Circle Forward',
     "CHOOSING THIS GENDER REDIRECTS YOU TO *EVIL* WAFRN (no it fucking doesn't)",
     'The Wafrn Gender Selection Situation Is Crazy',
+    'Port of Mario Kart DS for the Atari Lynx',
     'alien that only has a surface-level understanding of human culture but thinks it knows everything',
     'PC Engine',
     'electrictricity lemonade drinker',
@@ -184,25 +233,30 @@ export class RegisterComponent {
     'Fanatic',
     'piles of crack cocaine meth weed drug',
     'All the ones below this one',
+    'Jayfeather´s stick',
     'Steam Deck compatible',
     'Here could be your ad!',
+    'overcooked instant ramen',
     'Comic Sans',
     'eepy',
     'caffeinated and sleep deprived',
     'Blackjack and Hookers',
     'Arch btw',
     'dumbfuck juice',
+    'A handful of bitter almonds (full of cyanide; I am poisonous)',
     'uoppy',
     'bnuuy',
     'kibty',
     ':3',
     'filesystem',
+    'Blank flank forever',
     'Not MS-DOS compatible',
     '01000111 01100101 01101110 01100100 01100101 01110010',
     'Electron app',
     'ISO 8601',
     'waffle',
     'pancake',
+    'a little brown bat, hungry for a midnight snack',
     'day',
     'week',
     'month',
@@ -219,38 +273,48 @@ export class RegisterComponent {
     'CMOS battery',
     'IP over Avian Carriers',
     'wrong',
+    "Ceiling cat is watching you create a Wafrn account (you're doing great, by the way!)",
     'XKCD comic',
     'a walrus in disguise',
     '[REDACTED]',
     'publically traded',
     'dead.',
+    'orange cat',
     '#1 SPORTS FAN',
     'Female representing nipple',
     'FORD F150',
     'Sparkling water',
     'Still water',
     'Magazine cover page',
+    'high on catnip',
     'crossword puzzle',
     '...---...',
     'uninhabitated',
     'translation issue',
     'audiophile',
+    '44.1khz / 16bit',
+    '96khz / 24bit',
+    '420khz / 69bit',
     'Midnight Club 3 DUB Edition killed my PSP´s UMD drive in 2013',
     'Don´t select this gender',
     'mean girl',
     'fluffy boy',
+    'orange cat (who doesn´t like waffles)',
     'Creeper',
     'Aw man',
     'I was here',
     'lava lamp',
     'commercial break',
+    'Port of Wii Sports for the PlayStation Move',
     'dirty bus seat',
+    'insomniac',
     'Blender donut tutorial',
     'Rock',
     'Paper',
     'Scissors',
     'infrared',
     'ultraviolet',
+    'Cat who ignores nice toys in favour of their packaging',
     'isopod ([[[[){',
     'basic',
     'neutral',
@@ -258,6 +322,7 @@ export class RegisterComponent {
     'defenestration',
     'dankmeme.jpg',
     '2010s survivor',
+    'ever so slightly burnt piece of popcorn',
     'real',
     'imaginary',
     'complex',
@@ -266,6 +331,7 @@ export class RegisterComponent {
     'noodles',
     'spray can cheese',
     'a Looney Tunes sketch',
+    'insomniac (not the video game studio)',
     'Free And Open Source',
     'moth',
     'Never gonna give you up',
@@ -278,16 +344,21 @@ export class RegisterComponent {
     'And hurt you',
     'barely surviving',
     'motivational poster',
+    'insomniac (not the Green Day album)',
     'Oblivion´s NPC AI',
+    'THE masked singer',
     'Neofetch ASCII art',
     'Karen took it with the kids',
     'DELTARUNE Chapter 7 spoilers',
     'Spheal',
+    'Your left foot',
     'ON SALE 50% OFF PICK THIS GENDER NOW AND GET ONE FREE',
     'Prilosec®',
+    'amish person who is only down with FLOSS tech',
     '<font face="Comic Sans MS">Comic Sans</font>',
     'why do they call it oven when you of in the cold food of out hot eat the food',
     'bruno mars (gay)',
+    'Your other right foot',
     'cow',
     'No one ever would pick this one',
     'None of the above'
@@ -304,6 +375,7 @@ export class RegisterComponent {
     captchaResponse: new UntypedFormControl('', []),
     avatar: new UntypedFormControl('', []),
     confirmReadAbout: new FormControl(false, [Validators.requiredTrue]),
+    blueskyOption: new UntypedFormControl('0', [Validators.required]),
     ...(this.registrationLevel === 'INVITE'
       ? {
           inviteCode: new UntypedFormControl(this.inviteCode ?? '', [Validators.required])

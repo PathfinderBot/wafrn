@@ -43,7 +43,11 @@
         content.questionPoll
       ) {
         <app-post-header class="w-full" [fragment]="content" [simplified]="false"></app-post-header>
-        <app-post-fragment (forceExpand)="expandPost()" [fragment]="content"></app-post-fragment>
+        @defer (on viewport) {
+          <app-post-fragment (forceExpand)="expandPost()" [fragment]="content"></app-post-fragment>
+        } @placeholder {
+          <div class="post-fragment-placeholder"></div>
+        }
       }
     }
   </div>
@@ -80,7 +84,11 @@
       ) {
         <hr />
         <app-post-header class="w-full" [fragment]="content" [simplified]="false"></app-post-header>
-        <app-post-fragment [fragment]="content"></app-post-fragment>
+        @defer (on viewport) {
+          <app-post-fragment [fragment]="content"></app-post-fragment>
+        } @placeholder {
+          <div class="post-fragment-placeholder"></div>
+        }
       }
     }
   }

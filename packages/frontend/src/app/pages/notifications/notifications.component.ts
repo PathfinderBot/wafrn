@@ -1,4 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { TranslateModule } from '@ngx-translate/core'
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { MatButtonModule } from '@angular/material/button'
+import { LoaderComponent } from '../../components/loader/loader.component'
+import { SingleNotificationComponent } from '../../components/single-notification/single-notification.component'
 import { Follower } from '../../interfaces/follower'
 import { Reblog } from '../../interfaces/reblog'
 import { UserNotifications } from '../../interfaces/user-notifications'
@@ -7,10 +13,10 @@ import { SimpleTitleService } from '../../services/simple-title.service'
 
 @Component({
   selector: 'app-notifications',
+  imports: [CommonModule, TranslateModule, SingleNotificationComponent, FontAwesomeModule, MatButtonModule, LoaderComponent],
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class NotificationsComponent implements OnInit {
   private notificationsService = inject(NotificationsService)

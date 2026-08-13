@@ -8,8 +8,19 @@ import {
   inject,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { MatPaginator } from '@angular/material/paginator'
-import { MatTableDataSource } from '@angular/material/table'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { RouterModule } from '@angular/router'
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
+import { MatTableDataSource, MatTableModule } from '@angular/material/table'
+import { MatCardModule } from '@angular/material/card'
+import { MatInputModule } from '@angular/material/input'
+import { MatCheckboxModule } from '@angular/material/checkbox'
+import { MatButtonModule } from '@angular/material/button'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { TranslateModule } from '@ngx-translate/core'
+import { AvatarSmallComponent } from '../../../components/avatar-small/avatar-small.component'
+import { PostLinkDirective } from '../../../directives/post-link/post-link.directive'
 import { ReportFilter, parseReportFilter } from '../../../grammars/report-grammar'
 import { AdminService, UserReport } from '../../../services/admin.service'
 import { DeletePostService } from '../../../services/delete-post.service'
@@ -18,10 +29,24 @@ import { SimpleTitleService } from '../../../services/simple-title.service'
 
 @Component({
   selector: 'app-report-list',
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatTableModule,
+    FormsModule,
+    MatCardModule,
+    MatPaginatorModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    AvatarSmallComponent,
+    PostLinkDirective,
+    TranslateModule,
+    MatExpansionModule
+  ],
   templateUrl: './report-list.component.html',
   styleUrls: ['./report-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
+  changeDetection: ChangeDetectionStrategy.Eager
 })
 export class ReportListComponent implements OnInit {
   private adminService = inject(AdminService)

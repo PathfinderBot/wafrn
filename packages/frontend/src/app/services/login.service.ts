@@ -5,15 +5,15 @@ import { UntypedFormGroup } from '@angular/forms'
 
 import { UtilsService } from './utils.service'
 import { JwtService, JwtTokenDecoded } from './jwt.service'
-import { PostsService } from './posts.service'
+import { UserOptionsService } from './user-options.service'
 import { BehaviorSubject, filter, firstValueFrom, fromEvent } from 'rxjs'
 import { EnvironmentService } from './environment.service'
 import { MessageService } from './message.service'
 import { TranslateService } from '@ngx-translate/core'
 import { DashboardService } from './dashboard.service'
-import { BlogDetails } from '../interfaces/blogDetails'
+import { BlogDetails } from '../interfaces/blog-details'
 import { SimpleDialogService } from './simple-dialog.service'
-import { InteractionControl, InteractionControlType } from '../interfaces/InteractionControl'
+import { InteractionControl, InteractionControlType } from '../interfaces/interaction-control'
 
 export type AccountData = {
   token: string
@@ -28,7 +28,7 @@ export class LoginService {
   private router = inject(Router)
   private utils = inject(UtilsService)
   private jwt = inject(JwtService)
-  private postsService = inject(PostsService)
+  private userOptionsService = inject(UserOptionsService)
   private messagesService = inject(MessageService)
   private translate = inject(TranslateService)
   private dashboardService = inject(DashboardService)
@@ -446,7 +446,7 @@ export class LoginService {
       )
       if (petition.success) {
         success = true
-        await this.postsService.loadFollowers()
+        await this.userOptionsService.loadFollowers()
       }
     } catch (exception) {
       console.error(exception)
@@ -467,7 +467,7 @@ export class LoginService {
           localStorage.setItem(option.name.split('wafrn.')[1], option.value)
         }
         success = true
-        await this.postsService.loadFollowers()
+        await this.userOptionsService.loadFollowers()
       }
     } catch (error) {
       console.error(error)
@@ -513,7 +513,7 @@ export class LoginService {
   }
 
   async handleSuccessfulLogin() {
-    await this.postsService.loadFollowers()
+    await this.userOptionsService.loadFollowers()
     this.loggedIn.next(true)
   }
 
@@ -571,7 +571,7 @@ export class LoginService {
     const splashElement = document.getElementById('splash')
     splashElement?.classList.remove('loaded')
 
-    await this.postsService.loadFollowers()
+    await this.userOptionsService.loadFollowers()
 
     window.location.reload()
   }

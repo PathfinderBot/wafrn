@@ -4,8 +4,7 @@ import { SnappyService } from '../../components/snappy/snappy.service'
 import { ProcessedPost } from '../../interfaces/processed-post'
 
 @Directive({
-  selector: '[postLink]',
-  standalone: false
+  selector: '[postLink]'
 })
 export class PostLinkDirective implements OnInit {
   private readonly host = inject(ElementRef)

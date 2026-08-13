@@ -11,7 +11,7 @@ import { logger } from '../utils/logger.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getQueue } from '../utils/queues.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
-import { OptimizeMediaJobPayload, OptimizeMediaJobResult } from '../utils/queueProcessors/optimizeMediaJob.js'
+import { OptimizeMediaJobPayload, OptimizeMediaJobResult } from '../queueProcessors/optimizeMediaJob.js'
 
 const updateMediaDataQueue = getQueue('processRemoteMediaData')
 const optimizeMediaQueue = getQueue<OptimizeMediaJobPayload>('optimizeMediaQueue')

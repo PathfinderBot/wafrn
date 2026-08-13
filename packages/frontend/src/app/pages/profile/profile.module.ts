@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterModule } from '@angular/router'
-import { MyMutesComponent } from './my-mutes/my-mutes.component'
-import { MyServerBlocksComponent } from './my-server-blocks/my-server-blocks.component'
+import { loginRequiredGuard } from '../../guards/login-required.guard'
 
 @NgModule({
   declarations: [],
@@ -16,7 +15,8 @@ import { MyServerBlocksComponent } from './my-server-blocks/my-server-blocks.com
       },
       {
         path: 'edit',
-        loadChildren: () => import('./edit-profile/edit-profile.module').then((m) => m.EditProfileModule)
+        loadComponent: () => import('./edit-profile/edit-profile.component').then((m) => m.EditProfileComponent),
+        canActivate: [loginRequiredGuard]
       },
       {
         path: 'css',
@@ -28,7 +28,8 @@ import { MyServerBlocksComponent } from './my-server-blocks/my-server-blocks.com
       },
       {
         path: 'serverBlocks',
-        loadChildren: () => import('./my-server-blocks/my-server-blocks.module').then((m) => m.MyServerBlocksModule)
+        loadComponent: () =>
+          import('./my-server-blocks/my-server-blocks.component').then((m) => m.MyServerBlocksComponent)
       },
       {
         path: 'mutes',
@@ -36,15 +37,20 @@ import { MyServerBlocksComponent } from './my-server-blocks/my-server-blocks.com
       },
       {
         path: 'silencedPosts',
-        loadChildren: () => import('../../pages/dashboard/dashboard.module').then((m) => m.DashboardModule)
+        loadComponent: () => import('../../pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
       {
         path: 'bookmarkedPosts',
-        loadChildren: () => import('../../pages/dashboard/dashboard.module').then((m) => m.DashboardModule)
+        loadComponent: () => import('../../pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
+      },
+      {
+        path: 'myDrafts',
+        loadComponent: () => import('../../pages/dashboard/dashboard.component').then((m) => m.DashboardComponent)
       },
       {
         path: 'importFollows',
-        loadChildren: () => import('./import-followers/import-followers.module').then((m) => m.ImportFollowersModule)
+        loadComponent: () =>
+          import('./import-followers/import-followers.component').then((m) => m.ImportFollowersComponent)
       },
       {
         path: 'myAsks',
