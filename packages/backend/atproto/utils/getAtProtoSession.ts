@@ -6,14 +6,16 @@ import { logger } from '../../utils/logger.js'
 import { getAdminAtprotoSession } from './getAdminAtprotoSession.js'
 import handleAgentLoginFail from './handleAgentLoginFail.js'
 import { wait } from '../../utils/wait.js'
+import { waitForPds } from './checkPdsStatus.js'
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
   /*
     This is a dirty solution, but we want to retry multiple times before saying "fuck off"
     and disabling bsky for the user!
-    Also there is a posibility multiple tries happen at the same time so we should to account for 
+    Also there is a posibility multiple tries happen at the same time so we should to account for
     the posibility of the password disapearing mid update. At this moment we are NOT gona test for that!
   */
+  await waitForPds()
   let res: AtpAgent = await getAtProtoSessionInternal(userInput, force)
   if (res.did) {
     return res

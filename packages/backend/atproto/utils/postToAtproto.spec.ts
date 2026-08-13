@@ -99,10 +99,6 @@ vi.mock('../../utils/optimizeMedia.js', () => ({
 
 const { postToAtproto } = await import('./postToAtproto.js')
 
-// These tests can take long because network is used even if its an internal PDS
-// so lets put a high timeout
-vi.setConfig({ testTimeout: 30_000 })
-
 let network: TestNetworkNoAppView
 // due library shenanigans, we need to use any on tests. HEY WE GOT TESTS DONT COMPLAIN
 let agent: ReturnType<TestNetworkNoAppView['pds']['getAgent']>
@@ -249,5 +245,118 @@ Full Vsona profile and more art at https://vsona.vgen.co/minka`
     const value = fetched.data.value as Record<string, { $type?: string; images?: unknown[] }>
     expect(value.embed?.$type).toBe('app.bsky.embed.images')
     expect(value.embed?.images).toHaveLength(3)
+  })
+})
+
+describe('postToAtproto against real posts reported as failing to reach Bluesky', () => {
+  it('plain text reply mentioning a bridged bsky user that resolved via bsky handle (SUCCEEDED in prod)', async () => {
+    // https://app.wafrn.net/fediverse/post/2bbf040a-6649-44ac-a74e-0481399a8afd
+    mentionsFindAllMock.mockResolvedValue([{ userId: 'fa0116bc-f177-4615-b3e3-aee8d0548cc6' }])
+    userFindByPkMock.mockResolvedValue({
+      url: '@cervine.online',
+      bskyDid: 'did:plc:dkfi6nrlyylndvc6hycb4iyz',
+      remoteMentionUrl: null,
+      enableBsky: false,
+      isBlueskyUser: true
+    })
+
+    const post = buildPost({
+      content: '<p>oh wait new accounts nvm</p>',
+      markdownContent: 'oh wait new accounts nvm',
+      parentId: '4d26726f-bf6b-4717-b4d1-5d1705d4e78d',
+      rootId: '5434a6a9-6c1c-4cdf-a8d0-29d09ed68d2d'
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+  })
+
+  it('plain text reply mentioning a bridged bsky user (SUCCEEDED in prod)', async () => {
+    // https://app.wafrn.net/fediverse/post/decedbf5-03b9-4dc3-89ce-367e6eccec47
+    mentionsFindAllMock.mockResolvedValue([{ userId: '21e2585b-19a5-4ec4-bb72-c2ecee1f98f0' }])
+    userFindByPkMock.mockResolvedValue({
+      url: '@ioletsgo.gay',
+      bskyDid: 'did:plc:yv3gwyazmfhzok6meufpcbby',
+      remoteMentionUrl: null,
+      enableBsky: false,
+      isBlueskyUser: true
+    })
+
+    const post = buildPost({
+      content: '<p>this guy fucking sucks at mario</p>',
+      markdownContent: 'this guy fucking sucks at mario',
+      parentId: 'af8fe97a-1bdd-4d60-9810-8e5f75c05b1a',
+      rootId: 'af8fe97a-1bdd-4d60-9810-8e5f75c05b1a'
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+  })
+
+  it('plain text top-level post with a pipe and quotes in it (SUCCEEDED in prod)', async () => {
+    // https://app.wafrn.net/fediverse/post/577f6921-cc37-4bae-b109-a76f54245e2a
+    const post = buildPost({
+      content:
+        '<p>i never liked \'coding\' as a verb or \'coder\' as a noun<br />\n' +
+        'i generally prefer to say "I\'m writing a (program|script)" or "I\'m programming" instead</p>',
+      markdownContent:
+        "i never liked 'coding' as a verb or 'coder' as a noun\n" +
+        'i generally prefer to say "I\'m writing a (program|script)" or "I\'m programming" instead'
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+  })
+
+  it('plain text top-level post, no mentions/media/tags (SUCCEEDED in prod)', async () => {
+    // https://app.wafrn.net/fediverse/post/88c5c2e8-189c-4769-b5c3-b8661e2aee4d
+    const post = buildPost({
+      content: "<p>all this coughing's got me dizzy, someone should draw me disoriented and spiral-eyed</p>",
+      markdownContent: "all this coughing's got me dizzy, someone should draw me disoriented and spiral-eyed"
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+  })
+
+  it('plain text reply mentioning a bridged bsky user, deeper reply chain (FAILED in prod - never got a bskyUri)', async () => {
+    // https://app.wafrn.net/fediverse/post/d7352c3d-55aa-467c-8511-8bd132e43ed2
+    mentionsFindAllMock.mockResolvedValue([{ userId: '8448200f-effe-4b29-8707-44ee3161c922' }])
+    userFindByPkMock.mockResolvedValue({
+      url: '@axoga.to',
+      bskyDid: 'did:plc:loise3eov323mj7pgmc5dj5z',
+      remoteMentionUrl: null,
+      enableBsky: false,
+      isBlueskyUser: true
+    })
+
+    const post = buildPost({
+      content: '<p>posting about the platform in which the posting in taking place on</p>',
+      markdownContent: 'posting about the platform in which the posting in taking place on',
+      parentId: '563b8b82-228c-4042-8f73-c03cef17e9c2',
+      rootId: '0431f13f-9210-45a5-a6a2-db2e6ce9591e'
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+  })
+
+  it('plain text top-level post mentioning "bsky" as a word, no actual mentions (FAILED in prod - never got a bskyUri)', async () => {
+    // https://app.wafrn.net/fediverse/post/529f54c0-e4c5-42f1-b48d-080cbac52446
+    const post = buildPost({
+      content:
+        "<p>unpleasant twitterbrained types are starting to crop up more and more on bsky and i'm afraid i have much less patience for that now</p>",
+      markdownContent:
+        "unpleasant twitterbrained types are starting to crop up more and more on bsky and i'm afraid i have much less patience for that now"
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
   })
 })
