@@ -7,6 +7,7 @@ import { getAdminAtprotoSession } from './getAdminAtprotoSession.js'
 import handleAgentLoginFail from './handleAgentLoginFail.js'
 import { wait } from '../../utils/wait.js'
 import { waitForPds } from './checkPdsStatus.js'
+import { getPdsServiceUrl } from './getPdsServiceUrl.js'
 
 async function getAtProtoSession(userInput?: User, force?: boolean): Promise<AtpAgent> {
   /*
@@ -44,9 +45,7 @@ async function getAtProtoSessionInternal(userInput?: User, force?: boolean): Pro
     // a bit dirty innit?
     return await getAdminAtprotoSession()
   }
-  const serviceUrl = completeEnvironment.bskyPds.startsWith('http')
-    ? completeEnvironment.bskyPds
-    : 'https://' + completeEnvironment.bskyPds
+  const serviceUrl = getPdsServiceUrl()
   const agent = new AtpAgent({
     service: serviceUrl,
     persistSession: async (evt, session) => {

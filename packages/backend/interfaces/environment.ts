@@ -73,6 +73,7 @@ export interface Environment {
   enableBsky: boolean
   bskyPds: string
   bskyPdsUrl?: string
+  bskyPdsInternalUrl?: string
   bskyPdsJwtSecret?: string
   bskyPdsAdminPassword?: string
   bskyMasterInviteCode?: string

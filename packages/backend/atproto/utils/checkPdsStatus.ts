@@ -1,17 +1,11 @@
-import { completeEnvironment } from '../../utils/backendOptions.js'
 import { logger } from '../../utils/logger.js'
 import { redisCache } from '../../utils/redis.js'
 import { wait } from '../../utils/wait.js'
+import { getPdsServiceUrl } from './getPdsServiceUrl.js'
 
 const PDS_STATUS_CACHE_KEY = 'bskyPdsStatus'
 const PDS_UP_CACHE_TTL = 30
 const PDS_DOWN_CACHE_TTL = 5
-
-function getPdsServiceUrl(): string {
-  return completeEnvironment.bskyPds.startsWith('http')
-    ? completeEnvironment.bskyPds
-    : 'https://' + completeEnvironment.bskyPds
-}
 
 async function probePdsHealth(): Promise<boolean> {
   try {

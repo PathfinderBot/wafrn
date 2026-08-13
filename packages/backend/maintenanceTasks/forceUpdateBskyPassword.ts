@@ -6,6 +6,7 @@ import generateRandomString from '../utils/generateRandomString.js'
 import { AtpAgent } from '@atproto/api'
 import { logger } from '../utils/logger.js'
 import { redisCache } from '../utils/redis.js'
+import { getPdsServiceUrl } from '../atproto/utils/getPdsServiceUrl.js'
 
 async function forceUpdateBskyPassword(user: User) {
   try {
@@ -13,11 +14,7 @@ async function forceUpdateBskyPassword(user: User) {
       throw new Error(`Cannot update bsky password for user with no did: ${user.url}`)
     }
 
-    const serviceUrl = completeEnvironment.bskyPds
-      ? completeEnvironment.bskyPds.startsWith('http')
-        ? completeEnvironment.bskyPds
-        : 'https://' + completeEnvironment.bskyPds
-      : ''
+    const serviceUrl = completeEnvironment.bskyPds ? getPdsServiceUrl() : ''
     const randomString = generateRandomString()
     await updateBskyPassword(user, randomString)
     logger.debug(

@@ -109,6 +109,7 @@ export const baseEnvironment: Environment = {
   },
   enableBsky: process.env.ENABLE_BSKY == 'true',
   bskyPds: process.env.PDS_DOMAIN_NAME || '',
+  bskyPdsInternalUrl: process.env.PDS_INTERNAL_URL || '',
   bskyPdsJwtSecret: process.env.PDS_JWT_SECRET,
   bskyPdsAdminPassword: process.env.PDS_ADMIN_PASSWORD,
   bskySlingshotUrl: process.env.SLINGSHOT_URL || 'https://slingshot.microcosm.blue',

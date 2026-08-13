@@ -6,6 +6,7 @@ import fs from 'fs/promises'
 import dompurify from 'isomorphic-dompurify'
 import { User, UserOptions } from '../models/index.js'
 import { updateUserDidDoc } from '../atproto/utils/updateUserDidDoc.js'
+import { getPdsServiceUrl } from '../atproto/utils/getPdsServiceUrl.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import generateRandomString from '../utils/generateRandomString.js'
 import { logger } from '../utils/logger.js'
@@ -13,11 +14,7 @@ import optimizeMedia from '../utils/optimizeMedia.js'
 import { redisCache } from '../utils/redis.js'
 import { wait } from '../utils/wait.js'
 
-const serviceUrl = completeEnvironment.bskyPds
-  ? completeEnvironment.bskyPds.startsWith('http')
-    ? completeEnvironment.bskyPds
-    : 'https://' + completeEnvironment.bskyPds
-  : ''
+const serviceUrl = completeEnvironment.bskyPds ? getPdsServiceUrl() : ''
 
 async function updateBlueskyProfile(agent: BskyAgent, user: User) {
   try {
