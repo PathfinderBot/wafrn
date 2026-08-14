@@ -76,6 +76,8 @@ A script is also available for clearing the cache. This script is set up to run 
 
 Wafrn supports importing [seirdy's FediNuke](https://seirdy.one/posts/2023/05/02/fediverse-blocklists/) and [IFTAS DNI](https://about.iftas.org/library/iftas-dni-list/) blocklists. This runs automatically every night at 03:00 server time. New installs are asked about this and have it enabled by default; to opt out, set `DISABLE_AUTOMATIC_BLOCKLIST_SYNC=true` in your environment.
 
+If a host later drops off both lists, it is automatically unblocked on the next sync — but only if it was blocked by this automated sync in the first place. Hosts blocked or unblocked manually from the admin panel are marked to be ignored by the automated sync entirely (both blocking and unblocking), so admin decisions are never overridden by this script.
+
 You can also trigger an import manually at any time using the following script:
 
 ```sh

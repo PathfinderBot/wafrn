@@ -14,6 +14,7 @@ export interface FederatedHostAttributes {
   detail?: string
   blocked?: boolean
   ignoreAutomatedBlocklist?: boolean
+  blockedByAutomatedBlocklist?: boolean
   friendServer?: boolean
   bubbleTimeline?: boolean
 }
@@ -71,6 +72,13 @@ export class FederatedHost
     defaultValue: false
   })
   declare ignoreAutomatedBlocklist: boolean
+
+  @Column({
+    allowNull: false,
+    type: DataType.BOOLEAN,
+    defaultValue: false
+  })
+  declare blockedByAutomatedBlocklist: boolean
 
   @Column({
     allowNull: true,
