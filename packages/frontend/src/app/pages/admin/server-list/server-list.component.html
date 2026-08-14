@@ -22,17 +22,6 @@
           <mat-checkbox [(ngModel)]="element.blocked"></mat-checkbox>
         </td>
       </ng-container>
-      <ng-container matColumnDef="ignoreAutomatedBlocklist">
-        <th mat-header-cell *matHeaderCellDef>{{ 'admin.serverList.managedBy' | translate }}</th>
-        <td mat-cell *matCellDef="let element">
-          {{
-            (element.ignoreAutomatedBlocklist
-              ? 'admin.serverList.managedByAdmin'
-              : 'admin.serverList.managedByBlocklist'
-            ) | translate
-          }}
-        </td>
-      </ng-container>
       <ng-container matColumnDef="friendServer">
         <th mat-header-cell *matHeaderCellDef>{{ 'admin.serverList.extendedFederation' | translate }}</th>
         <td mat-cell *matCellDef="let element">

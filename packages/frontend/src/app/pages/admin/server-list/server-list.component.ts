@@ -35,14 +35,7 @@ export class ServerListComponent implements OnInit {
   ready = false
   originalServers: server[] = []
 
-  displayedColumns = [
-    'displayName',
-    'blocked',
-    'ignoreAutomatedBlocklist',
-    'bubbleTimeline',
-    'friendServer',
-    'detail'
-  ]
+  displayedColumns = ['displayName', 'blocked', 'bubbleTimeline', 'friendServer', 'detail']
   @ViewChild(MatPaginator) paginator!: MatPaginator
 
   dataSource!: MatTableDataSource<server, MatPaginator>
