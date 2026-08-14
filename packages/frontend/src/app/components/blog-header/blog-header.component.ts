@@ -313,6 +313,23 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
     }
   }
 
+  async blockServer() {
+    const blog = this.blogDetails()
+    if (blog) {
+      blog.serverBlocked = (await this.blockService.promptBlockServer(blog.id)) === true
+    }
+  }
+
+  async unblockServer() {
+    const blog = this.blogDetails()
+    if (blog?.federatedHost) {
+      const res = await this.blockService.promptUnblockServer(blog.federatedHost.id)
+      if (res !== undefined) {
+        blog.serverBlocked = false
+      }
+    }
+  }
+
   async biteAccount(id: string) {
     const response = await this.blogService.biteUser(id)
     if (response) {

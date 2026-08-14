@@ -121,6 +121,7 @@ export const baseEnvironment: Environment = {
   // registration level for the instance
   registrationLevel: 'PRIVATE',
   disableShowingBlockedServers: false,
+  disableAutomaticBlocklistSync: false,
   bubbleHostsShowType: 'PUBLIC',
   blockedHostsShowType: 'PUBLIC',
   enableOptInFederationToThreads: true,

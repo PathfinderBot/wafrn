@@ -53,6 +53,16 @@ else
   fi
 
   echo
+  echo "We do recommend you to say yes to this one: import blocklists of the worst of the worst of the worst servers to automatically block them?"
+  echo "Lists used: https://seirdy.one/posts/2023/05/02/fediverse-blocklists/ and https://about.iftas.org/library/iftas-dni-list/"
+  echo "We recommend yes. Enter 'Y' for yes"
+  read BLOCKLIST_SYNC_SUPPORT
+
+  if [[ ! $BLOCKLIST_SYNC_SUPPORT =~ ^[Yy]$ ]]; then
+    export DISABLE_AUTOMATIC_BLOCKLIST_SYNC=true
+  fi
+
+  echo
   echo Do you wish to send emails? This mainly includes invites and reset password requests.
   echo "Note: You should have emails enabled unless you are doing a single-user instance, otherwise people won't be able to reset their password properly"
   echo Enter 'Y' for yes

@@ -74,7 +74,9 @@ A script is also available for clearing the cache. This script is set up to run 
 
 ## Importing Fedinuke and IFTAS DNI Blocklists
 
-Wafrn supports importing [seirdy's FediNuke](https://seirdy.one/posts/2023/05/02/fediverse-blocklists/) and [IFTAS DNI](https://about.iftas.org/library/iftas-dni-list/) using the following script:
+Wafrn supports importing [seirdy's FediNuke](https://seirdy.one/posts/2023/05/02/fediverse-blocklists/) and [IFTAS DNI](https://about.iftas.org/library/iftas-dni-list/) blocklists. This runs automatically every night at 03:00 server time. New installs are asked about this and have it enabled by default; to opt out, set `DISABLE_AUTOMATIC_BLOCKLIST_SYNC=true` in your environment.
+
+You can also trigger an import manually at any time using the following script:
 
 ```sh
 docker exec -ti wafrn-backend-1 npm exec  tsx updateDatabase/blockHosts.ts

@@ -15,7 +15,6 @@ import {
   QuestionPollQuestion,
   Quotes,
   sequelize,
-  ServerBlock,
   User,
   UserBookmarkedPosts,
   UserEmojiRelation,
@@ -24,6 +23,7 @@ import {
 } from '../models/index.js'
 import getPosstGroupDetails from './getPostGroupDetails.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { Queue } from 'bullmq'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { InteractionControl, InteractionControlType, ManualApprovalToAutomaticEquivalent, Privacy } from '../models/post.js'
@@ -197,7 +197,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   const usersFollowingPosterPromise: Promise<string[]> = getFollowedsIds(posterId, false, {
     getFollowersInstead: true
   })
-  const blockedServersPromise = ServerBlock.findAll({ where: { userBlockerId: posterId } })
+  const blockedServersPromise = getUserBlockedServers(posterId)
 
   // we need a list of all the userId we just got from the post
   let userIds: string[] = []

@@ -13,7 +13,6 @@ import {
   PostTag,
   PushNotificationToken,
   Quotes,
-  ServerBlock,
   UnifiedPushData,
   User,
   UserEmojiRelation,
@@ -24,6 +23,7 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { logger } from '../utils/logger.js'
 import { UserAttributes } from '../models/user.js'
@@ -91,9 +91,7 @@ function notificationRoutes(app: Application) {
                     },
                     {
                       federatedHostId: {
-                        [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
-                          (elem) => elem.blockedServerId
-                        )
+                        [Op.notIn]: (await getUserBlockedServers(userId)).map((elem) => elem.blockedServerId)
                       }
                     }
                   ]
@@ -350,9 +348,7 @@ function notificationRoutes(app: Application) {
                   },
                   {
                     federatedHostId: {
-                      [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
-                        (elem) => elem.blockedServerId
-                      )
+                      [Op.notIn]: (await getUserBlockedServers(userId)).map((elem) => elem.blockedServerId)
                     }
                   }
                 ]

@@ -25,14 +25,17 @@ async function blockHosts() {
         }
       })
       if (hostToBlock) {
-        hostToBlock.blocked = true
-        hostToBlock.updatedAt = new Date()
-        hostToBlock.detail = 'Blocked by selected blocklist'
-        await hostToBlock.save()
+        if (!hostToBlock.ignoreAutomatedBlocklist) {
+          hostToBlock.blocked = true
+          hostToBlock.updatedAt = new Date()
+          hostToBlock.detail = 'Blocked by selected blocklist'
+          await hostToBlock.save()
+        }
       } else {
         const tmp = await FederatedHost.create({
           displayName: urlToBlock,
           blocked: true,
+          ignoreAutomatedBlocklist: false,
           detail: 'Blocked by selected blocklist'
         })
         console.log(tmp.displayName)
@@ -43,10 +46,14 @@ async function blockHosts() {
   console.log('cleanup done')
 }
 
-blockHosts()
-  .then(() => {
-    console.log('done')
-  })
-  .catch((error) => {
-    console.error(error)
-  })
+if (import.meta.url === `file://${process.argv[1]}`) {
+  blockHosts()
+    .then(() => {
+      console.log('done')
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+}
+
+export { blockHosts }

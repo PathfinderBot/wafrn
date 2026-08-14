@@ -130,6 +130,9 @@ export const baseEnvironment: Environment = {
   minimumAgeToRegister: parseInt(process.env.REGISTRATION_MINIMUM_AGE || '18'),
   registrationLevel: (process.env.REGISTRATION_LEVEL || 'PUBLIC') as 'PRIVATE' | 'INVITE' | 'PUBLIC',
   disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
+  disableAutomaticBlocklistSync: process.env.DISABLE_AUTOMATIC_BLOCKLIST_SYNC
+    ? process.env.DISABLE_AUTOMATIC_BLOCKLIST_SYNC == 'true'
+    : true,
   bubbleHostsShowType: (process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC') as 'PUBLIC' | 'HIDDEN' | 'LOGGEDIN',
   blockedHostsShowType: (process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN') as 'PUBLIC' | 'HIDDEN' | 'LOGGEDIN',
   enableOptInFederationToThreads: process.env.ENABLE_OPT_IN_FEDERATION_TO_THREADS == 'true',

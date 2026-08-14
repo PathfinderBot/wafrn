@@ -92,6 +92,7 @@ export interface Environment {
   enableOptInFederationToThreads: boolean
   minimumAgeToRegister: number
   disableShowingBlockedServers: boolean
+  disableAutomaticBlocklistSync: boolean
   donationUrl?: string
   bskyRotationKeyK256: string
   frontendEnvironment: any

@@ -92,6 +92,7 @@ export default function adminRoutes(app: Application) {
         if (newValue) {
           elemToUpdate.bubbleTimeline = newValue.bubbleTimeline
           elemToUpdate.blocked = newValue.blocked
+          elemToUpdate.ignoreAutomatedBlocklist = true
           elemToUpdate.detail = newValue.detail
           elemToUpdate.friendServer = newValue.friendServer
           promises.push(elemToUpdate.save())

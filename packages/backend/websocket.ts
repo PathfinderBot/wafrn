@@ -5,6 +5,7 @@ import websocketRoutes from './routes/websocket.js'
 import { completeEnvironment } from './utils/backendOptions.js'
 import cron from 'node-cron'
 import { nukeBannedUsers } from './maintenanceTasks/nukeBannedUsers.js'
+import { blockHosts } from './updateDatabase/blockHosts.js'
 import { sequelize } from './models/sequelize.js'
 import { Op, QueryTypes } from 'sequelize'
 import { Post, User } from './models/index.js'
@@ -44,6 +45,15 @@ cron.schedule('0 2 * * *', async () => {
     logger.info(`NukeBannedUsers Done`)
   })
 })
+
+if (!completeEnvironment.disableAutomaticBlocklistSync) {
+  cron.schedule('0 3 * * *', async () => {
+    // maintenance tasks: sync federated host blocklists
+    blockHosts().then(() => {
+      logger.info(`Blocklist sync done`)
+    })
+  })
+}
 
 cron.schedule('0 * * * *', async () => {
   // maintenance tasks: delete cache files older than 2 hours

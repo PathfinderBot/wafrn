@@ -1,8 +1,8 @@
-import { Op } from 'sequelize'
 import { redisCache } from '../redis.js'
 import { ServerBlock } from '../../models/index.js'
+import { ServerBlockAttributes } from '../../models/serverBlock.js'
 
-export default async function getUserBlockedServers(userId: string): Promise<string[]> {
+export default async function getUserBlockedServers(userId: string): Promise<ServerBlockAttributes[]> {
   const cacheResult = await redisCache.get('serverblocks:' + userId)
   if (cacheResult) {
     return JSON.parse(cacheResult)
@@ -15,7 +15,7 @@ export default async function getUserBlockedServers(userId: string): Promise<str
     })
     const result = blocksServers.map((elem: any) => elem.dataValues)
     redisCache.set('serverblocks:' + userId, JSON.stringify(result), 'EX', 600)
-    return result as string[]
+    return result
   } catch (error) {
     return []
   }

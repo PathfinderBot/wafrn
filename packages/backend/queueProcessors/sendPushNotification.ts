@@ -13,6 +13,7 @@ import { Op } from 'sequelize'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
 import { sendWebPushNotifications } from '../services/webpush.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getQueue } from '../utils/queues.js'
 import { getUserNotificationPreferences } from '../services/notificationOptions.js'
@@ -30,14 +31,14 @@ type PushNotificationPayload = {
 export async function sendPushNotification(job: Job<PushNotificationPayload>) {
   const { notifications, context } = job.data
   let notificationsToSend: NotificationBody[] = []
-  const bannedOriginUsers = await User.findAll({
-    attributes: ['id'],
+  const originUsers = await User.findAll({
+    attributes: ['id', 'federatedHostId', 'banned'],
     where: {
-      id: { [Op.in]: [...new Set(notifications.map((n) => n.userId))] },
-      banned: true
+      id: { [Op.in]: [...new Set(notifications.map((n) => n.userId))] }
     }
   })
-  const bannedOriginUserIds = new Set(bannedOriginUsers.map((u) => u.id))
+  const bannedOriginUserIds = new Set(originUsers.filter((u) => u.banned).map((u) => u.id))
+  const originUserFederatedHostMap = new Map(originUsers.map((u) => [u.id, u.federatedHostId]))
   for await (const notification of notifications) {
     if (notification.notificationType === 'REPORT') {
       notificationsToSend.push(notification)
@@ -50,12 +51,15 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
     )
     if (!mutedPosts.has(notification.postId ? notification.postId : '')) {
       const blockedUsers = await getBlockedIds(notification.notifiedUserId) // do not push notification if muted user
+      const blockedServers = await getUserBlockedServers(notification.notifiedUserId)
+      const originUserFederatedHostId = originUserFederatedHostMap.get(notification.userId)
       if (
         notification.userId == notification.notifiedUserId ||
         blockedUsers.includes(notification.userId) ||
-        bannedOriginUserIds.has(notification.userId)
+        bannedOriginUserIds.has(notification.userId) ||
+        (originUserFederatedHostId && blockedServers.some((elem) => elem.blockedServerId === originUserFederatedHostId))
       ) {
-        // this is from a blocked, banned or same user. do not notify
+        // this is from a blocked, banned or same user, or from a server the user blocked. do not notify
         continue
       }
       const { notificationTypes, validUserIds } = await getUserNotificationPreferences(notification.notifiedUserId)

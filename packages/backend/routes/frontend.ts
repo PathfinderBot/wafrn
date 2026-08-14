@@ -14,6 +14,11 @@ import { Feed } from 'feed'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getCheckContentNegotiation } from '../activitypub/checkContentNegotiation.js'
+import { getRemoteActor } from '../activitypub/getRemoteActor.js'
+import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
+
+const adminUser = await getAdminUser()
 
 const cacheOptions = {
   etag: false,
@@ -222,12 +227,27 @@ function frontend(app: Application) {
         // Check for cached response to avoid re-processing for repeated federated requests
         if (req.params?.id) {
           const cachedResponse = await redisCache.get(`postHttpResponse:${req.params.id}`)
+          let cachedPostOwnerId: string | null | undefined = await redisCache.get(`postOwner:${req.params.id}`)
+          if(!cachedPostOwnerId) {
+            cachedPostOwnerId = (await Post.findByPk(req.params.id))?.userId
+            if(cachedPostOwnerId) {
+              redisCache.set(`postOwner:${req.params.id}`, cachedPostOwnerId, 'EX', 300 )
+            }
+          }
           const possibleObjectToSend = cachedResponse ? JSON.parse(cachedResponse) : undefined
           if (
             possibleObjectToSend &&
+            cachedPostOwnerId &&
             (possibleObjectToSend.to?.includes('https://www.w3.org/ns/activitystreams#Public') ||
               possibleObjectToSend.cc?.includes('https://www.w3.org/ns/activitystreams#Public'))
           ) {
+            const remoteActor = await getRemoteActor(req.fediData.remoteUserUrl, adminUser, false)
+            if (remoteActor?.federatedHostId) {
+              const postOwnerBlockedServers = await getUserBlockedServers(cachedPostOwnerId)
+              if (postOwnerBlockedServers.some((elem) => elem.blockedServerId === remoteActor.federatedHostId)) {
+                return res.sendStatus(403)
+              }
+            }
             res.set({
               'content-type': 'application/activity+json'
             })

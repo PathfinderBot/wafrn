@@ -8,7 +8,6 @@ import {
   Follows,
   Mutes,
   Post,
-  ServerBlock,
   User,
   UserBookmarkedPosts,
   UserEmojiRelation,
@@ -27,6 +26,7 @@ import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { redisCache } from '../utils/redis.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { getNotYetAcceptedFollowedids } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
@@ -415,16 +415,12 @@ function userRoutes(app: Application) {
             blockedId: blog.id
           }
         })
-        const serverBlockedQuery = await ServerBlock.count({
-          where: {
-            userBlockerId: req.jwtData.userId as string,
-            blockedServerId: blog.federatedHostId as string
-          }
-        })
-        await Promise.all([mutedQuery, blockedQuery, serverBlockedQuery, followed, followers, publicOptions])
+        const userBlockedServersQuery = getUserBlockedServers(req.jwtData.userId)
+        await Promise.all([mutedQuery, blockedQuery, userBlockedServersQuery, followed, followers, publicOptions])
         muted = (await mutedQuery) === 1
         blocked = (await blockedQuery) === 1
-        serverBlocked = serverBlocked || (await serverBlockedQuery) === 1
+        const userBlockedServers = await userBlockedServersQuery
+        serverBlocked = serverBlocked || userBlockedServers.some((elem) => elem.blockedServerId === blog.federatedHostId)
       } else {
         await Promise.all([followed, followers])
       }

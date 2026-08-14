@@ -182,6 +182,17 @@ export class BlocksService {
       }
     })
   }
+  async promptBlockServer(id: string): Promise<boolean> {
+    const confirm = await this.simpleDialog.createConfirmDialog({
+      title: 'dialog.post-header.blockServerTitle',
+      content: 'dialog.post-header.blockServerDescription'
+    })
+
+    if (!confirm) return false
+
+    return await this.blockServer(id)
+  }
+
   async blockServer(id: string): Promise<boolean> {
     let success = false
     try {
@@ -213,6 +224,17 @@ export class BlocksService {
       .get<Array<any>>(`${EnvironmentService.environment.baseUrl}/myServerBlocks`)
       .toPromise()
     return response ? this.processResponseServer(response) : []
+  }
+
+  async promptUnblockServer(id: string): Promise<Array<any> | undefined> {
+    const confirm = await this.simpleDialog.createConfirmDialog({
+      title: 'dialog.post-header.unblockServerTitle',
+      content: 'dialog.post-header.unblockServerDescription'
+    })
+
+    if (!confirm) return undefined
+
+    return await this.unblockServer(id)
   }
 
   async unblockServer(id: string): Promise<Array<any>> {

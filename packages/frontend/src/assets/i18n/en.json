@@ -787,6 +787,10 @@
       "blockAccountLabel": "Reason (optional)",
       "unblockAccountTitle": "Unblock account",
       "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots.",
+      "blockServerTitle": "Block server",
+      "blockServerDescription": "This action will have consequences:<ul><li>You will unfollow everyone on this server.</li><li>All followers from this server will stop following you.</li><li>You will not see future posts from this server.</li><li>Users on this server will no longer see your future posts.</li></ul>",
+      "unblockServerTitle": "Unblock server",
+      "unblockServerDescription": "This will not undo the lose of follows from this server, but users from this server will be able to interact with you again",
       "followLoggedOutTitle": "Follow {{name}}",
       "followLoggedOutDescription": "To continue, you need to follow from your Fediverse account.",
       "followLoggedOutLabel": "Fediverse account username (e.g. @example@example.com)",
@@ -1021,7 +1025,10 @@
       "bubbleTimeline": "Bubble timeline",
       "comment": "Comment",
       "selectServerListPage": "Select server list page",
-      "saveChanges": "Save changes"
+      "saveChanges": "Save changes",
+      "managedBy": "Managed by",
+      "managedByAdmin": "Admin",
+      "managedByBlocklist": "Blocklist"
     },
     "pendingUsers": {
       "url": "URL",
