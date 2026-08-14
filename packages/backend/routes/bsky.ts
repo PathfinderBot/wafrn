@@ -235,9 +235,15 @@ function bskyRoutes(app: Application) {
             }
           }
         )
+        await redisCache.del(`fromBsky:${user.bskyDid}`)
         user.bskyDid = null
         user.enableBsky = false
+        user.alternateUrl = undefined
+        user.bskyAppPassword = null
+        user.bskyInviteCode = null
         await user.save()
+        await redisCache.del('fediverse:user:base:' + user.id)
+        await redisCache.del('localUserData:' + user.url.toLowerCase())
       }
       try {
         const inviteCodesReply: { data: { code: string } } = await axios.post(

@@ -40,10 +40,15 @@ async function clearStaleBskyIdentity(user: User) {
     const userPds = await getServerFromDid(did, true)
     const expectedPds = `https://${completeEnvironment.bskyPds}`.toLowerCase()
     if (userPds?.toLowerCase() !== expectedPds) {
+      await redisCache.del(`fromBsky:${did}`)
       user.bskyDid = null
       user.enableBsky = false
       user.alternateUrl = undefined
+      user.bskyAppPassword = null
+      user.bskyInviteCode = null
       await user.save()
+      await redisCache.del('fediverse:user:base:' + user.id)
+      await redisCache.del('localUserData:' + user.url.toLowerCase())
     }
   } catch (error) {
     logger.debug({
