@@ -8,8 +8,10 @@ async function sendPostToInboxes(job: Job) {
   const localUser = job.data.petitionBy
   const objectToSend = job.data.objectToSend
   const tmp = await promiseRace([postPetitionSigned(objectToSend, localUser, inbox)], 30000)
+  const response = tmp[0]
+  const status = response?.status
 
-  if (tmp[0] === undefined || tmp[0] === null) {
+  if (!response || (status !== undefined && (status < 200 || status >= 300))) {
     throw new Error(`Failed to deliver post to inbox ${inbox} within timeout`)
   }
   return true

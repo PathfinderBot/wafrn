@@ -14,7 +14,8 @@ async function signAndAccept(req: any, remoteUser: User, user: User) {
   if (remoteUser.remoteInbox === '') {
     throw new Error('Remote inbox is empty')
   }
-  return await postPetitionSigned(acceptMessage, user, remoteUser.remoteInbox ?? '')
+  const response = await postPetitionSigned(acceptMessage, user, remoteUser.remoteInbox ?? '')
+  return response?.data ?? response
 }
 
 export { signAndAccept }

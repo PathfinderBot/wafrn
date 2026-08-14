@@ -42,10 +42,10 @@ async function getInboxesForActivity(actorUserId: string, postOwnerId: string) {
   const usersToSendThePost = [postOwner].filter((elem) => elem && !localUsers.has(elem.id)) as User[]
 
   let inboxes: string[] = []
-  inboxes = inboxes.concat(usersToSendThePost.map((elem: any) => (elem.remoteInbox ? elem.remoteInbox : '')))
+  inboxes = inboxes.concat(usersToSendThePost.map((elem: any) => elem.remoteInbox).filter(elem => !! elem))
   inboxes = inboxes.concat(serversToSendThePost.map((elem: any) => elem.publicInbox))
 
-  return inboxes
+  return inboxes.filter(elem => !! elem)
 }
 
 /**
@@ -59,7 +59,7 @@ async function queueActivityToInboxes(
   delay?: number
 ) {
   if (!inboxes?.length) return
-  for await (const inboxChunk of inboxes) {
+  for await (const inboxChunk of inboxes.filter(elem => !! elem)) {
     await sendPostQueue.add(
       'sendChunk',
       {

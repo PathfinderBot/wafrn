@@ -70,10 +70,14 @@ async function federatePostHasBeenEdited(postToEdit: any) {
   let urlsToSendPost: string[] = []
 
   if (serversToSendThePost) {
-    urlsToSendPost = urlsToSendPost.concat(serversToSendThePost.map((server: any) => server.publicInbox))
+    urlsToSendPost = urlsToSendPost.concat(
+      serversToSendThePost.map((server: any) => server.publicInbox).filter((elem: any) => !!elem)
+    )
   }
   if (usersToSendThePost) {
-    urlsToSendPost = urlsToSendPost.concat(usersToSendThePost.map((usr: any) => usr.remoteInbox))
+    urlsToSendPost = urlsToSendPost.concat(
+      usersToSendThePost.map((usr: any) => usr.remoteInbox).filter((elem: any) => !!elem)
+    )
   }
   if (!user.privateKey) return
 

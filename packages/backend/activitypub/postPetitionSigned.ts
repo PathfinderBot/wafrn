@@ -47,7 +47,7 @@ async function postPetitionSigned(message: object, userInput: User, target: stri
       Digest: `SHA-256=${digest}`,
       Signature: header
     }
-    res = (await axios.post(target, message, { headers: headers })).data
+    res = await axios.post(target, message, { headers: headers })
   } catch (error: any) {
     if (error.response?.status === 410) {
       logger.trace(`should remove user ${target}`)
