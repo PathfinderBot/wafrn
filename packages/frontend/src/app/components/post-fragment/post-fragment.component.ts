@@ -502,6 +502,20 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
       },
       title: false,
       className: 'viewer',
+      // Same as the defaults except with loading removed:
+      // https://github.com/fengyuanchen/viewerjs#inheritedattributes
+      // Recommended upstream to avoid breaking image rendering
+      // in some browsers:
+      // https://github.com/fengyuanchen/viewerjs/issues/403#issuecomment-671005049
+      inheritedAttributes: [
+        'crossOrigin',
+        'decoding',
+        'isMap',
+        'referrerPolicy',
+        'sizes',
+        'srcset',
+        'useMap'
+      ],
       filter(image: HTMLImageElement) {
         return !image.classList.contains('no-viewer')
       },
