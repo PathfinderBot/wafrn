@@ -1,7 +1,18 @@
-@if (loading && !hasPost) {
+@if (loading && !hasPost && !notFound() && !errorLoadingPost()) {
   <app-loader></app-loader>
 }
-@if (!loading || hasPost) {
+@if (notFound()) {
+  <app-pagenotfound />
+}
+@if (errorLoadingPost()) {
+  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
+    <h2>{{ 'post-actions.errorLoadingPost' | translate }}</h2>
+    <button mat-flat-button (click)="retryLoadPost()">
+      {{ 'post-actions.retry' | translate }}
+    </button>
+  </mat-card>
+}
+@if (!notFound() && !errorLoadingPost() && (!loading || hasPost)) {
   <app-post [post]="post()" [startExpanded]="true" [scrollToPost]="true" class="initial-post"></app-post>
   <div class="px-3 mt-3 mb-3 lg:mx-4 wafrn-container flex flex-column gap-2 reply-loader">
     @if (
@@ -20,7 +31,14 @@
     }
   </div>
   <div id="scroll-here-on-page-change"></div>
-  @if (loading && this.hasPost) {
+  @if (errorLoadingReplies()) {
+    <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
+      <h2>{{ 'post-actions.errorLoadingReplies' | translate }}</h2>
+      <button mat-flat-button (click)="retryLoadReplies()">
+        {{ 'post-actions.retry' | translate }}
+      </button>
+    </mat-card>
+  } @else if (loading && this.hasPost) {
     <app-loader></app-loader>
   } @else {
     @for (

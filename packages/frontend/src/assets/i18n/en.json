@@ -929,7 +929,10 @@
     "reactWithEmoji": "React with an emoji",
     "fetchMoreExternalReplies": "Try fetching more external replies",
     "viewInitialPost": "View initial post",
-    "rewooted": "rewooted"
+    "rewooted": "rewooted",
+    "errorLoadingPost": "Something went wrong loading this woot",
+    "errorLoadingReplies": "Something went wrong loading the replies",
+    "retry": "Retry"
   },
   "post-header": {
     "follow": "Follow",
@@ -1025,10 +1028,7 @@
       "bubbleTimeline": "Bubble timeline",
       "comment": "Comment",
       "selectServerListPage": "Select server list page",
-      "saveChanges": "Save changes",
-      "managedBy": "Managed by",
-      "managedByAdmin": "Admin",
-      "managedByBlocklist": "Blocklist"
+      "saveChanges": "Save changes"
     },
     "pendingUsers": {
       "url": "URL",
