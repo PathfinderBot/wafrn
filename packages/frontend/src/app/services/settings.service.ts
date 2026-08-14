@@ -115,7 +115,8 @@ const settingKeyVariants = [
   'showMediaDescriptions',
   'markAllMediaAsNSFW',
   'disableBsky',
-  'forceReducedMotion'
+  'forceReducedMotion',
+  'federateWithThreads'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -916,6 +917,15 @@ export class SettingsService {
       localStorageKey: 'markAllMediaAsNSFW',
       type: 'checkbox',
       default: false
+    },
+    federateWithThreads: {
+      key: 'federateWithThreads',
+      translationKey: 'settings.federateWithThreads',
+      translationDescriptionKey: 'settings.federateWithThreadsWarning',
+      serverKey: 'wafrn.federateWithThreads',
+      localStorageKey: 'federateWithThreads',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -945,6 +955,9 @@ export class SettingsService {
         { type: 'link', value: 'menu.settings.enableBluesky', route: '/profile/enable-bluesky' }, // FIXME: make this on the page itself?
         { type: 'link', value: 'menu.settings.migrateBluesky', route: '/profile/migrate-bluesky' },
         { type: 'key', value: 'rssOptions' },
+        ...(EnvironmentService.environment.enableOptInFederationToThreads
+          ? ([{ type: 'key', value: 'federateWithThreads' }] as SettingRenderList[])
+          : []),
         { type: 'separator' },
         { type: 'header', value: 'settings.header.botAccount' },
         // { type: 'description', value: '[Email Change] (not currently available, sorry!)' },

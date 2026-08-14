@@ -123,6 +123,7 @@ export const baseEnvironment: Environment = {
   disableShowingBlockedServers: false,
   bubbleHostsShowType: 'PUBLIC',
   blockedHostsShowType: 'PUBLIC',
+  enableOptInFederationToThreads: true,
   autoFollowAdmin: true,
   minimumAgeToRegister: 18,
   donationUrl: 'http://localhost/about',
@@ -140,7 +141,8 @@ export const baseEnvironment: Environment = {
     privateInstanceRegistrationText: 'test 123',
     minimumAgeToRegister: 18,
     donationUrl: 'http://localhost/about',
-    disableShowingBlockedServers: true
+    disableShowingBlockedServers: true,
+    enableOptInFederationToThreads: true
   },
   trustProxy: 1 // this one is for caddy and stuff
 }

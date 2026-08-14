@@ -733,7 +733,9 @@
     "showMediaDescriptions": "Show media descriptions",
     "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type.",
     "markAllMediaAsNSFW": "Mark all media as NSFW",
-    "markAllMediaAsNSFWDescription": "Do not show any media by default until interacted with."
+    "markAllMediaAsNSFWDescription": "Do not show any media by default until interacted with.",
+    "federateWithThreads": "Enable federation with Threads",
+    "federateWithThreadsWarning": "Threads is operated by Meta, owners of Facebook and Instagram. Unless you enable this option, they won't be able to see your account or get any of your data. In case of enabling it, they will get your avatar, handle and description field to show your profile in their app"
   },
   "dialog": {
     "confirm": "Confirm",

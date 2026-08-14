@@ -132,6 +132,7 @@ export const baseEnvironment: Environment = {
   disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
   bubbleHostsShowType: (process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC') as 'PUBLIC' | 'HIDDEN' | 'LOGGEDIN',
   blockedHostsShowType: (process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN') as 'PUBLIC' | 'HIDDEN' | 'LOGGEDIN',
+  enableOptInFederationToThreads: process.env.ENABLE_OPT_IN_FEDERATION_TO_THREADS == 'true',
   donationUrl: process.env.DONATION_URL || '',
   bskyRotationKeyK256: process.env.PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX || '',
   frontendEnvironment: {
@@ -152,6 +153,7 @@ export const baseEnvironment: Environment = {
     disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
     bubbleHostsShowType: process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC',
     blockedHostsShowType: process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN',
+    enableOptInFederationToThreads: process.env.ENABLE_OPT_IN_FEDERATION_TO_THREADS == 'true',
     defaultLanguageCode: process.env.DEFAULT_LANGUAGE_CODE || 'en'
   }
 }
