@@ -309,14 +309,23 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
           }
         }
       })
-      if (oldUser) {
+      if (oldUser && !oldUser.url.startsWith(`@handle.invalid${oldUser.bskyDid}`)) {
         logger.debug({
           message: `Duplicate bsky url event`,
           new: newDataTmp,
           old: oldUser.dataValues
         })
         oldUser.url = `@handle.invalid${oldUser.bskyDid}${oldUser.url}`
-        await oldUser.save()
+        try {
+          await oldUser.save()
+        } catch (error) {
+          logger.warn({
+            message: 'Failed to free up duplicate bsky url',
+            userId: oldUser.id,
+            errorMessage: (error as any)?.message,
+            originalError: (error as any)?.original?.message ?? (error as any)?.parent?.message
+          })
+        }
       }
       const newData: any =
         !userFound.isBskyPrimary && userFound.url !== newDataTmp.url
