@@ -30,7 +30,7 @@ import {
   InteractionControlType,
   Privacy
 } from '../models/post.js'
-import { getPostThreadPDSDirect, processSinglePost } from '../atproto/utils/getAtProtoThread.js'
+import { getAtprotoRecordDirect, processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 import * as cheerio from 'cheerio'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import escapeHTML from 'escape-html'
@@ -275,7 +275,7 @@ async function getPostThreadRecursive(
         })
         if (postPetition.blueskyUri && checkBluesky) {
           try {
-            const directPetition = await getPostThreadPDSDirect(postPetition.blueskyUri)
+            const directPetition = await getAtprotoRecordDirect(postPetition.blueskyUri)
             if (directPetition && directPetition.value.fediverseId === postPetition.id) {
               bskyUri = postPetition.blueskyUri
               bskyCid = postPetition.blueskyCid
@@ -543,7 +543,7 @@ async function getPostThreadRecursive(
             if (postBskyVersion) {
               bskyCid = postBskyVersion.bskyCid || undefined
               bskyUri = postBskyVersion.bskyUri || undefined
-              const directPetition = await getPostThreadPDSDirect(bskyUri as string)
+              const directPetition = await getAtprotoRecordDirect(bskyUri as string)
               if (directPetition && directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything

@@ -32,11 +32,11 @@ export default function dashboardRoutes(app: Application) {
     optionalAuthentication,
     navigationRateLimiter,
     async (req: AuthorizedRequest, res: Response) => {
-      const level = parseInt(req.query.level as string) // level of dashboard: localExplore, explore, dashboard or DMs
+      const level = parseInt(req.query.level as string) // level of dashboard: localExplore, explore, dashboard, DMs or bsky custom feed
       const posterId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
       const POSTS_PER_PAGE = completeEnvironment.postsPerPage
 
-      // level: 0 explore 1 dashboard 2 localExplore 10 dms
+      // level: 0 explore 1 dashboard 2 localExplore 10 dms 40 bsky custom feed
       if (level !== 2 && posterId === '00000000-0000-0000-0000-000000000000') {
         res.sendStatus(401)
         return
@@ -334,6 +334,21 @@ export default function dashboardRoutes(app: Application) {
           whereObject = {
             userId: posterId,
             privacy: Privacy.Draft
+          }
+          break
+        }
+        case 40: {
+          // bsky custom feed, eg at://did:plc:tenurhgjptubkk5zf5qhi3og/app.bsky.feed.generator/mutuals
+          const feedUri = typeof req.query.feedUri === 'string' ? req.query.feedUri : undefined
+          const user = await User.findByPk(posterId)
+          let orderedPostIds: string[] = []
+          if (completeEnvironment.enableBsky && feedUri && user?.enableBsky && user?.bskyDid) {
+            // we are getting a custom feed from bsky, this might take time!
+            const [feedResult] = await promiseRace([handleBskyFeed(user, getStartScrollParam(req), feedUri)], 10000)
+            orderedPostIds = feedResult || []
+          }
+          whereObject = {
+            id: { [Op.in]: orderedPostIds }
           }
           break
         }

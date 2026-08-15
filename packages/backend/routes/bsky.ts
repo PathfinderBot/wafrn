@@ -7,10 +7,12 @@ import { forceUpdateCacheDidsAtThread } from '../atproto/cache/getCacheAtDids.js
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
 import { getAdminAtprotoSession } from '../atproto/utils/getAdminAtprotoSession.js'
 import { updateUserDidDoc } from '../atproto/utils/updateUserDidDoc.js'
+import { followFeed, getMyFeeds, searchFeeds, unfollowFeed, unpinFeed } from '../atproto/utils/bskyFeeds.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getAllLocalUserIdsSet } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { logger } from '../utils/logger.js'
+import { navigationRateLimiter } from '../utils/rateLimiters.js'
 import { redisCache } from '../utils/redis.js'
 import { syncBskyAccountData } from '../atproto/utils/syncBskyAccountData.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
@@ -22,6 +24,18 @@ import {
   updateBlueskyProfile,
   updateBskyPassword
 } from '../services/bskyAccount.js'
+
+async function getUserWithBlueskyEnabled(userId: string): Promise<User | undefined> {
+  const user = await User.scope('full').findByPk(userId)
+  if (!user || !user.enableBsky || !user.bskyDid) {
+    return undefined
+  }
+  return user
+}
+
+function isValidBskyFeedUri(feedUri: unknown): feedUri is string {
+  return typeof feedUri === 'string' && /^at:\/\/did:[^/]+\/app\.bsky\.feed\.generator\/.+$/.test(feedUri)
+}
 
 function bskyRoutes(app: Application) {
   app.get('/api/fromBluesky/:did', async function (req, res) {
@@ -358,6 +372,157 @@ function bskyRoutes(app: Application) {
         return res.sendStatus(404)
       }
     }
+  })
+
+  // Even tho this is atproto, feeds are given to us by bluesky appview
+  // soooo I think the naming bsky is fine
+  app.get(
+    '/api/v2/bsky/search-feeds',
+    authenticateToken,
+    navigationRateLimiter,
+    async (req: AuthorizedRequest, res: Response) => {
+      if (!completeEnvironment.enableBsky) {
+        return res.status(500).send({
+          error: true,
+          message: `This instance does not have bluesky enabled at this moment`
+        })
+      }
+
+      const query = req.query.query as string
+      if (!query) {
+        return res.status(400).send({
+          error: true,
+          message: `A "query" query param is required`
+        })
+      }
+
+      const user = await getUserWithBlueskyEnabled(req.jwtData?.userId as string)
+      if (!user) {
+        return res.status(400).send({
+          error: true,
+          message: `You need to have bluesky enabled to search for feeds`
+        })
+      }
+
+      res.send(await searchFeeds(user, query))
+    }
+  )
+
+  app.get(
+    '/api/v2/bsky/my-feeds',
+    authenticateToken,
+    navigationRateLimiter,
+    async (req: AuthorizedRequest, res: Response) => {
+      if (!completeEnvironment.enableBsky) {
+        return res.status(500).send({
+          error: true,
+          message: `This instance does not have bluesky enabled at this moment`
+        })
+      }
+
+      const user = await getUserWithBlueskyEnabled(req.jwtData?.userId as string)
+      if (!user) {
+        return res.status(400).send({
+          error: true,
+          message: `You need to have bluesky enabled to see your feed subscriptions`
+        })
+      }
+
+      res.send(await getMyFeeds(user))
+    }
+  )
+
+  app.post('/api/v2/bsky/follow-feed', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!completeEnvironment.enableBsky) {
+      return res.status(500).send({
+        error: true,
+        message: `This instance does not have bluesky enabled at this moment`
+      })
+    }
+
+    const feedUri = req.body?.feedUri as string
+    if (!isValidBskyFeedUri(feedUri)) {
+      return res.status(400).send({
+        error: true,
+        message: `A valid "feedUri" field is required in the body`
+      })
+    }
+
+    const user = await getUserWithBlueskyEnabled(req.jwtData?.userId as string)
+    if (!user) {
+      return res.status(400).send({
+        error: true,
+        message: `You need to have bluesky enabled to manage feed subscriptions`
+      })
+    }
+
+    const success = await followFeed(user, feedUri)
+    if (!success) {
+      return res.status(500).send({ success: false })
+    }
+    res.send({ success: true })
+  })
+
+  app.post('/api/v2/bsky/unfollow-feed', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!completeEnvironment.enableBsky) {
+      return res.status(500).send({
+        error: true,
+        message: `This instance does not have bluesky enabled at this moment`
+      })
+    }
+
+    const feedUri = req.body?.feedUri as string
+    if (!isValidBskyFeedUri(feedUri)) {
+      return res.status(400).send({
+        error: true,
+        message: `A valid "feedUri" field is required in the body`
+      })
+    }
+
+    const user = await getUserWithBlueskyEnabled(req.jwtData?.userId as string)
+    if (!user) {
+      return res.status(400).send({
+        error: true,
+        message: `You need to have bluesky enabled to manage feed subscriptions`
+      })
+    }
+
+    const success = await unfollowFeed(user, feedUri)
+    if (!success) {
+      return res.status(500).send({ success: false })
+    }
+    res.send({ success: true })
+  })
+
+  app.post('/api/v2/bsky/unpin-feed', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
+    if (!completeEnvironment.enableBsky) {
+      return res.status(500).send({
+        error: true,
+        message: `This instance does not have bluesky enabled at this moment`
+      })
+    }
+
+    const feedUri = req.body?.feedUri as string
+    if (!isValidBskyFeedUri(feedUri)) {
+      return res.status(400).send({
+        error: true,
+        message: `A valid "feedUri" field is required in the body`
+      })
+    }
+
+    const user = await getUserWithBlueskyEnabled(req.jwtData?.userId as string)
+    if (!user) {
+      return res.status(400).send({
+        error: true,
+        message: `You need to have bluesky enabled to manage feed subscriptions`
+      })
+    }
+
+    const success = await unpinFeed(user, feedUri)
+    if (!success) {
+      return res.status(500).send({ success: false })
+    }
+    res.send({ success: true })
   })
 }
 

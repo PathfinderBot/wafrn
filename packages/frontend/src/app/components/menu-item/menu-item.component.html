@@ -7,6 +7,7 @@
     <a
       [matMenuTriggerFor]="item.items ? menu : null"
       [routerLink]="parsedLink()"
+      [queryParams]="parsedQueryParams()"
       [matBadge]="item.badge && item.badge()"
       [matBadgeHidden]="item.badge && item.badge() === 0"
       matBadgePosition="above after"
@@ -38,6 +39,7 @@
       [matMenuTriggerRestoreFocus]="false"
       #menuTrigger="matMenuTrigger"
       [routerLink]="parsedLink()"
+      [queryParams]="parsedQueryParams()"
       [matBadge]="item.badge && item.badge()"
       [matBadgeHidden]="item.badge && item.badge() === 0"
       matBadgePosition="above after"

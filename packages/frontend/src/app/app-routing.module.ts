@@ -104,6 +104,12 @@ const routes: Routes = [
             path: 'private',
             loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
             canActivate: [loginRequiredGuard]
+          },
+          {
+            path: 'bskyFeed/:feedUri',
+            loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+            canActivate: [loginRequiredGuard],
+            data: { reuseRoute: true, routeType: ReuseableRouteType.Feed }
           }
         ]
       },

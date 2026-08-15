@@ -201,6 +201,8 @@
     "explore": "Explore",
     "exploreWafrn": "Explore WAFRN",
     "exploreFediverse": "WAFRN & friends",
+    "bskyFeed": "Bluesky feed",
+    "bskyFeeds": "Bluesky feeds",
     "unansweredAsks": "Unanswered Asks",
     "privateMessages": "Private messages",
     "search": "Search",
@@ -1129,6 +1131,25 @@
     "noDrafts": "You have no drafts!",
     "noBookmarkedPosts": "You have no bookmarked woots!",
     "errorLoadingPosts": "Something went wrong",
-    "retry": "Retry"
+    "retry": "Retry",
+    "bskyFeedWarning": "This page uses bluesky's appview to obtain the feed unlike the rest of wafrn",
+    "bskyFeedNeedsBsky": "You need bluesky enabled to use bluesky feeds"
+  },
+  "bskyFeeds": {
+    "searchLabel": "Search bluesky feeds",
+    "searchButton": "Search",
+    "noResults": "No feeds found for that search",
+    "noFeeds": "You are not following any bluesky feeds yet. Search for some above!",
+    "feed": "Feed",
+    "creator": "Creator",
+    "likes": "{{count}} likes",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "pin": "Pin to explore menu",
+    "unpin": "Unpin from explore menu",
+    "messages": {
+      "followed": "You are now following {{name}}",
+      "unfollowed": "You no longer follow {{name}}"
+    }
   }
 }

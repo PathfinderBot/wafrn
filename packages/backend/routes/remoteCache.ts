@@ -12,6 +12,7 @@ import { Emoji } from '../models/emoji.js'
 import getUserAgent from '../utils/getUserAgent.js'
 import { assertUrlResolvesPublic } from '../utils/ssrfProtection.js'
 import { getMediaFromUrl } from '../services/mediaCache.js'
+import { getFeedAvatarUrl } from '../atproto/utils/bskyFeeds.js'
 
 function cacheRoutes(app: Application) {
   // DEPRECATED ENDPOINT
@@ -106,6 +107,38 @@ function cacheRoutes(app: Application) {
       await redisCache.set('avatar:' + id, JSON.stringify(user.dataValues), 'EX', 300)
     }
     return res
+  }
+
+  app.get('/api/v2/cache/bskyFeedAvatar/:id', async (req: Request, res: Response) => {
+    try {
+      const feedUri = decodeURIComponent(req.params.id)
+      const force = req.query.force === 'true'
+      const avatarUrl = await getBskyFeedAvatarUrlCache(feedUri, force)
+      if (avatarUrl) {
+        await getMediaFromUrl(avatarUrl, res, force)
+      } else {
+        res.sendStatus(404)
+      }
+    } catch (error) {
+      logger.debug({
+        message: `Error caching bsky feed avatar`,
+        error: error
+      })
+      res.sendStatus(500)
+    }
+  })
+
+  async function getBskyFeedAvatarUrlCache(feedUri: string, ignoreCache: boolean) {
+    if (ignoreCache) {
+      await redisCache.del('bskyFeedAvatar:' + feedUri)
+    }
+    const cached = await redisCache.get('bskyFeedAvatar:' + feedUri)
+    if (cached !== null) {
+      return cached || null
+    }
+    const avatarUrl = await getFeedAvatarUrl(feedUri)
+    await redisCache.set('bskyFeedAvatar:' + feedUri, avatarUrl || '', 'EX', 300)
+    return avatarUrl || null
   }
 
   app.get('/api/v2/cache/header/:id', async (req: Request, res: Response) => {

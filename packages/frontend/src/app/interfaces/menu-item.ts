@@ -10,6 +10,7 @@ export interface MenuItem {
   items?: MenuItem[]
   routerLink?: string
   routerLinkDynamic?: () => string
+  queryParamsDynamic?: () => Record<string, string>
   highlightRoute?: boolean
   url?: string
   command?: () => void

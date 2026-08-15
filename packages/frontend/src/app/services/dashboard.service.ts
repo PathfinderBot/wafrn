@@ -34,7 +34,7 @@ export class DashboardService {
     this.baseUrl = EnvironmentService.environment.baseUrl
   }
 
-  async getDashboardPage(date: Date, level: number, page?: number): Promise<ProcessedPost[][]> {
+  async getDashboardPage(date: Date, level: number, page?: number, feedUri?: string): Promise<ProcessedPost[][]> {
     this.userOptionsService.loadFollowers()
     let result: ProcessedPost[][] = []
     let petitionData: HttpParams = new HttpParams()
@@ -42,6 +42,9 @@ export class DashboardService {
     petitionData = petitionData.set('page', page ? page.toString() : '0')
     petitionData = petitionData.set('level', level)
     petitionData = petitionData.set('startScroll', date.getTime().toString())
+    if (feedUri) {
+      petitionData = petitionData.set('feedUri', feedUri)
+    }
     const url = `${EnvironmentService.environment.baseUrl}/v2/dashboard`
     const dashboardPetition = await firstValueFrom(
       this.http.get<unlinkedPosts>(url, {
