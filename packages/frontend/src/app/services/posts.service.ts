@@ -1,9 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core'
-import { RawPost } from '../interfaces/raw-post'
 import { HttpClient } from '@angular/common/http'
 import { firstValueFrom, lastValueFrom, Subject } from 'rxjs'
-import { unlinkedPosts } from '../interfaces/unlinked-posts'
-import { SimplifiedUser } from '../interfaces/simplified-user'
 import { Emoji } from '../interfaces/emoji'
 import { MessageService } from './message.service'
 import { EnvironmentService } from './environment.service'
@@ -178,42 +175,6 @@ export class PostsService {
 
   async loadRepliesFromFediverse(id: string) {
     return await this.http.get(`${EnvironmentService.environment.baseUrl}/loadRemoteResponses?id=${id}`).toPromise()
-  }
-
-  async getDescendents(id: string): Promise<{ descendents: RawPost[] }> {
-    const response = await firstValueFrom(
-      this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/v2/descendents/' + id)
-    )
-    const res: { descendents: RawPost[] } = { descendents: [] }
-    if (response) {
-      const emptyUser: SimplifiedUser = {
-        id: '42',
-        url: 'ERROR_GETTING_USER',
-        avatar: '',
-        name: 'ERROR'
-      }
-      res.descendents = response.posts
-        .map((elem) => {
-          const user = response.users.find((usr) => usr.id === elem.userId)
-          return {
-            id: elem.id,
-            content: elem.len ? 'A' : '', // HACK I know this is ugly but because legacy reasons reblogs are empty posts
-            user: user ? user : emptyUser,
-            content_warning: '',
-            createdAt: new Date(elem.createdAt),
-            updatedAt: new Date(elem.updatedAt),
-            userId: elem.userId,
-            hierarchyLevel: 69, // yeah I know
-            postTags: [],
-            privacy: elem.privacy,
-            notes: 69,
-            userLikesPostRelations: [],
-            emojis: []
-          }
-        })
-        .sort((b, a) => a.createdAt.getTime() - b.createdAt.getTime())
-    }
-    return res
   }
 
   async unsilencePost(postId: string): Promise<boolean> {
