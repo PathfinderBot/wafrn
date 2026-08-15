@@ -411,15 +411,6 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
         ]
       },
       {
-        label: 'menu.bskyFeeds',
-        icon: faRss,
-        visible: () => this.loginService.loggedIn.value && this.currentAccount()?.enableBsky === true,
-        routerLink: '/profile/bskyFeeds',
-        command: () => {
-          this.hideMenu()
-        }
-      },
-      {
         label: 'menu.search',
         icon: faSearch,
         visible: () => this.loginService.loggedIn.value,
@@ -573,6 +564,15 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
             icon: faHashtag,
             visible: () => this.loginService.loggedIn.value,
             routerLink: '/profile/manageFollowedHashtags',
+            command: () => {
+              this.hideMenu()
+            }
+          },
+          {
+            label: 'menu.bskyFeeds',
+            icon: faRss,
+            visible: () => this.loginService.loggedIn.value && this.currentAccount()?.enableBsky === true,
+            routerLink: '/profile/bskyFeeds',
             command: () => {
               this.hideMenu()
             }
