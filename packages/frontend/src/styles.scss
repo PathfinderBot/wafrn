@@ -326,7 +326,7 @@ body {
 /* Horizontal Media Carousel. Disabled by default. */
 .media-gallery.media-carousel {
   --media-height: clamp(512px, 60dvh, 900px);
-  --media-width: clamp(240px, 85dvw, 900px);
+  --media-width: clamp(240px, 85dvw, 85%);
   flex-direction: row !important;
   align-items: center;
   gap: 12px !important;
