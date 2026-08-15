@@ -34,10 +34,10 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
       const user = post.user
       if (user.isRemoteUser) {
         // EXTERNAL USER
-        if (post.remotePostId) {
+        if (post.remotePostId && (post.privacy === Privacy.Public || post.privacy === Privacy.Unlisted)) {
           res.redirect(post.remotePostId)
         } else {
-          // bsky post
+          // bsky post, or a non public/unlisted external post we won't redirect to
           res.sendStatus(404)
         }
         return
