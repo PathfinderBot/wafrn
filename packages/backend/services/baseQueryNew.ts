@@ -214,6 +214,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       postIds.push(ancestor.id)
     })
   })
+  postIds = [...new Set(postIds)]
 
   const bskyCheckPromise = completeEnvironment.enableBsky
     ? (async () => {

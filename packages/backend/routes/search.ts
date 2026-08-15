@@ -88,9 +88,23 @@ export default function searchRoutes(app: Application) {
               }
               uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
             }
-            const bskyPostId = await processSinglePost(uri, true)
-            if (bskyPostId) {
-              postsIds = [bskyPostId]
+            try {
+              const bskyPostId = await processSinglePost(uri, true)
+              if (bskyPostId) {
+                postsIds = [bskyPostId]
+              }
+            } catch (error) {
+              logger.debug({
+                message: `Error in search live-fetching bsky post ${uri}, trying local db`,
+                error
+              })
+            }
+            if ((postsIds as string[]).length === 0) {
+              // if fetch from bsky failed we try local post
+              const localPost = await Post.findOne({ where: { bskyUri: uri } })
+              if (localPost) {
+                postsIds = [localPost.id]
+              }
             }
           } catch (error) {
             logger.debug({

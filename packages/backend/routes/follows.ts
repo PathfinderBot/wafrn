@@ -61,12 +61,12 @@ export default function followsRoutes(app: Application) {
     } catch (error) {
       logger.error(error)
     }
-    try {
+    // the follow() service already sends its own error response for some rejections
+    // (blocked users, bridgy, ...), so only send here if that has not already happened
+    if (!res.headersSent) {
       res.send({
         success
       })
-    } catch (error) {
-      logger.info({ message: `Error on follow`, error })
     }
   })
 

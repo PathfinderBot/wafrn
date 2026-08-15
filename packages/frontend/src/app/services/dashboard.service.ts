@@ -28,13 +28,15 @@ export class DashboardService {
   // TODO improve this. will require some changes for stuff but basically
   // its faster to say "gimme page 0 startdate this" than "gime page 2 startdate this"
   public startScrollDate: Date = new Date()
+  // Bluesky feeds need cursor because fuck timestamps
+  private bskyCursor?: string
   baseUrl: string
 
   constructor() {
     this.baseUrl = EnvironmentService.environment.baseUrl
   }
 
-  async getDashboardPage(date: Date, level: number, page?: number): Promise<ProcessedPost[][]> {
+  async getDashboardPage(date: Date, level: number, page?: number, feedUri?: string): Promise<ProcessedPost[][]> {
     this.userOptionsService.loadFollowers()
     let result: ProcessedPost[][] = []
     let petitionData: HttpParams = new HttpParams()
@@ -42,12 +44,26 @@ export class DashboardService {
     petitionData = petitionData.set('page', page ? page.toString() : '0')
     petitionData = petitionData.set('level', level)
     petitionData = petitionData.set('startScroll', date.getTime().toString())
+    if (feedUri) {
+      petitionData = petitionData.set('feedUri', feedUri)
+    }
+    if (level === 40) {
+      if (page === -1) {
+        // page -1 means "start over" (see loadPosts), so any old cursor is stale
+        this.bskyCursor = undefined
+      } else if (this.bskyCursor) {
+        petitionData = petitionData.set('bskyCursor', this.bskyCursor)
+      }
+    }
     const url = `${EnvironmentService.environment.baseUrl}/v2/dashboard`
     const dashboardPetition = await firstValueFrom(
       this.http.get<unlinkedPosts>(url, {
         params: petitionData
       })
     )
+    if (level === 40) {
+      this.bskyCursor = dashboardPetition.bskyCursor
+    }
     result = this.postRenderingService.processPostNew(dashboardPetition)
     result = result.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, true))
     dashboardPetition.rewootIds.forEach((id) => {

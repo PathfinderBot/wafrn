@@ -88,7 +88,7 @@ async function checkCommitMentions(
   if (
     commit.operation === CommitType.Create &&
     commit.collection.startsWith('app.bsky.feed.repost') &&
-    (commit as any).record?.subject
+    (commit as any).record?.subject?.uri
   ) {
     const userRecivingRewoot: string = (commit as any).record.subject.uri.split('/')[2]
     const localUserRewoot = await redisCache.sismember(LOCAL_USER_DIDS_CACHE_KEY, userRecivingRewoot)
@@ -115,11 +115,11 @@ async function checkCommitMentions(
   }
   // second one first approach: is post being replied on db? if so we store it.
   record = (commit as CommitCreate<'app.bsky.feed.post'>).record
-  if (record && record.reply && (await redisBloom.exists(ROOT_REPLIED_POSTS, record.reply.root.uri))) {
+  if (record && record.reply?.root?.uri && (await redisBloom.exists(ROOT_REPLIED_POSTS, record.reply.root.uri))) {
     logger.debug('Post in reply to post that we know has been replied (bloom filter)')
     return true
   }
-  if (record && record.reply) {
+  if (record && record.reply?.root?.uri && record.reply?.parent?.uri) {
     const rootDid = record.reply.root.uri.replace('at://', '').split('/app.bsky.feed')[0]
     const parentDid = record.reply.parent.uri.replace('at://', '').split('/app.bsky.feed')[0]
     // we check if root or parent are local users

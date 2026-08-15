@@ -1,30 +1,45 @@
-@if (title) {
+@if (dynamicTitle || title) {
   <div class="mx-3 lg:mx-4 wafrn-container">
-    <h2 class="my-3 text-3xl dashboard-title">{{ title | translate }}</h2>
+    <h2 class="my-3 text-3xl dashboard-title">{{ dynamicTitle || (title | translate) }}</h2>
   </div>
 }
-<app-post-list
-  [posts]="posts"
-  [visible]="snActive"
-  [loading]="loadingPosts"
-  [error]="errorLoadingPosts"
-  (loadPosts)="rateLimitLoadPosts()"
-></app-post-list>
 
-@if (noMorePosts) {
-  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-    <h2>{{ emptyMessage | translate }}</h2>
-    <p [innerHTML]="'dashboard.exploreLinks' | translate"></p>
-  </mat-card>
+@if (level === 40) {
+  <div class="mx-3 lg:mx-4 mb-3 wafrn-container">
+    <app-info-card type="info">
+      {{ 'dashboard.bskyFeedWarning' | translate }}
+    </app-info-card>
+  </div>
 }
 
-@if (errorLoadingPosts) {
+@if (level === 40 && !loginService.currentAccount()?.enableBsky) {
   <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
-    <h2>{{ 'dashboard.errorLoadingPosts' | translate }}</h2>
-    <button mat-flat-button (click)="retryLoadPosts()">
-      {{ 'dashboard.retry' | translate }}
-    </button>
+    <h2>{{ 'dashboard.bskyFeedNeedsBsky' | translate }}</h2>
   </mat-card>
+} @else {
+  <app-post-list
+    [posts]="posts"
+    [visible]="snActive"
+    [loading]="loadingPosts"
+    [error]="errorLoadingPosts"
+    (loadPosts)="rateLimitLoadPosts()"
+  ></app-post-list>
+
+  @if (noMorePosts) {
+    <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
+      <h2>{{ emptyMessage | translate }}</h2>
+      <p [innerHTML]="'dashboard.exploreLinks' | translate"></p>
+    </mat-card>
+  }
+
+  @if (errorLoadingPosts) {
+    <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
+      <h2>{{ 'dashboard.errorLoadingPosts' | translate }}</h2>
+      <button mat-flat-button (click)="retryLoadPosts()">
+        {{ 'dashboard.retry' | translate }}
+      </button>
+    </mat-card>
+  }
 }
 
 <footer class="p-8 flex gap-3 align-items-center">

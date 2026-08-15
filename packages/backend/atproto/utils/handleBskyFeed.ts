@@ -11,13 +11,26 @@ import { logger } from '../../utils/logger.js'
 import { getAtProtoSession } from './getAtProtoSession.js'
 import { processSinglePost } from './getAtProtoThread.js'
 
-async function handleBskyFeed(user: User, cursor: Date) {
+async function handleBskyFeed(
+  user: User,
+  cursor?: string,
+  feedUri?: string
+): Promise<{ postIds: string[]; cursor?: string }> {
+  const orderedPostIds: string[] = []
+  let nextCursor: string | undefined
   try {
     const session = await getAtProtoSession(user)
-    const bskyFeed = await session.getTimeline({
-      limit: completeEnvironment.postsPerPage,
-      cursor: cursor.toISOString()
-    })
+    const bskyFeed = feedUri
+      ? await session.app.bsky.feed.getFeed({
+          feed: feedUri,
+          limit: completeEnvironment.postsPerPage,
+          cursor
+        })
+      : await session.getTimeline({
+          limit: completeEnvironment.postsPerPage,
+          cursor
+        })
+    nextCursor = bskyFeed.data.cursor
     const postsFound = (
       await Post.findAll({
         where: {
@@ -29,29 +42,25 @@ async function handleBskyFeed(user: User, cursor: Date) {
     ).map((elem) => elem.bskyUri)
     const filteredFeed = bskyFeed.data.feed.filter((elem) => !postsFound.includes(elem.post.uri))
     await Promise.allSettled(filteredFeed.map((elem) => processSinglePost(elem.post.uri)))
-    for await (const elem of filteredFeed) {
-      if (elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && elem.reason) {
-        const parentPost = await processSinglePost(elem.post.uri)
+    for await (const elem of bskyFeed.data.feed) {
+      let postId = await processSinglePost(elem.post.uri)
+      if (elem.reason && elem.reason.$type === 'app.bsky.feed.defs#reasonRepost' && postId) {
         const rewooterDid = (elem.reason as any).by?.did
-        if (parentPost && rewooterDid) {
+        if (rewooterDid) {
           const rewooter = await User.findOne({
             where: {
               bskyDid: rewooterDid
             }
           })
           if (rewooter) {
-            const creation = await Post.findOrCreate({
+            const [reblogPost] = await Post.findOrCreate({
               where: {
-                userId: rewooter.id,
-                isReblog: true,
-                parentId: parentPost,
-                bskyCid: (elem.reason as any).cid,
                 bskyUri: (elem.reason as any).uri
               },
               defaults: {
                 userId: rewooter.id,
                 isReblog: true,
-                parentId: parentPost,
+                parentId: postId,
                 bskyCid: (elem.reason as any).cid,
                 bskyUri: (elem.reason as any).uri,
                 createdAt: (elem.reason as any).indexedAt,
@@ -61,17 +70,28 @@ async function handleBskyFeed(user: User, cursor: Date) {
                 privacy: 0
               }
             })
+            if (reblogPost.parentId !== postId) {
+              reblogPost.parentId = postId
+              await reblogPost.save()
+            }
+            postId = reblogPost.id
           }
         }
+      }
+      if (postId) {
+        orderedPostIds.push(postId)
       }
     }
   } catch (error) {
     logger.info({
       message: `Error processing bsky feed`,
       user: user.url,
+      feedUri: feedUri,
       error: error
     })
+    throw error
   }
+  return { postIds: orderedPostIds, cursor: nextCursor }
 }
 
 export { handleBskyFeed }

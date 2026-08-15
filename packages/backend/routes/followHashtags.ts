@@ -21,8 +21,9 @@ function followHashtagRoutes(app: Application) {
     }
     if (!success) {
       res.status(400)
+    } else {
+      await forceUpdateCacheDidsAtThread({ addFollowedHashtag: req.body.hashtag.toLowerCase() })
     }
-    await forceUpdateCacheDidsAtThread({ addFollowedHashtag: req.body.hashtag.toLowerCase() })
 
     res.send({ success: success })
   })

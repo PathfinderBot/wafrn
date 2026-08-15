@@ -163,12 +163,11 @@
     "readThis": "Please read the following before enabling Bluesky for your account.",
     "publicPostsOnly": "Only posts marked public on Wafrn will also be published to Bluesky.",
     "allPostsPublic": "Public posts on Bluesky are visible to everyone, even outside of your followers.",
-    "acceptsFollows": "Anyone can follow your Bluesky account unless you manually approve follow requests.",
+    "acceptsFollows": "Anyone can follow the bluesky-side of your account, regardless of whether you have follow-requests enabled.",
     "corporationWarning": "Bluesky is operated by a private company, so their policies and features may change.",
     "blocksPublic": "Blocking someone on Wafrn does not guarantee they are blocked on Bluesky or vice versa.",
     "replyControls": "Reply permissions and controls are handled by Bluesky and may differ from Wafrn settings.",
     "partialStorage": "Only some content is stored on this Wafrn instance, and Bluesky may keep its own copies.",
-    "headerImageWarning": "Your header image may not be carried over exactly to Bluesky.",
     "loginIntro": "To enable Bluesky, you will log in through the Bluesky flow and authorize your account.",
     "jankyWarning": "This feature is still experimental; the login flow may be unstable.",
     "loginServer": "You will log in through the Bluesky server at {{server}}.",
@@ -201,6 +200,8 @@
     "explore": "Explore",
     "exploreWafrn": "Explore WAFRN",
     "exploreFediverse": "WAFRN & friends",
+    "bskyFeed": "Bluesky Feed",
+    "bskyFeeds": "Bluesky Feeds",
     "unansweredAsks": "Unanswered Asks",
     "privateMessages": "Private messages",
     "search": "Search",
@@ -1129,6 +1130,25 @@
     "noDrafts": "You have no drafts!",
     "noBookmarkedPosts": "You have no bookmarked woots!",
     "errorLoadingPosts": "Something went wrong",
-    "retry": "Retry"
+    "retry": "Retry",
+    "bskyFeedWarning": "This page uses bluesky's appview to obtain the feed unlike the rest of wafrn",
+    "bskyFeedNeedsBsky": "You need bluesky enabled to use bluesky feeds"
+  },
+  "bskyFeeds": {
+    "searchLabel": "Search bluesky feeds",
+    "searchButton": "Search",
+    "noResults": "No feeds found for that search",
+    "noFeeds": "You are not following any bluesky feeds yet. Search for some above!",
+    "feed": "Feed",
+    "creator": "Creator",
+    "likes": "{{count}} likes",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "pin": "Pin to explore menu",
+    "unpin": "Unpin from explore menu",
+    "messages": {
+      "followed": "You are now following {{name}}",
+      "unfollowed": "You no longer follow {{name}}"
+    }
   }
 }

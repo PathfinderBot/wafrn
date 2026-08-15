@@ -37,4 +37,5 @@ export interface BlogDetails {
   displayUrl?: string
   alternateUrl?: string
   isBskyPrimary?: boolean
+  enableBsky?: boolean
 }

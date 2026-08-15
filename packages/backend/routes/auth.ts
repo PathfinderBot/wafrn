@@ -321,7 +321,7 @@ function authRoutes(app: Application) {
         if (user) {
           user.activationCode = resetCode
           user.requestedPasswordReset = new Date()
-          user.save()
+          await user.save()
 
           const link = `${completeEnvironment.instanceUrl}/resetPassword/${encodeURIComponent(email)}/${resetCode}`
           const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(email)}&code=${resetCode}`
@@ -436,7 +436,7 @@ function authRoutes(app: Application) {
   })
 
   app.post('/api/changePassword', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
-    const user = (await User.findByPk(req.jwtData?.userId as string)) as User
+    const user = (await User.scope('full').findByPk(req.jwtData?.userId as string)) as User
     const password = req.body.oldPassword
     const newPassword = req.body.newPassword
     if (await bcrypt.compare(password, user.password)) {
@@ -833,6 +833,7 @@ function authRoutes(app: Application) {
       // NOTE: explicitly not sending 404 here because
       // we don't want to leak information about the existence of the MFA detail to the user
       res.send({ success: true })
+      return
     } catch (error) {
       logger.error(error)
     }

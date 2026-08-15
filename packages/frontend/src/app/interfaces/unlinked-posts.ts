@@ -18,6 +18,7 @@ export interface unlinkedPosts {
   rewootIds: string[]
   asks?: Ask[]
   bookmarks: PostBookmark[]
+  bskyCursor?: string
 }
 
 export interface PostBookmark {

@@ -1,18 +1,20 @@
 import { CommonModule, ViewportScroller } from '@angular/common'
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core'
 import { Meta } from '@angular/platform-browser'
-import { Router, NavigationSkipped } from '@angular/router'
+import { ActivatedRoute, Router, NavigationSkipped } from '@angular/router'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
+import { InfoCardComponent } from '../../components/info-card/info-card.component'
 import { PostListComponent } from '../../components/post-list/post-list.component'
-import { Subscription, Subject, throttleTime, asyncScheduler, filter } from 'rxjs'
+import { Subscription, Subject, throttleTime, asyncScheduler, filter, skip } from 'rxjs'
 import { SnappyCreate, SnappyShow, SnappyHide } from '../../components/snappy/snappy-life'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { DashboardService } from '../../services/dashboard.service'
 import { JwtService } from '../../services/jwt.service'
+import { LoginService } from '../../services/login.service'
 import { MessageService } from '../../services/message.service'
 import { UserOptionsService } from '../../services/user-options.service'
 import { SimpleTitleService } from '../../services/simple-title.service'
@@ -26,6 +28,7 @@ import { SimpleTitleService } from '../../services/simple-title.service'
     FontAwesomeModule,
     MatCardModule,
     PostListComponent,
+    InfoCardComponent,
     TranslateModule
   ],
   templateUrl: './dashboard.component.html',
@@ -36,12 +39,14 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   private dashboardService = inject(DashboardService)
   private jwtService = inject(JwtService)
   private router = inject(Router)
+  private activatedRoute = inject(ActivatedRoute)
   private userOptionsService = inject(UserOptionsService)
   private messages = inject(MessageService)
   private metaTagService = inject(Meta)
   private readonly viewportScroller = inject(ViewportScroller)
   private simpleTitle = inject(SimpleTitleService)
   private cdr = inject(ChangeDetectorRef)
+  protected loginService = inject(LoginService)
 
   loadingPosts = false
   noMorePosts = false
@@ -51,11 +56,14 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   viewedPostsIds: string[] = []
   currentPage = 0
   level = 1
+  bskyFeedUri = ''
   timestamp = new Date().getTime()
   title = 'menu.dashboard'
+  dynamicTitle = ''
   emptyMessage = 'dashboard.notFollowingAnyone'
   updateFollowersSubscription?: Subscription
   navigationSubscription!: Subscription
+  bskyFeedParamSubscription?: Subscription
   scroll = 0
   hideQuotesLevel = localStorage.getItem('hideQuotes') ? parseInt(localStorage.getItem('hideQuotes') as string) : 1
 
@@ -93,6 +101,7 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   }
 
   snOnCreate(): void {
+    this.dynamicTitle = ''
     const purePath = this.router.url.split('?')[0]
     if (purePath.endsWith('explore')) {
       this.level = 0
@@ -124,7 +133,14 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
       this.title = 'menu.myDrafts'
       this.emptyMessage = 'dashboard.noDrafts'
     }
-    this.simpleTitle.set(this.title)
+    if (purePath.includes('/dashboard/bskyFeed/')) {
+      this.level = 40
+      this.bskyFeedUri = decodeURIComponent(this.activatedRoute.snapshot.paramMap.get('feedUri') || '')
+      this.dynamicTitle = this.activatedRoute.snapshot.queryParamMap.get('name') || ''
+      this.title = 'menu.bskyFeed'
+      this.emptyMessage = 'dashboard.noPostsFound'
+    }
+    this.simpleTitle.set(this.dynamicTitle || this.title)
   }
 
   snOnShow(): void {
@@ -134,10 +150,11 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   ngOnDestroy(): void {
     this.navigationSubscription.unsubscribe()
     this.updateFollowersSubscription?.unsubscribe()
+    this.bskyFeedParamSubscription?.unsubscribe()
   }
 
   ngOnInit(): void {
-    this.simpleTitle.set(this.title)
+    this.simpleTitle.set(this.dynamicTitle || this.title)
     // If the user clicks on the explore button while already on the page,
     // reload posts.
     this.navigationSubscription = this.router.events
@@ -158,6 +175,15 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
           summary: "You aren't following anyone, so we took you to the explore page"
         })
         this.router.navigate(['/dashboard/exploreLocal'])
+      }
+    })
+
+    this.bskyFeedParamSubscription = this.activatedRoute.params.pipe(skip(1)).subscribe((params) => {
+      if (this.level === 40 && params['feedUri']) {
+        this.bskyFeedUri = decodeURIComponent(params['feedUri'])
+        this.dynamicTitle = this.activatedRoute.snapshot.queryParamMap.get('name') || ''
+        this.simpleTitle.set(this.dynamicTitle || this.title)
+        this.reloadPosts()
       }
     })
 
@@ -188,6 +214,11 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
   }
 
   async loadPosts(page: number) {
+    if (this.level === 40 && !this.loginService.currentAccount()?.enableBsky) {
+      this.loadingPosts = false
+      this.noMorePosts = true
+      return
+    }
     this.currentPage += 1
     this.loadingPosts = true
     this.errorLoadingPosts = false
@@ -198,7 +229,12 @@ export class DashboardComponent implements OnInit, OnDestroy, SnappyCreate, Snap
     }
     let tmpPosts: ProcessedPost[][]
     try {
-      tmpPosts = await this.dashboardService.getDashboardPage(scrollDate, this.level, page == 0 ? -1 : page)
+      tmpPosts = await this.dashboardService.getDashboardPage(
+        scrollDate,
+        this.level,
+        page == 0 ? -1 : page,
+        this.level === 40 ? this.bskyFeedUri : undefined
+      )
     } catch (error) {
       this.currentPage -= 1
       this.loadingPosts = false

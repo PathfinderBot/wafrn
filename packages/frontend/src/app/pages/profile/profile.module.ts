@@ -66,6 +66,10 @@ import { RouterModule } from '@angular/router'
           import('../../pages/manage-followed-hashtags/manage-followed-hashtags.component').then(
             (c) => c.ManageFollowedHashtagsComponent
           )
+      },
+      {
+        path: 'bskyFeeds',
+        loadComponent: () => import('./bsky-feeds/bsky-feeds.component').then((c) => c.BskyFeedsComponent)
       }
     ])
   ]

@@ -247,6 +247,7 @@ function userRoutes(app: Application) {
       const options = req.body.options
       if (userId && options) {
         await updateProfileOptions(JSON.stringify(options), userId)
+        success = true
       }
       await redisCache.del('userOptions:' + userId)
       await redisCache.del('fediverse:user:base:' + userId)

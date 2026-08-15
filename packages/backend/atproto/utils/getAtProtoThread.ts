@@ -198,7 +198,7 @@ async function processSinglePost(uri: string, forceUpdate = false, depth = 0): P
     })
   }
   let verifiedFedi: string | undefined
-  const postPetitionPds = await getPostThreadPDSDirect(uri)
+  const postPetitionPds = await getAtprotoRecordDirect(uri)
   if (!postPetitionPds) {
     return
   }
@@ -792,8 +792,8 @@ async function getPostInteractionLevels(
   let canReply: InteractionControlType = InteractionControl.Anyone
   const { did, collection, rKey } = extractUriComponents(uri)
   const [threadGate, postGate] = await Promise.all([
-    getPostThreadPDSDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`),
-    getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)
+    getAtprotoRecordDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`),
+    getAtprotoRecordDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)
   ])
 
   if (postGate && (postGate as any).value?.embeddingRules.length) {
@@ -948,7 +948,7 @@ function getQuotedPostUri(post: any): string | undefined {
   return res
 }
 
-async function getPostThreadPDSDirect(inputUri: string) {
+async function getAtprotoRecordDirect(inputUri: string) {
   try {
     const { did, collection, rKey } = extractUriComponents(inputUri)
     const pdsUrl = await getServerFromDid(did)
@@ -1000,7 +1000,7 @@ function shouldShortCircuitToExistingPost(
 export {
   getQuotedPostUri,
   processSinglePost,
-  getPostThreadPDSDirect,
+  getAtprotoRecordDirect,
   getPostInteractionLevels,
   processReplies,
   hasFediverseMirrorMetadata,
