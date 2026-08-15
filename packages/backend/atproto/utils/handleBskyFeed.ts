@@ -49,10 +49,6 @@ async function handleBskyFeed(user: User, cursor: Date, feedUri?: string): Promi
           if (rewooter) {
             const [reblogPost] = await Post.findOrCreate({
               where: {
-                userId: rewooter.id,
-                isReblog: true,
-                parentId: postId,
-                bskyCid: (elem.reason as any).cid,
                 bskyUri: (elem.reason as any).uri
               },
               defaults: {
@@ -68,6 +64,10 @@ async function handleBskyFeed(user: User, cursor: Date, feedUri?: string): Promi
                 privacy: 0
               }
             })
+            if (reblogPost.parentId !== postId) {
+              reblogPost.parentId = postId
+              await reblogPost.save()
+            }
             postId = reblogPost.id
           }
         }
