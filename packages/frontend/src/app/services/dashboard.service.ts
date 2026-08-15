@@ -28,6 +28,8 @@ export class DashboardService {
   // TODO improve this. will require some changes for stuff but basically
   // its faster to say "gimme page 0 startdate this" than "gime page 2 startdate this"
   public startScrollDate: Date = new Date()
+  // Bluesky feeds need cursor because fuck timestamps
+  private bskyCursor?: string
   baseUrl: string
 
   constructor() {
@@ -45,12 +47,23 @@ export class DashboardService {
     if (feedUri) {
       petitionData = petitionData.set('feedUri', feedUri)
     }
+    if (level === 40) {
+      if (page === -1) {
+        // page -1 means "start over" (see loadPosts), so any old cursor is stale
+        this.bskyCursor = undefined
+      } else if (this.bskyCursor) {
+        petitionData = petitionData.set('bskyCursor', this.bskyCursor)
+      }
+    }
     const url = `${EnvironmentService.environment.baseUrl}/v2/dashboard`
     const dashboardPetition = await firstValueFrom(
       this.http.get<unlinkedPosts>(url, {
         params: petitionData
       })
     )
+    if (level === 40) {
+      this.bskyCursor = dashboardPetition.bskyCursor
+    }
     result = this.postRenderingService.processPostNew(dashboardPetition)
     result = result.filter((post) => !this.postRenderingService.postContainsBlockedOrMuted(post, true))
     dashboardPetition.rewootIds.forEach((id) => {

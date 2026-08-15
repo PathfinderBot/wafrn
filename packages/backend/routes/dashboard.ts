@@ -25,6 +25,7 @@ import { completeEnvironment } from '../utils/backendOptions.js'
 import { logger } from '../utils/logger.js'
 import { handleBskyFeed } from '../atproto/utils/handleBskyFeed.js'
 import { promiseRace } from '../atproto/utils/promiseRace.js'
+import { wait } from '../utils/wait.js'
 
 export default function dashboardRoutes(app: Application) {
   app.get(
@@ -46,6 +47,7 @@ export default function dashboardRoutes(app: Application) {
       let whereObject: any = {
         privacy: Privacy.Public
       }
+      let nextBskyCursor: string | undefined
       const baseUserOptions = await UserOptions.findAll({
         where: {
           userId: posterId,
@@ -166,7 +168,7 @@ export default function dashboardRoutes(app: Application) {
           ) {
             try {
               // we give bluesky 2.5 seconds to load
-              await promiseRace([handleBskyFeed(user, getStartScrollParam(req))], 2500)
+              await promiseRace([handleBskyFeed(user)], 2500)
             } catch (error) {
               logger.debug({
                 message: `Error obtaining bsky feed of user ${user.url}`,
@@ -340,12 +342,31 @@ export default function dashboardRoutes(app: Application) {
         case 40: {
           // bsky custom feed, eg at://did:plc:tenurhgjptubkk5zf5qhi3og/app.bsky.feed.generator/mutuals
           const feedUri = typeof req.query.feedUri === 'string' ? req.query.feedUri : undefined
+          // bksy has their own type of cursor
+          const bskyCursor = typeof req.query.bskyCursor === 'string' ? req.query.bskyCursor : undefined
           const user = await User.findByPk(posterId)
           let orderedPostIds: string[] = []
           if (completeEnvironment.enableBsky && feedUri && user?.enableBsky && user?.bskyDid) {
-            // we are getting a custom feed from bsky, this might take time!
-            const [feedResult] = await promiseRace([handleBskyFeed(user, getStartScrollParam(req), feedUri)], 10000)
-            orderedPostIds = feedResult || []
+            try {
+              // we are getting a custom feed from bsky, this might take time!
+              const feedResult = await Promise.race([
+                handleBskyFeed(user, bskyCursor, feedUri),
+                wait(10000).then(() => {
+                  throw new Error('Timed out fetching bsky custom feed')
+                })
+              ])
+              orderedPostIds = feedResult.postIds
+              nextBskyCursor = feedResult.cursor
+            } catch (error) {
+              logger.warn({
+                message: `Error obtaining bsky custom feed for dashboard`,
+                feedUri,
+                user: user?.url,
+                error
+              })
+              res.status(502).send({ message: 'Could not load bsky feed, please retry' })
+              return
+            }
           }
           whereObject = {
             id: { [Op.in]: orderedPostIds }
@@ -379,7 +400,10 @@ export default function dashboardRoutes(app: Application) {
         subQuery: false,
         replacements: { posterId: posterId || '00000000-0000-0000-0000-000000000000' },
         where: {
-          createdAt: { [Op.lt]: getStartScrollParam(req) },
+          // level 40 (bsky custom feed) is paginated entirely by the opaque bsky cursor via
+          // whereObject's id filter; a custom feed's order isn't guaranteed chronological, so
+          // filtering by createdAt here can silently drop posts bsky already paginated past
+          ...(level === 40 ? {} : { createdAt: { [Op.lt]: getStartScrollParam(req) } }),
           [Op.or]: [
             { waitToSendPost: { [Op.ne]: true } },
             { userId: posterId || '00000000-0000-0000-0000-000000000000' }
@@ -408,7 +432,8 @@ export default function dashboardRoutes(app: Application) {
           .map(([postId]) => postId)
       }
 
-      res.send(await getUnjointedPosts(onlyPostIds, posterId))
+      const responseBody = await getUnjointedPosts(onlyPostIds, posterId)
+      res.send(level === 40 ? { ...responseBody, bskyCursor: nextBskyCursor } : responseBody)
     }
   )
 }

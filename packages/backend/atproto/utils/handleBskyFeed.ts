@@ -11,20 +11,26 @@ import { logger } from '../../utils/logger.js'
 import { getAtProtoSession } from './getAtProtoSession.js'
 import { processSinglePost } from './getAtProtoThread.js'
 
-async function handleBskyFeed(user: User, cursor: Date, feedUri?: string): Promise<string[]> {
+async function handleBskyFeed(
+  user: User,
+  cursor?: string,
+  feedUri?: string
+): Promise<{ postIds: string[]; cursor?: string }> {
   const orderedPostIds: string[] = []
+  let nextCursor: string | undefined
   try {
     const session = await getAtProtoSession(user)
     const bskyFeed = feedUri
       ? await session.app.bsky.feed.getFeed({
           feed: feedUri,
           limit: completeEnvironment.postsPerPage,
-          cursor: cursor.toISOString()
+          cursor
         })
       : await session.getTimeline({
           limit: completeEnvironment.postsPerPage,
-          cursor: cursor.toISOString()
+          cursor
         })
+    nextCursor = bskyFeed.data.cursor
     const postsFound = (
       await Post.findAll({
         where: {
@@ -83,8 +89,9 @@ async function handleBskyFeed(user: User, cursor: Date, feedUri?: string): Promi
       feedUri: feedUri,
       error: error
     })
+    throw error
   }
-  return orderedPostIds
+  return { postIds: orderedPostIds, cursor: nextCursor }
 }
 
 export { handleBskyFeed }
