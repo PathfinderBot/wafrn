@@ -56,6 +56,7 @@ export async function forcePopulateCache() {
   for await (const uri of repliedPosts) {
     await redisBloom.add(ROOT_REPLIED_POSTS, uri)
   }
-  await redisCache.set('bskyCacheDate', new Date().getDate())
+  // OH GOD OH GOD THIS WAS SO WRONG I USED GET DATE INSTEAD OF GET TIME
+  await redisCache.set('bskyCacheDate', new Date().getTime())
   logger.debug(`atproto cache loaded`)
 }
