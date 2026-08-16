@@ -54,7 +54,7 @@
 }
 @if (errorLoadingPosts()) {
   <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
-    <h2>{{ 'blog.errorLoadingPosts' | translate }}</h2>
+    <h2 class="my-3 text-3xl">{{ 'blog.errorLoadingPosts' | translate }}</h2>
     <button mat-flat-button (click)="retryLoadPosts()">
       {{ 'blog.retry' | translate }}
     </button>

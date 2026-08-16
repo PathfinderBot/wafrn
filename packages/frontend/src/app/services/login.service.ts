@@ -69,8 +69,9 @@ export class LoginService {
     this.accountList.set(savedAccountList)
   }
 
-  async logIn(loginForm: UntypedFormGroup): Promise<boolean> {
+  async logIn(loginForm: UntypedFormGroup): Promise<{ success: boolean; message?: string }> {
     let success = false
+    let message: string | undefined
     try {
       const petition: any = await this.http
         .post(`${EnvironmentService.environment.baseUrl}/login`, loginForm.value)
@@ -88,11 +89,13 @@ export class LoginService {
           await this.router.navigate(['/dashboard'])
           success = true
         }
+      } else {
+        message = petition.message
       }
     } catch (exception) {
       console.error(exception)
     }
-    return success
+    return { success, message }
   }
 
   async logInMfa(loginMfaForm: UntypedFormGroup): Promise<boolean> {
@@ -266,8 +269,7 @@ export class LoginService {
     return res
   }
 
-  async activateAccount(email: string, code: string) {
-    const res = false
+  async activateAccount(email: string, code: string): Promise<boolean> {
     const payload = {
       email: email,
       code: code
@@ -275,11 +277,7 @@ export class LoginService {
     const response: any = await this.http
       .post(`${EnvironmentService.environment.baseUrl}/activateUser`, payload)
       .toPromise()
-    if (response?.success) {
-      this.router.navigate(['/'])
-    }
-
-    return res
+    return response?.success === true
   }
 
   async getUserMfaList() {

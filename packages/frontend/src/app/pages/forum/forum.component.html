@@ -6,7 +6,7 @@
 }
 @if (errorLoadingPost()) {
   <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
-    <h2>{{ 'post-actions.errorLoadingPost' | translate }}</h2>
+    <h2 class="my-3 text-3xl">{{ 'post-actions.errorLoadingPost' | translate }}</h2>
     <button mat-flat-button (click)="retryLoadPost()">
       {{ 'post-actions.retry' | translate }}
     </button>
@@ -33,7 +33,7 @@
   <div id="scroll-here-on-page-change"></div>
   @if (errorLoadingReplies()) {
     <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
-      <h2>{{ 'post-actions.errorLoadingReplies' | translate }}</h2>
+      <h2 class="my-3 text-3xl">{{ 'post-actions.errorLoadingReplies' | translate }}</h2>
       <button mat-flat-button (click)="retryLoadReplies()">
         {{ 'post-actions.retry' | translate }}
       </button>

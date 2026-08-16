@@ -1,8 +1,11 @@
 @let loggedIn = loginService.loggedIn.value;
-<div class="wafrn-container">
+<div class="mx-3 lg:mx-4 wafrn-container">
+  <h2 class="my-3 text-3xl">{{ 'search.title' | translate }}</h2>
+</div>
+<div class="mx-3 lg:mx-4 wafrn-container">
   <!-- SEARCH FORM -->
   <div class="pb-4 lg:px-4">
-    <mat-card appearance="outlined" class="p-3 font-medium line-height-3">
+    <mat-card class="p-3 font-medium line-height-3">
       <mat-accordion class="p-3">
         <mat-expansion-panel hideToggle>
           <mat-expansion-panel-header>
@@ -21,7 +24,7 @@
         </mat-expansion-panel>
       </mat-accordion>
       <form class="p-3 gap-2" [formGroup]="searchForm" (submit)="submitSearch()">
-        <div class="flex">
+        <div class="flex gap-2">
           <mat-form-field class="flex-1">
             <mat-label>{{ 'search.searchTerm' | translate }}</mat-label>
             <input matInput formControlName="search" id="float-input" type="text" />
@@ -90,12 +93,12 @@
               />
               <div class="flex-grow-1 p-2">
                 @if (followedUsers.indexOf(user.id) === -1 && loggedIn) {
-                  <button mat-raised-button color="primary" (click)="followUser(user.id)" class="mb-4">
+                  <button mat-flat-button color="primary" (click)="followUser(user.id)" class="mb-4">
                     {{ 'search.follow' | translate }}
                   </button>
                 }
                 @if (followedUsers.indexOf(user.id) !== -1 && loggedIn) {
-                  <button mat-raised-button color="primary" (click)="unfollowUser(user.id)">
+                  <button mat-flat-button color="primary" (click)="unfollowUser(user.id)">
                     {{ 'search.unfollow' | translate }}
                   </button>
                 }

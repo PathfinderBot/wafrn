@@ -49,8 +49,13 @@ export class UserOptionsService {
   public usersRepliesDisabled: string[] = []
 
   private lastTimeLoadedFollowers = new Date(0)
+  private loadFollowersPromise: Promise<void> | null = null
 
-  async loadFollowers() {
+  async loadFollowers(): Promise<void> {
+    // if a load is already in flight, piggyback on it instead of resolving early with stale data
+    if (this.loadFollowersPromise) {
+      return this.loadFollowersPromise
+    }
     // if this was called less than 3 seconds ago lets not do it. I could use RXJS for this but its an old part of the code
     if (new Date().getTime() - this.lastTimeLoadedFollowers.getTime() < 3000) {
       return
@@ -58,6 +63,13 @@ export class UserOptionsService {
     this.lastTimeLoadedFollowers = new Date()
     if (!this.jwtService.tokenValid()) return
 
+    this.loadFollowersPromise = this.fetchFollowers().finally(() => {
+      this.loadFollowersPromise = null
+    })
+    return this.loadFollowersPromise
+  }
+
+  private async fetchFollowers(): Promise<void> {
     const followsAndBlocks = await firstValueFrom(
       this.http.get<{
         followedUsers: string[]

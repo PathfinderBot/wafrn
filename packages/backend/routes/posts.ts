@@ -224,15 +224,25 @@ export default function postsRoutes(app: Application) {
       let success = false
       let mentionsToAdd: string[] = []
       const posterId = req.jwtData?.userId ? req.jwtData.userId : completeEnvironment.deletedUser
-      const posterUser = await User.findByPk(posterId)
+      const [posterUser, postToBeQuoted, parent] = await Promise.all([
+        User.findByPk(posterId),
+        Post.findByPk(req.body.postToQuote),
+        Post.findByPk(req.body.parent)
+      ])
       if (!posterUser) {
         res.status(400).send({ message: 'Invalid poster user', success: false })
         return
       }
 
-      const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
+      let cachedPosterOptions: Array<{ optionName: string; optionValue: string }> | null = null
+      const getPosterOptions = async () => {
+        if (!cachedPosterOptions) {
+          cachedPosterOptions = await getUserOptions(posterId)
+        }
+        return cachedPosterOptions
+      }
+
       try {
-        const parent = await Post.findByPk(req.body.parent)
         if (!parent && req.body.parent) {
           success = false
           res.status(500)
@@ -346,7 +356,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           postParentsUsers.push(parent.userId)
 
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
-          const options = await getUserOptions(posterId)
+          const options = await getPosterOptions()
           const userFederatesWithThreads = options.filter(
             (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
           )
@@ -492,7 +502,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           mentionsToAdd = mentionsToAdd.concat(dbFoundMentions.map((usr) => usr.id))
 
           // we check if user federates with threads and if not we check they are not mentioning anyone from threads
-          const options = await getUserOptions(posterId)
+          const options = await getPosterOptions()
           const userFederatesWithThreads = options.filter(
             (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
           )
@@ -650,7 +660,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             language: filterLanguageCode(req.body.language),
             waitToSendPost: manualApprovalPending
           })
-        }
+      }
 
         if (post.isReblog) {
           await createNotification(

@@ -13,7 +13,7 @@
   </div>
 </div>
 <mat-card [class.hidden]="!showUserBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
-  <h2>{{ 'admin.blocks.perUserUserBlocks' | translate }}</h2>
+  <h2 class="mt-0 mb-3 text-2xl">{{ 'admin.blocks.perUserUserBlocks' | translate }}</h2>
   <mat-form-field class="w-full mat-form-field-no-padding">
     <mat-label>{{ 'common.search' | translate }}</mat-label>
     <input (input)="onUserBlockChange($event)" matNativeControl spellcheck="false" />
@@ -67,7 +67,7 @@
   </mat-paginator>
 </mat-card>
 <mat-card [class.hidden]="!showUserServerBlocks" class="p-3 mb-3 lg:mx-4 wafrn-container-wide">
-  <h2>{{ 'admin.blocks.perUserServerBlocks' | translate }}</h2>
+  <h2 class="mt-0 mb-3 text-2xl">{{ 'admin.blocks.perUserServerBlocks' | translate }}</h2>
   <mat-form-field class="w-full mat-form-field-no-padding">
     <mat-label>{{ 'common.search' | translate }}</mat-label>
     <input (input)="onUserServerBlockChange($event)" matNativeControl spellcheck="false" />

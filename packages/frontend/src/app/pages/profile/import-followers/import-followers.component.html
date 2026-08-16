@@ -1,8 +1,10 @@
+<div class="mx-3 lg:mx-4 wafrn-container">
+  <h2 class="my-3 text-3xl">{{ 'profile.importFollows.title' | translate }}</h2>
+</div>
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   <mat-card-content>
     @switch (step) {
       @case (0) {
-        <h2>{{ 'profile.importFollows.title' | translate }}</h2>
         <span>{{ 'profile.importFollows.uploadCsvIntro' | translate }}</span>
         <input
           [hidden]="true"

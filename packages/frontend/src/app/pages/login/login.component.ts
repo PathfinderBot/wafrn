@@ -96,10 +96,10 @@ export class LoginComponent implements OnInit {
     this.loginForm.disable()
     try {
       const login = await this.loginService.logIn(this.loginForm)
-      if (!login) {
+      if (!login.success) {
         this.messages.add({
           severity: 'warn',
-          summary: 'Login failed'
+          summary: login.message ?? 'Login failed'
         })
       }
     } catch (exception) {

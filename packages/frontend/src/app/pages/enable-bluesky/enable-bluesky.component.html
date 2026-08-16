@@ -1,6 +1,8 @@
 @if (environment().enableBsky) {
-  <mat-card class="wafrn-container post-card">
-    <h1>{{ 'enableBluesky.title' | translate }}</h1>
+  <div class="mx-3 lg:mx-4 wafrn-container">
+    <h2 class="my-3 text-3xl">{{ 'enableBluesky.title' | translate }}</h2>
+  </div>
+  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
     <p>{{ 'enableBluesky.readThis' | translate }}</p>
     <ul>
       <li [innerHTML]="'enableBluesky.publicPostsOnly' | translate"></li>
@@ -24,12 +26,18 @@
       <mat-label>{{ 'enableBluesky.currentPassword' | translate }}</mat-label>
       <input [(ngModel)]="password" type="password" matInput />
     </mat-form-field>
-    <button [disabled]="loading || password.length == 0" (click)="enableBluesky()" mat-flat-button class="w-full">
+    <button
+      [disabled]="loading || password.length == 0"
+      (click)="enableBluesky()"
+      mat-flat-button
+      color="primary"
+      class="w-full"
+    >
       {{ 'enableBluesky.enableButton' | translate }}
     </button>
   </mat-card>
 } @else {
-  <mat-card class="wafrn-container post-card">
-    <h1>{{ 'enableBluesky.instanceDisabled' | translate }}</h1>
-  </mat-card>
+  <div class="mx-3 lg:mx-4 wafrn-container">
+    <h2 class="my-3 text-3xl">{{ 'enableBluesky.instanceDisabled' | translate }}</h2>
+  </div>
 }

@@ -14,7 +14,7 @@
 
 @if (level === 40 && !loginService.currentAccount()?.enableBsky) {
   <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
-    <h2>{{ 'dashboard.bskyFeedNeedsBsky' | translate }}</h2>
+    <h2 class="my-3 text-3xl">{{ 'dashboard.bskyFeedNeedsBsky' | translate }}</h2>
   </mat-card>
 } @else {
   <app-post-list
@@ -27,14 +27,14 @@
 
   @if (noMorePosts) {
     <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-      <h2>{{ emptyMessage | translate }}</h2>
+      <h2 class="my-3 text-3xl">{{ emptyMessage | translate }}</h2>
       <p [innerHTML]="'dashboard.exploreLinks' | translate"></p>
     </mat-card>
   }
 
   @if (errorLoadingPosts) {
     <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
-      <h2>{{ 'dashboard.errorLoadingPosts' | translate }}</h2>
+      <h2 class="my-3 text-3xl">{{ 'dashboard.errorLoadingPosts' | translate }}</h2>
       <button mat-flat-button (click)="retryLoadPosts()">
         {{ 'dashboard.retry' | translate }}
       </button>

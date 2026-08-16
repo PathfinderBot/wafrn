@@ -369,10 +369,10 @@ function authRoutes(app: Application) {
           subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`
           body = '<p>;D</p>' + (await applyBlueskyRegistrationOption(user))
         } else {
-          subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewd by an admin!`
+          subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewed by an admin!`
           body = `\
-<p>Thanks for verifying your email, Our admin team will review your registration request soon!</p>
-<p>We do check registrations to avoid spam and harrasment campaigns, your safety is important<p>
+<p>Thanks for verifying your email! Our admin team will review your registration request soon, this usually takes a few hours.</p>
+<p>We do check registrations to avoid spam and harassment campaigns, your safety is important. We'll send you another email once your account is approved.</p>
 `
         }
         try {
@@ -597,7 +597,9 @@ function authRoutes(app: Application) {
             } else {
               res.send({
                 success: false,
-                message: 'Please activate your account! Check your email'
+                message: userWithEmail.emailVerified
+                  ? "Your account is still awaiting admin approval. We'll email you once it's approved."
+                  : 'Please activate your account! Check your email'
               })
             }
           }
