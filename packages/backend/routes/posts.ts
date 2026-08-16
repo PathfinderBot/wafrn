@@ -441,25 +441,25 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
 
         if (req.body.medias && req.body.medias.length) {
           mediaToAdd = req.body.medias
-          Media.findAll({
+          const mediasToUpdate = await Media.findAll({
             where: {
               id: {
                 [Op.in]: mediaToAdd.map((media: any) => media.id)
               },
               userId: posterId
             }
-          }).then((mediasToUpdate) => {
-            mediaToAdd.forEach(async (media, index) => {
+          })
+          await Promise.all(
+            mediaToAdd.map((media, index) => {
               const mediaToUpdate = mediasToUpdate.find((el: any) => el.id === media.id)
               if (mediaToUpdate) {
                 mediaToUpdate.mediaOrder = index
                 mediaToUpdate.description = media.description
                 mediaToUpdate.NSFW = media.NSFW
-                // POSSIBLE PERFORMANCE IMPROVEMENT: do all saves at the same time. convert this foreach into a for each
-                await mediaToUpdate.save()
+                return mediaToUpdate.save()
               }
             })
-          })
+          )
         }
 
         const mentionRegex = /\s@[\w-\.]+@?[\w-\.]*/gm
@@ -761,7 +761,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           )
         }
 
-        post.setEmojis(emojisToAdd)
+        await post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(
           dompurify.sanitize(post.content, { ALLOWED_TAGS: [] }).matchAll(/#[a-zA-Z0-9_]+/gi)
         )
@@ -943,9 +943,9 @@ function getMaxPrivacy(privacies: PrivacyType[]) {
 async function triggerPostFederation(post: Post, user: User) {
   const jobData = { postId: post.id, petitionBy: post.userId }
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    sendPostBskyQueue.add('sendPostBsky', jobData)
+    await sendPostBskyQueue.add('sendPostBsky', jobData)
   } else {
-    prepareSendPostQueue.add('prepareSendPost', jobData, {
+    await prepareSendPostQueue.add('prepareSendPost', jobData, {
       jobId: post.id
     })
   }

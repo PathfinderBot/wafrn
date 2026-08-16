@@ -799,9 +799,6 @@ function userRoutes(app: Application) {
         userAsked: userRecivingAsk.id,
         userAsker: userAsking
       })
-      res.send({
-        success: true
-      })
       await createNotification(
         {
           notificationType: 'ASK',
@@ -815,6 +812,9 @@ function userRoutes(app: Application) {
           postContent: sanitizedQuestion
         }
       )
+      res.send({
+        success: true
+      })
     } else {
       // user can not recive an ask here so we say nope.avi
       res.send({
@@ -830,13 +830,13 @@ function userRoutes(app: Application) {
         id: req.body.id
       }
     })
-    res.send({
-      success: askToIgnore ? true : false
-    })
     if (askToIgnore) {
       askToIgnore.answered = true
       await askToIgnore.save()
     }
+    res.send({
+      success: askToIgnore ? true : false
+    })
   })
 
   app.post('/api/user/bookmarkPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
