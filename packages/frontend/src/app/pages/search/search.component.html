@@ -6,7 +6,7 @@
   <!-- SEARCH FORM -->
   <div class="pb-4">
     <mat-card class="p-3 font-medium line-height-3">
-      <mat-accordion class="p-3">
+      <mat-accordion class="mb-3">
         <mat-expansion-panel hideToggle>
           <mat-expansion-panel-header>
             <mat-panel-title>{{ 'search.howSearchWorksTitle' | translate }}</mat-panel-title>
@@ -23,9 +23,9 @@
           <p>{{ 'search.howSearchWorksRemotePosts' | translate }}</p>
         </mat-expansion-panel>
       </mat-accordion>
-      <form class="p-3 gap-2" [formGroup]="searchForm" (submit)="submitSearch()">
-        <div class="flex gap-2">
-          <mat-form-field class="flex-1">
+      <form class="gap-2" [formGroup]="searchForm" (submit)="submitSearch()">
+        <div class="flex gap-2 mb-3">
+          <mat-form-field class="flex-1" subscriptSizing="dynamic">
             <mat-label>{{ 'search.searchTerm' | translate }}</mat-label>
             <input matInput formControlName="search" id="float-input" type="text" />
           </mat-form-field>
@@ -34,7 +34,7 @@
             {{ 'search.submit' | translate }}
           </button>
         </div>
-        <mat-accordion class="p-3">
+        <mat-accordion>
           <mat-expansion-panel hideToggle>
             <mat-expansion-panel-header>
               <mat-panel-title>{{ 'search.advancedSearchOptions' | translate }}</mat-panel-title>
