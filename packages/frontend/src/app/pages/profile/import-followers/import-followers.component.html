@@ -2,56 +2,54 @@
   <h2 class="my-3 text-3xl">{{ 'profile.importFollows.title' | translate }}</h2>
 </div>
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-  <mat-card-content>
-    @switch (step) {
-      @case (0) {
-        <span>{{ 'profile.importFollows.uploadCsvIntro' | translate }}</span>
-        <input
-          [hidden]="true"
-          type="file"
-          accept=".csv"
-          class="file-input"
-          (change)="onFileSelected($event)"
-          #fileUpload
-        />
+  @switch (step) {
+    @case (0) {
+      <span class="block mb-3">{{ 'profile.importFollows.uploadCsvIntro' | translate }}</span>
+      <input
+        [hidden]="true"
+        type="file"
+        accept=".csv"
+        class="file-input"
+        (change)="onFileSelected($event)"
+        #fileUpload
+      />
 
-        @if (!uploading) {
-          <div class="file-upload">
-            <button mat-flat-button color="accent" class="upload-btn w-full" (click)="fileUpload.click()">
-              {{ 'profile.importFollows.uploadCsv' | translate }}
-            </button>
-          </div>
-        }
+      @if (!uploading) {
+        <div class="file-upload">
+          <button mat-flat-button color="accent" class="upload-btn w-full" (click)="fileUpload.click()">
+            {{ 'profile.importFollows.uploadCsv' | translate }}
+          </button>
+        </div>
+      }
 
-        @if (uploading) {
-          <div class="w-full flex flex-column align-items-center gap-3">
-            <mat-spinner color="accent" diameter="32"></mat-spinner>
-            <p class="m-0 text-lg text-600">{{ 'profile.importFollows.uploading' | translate }}</p>
-          </div>
-        }
+      @if (uploading) {
+        <div class="w-full flex flex-column align-items-center gap-3">
+          <mat-spinner color="accent" diameter="32"></mat-spinner>
+          <p class="m-0 text-lg text-600">{{ 'profile.importFollows.uploading' | translate }}</p>
+        </div>
       }
-      @case (1) {
-        <button (click)="followEveryone()" mat-flat-button class="w-full" color="primary">{{
-          'profile.importFollows.followAllUsers' | translate
-        }}</button>
-        @if (response.notFoundUsers.length > 0) {
-          <span>{{ 'profile.importFollows.notFoundUsers' | translate: { count: response.notFoundUsers.length } }}</span>
-          @for (user of response.notFoundUsers; track $index) {
-            <p [innerText]="user"></p>
-          }
-        }
-      }
-      @case (2) {
-        <mat-spinner color="accent" diameter="42"></mat-spinner>
-        <p class="m-0 text-lg">{{ 'profile.importFollows.followingPeople' | translate }}</p>
-        <mat-progress-bar mode="determinate" [value]="(progress * 100) / response.foundUsers.length"></mat-progress-bar>
-      }
-      @case (3) {
-        <span>{{ 'profile.importFollows.failedFollows' | translate: { count: failedFollows.length } }}</span>
-        @for (user of failedFollows; track $index) {
-          <a [routerLink]="['blog', user]"><p [innerText]="user"></p></a>
+    }
+    @case (1) {
+      <button (click)="followEveryone()" mat-flat-button class="w-full" color="primary">{{
+        'profile.importFollows.followAllUsers' | translate
+      }}</button>
+      @if (response.notFoundUsers.length > 0) {
+        <span>{{ 'profile.importFollows.notFoundUsers' | translate: { count: response.notFoundUsers.length } }}</span>
+        @for (user of response.notFoundUsers; track $index) {
+          <p [innerText]="user"></p>
         }
       }
     }
-  </mat-card-content>
+    @case (2) {
+      <mat-spinner color="accent" diameter="42"></mat-spinner>
+      <p class="m-0 text-lg">{{ 'profile.importFollows.followingPeople' | translate }}</p>
+      <mat-progress-bar mode="determinate" [value]="(progress * 100) / response.foundUsers.length"></mat-progress-bar>
+    }
+    @case (3) {
+      <span>{{ 'profile.importFollows.failedFollows' | translate: { count: failedFollows.length } }}</span>
+      @for (user of failedFollows; track $index) {
+        <a [routerLink]="['blog', user]"><p [innerText]="user"></p></a>
+      }
+    }
+  }
 </mat-card>

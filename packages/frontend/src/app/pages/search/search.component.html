@@ -4,7 +4,7 @@
 </div>
 <div class="mx-3 lg:mx-4 wafrn-container">
   <!-- SEARCH FORM -->
-  <div class="pb-4 lg:px-4">
+  <div class="pb-4">
     <mat-card class="p-3 font-medium line-height-3">
       <mat-accordion class="p-3">
         <mat-expansion-panel hideToggle>
@@ -68,52 +68,54 @@
     </mat-card>
   }
 
-  <mat-tab-group color="primary">
-    @if (!loading() && posts().length > 0) {
-      <mat-tab label="{{ 'search.postsTab' | translate }}">
-        @for (post of posts(); track post) {
-          <div>
-            <app-post [post]="post"></app-post>
-          </div>
-        }
-      </mat-tab>
-    }
-    @if (users().length > 0) {
-      <mat-tab label="{{ 'search.usersTab' | translate }}">
-        <div class="mt-4">
-          @for (user of users(); track $index) {
-            <mat-card mat-list-item class="user-preview text-center p-4 m-4">
-              <img
-                [alt]="user.name + ' avatar'"
-                [src]="getAvatar(user.url)"
-                loading="lazy"
-                width="80"
-                height="80"
-                class="block mx-auto my-2 border-round-md"
-              />
-              <div class="flex-grow-1 p-2">
-                @if (followedUsers.indexOf(user.id) === -1 && loggedIn) {
-                  <button mat-flat-button color="primary" (click)="followUser(user.id)" class="mb-4">
-                    {{ 'search.follow' | translate }}
-                  </button>
-                }
-                @if (followedUsers.indexOf(user.id) !== -1 && loggedIn) {
-                  <button mat-flat-button color="primary" (click)="unfollowUser(user.id)">
-                    {{ 'search.unfollow' | translate }}
-                  </button>
-                }
-                <p>{{ user.name }}</p>
-                <p>
-                  <a [blogLink]="user">{{ user.url }}</a>
-                </p>
-                <div class="mb-3" [innerHTML]="user.description"></div>
-              </div>
-            </mat-card>
+  @if ((!loading() && posts().length > 0) || users().length > 0) {
+    <mat-tab-group color="primary">
+      @if (!loading() && posts().length > 0) {
+        <mat-tab label="{{ 'search.postsTab' | translate }}">
+          @for (post of posts(); track post) {
+            <div>
+              <app-post [post]="post"></app-post>
+            </div>
           }
-        </div>
-      </mat-tab>
-    }
-  </mat-tab-group>
+        </mat-tab>
+      }
+      @if (users().length > 0) {
+        <mat-tab label="{{ 'search.usersTab' | translate }}">
+          <div class="mt-4">
+            @for (user of users(); track $index) {
+              <mat-card mat-list-item class="user-preview text-center p-4 m-4">
+                <img
+                  [alt]="user.name + ' avatar'"
+                  [src]="getAvatar(user.url)"
+                  loading="lazy"
+                  width="80"
+                  height="80"
+                  class="block mx-auto my-2 border-round-md"
+                />
+                <div class="flex-grow-1 p-2">
+                  @if (followedUsers.indexOf(user.id) === -1 && loggedIn) {
+                    <button mat-flat-button color="primary" (click)="followUser(user.id)" class="mb-4">
+                      {{ 'search.follow' | translate }}
+                    </button>
+                  }
+                  @if (followedUsers.indexOf(user.id) !== -1 && loggedIn) {
+                    <button mat-flat-button color="primary" (click)="unfollowUser(user.id)">
+                      {{ 'search.unfollow' | translate }}
+                    </button>
+                  }
+                  <p>{{ user.name }}</p>
+                  <p>
+                    <a [blogLink]="user">{{ user.url }}</a>
+                  </p>
+                  <div class="mb-3" [innerHTML]="user.description"></div>
+                </div>
+              </mat-card>
+            }
+          </div>
+        </mat-tab>
+      }
+    </mat-tab-group>
+  }
 </div>
 
 @if (atLeastOneSearchDone) {
