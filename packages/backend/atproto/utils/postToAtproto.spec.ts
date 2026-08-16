@@ -359,4 +359,42 @@ describe('postToAtproto against real posts reported as failing to reach Bluesky'
     const written = await agent.post(record)
     expect(written.uri).toMatch(/^at:\/\//)
   })
+
+  it('plain text top-level post with a sentence-length wafrn tag over 64 graphemes (FAILED in prod - never got a bskyUri)', async () => {
+    // https://gabboman.xyz/fediverse/post/77c4da3e-eb72-4302-be6f-e7f30417182e
+    // This one failed because long tags from witchsky WHOOPS
+    const post = buildPost({
+      content: '<p>bsky main appview exploded</p>\n<p>WAFRN STILL UPPPPPPP because each wafrn instance is independent ;D</p>',
+      markdownContent: 'bsky main appview exploded\n\nWAFRN STILL UPPPPPPP because each wafrn instance is independent ;D',
+      tags: [{ tagName: 'ok maybe the new feature of bsky feeds depends on them but thats it' }]
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    expect(record.tags).toBeUndefined()
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+
+    const fetched = await agent.com.atproto.repo.getRecord({
+      repo: agent.session!.did,
+      collection: 'app.bsky.feed.post',
+      rkey: written.uri.split('/').pop()!
+    })
+    const value = fetched.data.value as Record<string, unknown>
+    expect(value.tags).toBeUndefined()
+    expect(value.text).toContain('ok-maybe-the-new-feature-of-bsky-feeds-depends-on-them-but-thats-it')
+  })
+
+  it('truncates an oversized tag to 64 graphemes (instead of dropping it) when the post body is shortened, since a link back is guaranteed', async () => {
+    const longTag = 'a'.repeat(70)
+    const post = buildPost({
+      content: `<p>${'word '.repeat(80)}</p>`,
+      tags: [{ tagName: longTag }]
+    })
+
+    const record = await postToAtproto(post as unknown as Post, agent as unknown as BskyAgent)
+    expect(record.tags).toEqual(['a'.repeat(64)])
+
+    const written = await agent.post(record)
+    expect(written.uri).toMatch(/^at:\/\//)
+  })
 })

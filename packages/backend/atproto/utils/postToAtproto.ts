@@ -105,6 +105,17 @@ async function prepareVideoForBsky(
   return { path: outputPath, trimmed: needsTrim, reencoded: true }
 }
 
+const BSKY_TAG_GRAPHEME_LIMIT = 64
+
+function graphemeSegments(str: string): string[] {
+  return Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(str), (s) => s.segment)
+}
+
+function truncateToGraphemes(str: string, limit: number): string {
+  const segments = graphemeSegments(str)
+  return segments.length <= limit ? str : segments.slice(0, limit).join('')
+}
+
 function getUserName(user?: { url: string }): string {
   let res = user ? '@' + user.url + '@' + completeEnvironment.instanceUrl : 'anonymous'
   if (user?.url.startsWith('@')) {
@@ -283,7 +294,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
       else builder.addText(token.raw.slice(0, lengthLeft))
 
-      builder.addText('[...]')
+      builder.addLink('[...]', `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`)
       postShortened = true
       break
     }
@@ -408,6 +419,20 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       return internalRes
     })
   }
+  const bskyTags = postTags
+    .map((tag) => {
+      if (graphemeSegments(tag).length <= BSKY_TAG_GRAPHEME_LIMIT) return tag
+      if (!postShortened) {
+        // the tag is already spelled out verbatim in the post body/hashtag text, so a truncated
+        // duplicate in the `tags` field would just be redundant; drop it to avoid PDS rejection
+        return null
+      }
+      // the body got shortened, which always leaves a link back to the full post, so it's safe
+      // to send a truncated version of the tag here too
+      return truncateToGraphemes(tag, BSKY_TAG_GRAPHEME_LIMIT)
+    })
+    .filter((tag): tag is string => tag !== null)
+
   res = {
     ...res,
     text: rt.text,
@@ -415,7 +440,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     createdAt: new Date(post.createdAt).toISOString(),
     fullText: fullText,
     fullTags: tags,
-    ...(postTags.length > 0 ? { tags: postTags } : {}),
+    ...(bskyTags.length > 0 ? { tags: bskyTags } : {}),
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
     via: `Wafrn${completeEnvironment.defaultSEOData.title.toLowerCase() !== 'wafrn' ? ` (${completeEnvironment.defaultSEOData.title})` : ''}`
   }
