@@ -4,6 +4,7 @@ export interface MenuItem {
   label: string
   labelDynamic?: () => string
   icon?: IconDefinition
+  iconOverlay?: IconDefinition
   image?: string
   visible: () => boolean
   badge?: () => number

@@ -64,9 +64,9 @@ import {
   faVolumeXmark,
   faBellSlash,
   faRoadBarrier,
-  faFileLines,
-  faRss
+  faFileLines
 } from '@fortawesome/free-solid-svg-icons'
+import { faBluesky } from '@fortawesome/free-brands-svg-icons'
 
 import buildData from '../../../buildData.json'
 import { BlogDetails } from '../../interfaces/blog-details'
@@ -400,7 +400,8 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
           ...this.pinnedBskyFeeds().map<MenuItem>((feed) => ({
             label: '',
             labelDynamic: () => feed.displayName,
-            icon: faRss,
+            icon: faBluesky,
+            iconOverlay: faHashtag,
             visible: () => this.loginService.loggedIn.value,
             routerLinkDynamic: () => '/dashboard/bskyFeed/' + encodeURIComponent(feed.uri),
             queryParamsDynamic: () => ({ name: feed.displayName }),
@@ -570,7 +571,8 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
           },
           {
             label: 'menu.bskyFeeds',
-            icon: faRss,
+            icon: faBluesky,
+            iconOverlay: faHashtag,
             visible: () => this.loginService.loggedIn.value && this.currentAccount()?.enableBsky === true,
             routerLink: '/profile/bskyFeeds',
             command: () => {

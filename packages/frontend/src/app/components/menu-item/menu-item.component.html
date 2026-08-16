@@ -21,6 +21,9 @@
       @if (item.icon) {
         <span class="menu-item-icon">
           <fa-icon [icon]="item.icon"></fa-icon>
+          @if (item.iconOverlay) {
+            <fa-icon class="menu-item-icon-overlay" [icon]="item.iconOverlay"></fa-icon>
+          }
         </span>
       }
     </a>
@@ -54,6 +57,9 @@
         @if (item.icon) {
           <span class="mr-3 menu-item-icon">
             <fa-icon [icon]="item.icon" [fixedWidth]="true"></fa-icon>
+            @if (item.iconOverlay) {
+              <fa-icon class="menu-item-icon-overlay" [icon]="item.iconOverlay"></fa-icon>
+            }
           </span>
         }
         @if (item.image !== undefined) {
