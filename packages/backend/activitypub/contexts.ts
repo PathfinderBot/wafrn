@@ -595,6 +595,22 @@ export const wafrnContext = {
         '@id': 'gts:automaticApproval',
         '@type': '@id'
       },
+      manualApproval: {
+        '@id': 'gts:manualApproval',
+        '@type': '@id'
+      },
+      ReplyRequest: 'gts:ReplyRequest',
+      AnnounceRequest: 'gts:AnnounceRequest',
+      ReplyAuthorization: 'gts:ReplyAuthorization',
+      AnnounceAuthorization: 'gts:AnnounceAuthorization',
+      replyAuthorization: {
+        '@id': 'gts:replyAuthorization',
+        '@type': '@id'
+      },
+      announceAuthorization: {
+        '@id': 'gts:announceAuthorization',
+        '@type': '@id'
+      },
       interactingObject: {
         '@id': 'gts:interactingObject',
         '@type': '@id'
@@ -679,13 +695,23 @@ export const PRELOADED_CONTEXTS: Record<string, JsonLd> = {
   'https://www.w3.org/ns/activitystreams': activitystreams
 }
 
-export const LITEPUB_CONTEXT_PATH = '/contexts/litepub-wafrn-2026-08-02.jsonld'
+export const LITEPUB_CONTEXT_PATH = '/contexts/litepub-wafrn-2026-08-09.jsonld'
 export const LEGACY_LITEPUB_CONTEXT_PATH = '/contexts/litepub-0.1.jsonld'
+
+// every path wafrnContext has ever been served at, oldest first (not counting LITEPUB_CONTEXT_PATH
+// itself, the current one). A path identifies a stable place, not a frozen snapshot: whenever
+// wafrnContext's contents change, add a new dated path above and push the previous LITEPUB_CONTEXT_PATH
+// in here instead of reusing/rewriting an existing path - old activities may still reference it, and it
+// must keep resolving to the current vocabulary.
+export const OLD_LITEPUB_CONTEXT_PATHS = [LEGACY_LITEPUB_CONTEXT_PATH, '/contexts/litepub-wafrn-2026-08-02.jsonld']
+
+export const ALL_LITEPUB_CONTEXT_PATHS = [...OLD_LITEPUB_CONTEXT_PATHS, LITEPUB_CONTEXT_PATH]
 
 export function getPreloadedContexts(): Record<string, JsonLd> {
   const res = PRELOADED_CONTEXTS
-  res[`${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`] = wafrnContext
-  res[`${completeEnvironment.frontendUrl}${LEGACY_LITEPUB_CONTEXT_PATH}`] = wafrnContext
+  for (const path of ALL_LITEPUB_CONTEXT_PATHS) {
+    res[`${completeEnvironment.frontendUrl}${path}`] = wafrnContext
+  }
   return res
 }
 
@@ -763,6 +789,22 @@ export const WellKnownContext = {
       },
       automaticApproval: {
         '@id': 'gts:automaticApproval',
+        '@type': '@id'
+      },
+      manualApproval: {
+        '@id': 'gts:manualApproval',
+        '@type': '@id'
+      },
+      ReplyRequest: 'gts:ReplyRequest',
+      AnnounceRequest: 'gts:AnnounceRequest',
+      ReplyAuthorization: 'gts:ReplyAuthorization',
+      AnnounceAuthorization: 'gts:AnnounceAuthorization',
+      replyAuthorization: {
+        '@id': 'gts:replyAuthorization',
+        '@type': '@id'
+      },
+      announceAuthorization: {
+        '@id': 'gts:announceAuthorization',
         '@type': '@id'
       },
       interactingObject: {

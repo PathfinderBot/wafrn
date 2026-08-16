@@ -73,12 +73,15 @@ export interface Environment {
   enableBsky: boolean
   bskyPds: string
   bskyPdsUrl?: string
+  bskyPdsInternalUrl?: string
   bskyPdsJwtSecret?: string
   bskyPdsAdminPassword?: string
   bskyMasterInviteCode?: string
   bskyConstellationUrl: string
   bskySlingshotUrl: string
   bskyJetstreamUrl: string
+  enableBskyFallbackDashboard: boolean
+  enableBskyFallbackNotifications: boolean
   webpushPrivateKey: string
   webpushPublicKey: string
   webpushEmail: string
@@ -86,8 +89,10 @@ export interface Environment {
   registrationLevel: 'PRIVATE' | 'INVITE' | 'PUBLIC'
   bubbleHostsShowType: 'HIDDEN' | 'LOGGEDIN' | 'PUBLIC'
   blockedHostsShowType: 'HIDDEN' | 'LOGGEDIN' | 'PUBLIC'
+  enableOptInFederationToThreads: boolean
   minimumAgeToRegister: number
   disableShowingBlockedServers: boolean
+  disableAutomaticBlocklistSync: boolean
   donationUrl?: string
   bskyRotationKeyK256: string
   frontendEnvironment: any

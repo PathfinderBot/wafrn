@@ -47,6 +47,7 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { BlocksService } from '../../services/blocks.service'
 import { SettingsService } from '../../services/settings.service'
 import { SimpleDialogService } from '../../services/simple-dialog.service'
+import { UserOptionsService } from '../../services/user-options.service'
 
 @Component({
   selector: 'app-post-actions',
@@ -72,12 +73,24 @@ export class PostActionsComponent implements OnChanges {
   private simpleDialog = inject(SimpleDialogService)
   dialogService = inject(MatDialog)
   private blockService = inject(BlocksService)
+  private userOptionsService = inject(UserOptionsService)
 
   post = input.required<ProcessedPost>()
   myId: string = 'user-00000000-0000-0000-0000-000000000000 '
   postSilenced = false
   myRewootsIncludePost = false
   bookmarked = computed(() => this.post().bookmarkers.includes(this.myId))
+
+  canBitePost = computed<boolean>(() => {
+    const allowBitesFrom = this.post().user.allowBitesFrom
+    const authorId = this.post().user.id
+    if (!allowBitesFrom) return true
+    const modes = allowBitesFrom.split(',')
+    if (modes.includes('1')) return true
+    if (modes.includes('2') && this.userOptionsService.followedUserIds.includes(authorId)) return true
+    if (modes.includes('3') && this.userOptionsService.myFollowers.includes(authorId)) return true
+    return false
+  })
 
   bskyUrl = computed<string>(() => {
     this.settingsService.settingsModified() // evil fix to update correctly    if (!bskyUri) return ''

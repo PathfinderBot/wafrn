@@ -18,14 +18,9 @@ export class ForumService {
   private postRenderingService = inject(PostRenderingService)
 
   async getForumThread(id: string) {
-    let response: unlinkedPosts | undefined
-    try {
-      response = await firstValueFrom(
-        this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/forum/' + id)
-      )
-    } catch (error) {
-      return []
-    }
+    const response = await firstValueFrom(
+      this.http.get<unlinkedPosts>(EnvironmentService.environment.baseUrl + '/forum/' + id)
+    )
     response.rewootIds?.forEach((id) => {
       this.postService.rewootedPosts().add(id)
     })

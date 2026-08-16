@@ -1,5 +1,5 @@
 import { Expo } from 'expo-server-sdk'
-import { Follows, Notification, PushNotificationToken, User, UserOptions } from '../models/index.js'
+import { Notification, PushNotificationToken, User } from '../models/index.js'
 import { logger } from '../utils/logger.js'
 import {
   getNotificationBody,
@@ -13,8 +13,10 @@ import { Op } from 'sequelize'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
 import { sendWebPushNotifications } from '../services/webpush.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getQueue } from '../utils/queues.js'
+import { getUserNotificationPreferences } from '../services/notificationOptions.js'
 
 const deliveryCheckQueue = getQueue('checkPushNotificationDelivery')
 const websocketQueue = getQueue('updateNotificationsSocket')
@@ -29,7 +31,19 @@ type PushNotificationPayload = {
 export async function sendPushNotification(job: Job<PushNotificationPayload>) {
   const { notifications, context } = job.data
   let notificationsToSend: NotificationBody[] = []
+  const originUsers = await User.findAll({
+    attributes: ['id', 'federatedHostId', 'banned'],
+    where: {
+      id: { [Op.in]: [...new Set(notifications.map((n) => n.userId))] }
+    }
+  })
+  const bannedOriginUserIds = new Set(originUsers.filter((u) => u.banned).map((u) => u.id))
+  const originUserFederatedHostMap = new Map(originUsers.map((u) => [u.id, u.federatedHostId]))
   for await (const notification of notifications) {
+    if (notification.notificationType === 'REPORT') {
+      notificationsToSend.push(notification)
+      continue
+    }
     const mutedPosts = new Set(
       (await getMutedPosts(notification.notifiedUserId, false)).concat(
         await getMutedPosts(notification.notifiedUserId, true)
@@ -37,107 +51,23 @@ export async function sendPushNotification(job: Job<PushNotificationPayload>) {
     )
     if (!mutedPosts.has(notification.postId ? notification.postId : '')) {
       const blockedUsers = await getBlockedIds(notification.notifiedUserId) // do not push notification if muted user
-      if (notification.userId == notification.notifiedUserId || blockedUsers.includes(notification.userId)) {
-        // this is from a blocked user or same user. do not notify
+      const blockedServers = await getUserBlockedServers(notification.notifiedUserId)
+      const originUserFederatedHostId = originUserFederatedHostMap.get(notification.userId)
+      if (
+        notification.userId == notification.notifiedUserId ||
+        blockedUsers.includes(notification.userId) ||
+        bannedOriginUserIds.has(notification.userId) ||
+        (originUserFederatedHostId && blockedServers.some((elem) => elem.blockedServerId === originUserFederatedHostId))
+      ) {
+        // this is from a blocked, banned or same user, or from a server the user blocked. do not notify
         continue
       }
-      // TODO this part of code is repeated. take it to a function another day
-      const options = await UserOptions.findAll({
-        where: {
-          userId: notification.notifiedUserId,
-          optionName: {
-            [Op.in]: [
-              'wafrn.notificationsFrom',
-              'wafrn.notifyMentions',
-              'wafrn.notifyReactions',
-              'wafrn.notifyQuotes',
-              'wafrn.notifyFollows',
-              'wafrn.notifyRewoots',
-              'wafrn.notifyBites'
-            ]
-          }
-        }
-      })
-      const optionNotificationsFrom = options.find((elem) => elem.optionName == 'wafrn.notificationsFrom')
-      const optionNotifyQuotes = options.find((elem) => elem.optionName == 'wafrn.notifyQuotes')
-      const optionNotifyMentions = options.find((elem) => elem.optionName == 'wafrn.notifyMentions')
-      const optionNotifyReactions = options.find((elem) => elem.optionName == 'wafrn.notifyReactions')
-      const optionNotifyFollows = options.find((elem) => elem.optionName == 'wafrn.notifyFollows')
-      const optionNotifyRewoots = options.find((elem) => elem.optionName == 'wafrn.notifyRewoots')
-      const optionNotifyBites = options.find((elem) => elem.optionName == 'wafrn.notifyBites')
-
-      const notificationTypes = []
-      if (!optionNotifyQuotes || optionNotifyQuotes.optionValue != 'false') {
-        notificationTypes.push('QUOTE')
-      }
-      if (!optionNotifyMentions || optionNotifyMentions.optionValue != 'false') {
-        notificationTypes.push('MENTION')
-      }
-      if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
-        notificationTypes.push('EMOJIREACT')
-        notificationTypes.push('LIKE')
-      }
-      if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
-        notificationTypes.push('FOLLOW')
-      }
-      if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
-        notificationTypes.push('REWOOT')
-      }
-      if (!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
-        notificationTypes.push('POSTBITE')
-        notificationTypes.push('USERBITE')
-      }
-      if (notificationTypes.includes(notification.notificationType)) {
-        if (optionNotificationsFrom && optionNotificationsFrom.optionValue != '1') {
-          let validUsers: string[] = []
-          switch (optionNotificationsFrom.optionValue) {
-            case '2': // followers
-              validUsers = (
-                await Follows.findAll({
-                  where: {
-                    accepted: true,
-                    followedId: notification.notifiedUserId
-                  }
-                })
-              ).map((elem) => elem.followerId)
-            case '3': // followees
-              validUsers = (
-                await Follows.findAll({
-                  where: {
-                    accepted: true,
-                    followerId: notification.notifiedUserId
-                  }
-                })
-              ).map((elem) => elem.followedId)
-            case '4': // mutuals
-              const followerIds = (
-                await Follows.findAll({
-                  where: {
-                    accepted: true,
-                    followedId: notification.notifiedUserId
-                  }
-                })
-              ).map((elem) => elem.followerId)
-              validUsers = (
-                await Follows.findAll({
-                  where: {
-                    accepted: true,
-                    followerId: notification.notifiedUserId,
-                    followedId: {
-                      [Op.in]: followerIds
-                    }
-                  }
-                })
-              ).map((elem) => elem.followedId)
-              if (validUsers.includes(notification.userId)) {
-                notificationsToSend.push(notification)
-              }
-              continue
-          }
-        } else {
-          notificationsToSend.push(notification)
-          continue
-        }
+      const { notificationTypes, validUserIds } = await getUserNotificationPreferences(notification.notifiedUserId)
+      if (
+        notificationTypes.includes(notification.notificationType) &&
+        (validUserIds === null || validUserIds.includes(notification.userId))
+      ) {
+        notificationsToSend.push(notification)
       }
     }
   }

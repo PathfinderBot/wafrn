@@ -111,6 +111,8 @@ export const baseEnvironment: Environment = {
   bskyConstellationUrl: 'https://constellation.microcosm.blue',
   bskySlingshotUrl: 'https://slingshot.microcosm.blue',
   bskyJetstreamUrl: 'wss://jetstream.fire.hose.cam/subscribe',
+  enableBskyFallbackDashboard: true,
+  enableBskyFallbackNotifications: true,
   // to generate these keys use the following command: `npx web-push generate-vapid-keys`. Remember to do the environment one too!!
   webpushPrivateKey: 'CDUUngHrbAUOBg_1-jXZJFj3IOGMTAbR5zhJupKzMOE',
   webpushPublicKey: 'BIWrO9knKAnPj2TFfU7pIxo0QkO_b2-PZCqYwAPArJdHTQ3Xsvf-E_WXaKGFB531fBOxCE92SZ6R_vHTVM1yTNw',
@@ -119,8 +121,10 @@ export const baseEnvironment: Environment = {
   // registration level for the instance
   registrationLevel: 'PRIVATE',
   disableShowingBlockedServers: false,
+  disableAutomaticBlocklistSync: false,
   bubbleHostsShowType: 'PUBLIC',
   blockedHostsShowType: 'PUBLIC',
+  enableOptInFederationToThreads: true,
   autoFollowAdmin: true,
   minimumAgeToRegister: 18,
   donationUrl: 'http://localhost/about',
@@ -138,7 +142,8 @@ export const baseEnvironment: Environment = {
     privateInstanceRegistrationText: 'test 123',
     minimumAgeToRegister: 18,
     donationUrl: 'http://localhost/about',
-    disableShowingBlockedServers: true
+    disableShowingBlockedServers: true,
+    enableOptInFederationToThreads: true
   },
   trustProxy: 1 // this one is for caddy and stuff
 }

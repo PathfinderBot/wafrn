@@ -29,7 +29,7 @@ async function rejectremoteFollow(userId: string, remoteUserId: string) {
     }
   }
   const response = await postPetitionSigned(apObj, localUser, remoteUser.remoteInbox ?? '')
-  return response
+  return response?.data ?? response
 }
 
 export { rejectremoteFollow }

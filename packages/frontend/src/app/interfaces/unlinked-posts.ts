@@ -18,6 +18,7 @@ export interface unlinkedPosts {
   rewootIds: string[]
   asks?: Ask[]
   bookmarks: PostBookmark[]
+  bskyCursor?: string
 }
 
 export interface PostBookmark {
@@ -148,7 +149,7 @@ interface QuestionPollQuestion {
 }
 
 export interface NotificationRaw {
-  notificationType: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE'
+  notificationType: 'MENTION' | 'LIKE' | 'EMOJIREACT' | 'REWOOT' | 'QUOTE' | 'FOLLOW' | 'USERBITE' | 'POSTBITE' | 'ASK'
   createdAt: string
   updatedAt: string
   notifiedUserId: string

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterModule } from '@angular/router'
-import { loginRequiredGuard } from '../../guards/login-required.guard'
 
 @NgModule({
   declarations: [],
@@ -12,11 +11,6 @@ import { loginRequiredGuard } from '../../guards/login-required.guard'
         path: 'migrate-out',
         loadComponent: () =>
           import('../../components/migrate-out/migrate-out.component').then((c) => c.MigrateOutComponent)
-      },
-      {
-        path: 'edit',
-        loadComponent: () => import('./edit-profile/edit-profile.component').then((m) => m.EditProfileComponent),
-        canActivate: [loginRequiredGuard]
       },
       {
         path: 'css',
@@ -72,6 +66,10 @@ import { loginRequiredGuard } from '../../guards/login-required.guard'
           import('../../pages/manage-followed-hashtags/manage-followed-hashtags.component').then(
             (c) => c.ManageFollowedHashtagsComponent
           )
+      },
+      {
+        path: 'bskyFeeds',
+        loadComponent: () => import('./bsky-feeds/bsky-feeds.component').then((c) => c.BskyFeedsComponent)
       }
     ])
   ]

@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { TranslateModule, TranslateService } from '@ngx-translate/core'
-import { faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { faLock, faEye, faEyeSlash, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 
 import { Router, RouterModule } from '@angular/router'
 import { ReactiveFormsModule, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms'
@@ -43,6 +43,7 @@ export class UpdateEmailComponent {
   showPassword = false
   faEye = faEye
   faEyeSlash = faEyeSlash
+  faEnvelope = faEnvelope
 
   emailForm = new UntypedFormGroup({
     password: new UntypedFormControl('', [Validators.required]),

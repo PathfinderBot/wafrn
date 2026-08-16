@@ -20,7 +20,6 @@ import { PollComponent } from '../poll/poll.component'
 import { WafrnMediaComponent } from '../wafrn-media/wafrn-media.component'
 
 import { MatTooltipModule } from '@angular/material/tooltip'
-import { InjectHTMLDirective } from '../../directives/inject-html/inject-html.directive'
 import { Emoji } from '../../interfaces/emoji'
 import { WafrnMedia } from '../../interfaces/wafrn-media'
 import { EnvironmentService } from '../../services/environment.service'
@@ -39,7 +38,6 @@ import { TranslateModule } from '@ngx-translate/core'
 import { Subscription } from 'rxjs'
 import Viewer from 'viewerjs'
 import { PostHtmlContentComponent } from '../post/post-html-content/post-html-content.component'
-import { PostLinkDirective } from '../../directives/post-link/post-link.directive'
 import { ParticleService } from '../../services/particle.service'
 import { SettingsService } from '../../services/settings.service'
 import { SimpleDialogService } from '../../services/simple-dialog.service'
@@ -67,10 +65,8 @@ type EmojiReaction = {
     MatButtonModule,
     MatTooltipModule,
     EmojiReactComponent,
-    InjectHTMLDirective,
     PostHeaderComponent,
     SingleAskComponent,
-    PostLinkDirective,
     TranslateModule,
     PostHtmlContentComponent
   ],
@@ -506,6 +502,20 @@ export class PostFragmentComponent implements OnChanges, OnDestroy {
       },
       title: false,
       className: 'viewer',
+      // Same as the defaults except with loading removed:
+      // https://github.com/fengyuanchen/viewerjs#inheritedattributes
+      // Recommended upstream to avoid breaking image rendering
+      // in some browsers:
+      // https://github.com/fengyuanchen/viewerjs/issues/403#issuecomment-671005049
+      inheritedAttributes: [
+        'crossOrigin',
+        'decoding',
+        'isMap',
+        'referrerPolicy',
+        'sizes',
+        'srcset',
+        'useMap'
+      ],
       filter(image: HTMLImageElement) {
         return !image.classList.contains('no-viewer')
       },

@@ -3,7 +3,9 @@
     <div class="text-center mb-5">
       <img loading="lazy" [src]="logo" alt="Image" height="50" class="mb-3" />
       <div class="text-3xl font-medium mb-3" [innerHTML]="message"></div>
-
+      @if (showLoginLink) {
+        <a class="w-full" [routerLink]="'/login'" mat-stroked-button>{{ 'login.goToLogin' | translate }}</a>
+      }
       <br />
     </div>
   </div>

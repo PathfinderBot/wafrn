@@ -212,6 +212,15 @@ export class AdminService {
     )
   }
 
+  async rejectUser(id: string, message: string): Promise<any> {
+    return firstValueFrom(
+      this.http.post(`${EnvironmentService.environment.baseUrl}/admin/rejectUser`, {
+        id,
+        message
+      })
+    )
+  }
+
   async getStats(): Promise<statsReply> {
     return firstValueFrom(this.http.get<statsReply>(`${EnvironmentService.environment.baseUrl}/status/workerStats`))
   }

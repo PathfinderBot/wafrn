@@ -15,7 +15,7 @@ import {
   PostTag
 } from '../models/index.js'
 import { Job } from 'bullmq'
-import { Privacy } from '../models/post.js'
+import { InteractionControl, Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getQueue } from '../utils/queues.js'
 import { activityPubObject } from '../interfaces/fediverse/activityPubObject.js'
@@ -75,6 +75,52 @@ async function prepareSendRemotePostWorker(job: Job) {
   // we check if we need to send the post to fedi
   const sendPostToFedi = parents.every((elem) => elem.postShouldGoFedi)
   if (localUser && sendPostToFedi) {
+    // FEP-6fce: this reply/reblog targets a manualApproval interactionPolicy. We only ever compute manual
+    // approval from a remote server's own declared interactionPolicy (wafrn has no UI to set it yet), so
+    // seeing it here means the target is definitely not a wafrn instance and understands ReplyRequest.
+    // TODO change in september: once enough wafrn instances have updated to send/answer ReplyRequest and
+    // AnnounceRequest (which will happen once wafrn's own UI lets users set manualApproval controls),
+    // stop distributing the post below and `return` here instead, like we do while waiting on quotes,
+    // so the post actually stays held until the parent owner's Accept comes back.
+    if (post.waitToSendPost) {
+      const immediateParent = parents.find((elem) => elem.id === post.parentId)
+      // a SameAsOp replyControl means the immediate parent is only relaying the root post's policy - the
+      // root's owner is the one who actually has to Accept/Reject, so that's who we ask (mirrors
+      // canInteract's own SameAsOp handling, and the equivalent resolution in routes/posts.ts).
+      const isSameAsOp = !post.isReblog && immediateParent?.replyControl === InteractionControl.SameAsOp
+      const requestTarget = isSameAsOp
+        ? (parents.find((elem) => elem.id === immediateParent?.rootId) ?? immediateParent)
+        : immediateParent
+      if (requestTarget?.user?.remoteInbox) {
+        const parentUrl =
+          requestTarget.remotePostId || `${completeEnvironment.frontendUrl}/fediverse/post/${requestTarget.id}`
+        const requestType = post.isReblog ? 'AnnounceRequest' : 'ReplyRequest'
+        const requestPathSegment = post.isReblog ? 'announce_request' : 'reply_request'
+        const requestToSend: activityPubObject = {
+          '@context': [
+            'https://www.w3.org/ns/activitystreams',
+            `${completeEnvironment.frontendUrl}/contexts/litepub-0.1.jsonld`
+          ],
+          actor: `${completeEnvironment.frontendUrl}/fediverse/blog/${localUser.url.toLowerCase()}`,
+          id: `${completeEnvironment.frontendUrl}/fediverse/${requestPathSegment}/${post.id}`,
+          type: requestType,
+          object: parentUrl,
+          instrument: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
+          to: [requestTarget.user.remoteId || parentUrl]
+        }
+        try {
+          await postPetitionSigned(requestToSend, localUser, requestTarget.user.remoteInbox)
+        } catch (error) {
+          logger.info({
+            message: `Error sending ${requestType}`,
+            error
+          })
+        }
+      }
+      // right now we still send the post below instead of waiting for the Accept: not enough instances
+      // implement this yet, and we would rather risk an unauthorized-looking interaction than a reply
+      // that never gets delivered because nobody answered the request. See TODO above.
+    }
     // we get quote authorizations
     const quotes = (
       await Quotes.findAll({

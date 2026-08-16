@@ -213,7 +213,7 @@ function authRoutes(app: Application) {
               emailVerified: false
             }
 
-            const userWithEmail = User.create(user)
+            const userWithEmail = await User.create(user)
 
             if (inviteCode) {
               await follow(id, inviteCode.createdByUserId)
@@ -321,7 +321,7 @@ function authRoutes(app: Application) {
         if (user) {
           user.activationCode = resetCode
           user.requestedPasswordReset = new Date()
-          user.save()
+          await user.save()
 
           const link = `${completeEnvironment.instanceUrl}/resetPassword/${encodeURIComponent(email)}/${resetCode}`
           const appLink = `wafrn://complete-password-reset?email=${encodeURIComponent(email)}&code=${resetCode}`
@@ -369,10 +369,10 @@ function authRoutes(app: Application) {
           subject = `Your ${completeEnvironment.instanceUrl} account ${user.url} has been activated`
           body = '<p>;D</p>' + (await applyBlueskyRegistrationOption(user))
         } else {
-          subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewd by an admin!`
+          subject = `The email account for your ${completeEnvironment.instanceUrl} account is now being reviewed by an admin!`
           body = `\
-<p>Thanks for verifying your email, Our admin team will review your registration request soon!</p>
-<p>We do check registrations to avoid spam and harrasment campaigns, your safety is important<p>
+<p>Thanks for verifying your email! Our admin team will review your registration request soon, this usually takes a few hours.</p>
+<p>We do check registrations to avoid spam and harassment campaigns, your safety is important. We'll send you another email once your account is approved.</p>
 `
         }
         try {
@@ -436,7 +436,7 @@ function authRoutes(app: Application) {
   })
 
   app.post('/api/changePassword', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
-    const user = (await User.findByPk(req.jwtData?.userId as string)) as User
+    const user = (await User.scope('full').findByPk(req.jwtData?.userId as string)) as User
     const password = req.body.oldPassword
     const newPassword = req.body.newPassword
     if (await bcrypt.compare(password, user.password)) {
@@ -597,7 +597,9 @@ function authRoutes(app: Application) {
             } else {
               res.send({
                 success: false,
-                message: 'Please activate your account! Check your email'
+                message: userWithEmail.emailVerified
+                  ? "Your account is still awaiting admin approval. We'll email you once it's approved."
+                  : 'Please activate your account! Check your email'
               })
             }
           }
@@ -833,6 +835,7 @@ function authRoutes(app: Application) {
       // NOTE: explicitly not sending 404 here because
       // we don't want to leak information about the existence of the MFA detail to the user
       res.send({ success: true })
+      return
     } catch (error) {
       logger.error(error)
     }

@@ -29,8 +29,11 @@ async function getServerFromDid(did: string, ignoreCache?: boolean): Promise<str
       const plcResolver = getResolver()
       const didResolver = new Resolver(plcResolver)
       const didData = await didResolver.resolve(did)
-      if (didData?.didDocument?.service) {
-        res = didData.didDocument.service[0].serviceEndpoint as string
+      const atProtoServer = didData?.didDocument?.service?.find(
+        (x: any) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer'
+      )
+      if (atProtoServer) {
+        res = atProtoServer.serviceEndpoint as string
       }
     }
     if (res) {

@@ -1,6 +1,23 @@
 @let loggedIn = this.loginService.loggedIn.value;
 @if (!loading() && !found) {
-  <app-pagenotfound />
+  @if (requiresLogin) {
+    <mat-card class="mb-6 lg:mx-4 mat-card-higher wafrn-container">
+      <mat-card-header class="pb-3 wafrn-container-header">
+        <mat-card-title class="flex gap-2"
+          ><fa-icon [icon]="lockIcon"></fa-icon
+          ><span class="font-medium">{{ 'blog.requiresLoginTitle' | translate }}</span></mat-card-title
+        >
+      </mat-card-header>
+      <section class="my-6 mx-3 text-center">
+        <p>{{ 'blog.requiresLoginMessage' | translate }}</p>
+      </section>
+      <section class="mx-3 mb-3">
+        <a class="w-full" [routerLink]="'/login'" mat-stroked-button>{{ 'blog.requiresLoginButton' | translate }}</a>
+      </section>
+    </mat-card>
+  } @else {
+    <app-pagenotfound />
+  }
 } @else {
   <app-blog-header class="block" [blogDetails]="blogDetails()"></app-blog-header>
   <mat-tab-group
@@ -15,6 +32,7 @@
           [posts]="posts"
           [visible]="postsVisible"
           [loading]="loading() && !noMorePosts"
+          [error]="errorLoadingPosts()"
           (loadPosts)="rateLimitLoadPosts()"
         >
         </app-post-list>
@@ -27,11 +45,20 @@
           [posts]="posts"
           [visible]="mediaVisible"
           [loading]="loading() && !noMorePosts"
+          [error]="errorLoadingPosts()"
           (loadPosts)="rateLimitLoadPosts()"
         ></app-post-list>
       </ng-template>
     </mat-tab>
   </mat-tab-group>
+}
+@if (errorLoadingPosts()) {
+  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container text-center">
+    <h2 class="my-3 text-3xl">{{ 'blog.errorLoadingPosts' | translate }}</h2>
+    <button mat-flat-button (click)="retryLoadPosts()">
+      {{ 'blog.retry' | translate }}
+    </button>
+  </mat-card>
 }
 @if (noMorePosts) {
   <footer class="p-4 text-center wafrn-container">

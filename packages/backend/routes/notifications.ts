@@ -13,7 +13,6 @@ import {
   PostTag,
   PushNotificationToken,
   Quotes,
-  ServerBlock,
   UnifiedPushData,
   User,
   UserEmojiRelation,
@@ -24,6 +23,7 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { logger } from '../utils/logger.js'
 import { UserAttributes } from '../models/user.js'
@@ -91,9 +91,7 @@ function notificationRoutes(app: Application) {
                     },
                     {
                       federatedHostId: {
-                        [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
-                          (elem) => elem.blockedServerId
-                        )
+                        [Op.notIn]: (await getUserBlockedServers(userId)).map((elem) => elem.blockedServerId)
                       }
                     }
                   ]
@@ -271,7 +269,12 @@ function notificationRoutes(app: Application) {
   app.get('/api/v2/notificationsCount', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
     const userId = req.jwtData?.userId ? req.jwtData?.userId : '00000000-0000-0000-0000-000000000000'
     const user = await User.findByPk(userId)
-    if (user?.enableBsky && completeEnvironment.enableBsky && user?.bskyDid) {
+    if (
+      user?.enableBsky &&
+      completeEnvironment.enableBsky &&
+      completeEnvironment.enableBskyFallbackNotifications &&
+      user?.bskyDid
+    ) {
       try {
         /**
          * We do this thing asyncronously, no need to wait. we try obtaining replies, as its the most important bit!
@@ -345,9 +348,7 @@ function notificationRoutes(app: Application) {
                   },
                   {
                     federatedHostId: {
-                      [Op.notIn]: (await ServerBlock.findAll({ where: { userBlockerId: userId } })).map(
-                        (elem) => elem.blockedServerId
-                      )
+                      [Op.notIn]: (await getUserBlockedServers(userId)).map((elem) => elem.blockedServerId)
                     }
                   }
                 ]

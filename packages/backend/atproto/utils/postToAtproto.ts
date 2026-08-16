@@ -1,5 +1,6 @@
 import { BskyAgent, RichText } from '@atproto/api'
 import { Media, Post, PostMentionsUserRelation, Quotes, User } from '../../models/index.js'
+import { BlueskySelfLabels } from '../../models/post.js'
 import fs from 'fs/promises'
 import { getPostUrlForQuote } from '../../activitypub/postToJSONLD.js'
 import RichtextBuilder from '@atcute/bluesky-richtext-builder'
@@ -104,6 +105,17 @@ async function prepareVideoForBsky(
   return { path: outputPath, trimmed: needsTrim, reencoded: true }
 }
 
+const BSKY_TAG_GRAPHEME_LIMIT = 64
+
+function graphemeSegments(str: string): string[] {
+  return Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(str), (s) => s.segment)
+}
+
+function truncateToGraphemes(str: string, limit: number): string {
+  const segments = graphemeSegments(str)
+  return segments.length <= limit ? str : segments.slice(0, limit).join('')
+}
+
 function getUserName(user?: { url: string }): string {
   let res = user ? '@' + user.url + '@' + completeEnvironment.instanceUrl : 'anonymous'
   if (user?.url.startsWith('@')) {
@@ -140,7 +152,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
         }
       ]
     })
-    if (quotedPost?.bskyUri) {
+    if (quotedPost?.bskyUri && quotedPost?.bskyCid) {
       bskyQuote = {
         $type: 'app.bsky.embed.record',
         record: {
@@ -151,9 +163,17 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     }
   }
 
-  const contentWarning = post.content_warning ? `[${post.content_warning.trim()}]\n` : ''
-  const tags = (await post.getPostTags()).map((elem) => elem.tagName).join('\n')
-  const tagText = (await post.getPostTags()).map((elem) => `#${elem.tagName.trim().replaceAll(' ', '-')}`).join(' ')
+  const rawContentWarning = post.content_warning?.trim() ?? ''
+  // when the CW text is just the default text of one of the chosen bluesky self-labels (eg "sexual" or
+  // "graphic-media"), the structured atproto label already conveys it, so we skip the redundant [CW] prefix
+  // in the post text on bluesky
+  const cwTextIsDefaultBlueskyLabel =
+    (!!post.blueskySelfLabel && rawContentWarning.toLowerCase() === post.blueskySelfLabel.toLowerCase()) ||
+    (post.blueskyGraphicMedia && rawContentWarning.toLowerCase() === 'graphic-media')
+  const contentWarning = rawContentWarning && !cwTextIsDefaultBlueskyLabel ? `[${rawContentWarning}]\n` : ''
+  const postTags = (await post.getPostTags()).map((elem) => elem.tagName)
+  const tags = postTags.join('\n')
+  const tagText = postTags.map((elem) => `#${elem.trim().replaceAll(' ', '-')}`).join(' ')
   let postText: string = dompurify.sanitize(
     (
       contentWarning +
@@ -268,13 +288,13 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
 
       postShortened = true
       break
-    } else if (nextLength > postMax) {
+    } else if (nextLength > postMax - textOnlyShortenerLength) {
       const currentTextLength = encoder.encode(builder.text).byteLength
-      const lengthLeft = postMax - currentTextLength - textOnlyShortenerLength
+      const lengthLeft = Math.max(0, postMax - currentTextLength - textOnlyShortenerLength)
       if (token.type === 'link') builder.addLink(token.text.slice(0, lengthLeft), token.url)
       else builder.addText(token.raw.slice(0, lengthLeft))
 
-      builder.addText('[...]')
+      builder.addLink('[...]', `https://${completeEnvironment.instanceUrl}/fediverse/post/${post.id}`)
       postShortened = true
       break
     }
@@ -345,10 +365,22 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
   }
   postText = builder.text
 
-  if (contentWarning != '' || medias.some((media) => media.NSFW)) {
+  if (rawContentWarning != '' || medias.some((media) => media.NSFW)) {
+    // sexual-content labels (porn/sexual/nudity) are mutually exclusive with each other on bluesky, but
+    // graphic-media is an independent axis and can be combined with any of them
+    const selfLabelValues: string[] = []
+    if ((BlueskySelfLabels as readonly string[]).includes(post.blueskySelfLabel as string)) {
+      selfLabelValues.push(post.blueskySelfLabel as string)
+    }
+    if (post.blueskyGraphicMedia) {
+      selfLabelValues.push('graphic-media')
+    }
+    if (selfLabelValues.length === 0) {
+      selfLabelValues.push('graphic-media')
+    }
     labels = {
       $type: 'com.atproto.label.defs#selfLabels',
-      values: [{ val: 'graphic-media' }]
+      values: selfLabelValues.map((val) => ({ val }))
     }
   }
 
@@ -387,6 +419,20 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       return internalRes
     })
   }
+  const bskyTags = postTags
+    .map((tag) => {
+      if (graphemeSegments(tag).length <= BSKY_TAG_GRAPHEME_LIMIT) return tag
+      if (!postShortened) {
+        // the tag is already spelled out verbatim in the post body/hashtag text, so a truncated
+        // duplicate in the `tags` field would just be redundant; drop it to avoid PDS rejection
+        return null
+      }
+      // the body got shortened, which always leaves a link back to the full post, so it's safe
+      // to send a truncated version of the tag here too
+      return truncateToGraphemes(tag, BSKY_TAG_GRAPHEME_LIMIT)
+    })
+    .filter((tag): tag is string => tag !== null)
+
   res = {
     ...res,
     text: rt.text,
@@ -394,11 +440,27 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     createdAt: new Date(post.createdAt).toISOString(),
     fullText: fullText,
     fullTags: tags,
+    ...(bskyTags.length > 0 ? { tags: bskyTags } : {}),
     fediverseId: `${completeEnvironment.frontendUrl}/fediverse/post/${post.id}`,
     via: `Wafrn${completeEnvironment.defaultSEOData.title.toLowerCase() !== 'wafrn' ? ` (${completeEnvironment.defaultSEOData.title})` : ''}`
   }
   let presentation = 'default'
   const bskyMediaPromises = medias.map(async (media) => {
+    try {
+      return await processMediaForBsky(media)
+    } catch (error) {
+      logger.error({
+        message: `Error processing media ${media.id} for Bluesky post ${post.id}; skipping this attachment so the rest of the post can still go out`,
+        error
+      })
+      return undefined
+    }
+  })
+  const bskyMedias = (await Promise.all(bskyMediaPromises)).filter(
+    (media): media is NonNullable<Awaited<ReturnType<typeof processMediaForBsky>>> => media !== undefined
+  )
+
+  async function processMediaForBsky(media: Media) {
     let file = await fs.readFile('uploads/' + media.url)
     let isVideo = media.mediaType?.startsWith('video/')
     let fileToDelete: string | undefined
@@ -495,10 +557,9 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       }
     }
     return { media, blob: data.blob }
-  })
-  const bskyMedias = await Promise.all(bskyMediaPromises)
+  }
   const isNotValidMedia = bskyMedias.some((media) => media.media.mediaType?.includes('pdf'))
-  if (bskyMediaPromises.length && bskyMediaPromises.length <= 4 && !isNotValidMedia) {
+  if (bskyMedias.length && bskyMedias.length <= 4 && !isNotValidMedia) {
     const video = bskyMedias.find((media) => media.media.mediaType?.startsWith('video/'))
     if (video) {
       res.embed = {
@@ -524,7 +585,7 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
       }
     }
     // Shortening when media is present is handled earlier
-  } else if (postShortened || bskyMediaPromises.length > 4 || isNotValidMedia) {
+  } else if (postShortened || bskyMedias.length > 4 || isNotValidMedia) {
     // If we have more than 4 media and they are all images (no videos/pdf),
     // post as a gallery embed (new app.bsky.embed.gallery). Otherwise fallback to external link.
     const onlyImages =
@@ -561,15 +622,16 @@ async function postToAtproto(post: Post, agent: BskyAgent) {
     // ok this post is in reply to something
     const parent = await Post.findByPk(post.parentId)
     const rootPost = await Post.findByPk(post.rootId as string)
-
-    res.reply = {
-      root: {
-        uri: rootPost?.bskyUri,
-        cid: rootPost?.bskyCid
-      },
-      parent: {
-        uri: parent?.bskyUri,
-        cid: parent?.bskyCid
+    if (parent?.bskyUri && parent?.bskyCid && rootPost?.bskyUri && rootPost?.bskyCid) {
+      res.reply = {
+        root: {
+          uri: rootPost.bskyUri,
+          cid: rootPost.bskyCid
+        },
+        parent: {
+          uri: parent.bskyUri,
+          cid: parent.bskyCid
+        }
       }
     }
   }

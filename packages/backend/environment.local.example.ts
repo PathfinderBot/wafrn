@@ -113,6 +113,7 @@ export const baseEnvironment: Environment = {
   registrationLevel: 'PRIVATE',
   autoFollowAdmin: true,
   disableShowingBlockedServers: true,
+  disableAutomaticBlocklistSync: true,
   minimumAgeToRegister: 18,
   donationUrl: 'http://localhost/about',
   bskyRotationKeyK256: '',

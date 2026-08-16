@@ -1,109 +1,127 @@
 import { Op } from 'sequelize'
 import { Follows, UserOptions } from '../models/index.js'
 
-async function getNotificationOptions(userId: string) {
+export type NotificationType =
+  | 'FOLLOW'
+  | 'LIKE'
+  | 'REWOOT'
+  | 'MENTION'
+  | 'QUOTE'
+  | 'EMOJIREACT'
+  | 'USERBITE'
+  | 'POSTBITE'
+  | 'ASK'
+
+const NOTIFICATION_OPTION_NAMES = [
+  'wafrn.notificationsFrom',
+  'wafrn.notifyMentions',
+  'wafrn.notifyReactions',
+  'wafrn.notifyQuotes',
+  'wafrn.notifyFollows',
+  'wafrn.notifyRewoots',
+  'wafrn.notifyBites',
+  'wafrn.notifyAsks'
+]
+
+// notificationTypes: which notification types the user wants to be notified about at all.
+// validUserIds: null means "no restriction"; otherwise only notifications whose origin user is in this list count.
+async function getUserNotificationPreferences(
+  userId: string
+): Promise<{ notificationTypes: NotificationType[]; validUserIds: string[] | null }> {
   const options = await UserOptions.findAll({
     where: {
       userId: userId,
       optionName: {
-        [Op.in]: [
-          'wafrn.notificationsFrom',
-          'wafrn.notifyMentions',
-          'wafrn.notifyReactions',
-          'wafrn.notifyQuotes',
-          'wafrn.notifyFollows',
-          'wafrn.notifyRewoots',
-          'wafrn.notifyBites'
-        ]
+        [Op.in]: NOTIFICATION_OPTION_NAMES
       }
     }
   })
-  const optionNotificationsFrom = options.find((elem) => elem.optionName == 'wafrn.notificationsFrom')
-  const optionNotifyQuotes = options.find((elem) => elem.optionName == 'wafrn.notifyQuotes')
-  const optionNotifyMentions = options.find((elem) => elem.optionName == 'wafrn.notifyMentions')
-  const optionNotifyReactions = options.find((elem) => elem.optionName == 'wafrn.notifyReactions')
-  const optionNotifyFollows = options.find((elem) => elem.optionName == 'wafrn.notifyFollows')
-  const optionNotifyRewoots = options.find((elem) => elem.optionName == 'wafrn.notifyRewoots')
-  const optionNotifyBites = options.find((elem) => elem.optionName == 'wafrn.notifyBites')
+  const getOption = (name: string) => options.find((elem) => elem.optionName == name)
 
-  const notificationTypes = []
+  const notificationTypes: NotificationType[] = []
+  const optionNotifyQuotes = getOption('wafrn.notifyQuotes')
   if (!optionNotifyQuotes || optionNotifyQuotes.optionValue != 'false') {
     notificationTypes.push('QUOTE')
   }
+  const optionNotifyMentions = getOption('wafrn.notifyMentions')
   if (!optionNotifyMentions || optionNotifyMentions.optionValue != 'false') {
     notificationTypes.push('MENTION')
   }
+  const optionNotifyReactions = getOption('wafrn.notifyReactions')
   if (!optionNotifyReactions || optionNotifyReactions.optionValue != 'false') {
     notificationTypes.push('EMOJIREACT')
     notificationTypes.push('LIKE')
   }
+  const optionNotifyFollows = getOption('wafrn.notifyFollows')
   if (!optionNotifyFollows || optionNotifyFollows.optionValue != 'false') {
     notificationTypes.push('FOLLOW')
   }
+  const optionNotifyRewoots = getOption('wafrn.notifyRewoots')
   if (!optionNotifyRewoots || optionNotifyRewoots.optionValue != 'false') {
     notificationTypes.push('REWOOT')
   }
+  const optionNotifyBites = getOption('wafrn.notifyBites')
   if (!optionNotifyBites || optionNotifyBites.optionValue != 'false') {
     notificationTypes.push('POSTBITE')
     notificationTypes.push('USERBITE')
   }
-
-  let res: any = {
-    notificationType: {
-      [Op.in]: notificationTypes
-    }
+  const optionNotifyAsks = getOption('wafrn.notifyAsks')
+  if (!optionNotifyAsks || optionNotifyAsks.optionValue != 'false') {
+    notificationTypes.push('ASK')
   }
 
+  let validUserIds: string[] | null = null
+  const optionNotificationsFrom = getOption('wafrn.notificationsFrom')
   if (optionNotificationsFrom && optionNotificationsFrom.optionValue != '1') {
-    let validUsers: string[] = []
+    const followerIds = (
+      await Follows.findAll({
+        where: {
+          accepted: true,
+          followedId: userId
+        }
+      })
+    ).map((elem) => elem.followerId)
+    const followeeIds = (
+      await Follows.findAll({
+        where: {
+          accepted: true,
+          followerId: userId
+        }
+      })
+    ).map((elem) => elem.followedId)
+
     switch (optionNotificationsFrom.optionValue) {
       case '2': // followers
-        validUsers = (
-          await Follows.findAll({
-            where: {
-              accepted: true,
-              followedId: userId
-            }
-          })
-        ).map((elem) => elem.followerId)
+        validUserIds = followerIds
+        break
       case '3': // followees
-        validUsers = (
-          await Follows.findAll({
-            where: {
-              accepted: true,
-              followerId: userId
-            }
-          })
-        ).map((elem) => elem.followedId)
+        validUserIds = followeeIds
+        break
       case '4': // mutuals
-        const followerIds = (
-          await Follows.findAll({
-            where: {
-              accepted: true,
-              followedId: userId
-            }
-          })
-        ).map((elem) => elem.followerId)
-        validUsers = (
-          await Follows.findAll({
-            where: {
-              accepted: true,
-              followerId: userId,
-              followedId: {
-                [Op.in]: followerIds
-              }
-            }
-          })
-        ).map((elem) => elem.followedId)
-    }
-    res = {
-      ...res,
-      userId: {
-        [Op.in]: validUsers
-      }
+        validUserIds = followeeIds.filter((id) => followerIds.includes(id))
+        break
+      default:
+        validUserIds = []
     }
   }
-  return res
+
+  return { notificationTypes, validUserIds }
 }
 
-export { getNotificationOptions }
+async function getNotificationOptions(userId: string) {
+  const { notificationTypes, validUserIds } = await getUserNotificationPreferences(userId)
+  return {
+    notificationType: {
+      [Op.in]: notificationTypes
+    },
+    ...(validUserIds !== null
+      ? {
+          userId: {
+            [Op.in]: validUserIds
+          }
+        }
+      : {})
+  }
+}
+
+export { getNotificationOptions, getUserNotificationPreferences }

@@ -15,6 +15,7 @@ import getUserAgent from '../../utils/getUserAgent.js'
 import { redisCache } from '../../utils/redis.js'
 import { assertUrlResolvesPublic } from '../../utils/ssrfProtection.js'
 import { clearUserCache } from '../../utils/clearUserCache.js'
+import { getRealAtHandle, getHttpsAliases } from './didDocAliases.js'
 
 const mergeUsersQueue = getQueue('mergeUsers')
 
@@ -39,10 +40,15 @@ async function clearStaleBskyIdentity(user: User) {
     const userPds = await getServerFromDid(did, true)
     const expectedPds = `https://${completeEnvironment.bskyPds}`.toLowerCase()
     if (userPds?.toLowerCase() !== expectedPds) {
+      await redisCache.del(`fromBsky:${did}`)
       user.bskyDid = null
       user.enableBsky = false
       user.alternateUrl = undefined
+      user.bskyAppPassword = null
+      user.bskyInviteCode = null
       await user.save()
+      await redisCache.del('fediverse:user:base:' + user.id)
+      await redisCache.del('localUserData:' + user.url.toLowerCase())
     }
   } catch (error) {
     logger.debug({
@@ -101,7 +107,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
     if (userFound.bskyDid) {
       try {
         const doc = await getDidDoc(userFound.bskyDid, options?.ignoreCache == true)
-        const currentHandle = doc?.alsoKnownAs?.find((x) => x.startsWith('at://'))?.replace(/^at:\/\//, '')
+        const currentHandle = getRealAtHandle(doc?.alsoKnownAs)
         if (currentHandle && userFound.alternateUrl !== '@' + currentHandle) {
           const newAlternateUrl = '@' + currentHandle
           const lowerNewAlternateUrl = newAlternateUrl.toLowerCase()
@@ -176,11 +182,11 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
 
   const bskyPds = doc?.service?.find((x) => x.id === '#atproto_pds' || x.type === 'AtprotoPersonalDataServer')
   const isKnownBridgyPds = !!(bskyPds && bskyPds.serviceEndpoint.toString().replace(/\/$/, '').endsWith('brid.gy'))
-  const allHttpsAlsoKnownAs = doc?.alsoKnownAs?.filter((x) => x.startsWith('http')) ?? []
+  const allHttpsAlsoKnownAs = getHttpsAliases(doc?.alsoKnownAs)
   if (allHttpsAlsoKnownAs.length > 0) {
-    const requestingUser = userFound ?? (await getAdminUser())
-    const atUri = doc?.alsoKnownAs?.find((x) => x.startsWith('at://'))
-    const validDidReferences = [did, `at://${did}`, ...(atUri ? [atUri] : [])]
+    const requestingUser = userFound?.email ? userFound : await getAdminUser()
+    const atUri = getRealAtHandle(doc?.alsoKnownAs)
+    const validDidReferences = [did, `at://${did}`, ...(atUri ? [`at://${atUri}`] : [])]
     let user: User | undefined = undefined
     for (const fediUser of allHttpsAlsoKnownAs) {
       let trusted = isKnownBridgyPds
@@ -264,10 +270,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
       })
     }
 
-    const handle =
-      doc && doc.alsoKnownAs
-        ? doc.alsoKnownAs.filter((elem) => elem.startsWith('at://'))[0].split('at://')[1]
-        : 'handle.invalid'
+    const handle = getRealAtHandle(doc?.alsoKnownAs) ?? 'handle.invalid'
     const newDataTmp = {
       hideProfileNotLoggedIn: false,
       hideFollows: false,
@@ -290,7 +293,7 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
       return (await User.findByPk(userFound.id)) as User
     }
     if (userFound?.remoteId && !userFound.isBskyPrimary) {
-      const knownFediverseIds = doc?.alsoKnownAs?.filter((elem) => elem.startsWith('http')) ?? []
+      const knownFediverseIds = getHttpsAliases(doc?.alsoKnownAs)
       if (knownFediverseIds.includes(userFound.remoteId)) {
         return (await User.findByPk(userFound.id)) as User
       }
@@ -306,14 +309,23 @@ async function getAtprotoUser(inputHandle: string, options?: { ignoreCache?: boo
           }
         }
       })
-      if (oldUser) {
+      if (oldUser && !oldUser.url.startsWith(`@handle.invalid${oldUser.bskyDid}`)) {
         logger.debug({
           message: `Duplicate bsky url event`,
           new: newDataTmp,
           old: oldUser.dataValues
         })
         oldUser.url = `@handle.invalid${oldUser.bskyDid}${oldUser.url}`
-        await oldUser.save()
+        try {
+          await oldUser.save()
+        } catch (error) {
+          logger.warn({
+            message: 'Failed to free up duplicate bsky url',
+            userId: oldUser.id,
+            errorMessage: (error as any)?.message,
+            originalError: (error as any)?.original?.message ?? (error as any)?.parent?.message
+          })
+        }
       }
       const newData: any =
         !userFound.isBskyPrimary && userFound.url !== newDataTmp.url

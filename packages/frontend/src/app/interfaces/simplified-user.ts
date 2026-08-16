@@ -14,4 +14,5 @@ export interface SimplifiedUser {
   registerIp?: string
   bskyDid?: string
   pronouns?: string
+  allowBitesFrom?: string
 }

@@ -9,6 +9,7 @@ import { Follows, User } from '../models/index.js'
 import { Op } from 'sequelize'
 import { Privacy } from '../models/post.js'
 import { redisCache } from '../utils/redis.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 
 const processPostViewQueue = getQueue('processRemoteView')
 
@@ -33,10 +34,10 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
       const user = post.user
       if (user.isRemoteUser) {
         // EXTERNAL USER
-        if (post.remotePostId) {
+        if (post.remotePostId && (post.privacy === Privacy.Public || post.privacy === Privacy.Unlisted)) {
           res.redirect(post.remotePostId)
         } else {
-          // bsky post
+          // bsky post, or a non public/unlisted external post we won't redirect to
           res.sendStatus(404)
         }
         return
@@ -50,7 +51,11 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
         return res.sendStatus(403)
       } else {
         const federatedHost = await remoteActor.getFederatedHost()
-        if (!federatedHost || federatedHost.blocked) {
+        if (!federatedHost) {
+          return res.sendStatus(403)
+        }
+        const postOwnerBlockedServers = await getUserBlockedServers(post.userId)
+        if (federatedHost.blocked || postOwnerBlockedServers.some((elem) => elem.blockedServerId === federatedHost.id)) {
           return res.sendStatus(403)
         }
         await processPostViewQueue.add('processPost', {
@@ -117,8 +122,10 @@ async function handlePostRequest(req: SignedRequest, res: Response) {
         ...response.object,
         '@context': response['@context']
       }
-      // Cache the HTTP response for subsequent requests
+      // Cache the HTTP response for subsequent requests, along with its owner so the cache-hit
+      // shortcut can re-check the owner's server blocks without redoing the full lookup above
       await redisCache.set(`postHttpResponse:${post.id}`, JSON.stringify(jsonResponse), 'EX', 300)
+      await redisCache.set(`postOwner:${post.id}`, post.userId, 'EX', 300)
       res.send(jsonResponse)
     } else {
       res.sendStatus(404)

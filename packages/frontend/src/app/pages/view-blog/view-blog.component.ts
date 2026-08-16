@@ -8,7 +8,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy
 } from '@angular/core'
-import { CommonModule, DatePipe } from '@angular/common'
+import { CommonModule } from '@angular/common'
 import { Meta } from '@angular/platform-browser'
 import { ActivatedRoute, RouterModule } from '@angular/router'
 import {
@@ -17,6 +17,7 @@ import {
   faHeart,
   faHeartBroken,
   faHome,
+  faLock,
   faReply,
   faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons'
@@ -30,12 +31,9 @@ import { MatButtonModule } from '@angular/material/button'
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'
 import { MatMenuModule } from '@angular/material/menu'
 import { TranslatePipe } from '@ngx-translate/core'
-import { LoaderComponent } from '../../components/loader/loader.component'
 import { BlogHeaderComponent } from '../../components/blog-header/blog-header.component'
 import { InfoCardComponent } from '../../components/info-card/info-card.component'
 import { PagenotfoundComponent } from '../pagenotfound/pagenotfound.component'
-import { ForumComponent } from '../forum/forum.component'
-import { PostComponent } from '../../components/post/post.component'
 import { PostListComponent } from '../../components/post-list/post-list.component'
 import { SnappyHide, SnappyShow } from '../../components/snappy/snappy-life'
 import { SnappyRouter, snappyInject } from '../../components/snappy/snappy-router.component'
@@ -57,21 +55,17 @@ import { ThemeService } from '../../services/theme.service'
   imports: [
     CommonModule,
     RouterModule,
-    PostComponent,
     MatProgressSpinnerModule,
     MatCardModule,
     MatButtonModule,
     FontAwesomeModule,
     MatMenuModule,
-    LoaderComponent,
     BlogHeaderComponent,
     InfoCardComponent,
     PagenotfoundComponent,
-    ForumComponent,
     PostListComponent,
     MatTabsModule,
-    TranslatePipe,
-    DatePipe
+    TranslatePipe
   ],
   templateUrl: './view-blog.component.html',
   styleUrls: ['./view-blog.component.scss'],
@@ -92,8 +86,10 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   private cdr = inject(ChangeDetectorRef)
 
   loading = signal<boolean>(true)
+  errorLoadingPosts = signal<boolean>(false)
   noMorePosts = false
   found = true
+  requiresLogin = false
   viewedPosts = 0
   currentPage = 0
   posts: ProcessedPost[][] = []
@@ -113,6 +109,7 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
   quickReblogIcon = faClockRotateLeft
   reportIcon = faTriangleExclamation
   homeIcon = faHome
+  lockIcon = faLock
 
   scrollId!: number
   viewingPost!: WritableSignal<boolean>
@@ -189,8 +186,11 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
       this.blogUrl = blogUrl
     }
 
-    const blogResponse = await this.dashboardService.getBlogDetails(this.blogUrl).catch(() => {
+    this.found = true
+    this.requiresLogin = false
+    const blogResponse = await this.dashboardService.getBlogDetails(this.blogUrl).catch((error) => {
       this.found = false
+      this.requiresLogin = error?.status === 403
       this.loading.set(false)
     })
 
@@ -268,6 +268,11 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     this.rateLimitLoadSubject.next()
   }
 
+  retryLoadPosts() {
+    this.errorLoadingPosts.set(false)
+    this.loadPosts(this.currentPage)
+  }
+
   async themeExists(theme: string): Promise<boolean> {
     const res = await firstValueFrom(
       this.http.get(`${EnvironmentService.environment.baseUrl}/uploads/themes/${theme}.css`, {
@@ -291,15 +296,26 @@ export class ViewBlogComponent implements OnInit, OnDestroy, SnappyHide, SnappyS
     }
 
     this.loading.set(true)
+    this.errorLoadingPosts.set(false)
     const currentTab = this.activeTabName()
-    console.log(currentTab)
-    const tmpPosts = await this.dashboardService.getBlogPage(
-      page,
-      this.blogUrl,
-      timeScrollStart,
-      featured,
-      currentTab == 'blog.tabMedia'
-    )
+    let tmpPosts: ProcessedPost[][]
+    try {
+      tmpPosts = await this.dashboardService.getBlogPage(
+        page,
+        this.blogUrl,
+        timeScrollStart,
+        featured,
+        currentTab == 'blog.tabMedia'
+      )
+    } catch (error) {
+      if (!featured) {
+        this.currentPage -= 1
+      }
+      this.loading.set(false)
+      this.errorLoadingPosts.set(true)
+      this.cdr.detectChanges()
+      return
+    }
     const filteredPosts = tmpPosts.filter((post: ProcessedPost[]) => {
       let allFragmentsSeen = true
       post.forEach((component) => {

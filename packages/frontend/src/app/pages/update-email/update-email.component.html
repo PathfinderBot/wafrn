@@ -1,11 +1,15 @@
-<mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
-  <div class="text-center mb-5">
-    <div class="text-3xl font-medium mb-3">{{ 'settings.changeEmailTitle' | translate }}</div>
+<mat-card class="mb-6 lg:mx-4 mat-card-higher wafrn-container">
+  <mat-card-header class="pb-3 wafrn-container-header">
+    <mat-card-title class="flex gap-2"
+      ><fa-icon [icon]="faEnvelope"></fa-icon
+      ><span class="font-medium">{{ 'settings.changeEmailTitle' | translate }}</span></mat-card-title
+    >
+  </mat-card-header>
+  <section class="my-6 mx-3 text-center">
     <span class="font-medium line-height-3">{{ 'settings.changeEmailDescription' | translate }}</span>
-    <br />
-  </div>
+  </section>
 
-  <div [ngClass]="{ 'opacity-50 pointer-events-none': loading }">
+  <div class="px-3" [ngClass]="{ 'opacity-50 pointer-events-none': loading }">
     <form [formGroup]="emailForm" (ngSubmit)="onSubmit()">
       <mat-form-field class="block w-full mb-3">
         <mat-label>{{ 'login.email' | translate }}</mat-label>

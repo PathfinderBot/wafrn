@@ -16,7 +16,7 @@ async function remoteUnfollow(localUser: any, remoteUser: any) {
     }
   }
   const followPetition = await postPetitionSigned(petitionBody, localUser, remoteUser.remoteInbox)
-  return followPetition
+  return followPetition?.data ?? followPetition
 }
 
 export { remoteUnfollow }

@@ -1,5 +1,7 @@
-<mat-card class="p-3 mb-6 lg:mx-4 scalein wafrn-container" style="text-align: center">
-  <h2>{{ 'manageFollowedHashtags.title' | translate }}</h2>
+<div class="mx-3 lg:mx-4 wafrn-container">
+  <h2 class="my-3 text-3xl">{{ 'manageFollowedHashtags.title' | translate }}</h2>
+</div>
+<mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   @if (!loading) {
     @for (hashtag of userOptionsService.followedHashtags; track $index) {
       <div>
@@ -15,7 +17,7 @@
         </button>
       </div>
     }
-    <div class="p-3 flex gap-2">
+    <div class="mt-3 flex gap-2">
       <mat-form-field class="flex-1">
         <mat-label>{{ 'manageFollowedHashtags.tagToSubscribe' | translate }}</mat-label>
         <input matInput [(ngModel)]="tag" id="float-input" type="text" />

@@ -6,8 +6,16 @@ import { removeUser } from './removeUser.js'
 import { Op } from 'sequelize'
 import { Agent, fetch } from 'undici'
 import axios from 'axios'
+import * as cheerio from 'cheerio'
 import getUserAgent from '../utils/getUserAgent.js'
-async function getPetitionSigned(userInput: User, target: string): Promise<any> {
+
+const MAX_PETITION_DEPTH = 10
+
+async function getPetitionSigned(userInput: User, target: string, depth = 0): Promise<any> {
+  if (depth > MAX_PETITION_DEPTH) {
+    logger.trace({ message: 'getPetitionSigned exceeded max depth', target, depth })
+    return undefined
+  }
   let petitionResponse: any
   let res = undefined
   const user = (await User.scope('full').findByPk(userInput.id)) as User
@@ -36,8 +44,20 @@ async function getPetitionSigned(userInput: User, target: string): Promise<any> 
       Signature: header,
       WafrnObtainBskyPost: 'True' // ok so we send a extra bsky flag for allowing to obtain the json ld of bsky exclusive posts
     }
-    petitionResponse = await axios.get(url.href, { headers: headers })
-    if (petitionResponse?.headers['content-type']?.includes('text/html')) {
+    petitionResponse = await axios.get(url.href, {
+      headers: headers,
+      maxRedirects: 0,
+      validateStatus: (status) => status < 400
+    })
+    if (petitionResponse.status >= 300 && petitionResponse.status < 400 && petitionResponse.headers['location']) {
+      const redirectUrl = new URL(petitionResponse.headers['location'], url).href
+      return await getPetitionSigned(userInput, redirectUrl, depth + 1)
+    } else if (petitionResponse?.headers['content-type']?.includes('text/html')) {
+      const $ = cheerio.load(petitionResponse.data)
+      const alternateUrl = $('link[rel="alternate"][type="application/activity+json"]').attr('href')
+      if (alternateUrl) {
+        return await getPetitionSigned(userInput, new URL(alternateUrl, url).href, depth + 1)
+      }
       logger.trace('Petition returned HTML. throwing exception')
       throw new Error('Invalid content type')
     } else {

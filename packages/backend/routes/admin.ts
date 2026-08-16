@@ -92,6 +92,7 @@ export default function adminRoutes(app: Application) {
         if (newValue) {
           elemToUpdate.bubbleTimeline = newValue.bubbleTimeline
           elemToUpdate.blocked = newValue.blocked
+          elemToUpdate.ignoreAutomatedBlocklist = true
           elemToUpdate.detail = newValue.detail
           elemToUpdate.friendServer = newValue.friendServer
           promises.push(elemToUpdate.save())
@@ -476,6 +477,26 @@ ${blueskyRegistrationEmailAddition}`
 `
         })
         await userToDelete.destroy()
+        Promise.allSettled([emailPromise])
+      }
+    }
+    res.send({ success: true })
+  })
+
+  app.post('/api/admin/rejectUser', authenticateToken, adminToken, async (req: AuthorizedRequest, res: Response) => {
+    if (req.body.id && req.body.message) {
+      const userToReject = await User.scope('full').findByPk(req.body.id)
+      if (userToReject && userToReject.email) {
+        const emailPromise = sendEmail({
+          email: userToReject.email,
+          subject: `We are sorry ${userToReject.url}, your petition to register ${completeEnvironment.instanceUrl} has been rejected`,
+          body: `\
+<p>Hello, your registration request in wafrn has been rejected. Here is the note from the mod team:</p>
+<p>${req.body.message}</p>
+<p>Remember, you can join other wafrns on <a href="https://join.wafrn.net">https://join.wafrn.net</a> or host your own!</p>
+`
+        })
+        await userToReject.destroy()
         Promise.allSettled([emailPromise])
       }
     }

@@ -63,6 +63,9 @@ services:
       FRONTEND_CACHE_URL: ${FRONTEND_CACHE_URL:-https://${CACHE_DOMAIN}/api/cache?media=}
       USE_WORKERS: ${USE_WORKERS:-false}
       DEFAULT_LANGUAGE_CODE: ${DEFAULT_LANGUAGE_CODE:-en}
+      ENABLE_BLUESKY_FALLBACK_DASHBOARD: ${ENABLE_BLUESKY_FALLBACK_DASHBOARD:-true}
+      ENABLE_BLUESKY_FALLBACK_NOTIFICATIONS: ${ENABLE_BLUESKY_FALLBACK_NOTIFICATIONS:-true}
+      PDS_INTERNAL_URL: ${PDS_INTERNAL_URL-http://pds:3000}
 
     deploy:
       mode: replicated
@@ -108,6 +111,7 @@ services:
     command: "npm exec tsx migrate.ts init-container"
 
   db:
+    image: codeberg.org/wafrn/wafrn-db:main
     build:
       context: monitoring/database
       dockerfile: Dockerfile
@@ -159,6 +163,8 @@ services:
       PDS_REPORT_SERVICE_URL: "https://mod.bsky.app"
       PDS_REPORT_SERVICE_DID: "did:plc:ar7c4by46qjdydhdevvrndac"
       PDS_CRAWLERS: "https://bsky.network"
+      PDS_RATE_LIMITS_ENABLED: ${PDS_RATE_LIMITS_ENABLED:-false}
+      PDS_RATE_LIMIT_BYPASS_IPS: ${PDS_RATE_LIMIT_BYPASS_IPS:-172.16.0.0/12,127.0.0.1}
       LOG_LEVEL: "debug"
       LOG_ENABLED: true
       PDS_EMAIL_SMTP_URL: ${PDS_EMAIL_SMTP_URL:-smtps://${SMTP_USER}:${SMTP_PASSWORD}@${SMTP_HOST}:${SMTP_PORT}}
@@ -235,6 +241,7 @@ services:
       GF_SMTP_ENABLED: false
 
   pgwatch:
+    image: codeberg.org/wafrn/wafrn-pgwatch:main
     build:
       context: monitoring/pgwatch
       dockerfile: Dockerfile

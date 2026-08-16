@@ -3,3 +3,7 @@
   --mat-progress-bar-active-indicator-height: 16px;
   --mat-progress-bar-active-indicator-color: var(--mat-sys-outline-variant);
 }
+
+.primary {
+  --mat-button-filled-container-color: var(--mat-sys-primary);
+}

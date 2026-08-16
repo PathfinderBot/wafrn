@@ -1,0 +1,33 @@
+.search-button {
+  height: 56px;
+}
+
+.bsky-feed-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bsky-feed-cell {
+  min-width: 0;
+  max-width: 320px;
+}
+
+.bsky-feed-text {
+  min-width: 0;
+}
+
+.bsky-feed-name,
+.bsky-feed-description,
+.bsky-feed-creator {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bsky-feed-creator {
+  max-width: 160px;
+}

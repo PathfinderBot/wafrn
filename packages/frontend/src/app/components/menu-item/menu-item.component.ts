@@ -45,6 +45,10 @@ export class MenuItemComponent {
     return null
   })
 
+  parsedQueryParams = computed(() => {
+    return this.item.queryParamsDynamic ? this.item.queryParamsDynamic() : null
+  })
+
   routeChildActive() {
     if (this.item.highlightRoute === false) return false
     const childMatches =

@@ -16,7 +16,7 @@
     <div class="media-content-container">
       @if (
         (!extensionsToHideImgTag.includes(extension()) || mimeType() === 'UNKNOWN') &&
-        !(mimeType().startsWith('video') || mimeType().includes('pdf'))
+        !(mimeType().startsWith('video') || mimeType().startsWith('audio') || mimeType().includes('pdf'))
       ) {
         @let forceImg = displayUrl();
         <img

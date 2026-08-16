@@ -4,7 +4,7 @@
   </mat-expansion-panel-header>
   <app-info-card type="caution" addClass="mb-3">{{ 'profile.delete.psa1' | translate }}</app-info-card>
   <p class="mb-1 setting-description">{{ 'profile.delete.psa2' | translate }}</p>
-  <mat-form-field class="block mb-3 w-full mat-form-field-no-padding" appearance="outline">
+  <mat-form-field class="block mb-3 w-full mat-form-field-no-padding">
     <mat-label>{{ 'login.password' | translate }}</mat-label>
     <input (input)="handleInput($event)" type="password" name="password" matInput />
   </mat-form-field>

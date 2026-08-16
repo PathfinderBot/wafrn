@@ -11,13 +11,13 @@ import { Subscription } from 'rxjs'
 import { filter } from 'rxjs/operators'
 import { BottomReplyBarComponent } from '../../components/bottom-reply-bar/bottom-reply-bar.component'
 import { LoaderComponent } from '../../components/loader/loader.component'
+import { PagenotfoundComponent } from '../pagenotfound/pagenotfound.component'
 import { PostFragmentComponent } from '../../components/post-fragment/post-fragment.component'
 import { PostRibbonComponent } from '../../components/post-ribbon/post-ribbon.component'
 import { PostHeaderComponent } from '../../components/post/post-header/post-header.component'
 import { PostComponent } from '../../components/post/post.component'
 import { SnappyCreate } from '../../components/snappy/snappy-life'
 import { SnappyRouter, snappyInject } from '../../components/snappy/snappy-router.component'
-import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
 import { PostLinkDirective, SnappyPostData } from '../../directives/post-link/post-link.directive'
 import { ProcessedPost } from '../../interfaces/processed-post'
 import { SimplifiedUser } from '../../interfaces/simplified-user'
@@ -36,6 +36,7 @@ import { SimpleTitleService } from '../../services/simple-title.service'
     RouterModule,
     PostFragmentComponent,
     LoaderComponent,
+    PagenotfoundComponent,
     MatCardModule,
     MatButtonModule,
     PostHeaderComponent,
@@ -45,7 +46,6 @@ import { SimpleTitleService } from '../../services/simple-title.service'
     BottomReplyBarComponent,
     PostRibbonComponent,
     PostLinkDirective,
-    BlogLinkDirective,
     TranslatePipe
   ],
   templateUrl: './forum.component.html',
@@ -63,6 +63,9 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   private simpleTitle = inject(SimpleTitleService)
 
   loading = true
+  notFound = signal<boolean>(false)
+  errorLoadingPost = signal<boolean>(false)
+  errorLoadingReplies = signal<boolean>(false)
   forumPosts = signal<{ post?: ProcessedPost; reblogs: SimplifiedUser[]; latestReblogCreatedAt?: Date }[]>([])
   post = model<ProcessedPost[]>([])
   postId = model<string>('')
@@ -75,6 +78,7 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   notYetAcceptedFollows: string[] = []
   followedUsers: string[] = []
   localUrl = EnvironmentService.environment.frontUrl
+  private lastRouteData: any
 
   // evil
   findReply = (id: string | undefined) => {
@@ -127,24 +131,34 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
       this.myId = this.loginService.getLoggedUserUUID()
     }
 
-    this.subscription = this.route.params.subscribe(async (data: any) => {
-      if (!data.id && !data.title) data = this.route.snapshot.data
+    this.subscription = this.route.params.subscribe((data: any) => {
+      this.lastRouteData = data
+      this.loadPostAndReplies(data)
+    })
+  }
 
-      this.loading = true
-      if (this.hasPost && !this.postId()) {
-        this.postId.set(this.post()[0].id)
+  private async loadPostAndReplies(data: any): Promise<void> {
+    if (!data.id && !data.title) data = this.route.snapshot.data
+
+    this.loading = true
+    this.notFound.set(false)
+    this.errorLoadingPost.set(false)
+    this.errorLoadingReplies.set(false)
+    if (this.hasPost && !this.postId()) {
+      this.postId.set(this.post()[0].id)
+    }
+
+    let title = data.title
+
+    if (!title && data.id) {
+      const UUIDRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gm
+      const matches = data.id.match(UUIDRegex)
+      if (!matches) {
+        title = data.id
       }
+    }
 
-      let title = data.title
-
-      if (!title && data.id) {
-        const UUIDRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gm
-        const matches = data.id.match(UUIDRegex)
-        if (!matches) {
-          title = data.id
-        }
-      }
-
+    try {
       if (title) {
         const tmpPost = await this.dashboardService.getArticle(title, data.blog)
         this.post.set(tmpPost ?? [])
@@ -156,22 +170,41 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
         const tmpPost = await this.dashboardService.getPostV2(this.postId())
         this.post.set(tmpPost ?? [])
       }
-      const tmpForumPosts = this.forumService.getForumThread(this.postId())
-      this.forumPosts.set(await tmpForumPosts)
+    } catch (error: any) {
       this.loading = false
-
-      // Set up meta tags now that we have the post
-      const lastPost = this.post().at(-1)
-      if (lastPost) {
-        const atUri = this.atUriLinkElement()
-        atUri.href = lastPost.bskyUri ?? ''
-
-        const postIsArticle = lastPost.privacy === 20
-        if (!postIsArticle) {
-          this.simpleTitle.set(`Post by ${lastPost.user.nameMarkdown ?? lastPost.user.name} (${lastPost.user.url})`)
-        }
+      if (error?.status === 404) {
+        this.notFound.set(true)
+      } else {
+        this.errorLoadingPost.set(true)
       }
-    })
+      return
+    }
+
+    try {
+      const tmpForumPosts = await this.forumService.getForumThread(this.postId())
+      this.forumPosts.set(tmpForumPosts)
+    } catch (error: any) {
+      if (error?.status === 404) {
+        this.notFound.set(true)
+      } else {
+        this.errorLoadingReplies.set(true)
+      }
+      this.loading = false
+      return
+    }
+    this.loading = false
+
+    // Set up meta tags now that we have the post
+    const lastPost = this.post().at(-1)
+    if (lastPost) {
+      const atUri = this.atUriLinkElement()
+      atUri.href = lastPost.bskyUri ?? ''
+
+      const postIsArticle = lastPost.privacy === 20
+      if (!postIsArticle) {
+        this.simpleTitle.set(`Post by ${lastPost.user.nameMarkdown ?? lastPost.user.name} (${lastPost.user.url})`)
+      }
+    }
   }
 
   ngOnDestroy(): void {
@@ -190,10 +223,32 @@ export class ForumComponent implements OnInit, OnDestroy, SnappyCreate {
   async loadRepliesFromFediverse() {
     this.loading = true
     this.hasPost = true
+    this.errorLoadingReplies.set(false)
     await this.postService.loadRepliesFromFediverse(this.post()[this.post().length - 1].id)
-    this.forumPosts.set(await this.forumService.getForumThread(this.post()[this.post().length - 1].id))
+    try {
+      this.forumPosts.set(await this.forumService.getForumThread(this.post()[this.post().length - 1].id))
+    } catch (error) {
+      this.loading = false
+      this.errorLoadingReplies.set(true)
+      return
+    }
     this.itemsPerPage = 25
     this.currentPage = 0
+    this.loading = false
+  }
+
+  retryLoadPost() {
+    this.loadPostAndReplies(this.lastRouteData ?? {})
+  }
+
+  async retryLoadReplies() {
+    this.errorLoadingReplies.set(false)
+    this.loading = true
+    try {
+      this.forumPosts.set(await this.forumService.getForumThread(this.postId()))
+    } catch (error) {
+      this.errorLoadingReplies.set(true)
+    }
     this.loading = false
   }
 

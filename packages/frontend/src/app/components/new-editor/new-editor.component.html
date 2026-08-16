@@ -120,6 +120,11 @@
       </section>
     }
 
+    @if (showManualApprovalReplyWarning) {
+      <app-info-card [type]="'caution'" addClass="mb-3">
+        {{ 'editor.manualApprovalReplyWarning' | translate }}
+      </app-info-card>
+    }
     @if (privacy === 10) {
       <app-info-card [type]="'caution'" addClass="mb-3">
         {{ 'editor.directMessageWarning' | translate }}
@@ -136,6 +141,33 @@
       </app-info-card>
     }
     @if (showContentWarning || contentWarning || settings.autoAddContentWarning) {
+      @if (showBlueskyOptions) {
+        <section class="px-3 my-2">
+          <div class="mb-1">{{ 'editor.blueskySelfLabel' | translate }}</div>
+          <div class="flex gap-2 align-items-center flex-wrap">
+            <mat-button-toggle-group
+              multiple
+              [value]="selectedBlueskySelfLabels"
+              (change)="onBlueskySelfLabelToggleChange($event.value)"
+              [attr.aria-label]="'editor.blueskySelfLabel' | translate"
+            >
+              @for (option of blueskySelfLabelOptions; track $index) {
+                <mat-button-toggle [value]="option.value">{{ option.viewValue }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+            <mat-chip-listbox
+              multiple
+              [value]="selectedBlueskyGraphicMediaLabels"
+              (change)="onBlueskyGraphicMediaToggleChange($event.value)"
+              [attr.aria-label]="'editor.blueskySelfLabel' | translate"
+            >
+              <mat-chip-option [value]="blueskyGraphicMediaOption.value">{{
+                blueskyGraphicMediaOption.viewValue
+              }}</mat-chip-option>
+            </mat-chip-listbox>
+          </div>
+        </section>
+      }
       <section class="px-3 my-2">
         <mat-form-field class="w-full transition-size mat-form-field-no-padding" appearance="outline">
           <mat-label>{{ 'editor.contentWarningLabel' | translate }}</mat-label>
@@ -467,6 +499,6 @@
   </div>
 </mat-card>
 
-<p style="text-align: center">
+<p class="wafrn-container lg:mx-4 mx-auto text-center">
   <span [innerHTML]="'editor.editorGuide' | translate" addClass="mb-3"> </span>
 </p>

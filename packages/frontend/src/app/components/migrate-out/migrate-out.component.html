@@ -1,16 +1,24 @@
+<div class="mx-3 lg:mx-4 wafrn-container">
+  <h2 class="my-3 text-3xl">{{ 'profile.migrateOut.title' | translate }}</h2>
+</div>
 <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
   @if (loading) {
     <app-loader></app-loader>
   }
   <div [hidden]="loading">
-    <h1>{{ 'profile.migrateOut.title' | translate }}</h1>
     <p>{{ 'profile.migrateOut.instructions' | translate }}</p>
     <app-user-selector
       (optionSelected)="userSelectedEvent($event.remoteId)"
       [controlText]="'profile.migrateOut.newAccount' | translate"
     ></app-user-selector>
 
-    <button [disabled]="selectedUser == '' && loading == false" mat-button class="w-full" (click)="pressButton()">
+    <button
+      [disabled]="selectedUser == '' && loading == false"
+      mat-flat-button
+      color="primary"
+      class="w-full"
+      (click)="pressButton()"
+    >
       {{ 'profile.migrateOut.migrate' | translate }}
     </button>
     <p [innerText]="message"></p>

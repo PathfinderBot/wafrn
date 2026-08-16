@@ -4,12 +4,14 @@ export interface MenuItem {
   label: string
   labelDynamic?: () => string
   icon?: IconDefinition
+  iconOverlay?: IconDefinition
   image?: string
   visible: () => boolean
   badge?: () => number
   items?: MenuItem[]
   routerLink?: string
   routerLinkDynamic?: () => string
+  queryParamsDynamic?: () => Record<string, string>
   highlightRoute?: boolean
   url?: string
   command?: () => void

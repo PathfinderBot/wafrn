@@ -24,8 +24,6 @@ import { MatTooltipModule } from '@angular/material/tooltip'
 import { TranslateModule } from '@ngx-translate/core'
 import { BlogLinkDirective } from '../../directives/blog-link/blog-link.directive'
 import { PostFragmentComponent } from '../post-fragment/post-fragment.component'
-import { PostActionsComponent } from '../post-actions/post-actions.component'
-import { AvatarSmallComponent } from '../avatar-small/avatar-small.component'
 import { PostHeaderComponent } from './post-header/post-header.component'
 import { PostRibbonComponent } from '../post-ribbon/post-ribbon.component'
 
@@ -72,8 +70,6 @@ import { HotkeyAction } from '../../services/hotkey.service'
     MatDialogModule,
     MatTooltipModule,
     PostFragmentComponent,
-    PostActionsComponent,
-    AvatarSmallComponent,
     PostHeaderComponent,
     BottomReplyBarComponent,
     PostRibbonComponent,

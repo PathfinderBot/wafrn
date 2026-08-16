@@ -42,7 +42,14 @@
     "checkEmail": "Please check your email",
     "checkEmailLine1": "We have sent you an email. Please do check your email and the spam folder",
     "checkEmailLine2": "If you have any problem, write to the instance admin, whose email can be found <a href=\"/about\">here</a>",
-    "alreadyLoggedIn": "You are already logged in on with that account"
+    "alreadyLoggedIn": "You are already logged in on with that account",
+    "emailVerified": "Your email was verified",
+    "emailVerifiedCanLogIn": "Your email was verified! You can now log in.",
+    "emailVerifiedPendingApproval": "Your email was verified! An admin needs to approve your account before you can log in — this can take a few hours. We'll send you an email once you're approved.",
+    "activationFailedTitle": "Activation failed",
+    "activationFailedMessage": "This activation link is invalid or has expired. Please make sure you copied the full link from the email, or contact the instance admin if the problem persists.",
+    "activationErrorMessage": "Something went wrong! Try again in a few minutes and if it does not work please send an email to the administrator of the instance",
+    "goToLogin": "Go to login"
   },
   "register": {
     "title": "Register",
@@ -91,6 +98,7 @@
     "ignore": "Ignore"
   },
   "search": {
+    "title": "Search",
     "howSearchWorksTitle": "How search works",
     "howSearchWorksFederation": "Wafrn connects with the fediverse and bluesky. You can search tags \"tumblr style\" but for better results we recommend using \"twitter style\" for fandoms.",
     "howSearchWorksPosts": "You can search <b>public</b> posts that wafrn has already seen. You can get more posts of these types by following a tag!",
@@ -163,12 +171,11 @@
     "readThis": "Please read the following before enabling Bluesky for your account.",
     "publicPostsOnly": "Only posts marked public on Wafrn will also be published to Bluesky.",
     "allPostsPublic": "Public posts on Bluesky are visible to everyone, even outside of your followers.",
-    "acceptsFollows": "Anyone can follow your Bluesky account unless you manually approve follow requests.",
+    "acceptsFollows": "Anyone can follow the bluesky-side of your account, regardless of whether you have follow-requests enabled.",
     "corporationWarning": "Bluesky is operated by a private company, so their policies and features may change.",
     "blocksPublic": "Blocking someone on Wafrn does not guarantee they are blocked on Bluesky or vice versa.",
     "replyControls": "Reply permissions and controls are handled by Bluesky and may differ from Wafrn settings.",
     "partialStorage": "Only some content is stored on this Wafrn instance, and Bluesky may keep its own copies.",
-    "headerImageWarning": "Your header image may not be carried over exactly to Bluesky.",
     "loginIntro": "To enable Bluesky, you will log in through the Bluesky flow and authorize your account.",
     "jankyWarning": "This feature is still experimental; the login flow may be unstable.",
     "loginServer": "You will log in through the Bluesky server at {{server}}.",
@@ -201,6 +208,8 @@
     "explore": "Explore",
     "exploreWafrn": "Explore WAFRN",
     "exploreFediverse": "WAFRN & friends",
+    "bskyFeed": "Bluesky Feed",
+    "bskyFeeds": "Bluesky Feeds",
     "unansweredAsks": "Unanswered Asks",
     "privateMessages": "Private messages",
     "search": "Search",
@@ -284,6 +293,7 @@
     "quoteButton": "Quote a woot",
     "publishWoot": "Publish this woot",
     "directMessageWarning": "Admins of both your server and the external server can read these messages.",
+    "manualApprovalReplyWarning": "Your reply might not federate until it has been approved by the owner of the post/thread",
     "unlistedWarning": "Unlisted woots will get ignored by searches (TAGS INCLUDED), and will not show on explore local, but they will be shown to your followers. And if someone sends a link they will be visible, unlike followers only. Basically, for when you want to woot a lot but dont want to fill explore local.",
     "directMessageWithQuoteWarning": "Quoted user will be notified of this as a mention too",
     "sensitivePlaceholder": "What is sensitive about this woot?",
@@ -316,7 +326,13 @@
     "usernameLabel": "Wooting as",
     "noResults": "No results.",
     "quotable": "Who can quote",
-    "whoCanReply": "Who can reply"
+    "whoCanReply": "Who can reply",
+    "blueskySelfLabel": "Bluesky content warning type",
+    "blueskySelfLabelNone": "None",
+    "blueskySelfLabelPorn": "Porn",
+    "blueskySelfLabelSexual": "Sexual",
+    "blueskySelfLabelNudity": "Nudity",
+    "blueskySelfLabelGraphicMedia": "Graphic media"
   },
   "blog": {
     "tabWoots": "Woots",
@@ -343,6 +359,7 @@
     "remoteProfileLoggedInWarning": "As this user is from a remote instance, the shown information may be incomplete.",
     "remoteProfileLoggedOutWarning": "To see external users you need to be logged in. You can view their profile on their actual instance.",
     "viewOnRemoteInstance": "View on remote instance",
+    "viewOnAtproto": "View on Bluesky",
     "postCount": "Post Count",
     "following": "Following",
     "followers": "Followers",
@@ -354,7 +371,12 @@
     "acceptFollower": "Accept this follower",
     "removeFollower": "Remove this follower",
     "selectFollowsPage": "Select page of follows",
-    "selectServerBlocksPage": "Select page of server blocks"
+    "selectServerBlocksPage": "Select page of server blocks",
+    "requiresLoginTitle": "Login required",
+    "requiresLoginMessage": "This profile is only visible to logged in users.",
+    "requiresLoginButton": "Log in",
+    "errorLoadingPosts": "Something went wrong",
+    "retry": "Retry"
   },
   "about": {
     "showBubbledServers": "Show list of bubbled servers",
@@ -434,8 +456,30 @@
       "options": "Options",
       "disableEmailNotifications": "Disable email notifications",
       "hideFollows": "Hide my follows and followers",
+      "allowBitesFrom": "Who can bite me",
       "hideProfileNotLoggedInDescription": "Hide profile to not logged in users and search (this will only apply to your profile IN this wafrn, not to\nyour woots nor other fedi instances or bluesky)",
-      "rssOptions": "Enable RSS and microfront for my blog page"
+      "rssOptions": "Enable RSS and microfront for my blog page",
+      "privacyOptions": {
+        "public": "Public",
+        "followersOnly": "Followers only",
+        "instanceOnly": "This instance only",
+        "unlisted": "Unlisted"
+      },
+      "askOptions": {
+        "allowAnon": "Allow anon asks",
+        "onlyIdentified": "Only allow asks from identified users",
+        "disabled": "Disable asks"
+      },
+      "rssOptionsList": {
+        "no": "No",
+        "articlesOnly": "Only articles (Feature still in the works)",
+        "yes": "Yes for all my posts"
+      },
+      "bitesOptions": {
+        "everyone": "Everyone",
+        "myFollowers": "My followers",
+        "peopleIFollow": "People I follow"
+      }
     },
     "security": {
       "header": "Security Settings",
@@ -634,6 +678,7 @@
     "hideProfileNotLoggedIn": "Hide profile to users who are not logged in",
     "hideProfileNotLoggedInDescription": "Only applies to your profile in this server and Bluesky, not on your woots, and on other servers. Note that Bluesky/Atproto clients can ignore this and show your profile anyways.",
     "hideFollows": "Hide my follows and followers",
+    "allowBitesFrom": "Who can bite me",
     "displayMentionsOfBlockedUsersFromOtherUsers": "Show woots containing mentions to blocked users",
     "defaultPostEditorPrivacy": "Default Woot Editor Privacy",
     "defaultPostRewootPrivacy": "Default Rewoot privacy",
@@ -697,7 +742,9 @@
     "showMediaDescriptions": "Show media descriptions",
     "showMediaDescriptionsDescription": "Always display alternative description by default, regardless of media type.",
     "markAllMediaAsNSFW": "Mark all media as NSFW",
-    "markAllMediaAsNSFWDescription": "Do not show any media by default until interacted with."
+    "markAllMediaAsNSFWDescription": "Do not show any media by default until interacted with.",
+    "federateWithThreads": "Enable federation with Threads",
+    "federateWithThreadsWarning": "Threads is operated by Meta, owners of Facebook and Instagram. Unless you enable this option, they won't be able to see your account or get any of your data. In case of enabling it, they will get your avatar, handle and description field to show your profile in their app"
   },
   "dialog": {
     "confirm": "Confirm",
@@ -714,6 +761,9 @@
       "requireExtraStepsDescription": "User will be sent an email with additional steps.",
       "userUsedVPNTitle": "Mark user as using a VPN",
       "userUsedVPNDescription": "User will be sent an email that VPNs are not allowed and their registration will be deleted.",
+      "rejectUserTitle": "Reject registration",
+      "rejectUserReasonLabel": "Reason",
+      "rejectUserReasonDescription": "User will receive this reason in their rejection email and their registration will be deleted.",
       "promptBanTitle": "Ban",
       "promptForceCwPostTitle": "Force CW on woot",
       "promptBanReasonLabel": "Reason",
@@ -746,6 +796,10 @@
       "blockAccountLabel": "Reason (optional)",
       "unblockAccountTitle": "Unblock account",
       "unblockAccountDescription": "Woots, replies by this user, and replies mentioning this user will be shown again. They will be able to interact with your woots.",
+      "blockServerTitle": "Block server",
+      "blockServerDescription": "This action will have consequences:<ul><li>You will unfollow everyone on this server.</li><li>All followers from this server will stop following you.</li><li>You will not see future posts from this server.</li><li>Users on this server will no longer see your future posts.</li></ul>",
+      "unblockServerTitle": "Unblock server",
+      "unblockServerDescription": "This will not undo the lose of follows from this server, but users from this server will be able to interact with you again",
       "followLoggedOutTitle": "Follow {{name}}",
       "followLoggedOutDescription": "To continue, you need to follow from your Fediverse account.",
       "followLoggedOutLabel": "Fediverse account username (e.g. @example@example.com)",
@@ -854,7 +908,7 @@
     "postActions": "Post actions",
     "shareUrl": "Copy link",
     "shareExternalUrl": "Copy remote link",
-    "viewOnAtproto": "View on Atproto",
+    "viewOnAtproto": "View on Bluesky",
     "forceRefederate": "Force refederate woot",
     "pinPost": "Pin woot",
     "unpinPost": "Unpin woot",
@@ -884,7 +938,10 @@
     "reactWithEmoji": "React with an emoji",
     "fetchMoreExternalReplies": "Try fetching more external replies",
     "viewInitialPost": "View initial post",
-    "rewooted": "rewooted"
+    "rewooted": "rewooted",
+    "errorLoadingPost": "Something went wrong loading this woot",
+    "errorLoadingReplies": "Something went wrong loading the replies",
+    "retry": "Retry"
   },
   "post-header": {
     "follow": "Follow",
@@ -991,6 +1048,7 @@
       "activateUser": "Activate user",
       "requireExtraSteps": "Require extra steps",
       "userUsedVPN": "User used VPN",
+      "rejectUser": "Reject user",
       "blockIp": "Block IP",
       "usersLoader": "users",
       "noUsersPending": "No users pending approval!"
@@ -1078,6 +1136,27 @@
     "noPrivateMessages": "You have no private messages!",
     "noSilencedPosts": "No silenced woots to show!",
     "noDrafts": "You have no drafts!",
-    "noBookmarkedPosts": "You have no bookmarked woots!"
+    "noBookmarkedPosts": "You have no bookmarked woots!",
+    "errorLoadingPosts": "Something went wrong",
+    "retry": "Retry",
+    "bskyFeedWarning": "This page uses bluesky's appview to obtain the feed unlike the rest of wafrn",
+    "bskyFeedNeedsBsky": "You need bluesky enabled to use bluesky feeds"
+  },
+  "bskyFeeds": {
+    "searchLabel": "Search bluesky feeds",
+    "searchButton": "Search",
+    "noResults": "No feeds found for that search",
+    "noFeeds": "You are not following any bluesky feeds yet. Search for some above!",
+    "feed": "Feed",
+    "creator": "Creator",
+    "likes": "{{count}} likes",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "pin": "Pin to explore menu",
+    "unpin": "Unpin from explore menu",
+    "messages": {
+      "followed": "You are now following {{name}}",
+      "unfollowed": "You no longer follow {{name}}"
+    }
   }
 }

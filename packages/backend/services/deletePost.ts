@@ -6,6 +6,7 @@ import {
   Notification,
   Post,
   PostMentionsUserRelation,
+  PostReport,
   PostTag,
   Quotes,
   User,
@@ -19,6 +20,16 @@ async function deletePostCommon(id: string) {
   const postToDelete = await Post.findByPk(id)
 
   if (postToDelete) {
+    await PostReport.update(
+      {
+        resolved: true
+      },
+      {
+        where: {
+          postId: id
+        }
+      }
+    )
     if (postToDelete.isReblog) {
       await Notification.destroy({
         where: {

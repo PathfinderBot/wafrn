@@ -4,6 +4,7 @@ import { BskyInviteCodes } from '../models/index.js'
 import { AtpAgent } from '@atproto/api'
 import { createBskyAccount } from '../services/bskyAccount.js'
 import generateRandomString from '../utils/generateRandomString.js'
+import { getPdsServiceUrl } from '../atproto/utils/getPdsServiceUrl.js'
 
 const args = process.argv.slice(2)
 
@@ -29,11 +30,7 @@ if (!user) {
       }
     })
     const inviteCode = inviteCodeRecord?.code as string
-    const serviceUrl = completeEnvironment.bskyPds
-      ? completeEnvironment.bskyPds.startsWith('http')
-        ? completeEnvironment.bskyPds
-        : 'https://' + completeEnvironment.bskyPds
-      : ''
+    const serviceUrl = completeEnvironment.bskyPds ? getPdsServiceUrl() : ''
     const agent = new AtpAgent({
       service: serviceUrl
     })

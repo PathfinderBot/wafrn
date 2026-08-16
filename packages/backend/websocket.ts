@@ -5,9 +5,11 @@ import websocketRoutes from './routes/websocket.js'
 import { completeEnvironment } from './utils/backendOptions.js'
 import cron from 'node-cron'
 import { nukeBannedUsers } from './maintenanceTasks/nukeBannedUsers.js'
+import { blockHosts } from './updateDatabase/blockHosts.js'
 import { sequelize } from './models/sequelize.js'
 import { Op, QueryTypes } from 'sequelize'
 import { Post, User } from './models/index.js'
+import { Privacy } from './models/post.js'
 import { follow } from './services/follow.js'
 import { getAdminUser } from './utils/getAdminAndDeletedUser.js'
 import { redisCache } from './utils/redis.js'
@@ -44,6 +46,15 @@ cron.schedule('0 2 * * *', async () => {
     logger.info(`NukeBannedUsers Done`)
   })
 })
+
+if (!completeEnvironment.disableAutomaticBlocklistSync) {
+  cron.schedule('0 3 * * *', async () => {
+    // maintenance tasks: sync federated host blocklists
+    blockHosts().then(() => {
+      logger.info(`Blocklist sync done`)
+    })
+  })
+}
 
 cron.schedule('0 * * * *', async () => {
   // maintenance tasks: delete cache files older than 2 hours
@@ -90,6 +101,20 @@ if (!(postIndexes as Array<any>).some((index) => index.name === 'post_bsky_uri')
       `CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS post_bsky_uri  ON "posts" ("bskyUri");`
     )
   })
+}
+
+if (!(postIndexes as Array<any>).some((index) => index.name === 'post_content_fts_gin_index')) {
+  // Index for fulltext search in the future heee heee
+  queryInterface.sequelize
+    .query(
+      `CREATE INDEX CONCURRENTLY IF NOT EXISTS post_content_fts_gin_index ON "posts" USING gin (to_tsvector('simple', "content")) WHERE "privacy" = ${Privacy.Public};`
+    )
+    .then(() => {
+      logger.info('post content full text search index created')
+    })
+    .catch((error) => {
+      logger.warn({ message: 'Error creating post content full text search index', error })
+    })
 }
 
 async function clearDuplicatedBskyUris(): Promise<boolean> {

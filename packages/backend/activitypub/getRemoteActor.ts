@@ -4,7 +4,7 @@ import { sequelize, User } from '../models/index.js'
 import { logger } from '../utils/logger.js'
 import { getUserIdFromRemoteId } from '../utils/cacheGetters/getUserIdFromRemoteId.js'
 import { getDeletedUser } from '../utils/cacheGetters/getDeletedUser.js'
-import { forcePopulateUsers } from '../atproto/utils/getAtprotoUser.js'
+import { forcePopulateUsers, clearStaleBskyIdentity } from '../atproto/utils/getAtprotoUser.js'
 import { redisCache } from '../utils/redis.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getQueue } from '../utils/queues.js'
@@ -34,9 +34,13 @@ async function getRemoteActor(
     // we check its a string. A little bit dirty but could be worse
     if (actorUrl.toLowerCase().startsWith(completeEnvironment.frontendUrl + '/fediverse/blog/')) {
       const urlToSearch = actorUrl.split(completeEnvironment.frontendUrl + '/fediverse/blog/')[1].toLowerCase()
-      return User.findOne({
+      const localUser = await User.findOne({
         where: sequelize.where(sequelize.fn('lower', sequelize.col('url')), urlToSearch.toLowerCase())
       })
+      if (localUser?.bskyDid) {
+        await clearStaleBskyIdentity(localUser)
+      }
+      return localUser
     }
     if (completeEnvironment.enableBsky && actorUrl.toLowerCase().startsWith('at://')) {
       // Bluesky user. This should only happen through an import
@@ -112,10 +116,12 @@ async function getRemoteActor(
       await queue.add(
         'getRemoteActorId',
         { actorUrl: actorUrl, userId: user.id, forceUpdate: true },
-        {
-          jobId: actorUrl.replaceAll(':', '_').replaceAll('/', '_'),
-          priority: 2097151
-        }
+        forceUpdate
+          ? { priority: 2097151 }
+          : {
+              jobId: actorUrl.replaceAll(':', '_').replaceAll('/', '_'),
+              priority: 2097151
+            }
       )
     }
   }

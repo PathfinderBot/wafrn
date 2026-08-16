@@ -120,6 +120,7 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
   lockIcon = faLock
   movedAccountIcon = faPlaneDeparture
   refetchUserIcon = faRefresh
+  profileLinksIcon = faChevronDown
   allowAsk = false
   allowRemoteAsk = false
   isBlueskyUser = false
@@ -127,6 +128,32 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
 
   rawOutputEnabled = EnvironmentService.environment.enableRawOutput
   instanceHostname = new URL(EnvironmentService.environment.frontUrl).hostname
+
+  atprotoProfileUrl = computed<string>(() => {
+    const blog = this.blogDetails()
+    if (!blog) return ''
+    const dest = this.settingsService.values().atprotoLinkDestination || 'bsky.app'
+    const did = blog.bskyDid
+    if (did) {
+      if (blog.alternateUrl?.toLowerCase().endsWith('ap.brid.gy')) return ''
+      return `https://${dest}/profile/${did}`
+    }
+    const bskyHandle = [blog.alternateUrl, blog.url].find((value) => value && value.split('@').length === 2)
+    if (!bskyHandle) return ''
+    const handle = bskyHandle.replace(/^@/, '')
+    if (handle.toLowerCase().endsWith('ap.brid.gy')) return ''
+    return `https://${dest}/profile/${handle}`
+  })
+
+  fediverseInstanceUrl = computed<string>(() => {
+    const blog = this.blogDetails()
+    if (!blog?.url?.startsWith('@')) return ''
+    if (blog.url.split('@').length !== 3) return ''
+    if (blog.url.toLowerCase().endsWith('brid.gy')) return ''
+    return blog.displayUrl || blog.remoteId
+  })
+
+  showProfileLinksMenu = computed<boolean>(() => !!this.atprotoProfileUrl() || !!this.fediverseInstanceUrl())
 
   fediComp = computed<{ name: string; value: string }[]>(() => {
     const fediAttachment = this.blogDetails()?.publicOptions.find(
@@ -136,6 +163,17 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       return JSON.parse(fediAttachment.optionValue)
     }
     return []
+  })
+
+  allowsBites = computed<boolean>(() => {
+    const blog = this.blogDetails()
+    if (!blog) return true
+    const allowBitesOption = blog.publicOptions.find((elem) => elem.optionName == 'wafrn.public.allowBitesFrom')
+    const modes = (allowBitesOption?.optionValue || '1').split(',')
+    if (modes.includes('1')) return true
+    if (modes.includes('2') && this.userOptionsService.followedUserIds.includes(blog.id)) return true
+    if (modes.includes('3') && this.userOptionsService.myFollowers.includes(blog.id)) return true
+    return false
   })
   ngOnChanges(changes: SimpleChanges): void {
     const blog = this.blogDetails()
@@ -271,6 +309,23 @@ export class BlogHeaderComponent implements OnChanges, OnDestroy {
       const res = await this.blockService.promptUnblockUser(blog.id)
       if (res !== undefined) {
         blog.blocked = res !== undefined && res.length !== 0
+      }
+    }
+  }
+
+  async blockServer() {
+    const blog = this.blogDetails()
+    if (blog) {
+      blog.serverBlocked = (await this.blockService.promptBlockServer(blog.id)) === true
+    }
+  }
+
+  async unblockServer() {
+    const blog = this.blogDetails()
+    if (blog?.federatedHost) {
+      const res = await this.blockService.promptUnblockServer(blog.federatedHost.id)
+      if (res !== undefined) {
+        blog.serverBlocked = false
       }
     }
   }

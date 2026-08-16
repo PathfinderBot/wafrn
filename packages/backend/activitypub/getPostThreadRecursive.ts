@@ -22,10 +22,15 @@ import { loadPoll } from './loadPollFromPost.js'
 import { getApObjectPrivacy } from './getPrivacy.js'
 import dompurify from 'isomorphic-dompurify'
 import { Queue } from 'bullmq'
-import { bulkCreateNotifications } from '../services/pushNotifications.js'
+import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
 import { getDeletedUser } from '../utils/cacheGetters/getDeletedUser.js'
-import { InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
-import { getPostThreadPDSDirect, processSinglePost } from '../atproto/utils/getAtProtoThread.js'
+import {
+  AutomaticToManualApprovalEquivalent,
+  InteractionControl,
+  InteractionControlType,
+  Privacy
+} from '../models/post.js'
+import { getAtprotoRecordDirect, processSinglePost } from '../atproto/utils/getAtProtoThread.js'
 import * as cheerio from 'cheerio'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import escapeHTML from 'escape-html'
@@ -33,6 +38,7 @@ import { canInteract } from '../services/baseQueryNew.js'
 import { getAllLocalUserIdsSet } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { getQueue } from '../utils/queues.js'
 import { filterLanguageCode } from '../utils/languages.js'
+import extractMediaFromHtmlPost from '../services/extractMediaFromHtmlPost.js'
 
 const updateMediaDataQueue = getQueue('processRemoteMediaData')
 
@@ -269,7 +275,7 @@ async function getPostThreadRecursive(
         })
         if (postPetition.blueskyUri && checkBluesky) {
           try {
-            const directPetition = await getPostThreadPDSDirect(postPetition.blueskyUri)
+            const directPetition = await getAtprotoRecordDirect(postPetition.blueskyUri)
             if (directPetition && directPetition.value.fediverseId === postPetition.id) {
               bskyUri = postPetition.blueskyUri
               bskyCid = postPetition.blueskyCid
@@ -337,9 +343,15 @@ async function getPostThreadRecursive(
           const sameAsOpList = 'sameAsInitialPost'
           // canAnnounce
           if (postPetition.interactionPolicy.canAnnounce) {
-            const listCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(
+            const autoListCanAnnounce = (postPetition.interactionPolicy?.canAnnounce?.always || []).concat(
               postPetition.interactionPolicy.canAnnounce.automaticApproval || []
             )
+            const manualListCanAnnounce = postPetition.interactionPolicy.canAnnounce.manualApproval || []
+            const listCanAnnounce = autoListCanAnnounce.concat(manualListCanAnnounce)
+            const announceRequiresManualApproval =
+              manualListCanAnnounce.length > 0 &&
+              !autoListCanAnnounce.includes(publicList) &&
+              !autoListCanAnnounce.includes(sameAsOpList)
             replyControl.reblogControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanAnnounce.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanAnnounce.includes(remoteUser.followingCollectionUrl)
@@ -357,6 +369,10 @@ async function getPostThreadRecursive(
             }
             if (listCanAnnounce.includes(sameAsOpList)) {
               replyControl.reblogControl = InteractionControl.SameAsOp
+            }
+            if (announceRequiresManualApproval) {
+              replyControl.reblogControl =
+                AutomaticToManualApprovalEquivalent[replyControl.reblogControl] ?? replyControl.reblogControl
             }
           }
 
@@ -385,9 +401,15 @@ async function getPostThreadRecursive(
           }
 
           if (postPetition.interactionPolicy.canReply) {
-            const listCanReply = (postPetition.interactionPolicy.canReply.always || []).concat(
+            const autoListCanReply = (postPetition.interactionPolicy.canReply.always || []).concat(
               postPetition.interactionPolicy.canReply.automaticApproval || []
             )
+            const manualListCanReply = postPetition.interactionPolicy.canReply.manualApproval || []
+            const listCanReply = autoListCanReply.concat(manualListCanReply)
+            const replyRequiresManualApproval =
+              manualListCanReply.length > 0 &&
+              !autoListCanReply.includes(publicList) &&
+              !autoListCanReply.includes(sameAsOpList)
             replyControl.replyControl = InteractionControl.MentionedUsersOnly
             const followersCanReply = listCanReply.includes(remoteUser.followersCollectionUrl)
             const followingCanReply = listCanReply.includes(remoteUser.followingCollectionUrl)
@@ -405,6 +427,10 @@ async function getPostThreadRecursive(
             }
             if (listCanReply.includes(sameAsOpList)) {
               replyControl.replyControl = InteractionControl.SameAsOp
+            }
+            if (replyRequiresManualApproval) {
+              replyControl.replyControl =
+                AutomaticToManualApprovalEquivalent[replyControl.replyControl] ?? replyControl.replyControl
             }
           }
 
@@ -489,6 +515,14 @@ async function getPostThreadRecursive(
             }
           }
         }
+        if (!remoteUser.banned || options?.allowMediaFromBanned) {
+          postTextContent = await extractMediaFromHtmlPost(
+            postTextContent,
+            medias,
+            postPetition,
+            remoteUserServerBaned || remoteUser.banned ? (await deletedUser)?.id : remoteUser.id
+          )
+        }
         const lemmyName = postPetition.name ? postPetition.name : ''
         postTextContent = postTextContent ? postTextContent : `<p>${lemmyName}</p>`
         let createdAt = new Date(postPetition.published)
@@ -509,7 +543,7 @@ async function getPostThreadRecursive(
             if (postBskyVersion) {
               bskyCid = postBskyVersion.bskyCid || undefined
               bskyUri = postBskyVersion.bskyUri || undefined
-              const directPetition = await getPostThreadPDSDirect(bskyUri as string)
+              const directPetition = await getAtprotoRecordDirect(bskyUri as string)
               if (directPetition && directPetition.value.fediverseId) {
                 // This is a wafrn post
                 // first we going to check if the post is already on db because this can break everything
@@ -815,13 +849,26 @@ async function getPostThreadRecursive(
           if (askContent.startsWith('@' + completeEnvironment.instanceUrl)) {
             askContent = askContent.split('@' + completeEnvironment.instanceUrl)[1]
           }
+          const sanitizedAskContent = dompurify.sanitize(askContent, { ALLOWED_TAGS: [] })
           await Ask.create({
-            question: dompurify.sanitize(askContent, { ALLOWED_TAGS: [] }),
+            question: sanitizedAskContent,
             userAsker: newPost.userId,
             userAsked: mentions[0].id,
             answered: false,
             apObject: JSON.stringify(postPetition)
           })
+          await createNotification(
+            {
+              notificationType: 'ASK',
+              userId: newPost.userId,
+              notifiedUserId: mentions[0].id,
+              detached: false
+            },
+            {
+              userUrl: remoteUser.url,
+              postContent: sanitizedAskContent
+            }
+          )
         }
 
         if (existingBskyPost) {

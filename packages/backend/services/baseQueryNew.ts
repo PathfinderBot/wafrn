@@ -15,7 +15,6 @@ import {
   QuestionPollQuestion,
   Quotes,
   sequelize,
-  ServerBlock,
   User,
   UserBookmarkedPosts,
   UserEmojiRelation,
@@ -24,9 +23,10 @@ import {
 } from '../models/index.js'
 import getPosstGroupDetails from './getPostGroupDetails.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { Queue } from 'bullmq'
 import { completeEnvironment } from '../utils/backendOptions.js'
-import { InteractionControl, InteractionControlType, Privacy } from '../models/post.js'
+import { InteractionControl, InteractionControlType, ManualApprovalToAutomaticEquivalent, Privacy } from '../models/post.js'
 import { getAllLocalUserIds } from '../utils/cacheGetters/getAllLocalUserIds.js'
 import { checkBskyLabelersNSFW } from '../atproto/utils/checkBskyLabelerNSFW.js'
 import { isAdult } from '../utils/isAdult.js'
@@ -197,7 +197,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
   const usersFollowingPosterPromise: Promise<string[]> = getFollowedsIds(posterId, false, {
     getFollowersInstead: true
   })
-  const blockedServersPromise = ServerBlock.findAll({ where: { userBlockerId: posterId } })
+  const blockedServersPromise = getUserBlockedServers(posterId)
 
   // we need a list of all the userId we just got from the post
   let userIds: string[] = []
@@ -214,6 +214,7 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       postIds.push(ancestor.id)
     })
   })
+  postIds = [...new Set(postIds)]
 
   const bskyCheckPromise = completeEnvironment.enableBsky
     ? (async () => {
@@ -329,13 +330,27 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       optionName: 'fediverse.public.attachment'
     }
   })
+  const allowBitesFromDb = await UserOptions.findAll({
+    where: {
+      userId: {
+        [Op.in]: userIds
+      },
+      optionName: 'wafrn.public.allowBitesFrom'
+    }
+  })
   const usersMap: Map<string, User> = new Map()
   const usersPronounsMap: Map<string, string | undefined> = new Map()
+  const usersAllowBitesFromMap: Map<string, string> = new Map()
   for (const att of fediAttachmentsDb) {
     const fediAttachments: { name: string; value: string }[] = JSON.parse(att.optionValue)
     const pronouns = fediAttachments.find((elem) => elem.name.toLowerCase() === 'pronouns')?.value
     if (!pronouns) continue
     usersPronounsMap.set(att.userId, pronouns)
+  }
+  for (const opt of allowBitesFromDb) {
+    if (opt.optionValue && opt.optionValue !== '1') {
+      usersAllowBitesFromMap.set(opt.userId, opt.optionValue)
+    }
   }
   for (const usr of await users) {
     usersMap.set(usr.id, usr)
@@ -464,13 +479,15 @@ async function getUnjointedPosts(postIdsInput: string[], posterId: string, doNot
       .filter((elem) => !!elem)
       .map((x) => {
         const pronouns = usersPronounsMap.get(x.id)
+        const allowBitesFrom = usersAllowBitesFromMap.get(x.id)
         return {
           ...x,
           ...(pronouns
             ? {
                 pronouns
               }
-            : {})
+            : {}),
+          ...(allowBitesFrom ? { allowBitesFrom } : {})
         }
       }),
     polls: pollsFiltered.filter((elem) => !!elem),
@@ -515,7 +532,8 @@ async function canInteract(
   mentionsInput?: { usersMentioned: string[]; postMentionRelation: any[] },
   postInput?: any
 ): Promise<boolean> {
-  if (level == InteractionControl.Anyone) {
+  const effectiveLevel: InteractionControlType = ManualApprovalToAutomaticEquivalent[level] ?? level
+  if (effectiveLevel == InteractionControl.Anyone) {
     return true
   }
   let usersFollowing = userFollowingInput ? userFollowingInput : getFollowedsIds(userId)
@@ -538,7 +556,7 @@ async function canInteract(
       return true
     }
     // we order the switch cases by complexity (number of conditions)
-    switch (level) {
+    switch (effectiveLevel) {
       case InteractionControl.NoOne: {
         // we already check if user is from poster himself. This is a special one for bsky
         res = false

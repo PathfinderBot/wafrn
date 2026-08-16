@@ -47,6 +47,7 @@ const settingKeyVariants = [
   'manuallyAcceptsFollows',
   'hideFollows',
   'hideProfileNotLoggedIn',
+  'allowBitesFrom',
   'disableEmailNotifications',
   'showNotificationsFrom',
   'notifyMentions',
@@ -114,7 +115,8 @@ const settingKeyVariants = [
   'showMediaDescriptions',
   'markAllMediaAsNSFW',
   'disableBsky',
-  'forceReducedMotion'
+  'forceReducedMotion',
+  'federateWithThreads'
 ] as const
 type SettingKeyTuple = typeof settingKeyVariants
 export type SettingKey = SettingKeyTuple[number]
@@ -242,6 +244,19 @@ export class SettingsService {
       profileOption: true,
       type: 'checkbox',
       default: false
+    },
+    allowBitesFrom: {
+      key: 'allowBitesFrom',
+      translationKey: 'settings.allowBitesFrom',
+      serverKey: 'wafrn.public.allowBitesFrom',
+      localStorageKey: 'public.allowBitesFrom',
+      type: 'select',
+      default: '1',
+      variants: {
+        '1': 'profile.preferences.notifyFrom.everyone',
+        '2': 'profile.preferences.notifyFrom.followers',
+        '3': 'profile.preferences.notifyFrom.following'
+      }
     },
     disableEmailNotifications: {
       key: 'disableEmailNotifications',
@@ -902,6 +917,15 @@ export class SettingsService {
       localStorageKey: 'markAllMediaAsNSFW',
       type: 'checkbox',
       default: false
+    },
+    federateWithThreads: {
+      key: 'federateWithThreads',
+      translationKey: 'settings.federateWithThreads',
+      translationDescriptionKey: 'settings.federateWithThreadsWarning',
+      serverKey: 'wafrn.federateWithThreads',
+      localStorageKey: 'federateWithThreads',
+      type: 'checkbox',
+      default: false
     }
   }
   // Generates settings sidebar links and gives the settings-loader pages their data through values
@@ -931,6 +955,9 @@ export class SettingsService {
         { type: 'link', value: 'menu.settings.enableBluesky', route: '/profile/enable-bluesky' }, // FIXME: make this on the page itself?
         { type: 'link', value: 'menu.settings.migrateBluesky', route: '/profile/migrate-bluesky' },
         { type: 'key', value: 'rssOptions' },
+        ...(EnvironmentService.environment.enableOptInFederationToThreads
+          ? ([{ type: 'key', value: 'federateWithThreads' }] as SettingRenderList[])
+          : []),
         { type: 'separator' },
         { type: 'header', value: 'settings.header.botAccount' },
         // { type: 'description', value: '[Email Change] (not currently available, sorry!)' },
@@ -1046,6 +1073,7 @@ export class SettingsService {
         { type: 'key', value: 'enableAnonymousAsks' },
         { type: 'key', value: 'hideProfileNotLoggedIn' },
         { type: 'key', value: 'hideFollows' },
+        { type: 'key', value: 'allowBitesFrom' },
         { type: 'separator' },
         { type: 'header', value: 'settings.header.editor' },
         { type: 'key', value: 'defaultPostEditorPrivacy' },
@@ -1105,15 +1133,7 @@ export class SettingsService {
         { type: 'key', value: 'replaceAIWord' },
         { type: 'separator' },
         { type: 'component', value: new ComponentPortal(CrashButtonComponent) },
-        { type: 'link', value: 'menu.settings.superSecretMenu', route: '/doom' },
-        { type: 'separator' },
-        { type: 'header', value: 'Old Settings' },
-        { type: 'link', value: 'Old Settings (deprecated!!)', route: '/profile/edit' },
-        {
-          type: 'description',
-          value:
-            'Old settings are being deprecated but they are still accessible in case the new settings are broken in some way'
-        }
+        { type: 'link', value: 'menu.settings.superSecretMenu', route: '/doom' }
       ]
     }
   ]

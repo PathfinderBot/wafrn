@@ -1,12 +1,14 @@
 import {
   Component,
   computed,
+  effect,
   OnDestroy,
   OnInit,
   Signal,
   ViewEncapsulation,
   WritableSignal,
   inject,
+  signal,
   ChangeDetectorRef,
   ChangeDetectionStrategy
 } from '@angular/core'
@@ -64,10 +66,13 @@ import {
   faRoadBarrier,
   faFileLines
 } from '@fortawesome/free-solid-svg-icons'
+import { faBluesky } from '@fortawesome/free-brands-svg-icons'
 
 import buildData from '../../../buildData.json'
 import { BlogDetails } from '../../interfaces/blog-details'
+import { MyBskyFeed } from '../../interfaces/bsky-feed'
 import { MenuItem, MenuLink } from '../../interfaces/menu-item'
+import { BskyFeedsService } from '../../services/bsky-feeds.service'
 import { DashboardService } from '../../services/dashboard.service'
 import { EditorService } from '../../services/editor.service'
 import { EnvironmentService } from '../../services/environment.service'
@@ -107,11 +112,14 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
   protected loginService = inject(LoginService)
   private notificationsService = inject(NotificationsService)
   private dashboardService = inject(DashboardService)
+  private bskyFeedsService = inject(BskyFeedsService)
   private cdr = inject(ChangeDetectorRef)
 
   menuItems: MenuItem[] = []
   menuItemsMobile: MenuItem[][] = []
   menuLinks: MenuLink[] = []
+
+  pinnedBskyFeeds: WritableSignal<MyBskyFeed[]> = signal([])
 
   currentAccount: Signal<BlogDetails | undefined>
   accountList: Signal<AccountData[]>
@@ -241,6 +249,13 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
     )
 
     this.menuVisible = !this.mobile()
+
+    effect(() => {
+      this.pinnedBskyFeeds()
+      if (this.menuItems.length > 0) {
+        this.drawMenu()
+      }
+    })
   }
 
   ngOnInit(): void {
@@ -254,6 +269,15 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
     if (localStorage.getItem('horizontalMenu') === 'true') {
       this.onCloseMenu()
     }
+    this.loadPinnedBskyFeeds()
+  }
+
+  async loadPinnedBskyFeeds() {
+    if (!this.loginService.loggedIn.value || !this.currentAccount()?.enableBsky) {
+      return
+    }
+    const feeds = await this.bskyFeedsService.getMyFeeds()
+    this.pinnedBskyFeeds.set(feeds.filter((feed) => feed.pinned))
   }
 
   ngOnDestroy(): void {
@@ -363,7 +387,28 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
             command: () => {
               this.hideMenu()
             }
-          }
+          },
+          ...(this.pinnedBskyFeeds().length > 0
+            ? [
+                {
+                  label: '',
+                  visible: () => this.loginService.loggedIn.value,
+                  divider: true
+                }
+              ]
+            : []),
+          ...this.pinnedBskyFeeds().map<MenuItem>((feed) => ({
+            label: '',
+            labelDynamic: () => feed.displayName,
+            icon: faBluesky,
+            iconOverlay: faHashtag,
+            visible: () => this.loginService.loggedIn.value,
+            routerLinkDynamic: () => '/dashboard/bskyFeed/' + encodeURIComponent(feed.uri),
+            queryParamsDynamic: () => ({ name: feed.displayName }),
+            command: () => {
+              this.hideMenu()
+            }
+          }))
         ]
       },
       {
@@ -520,6 +565,16 @@ export class NavigationMenuComponent implements OnInit, OnDestroy {
             icon: faHashtag,
             visible: () => this.loginService.loggedIn.value,
             routerLink: '/profile/manageFollowedHashtags',
+            command: () => {
+              this.hideMenu()
+            }
+          },
+          {
+            label: 'menu.bskyFeeds',
+            icon: faBluesky,
+            iconOverlay: faHashtag,
+            visible: () => this.loginService.loggedIn.value && this.currentAccount()?.enableBsky === true,
+            routerLink: '/profile/bskyFeeds',
             command: () => {
               this.hideMenu()
             }

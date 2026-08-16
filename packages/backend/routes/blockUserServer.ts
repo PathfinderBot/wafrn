@@ -4,6 +4,7 @@ import { authenticateToken } from '../utils/authenticateToken.js'
 import { logger } from '../utils/logger.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { redisCache } from '../utils/redis.js'
+import { undoFollowsForBlockedHost } from '../activitypub/undoFollowsForBlockedHost.js'
 
 export default function blockUserServerRoutes(app: Application) {
   app.post('/api/blockUserServer', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
@@ -24,6 +25,7 @@ export default function blockUserServerRoutes(app: Application) {
             userBlockerId: userBlocker.id,
             blockedServerId: userToGetServerBlocked.federatedHost.id
           })
+          await undoFollowsForBlockedHost(userBlocker.id, userToGetServerBlocked.federatedHost.id)
         }
         redisCache.del('serverblocks:' + userBlocker.id)
 
@@ -85,6 +87,7 @@ export default function blockUserServerRoutes(app: Application) {
         userBlockerId: userUnblocker
       }
     })
+    redisCache.del('serverblocks:' + userUnblocker)
     res.send(await myServerBlocks(userUnblocker))
   })
 }

@@ -5,11 +5,13 @@ import { sequelize } from '../models/index.js'
 import { authenticateToken } from '../utils/authenticateToken.js'
 
 import { searchRemoteUser } from '../activitypub/searchRemoteUser.js'
+import { getRemoteActor } from '../activitypub/getRemoteActor.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
 import { getPostThreadRecursive } from '../activitypub/getPostThreadRecursive.js'
 import { getallBlockedServers } from '../utils/cacheGetters/getAllBlockedServers.js'
 import { getUnjointedPosts } from '../services/baseQueryNew.js'
 import { getAtprotoUser } from '../atproto/utils/getAtprotoUser.js'
+import { resolveHandle } from '../atproto/utils/resolveHandleToDid.js'
 import { logger } from '../utils/logger.js'
 import { Privacy } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -81,14 +83,28 @@ export default function searchRoutes(app: Application) {
               let bskyProfile = profileAndPost[0]
               const bskyUri = profileAndPost[1]
               if (!bskyProfile.startsWith('did:')) {
-                const profileToGet = await getAtprotoUser(`${bskyProfile}`)
-                if (profileToGet && profileToGet.bskyDid) bskyProfile = profileToGet.bskyDid
+                const resolvedDid = await resolveHandle(bskyProfile, false)
+                if (resolvedDid) bskyProfile = resolvedDid
               }
               uri = `at://${bskyProfile}/app.bsky.feed.post/${bskyUri}`
             }
-            const bskyPostId = await processSinglePost(uri, true)
-            if (bskyPostId) {
-              postsIds = [bskyPostId]
+            try {
+              const bskyPostId = await processSinglePost(uri, true)
+              if (bskyPostId) {
+                postsIds = [bskyPostId]
+              }
+            } catch (error) {
+              logger.debug({
+                message: `Error in search live-fetching bsky post ${uri}, trying local db`,
+                error
+              })
+            }
+            if ((postsIds as string[]).length === 0) {
+              // if fetch from bsky failed we try local post
+              const localPost = await Post.findOne({ where: { bskyUri: uri } })
+              if (localPost) {
+                postsIds = [localPost.id]
+              }
             }
           } catch (error) {
             logger.debug({
@@ -110,6 +126,20 @@ export default function searchRoutes(app: Application) {
             message: `Error in search obtaining fedi post ${searchTerm}`,
             error
           })
+        }
+
+        if ((postsIds as string[]).length === 0) {
+          try {
+            const remoteUser = await getRemoteActor(urlString, userPoster, true)
+            if (remoteUser && remoteUser.url !== completeEnvironment.deletedUser) {
+              users = [remoteUser]
+            }
+          } catch (error) {
+            logger.debug({
+              message: `Error in search obtaining fedi user ${searchTerm}`,
+              error
+            })
+          }
         }
       }
     } else {

@@ -145,6 +145,7 @@ export default function deletePost(app: Application) {
         inboxes = inboxes
           .concat(serversToSendThePost.map((elem: any) => elem.publicInbox))
           .concat(usersToSendThePost.map((usr: any) => usr.remoteInbox))
+          .filter((elem: any) => !!elem)
         const ldSignature = new LdSignature()
         if (user.privateKey) {
           const bodySignature = await ldSignature.signRsaSignature2017(
@@ -266,6 +267,7 @@ export default function deletePost(app: Application) {
         inboxes = inboxes
           .concat(serversToSendThePost.map((elem: any) => elem.publicInbox))
           .concat(usersToSendThePost.map((usr: any) => usr.remoteInbox))
+          .filter((elem: any) => !!elem)
 
         if (user.privateKey)
           for await (const objectToSend of objectsToSend) {

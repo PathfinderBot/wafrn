@@ -29,8 +29,9 @@ import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import showdown from 'showdown'
 import { forceUpdateLastActive } from '../utils/forceUpdateLastActive.js'
 import { bulkCreateNotifications, createNotification } from '../services/pushNotifications.js'
+import { notifyAdminsOfReports } from '../services/reportNotifications.js'
 import dompurify from 'isomorphic-dompurify'
-import { InteractionControl, Privacy, PrivacyType } from '../models/post.js'
+import { BlueskySelfLabels, InteractionControl, Privacy, PrivacyType, requiresManualApproval } from '../models/post.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { addHandlePrefix } from '../models/user.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
@@ -223,15 +224,25 @@ export default function postsRoutes(app: Application) {
       let success = false
       let mentionsToAdd: string[] = []
       const posterId = req.jwtData?.userId ? req.jwtData.userId : completeEnvironment.deletedUser
-      const posterUser = await User.findByPk(posterId)
+      const [posterUser, postToBeQuoted, parent] = await Promise.all([
+        User.findByPk(posterId),
+        Post.findByPk(req.body.postToQuote),
+        Post.findByPk(req.body.parent)
+      ])
       if (!posterUser) {
         res.status(400).send({ message: 'Invalid poster user', success: false })
         return
       }
 
-      const postToBeQuoted = await Post.findByPk(req.body.postToQuote)
+      let cachedPosterOptions: Array<{ optionName: string; optionValue: string }> | null = null
+      const getPosterOptions = async () => {
+        if (!cachedPosterOptions) {
+          cachedPosterOptions = await getUserOptions(posterId)
+        }
+        return cachedPosterOptions
+      }
+
       try {
-        const parent = await Post.findByPk(req.body.parent)
         if (!parent && req.body.parent) {
           success = false
           res.status(500)
@@ -345,7 +356,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           postParentsUsers.push(parent.userId)
 
           // we then check if the user has threads federation enabled and if not we check that no threads user is in the thread
-          const options = await getUserOptions(posterId)
+          const options = await getPosterOptions()
           const userFederatesWithThreads = options.filter(
             (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
           )
@@ -419,6 +430,10 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           : posterUser?.NSFW
             ? 'This user has been marked as NSFW and the post has been labeled automatically as NSFW'
             : ''
+        const blueskySelfLabel = (BlueskySelfLabels as readonly string[]).includes(req.body.blueskySelfLabel)
+          ? req.body.blueskySelfLabel
+          : null
+        const blueskyGraphicMedia = !!req.body.blueskyGraphicMedia
         let mediaToAdd: any[] = []
         const avaiableEmojis = await getAvaiableEmojisUncached()
         // we parse the content and we search emojis:
@@ -426,25 +441,25 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
 
         if (req.body.medias && req.body.medias.length) {
           mediaToAdd = req.body.medias
-          Media.findAll({
+          const mediasToUpdate = await Media.findAll({
             where: {
               id: {
                 [Op.in]: mediaToAdd.map((media: any) => media.id)
               },
               userId: posterId
             }
-          }).then((mediasToUpdate) => {
-            mediaToAdd.forEach(async (media, index) => {
+          })
+          await Promise.all(
+            mediaToAdd.map((media, index) => {
               const mediaToUpdate = mediasToUpdate.find((el: any) => el.id === media.id)
               if (mediaToUpdate) {
                 mediaToUpdate.mediaOrder = index
                 mediaToUpdate.description = media.description
                 mediaToUpdate.NSFW = media.NSFW
-                // POSSIBLE PERFORMANCE IMPROVEMENT: do all saves at the same time. convert this foreach into a for each
-                await mediaToUpdate.save()
+                return mediaToUpdate.save()
               }
             })
-          })
+          )
         }
 
         const mentionRegex = /\s@[\w-\.]+@?[\w-\.]*/gm
@@ -487,7 +502,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           mentionsToAdd = mentionsToAdd.concat(dbFoundMentions.map((usr) => usr.id))
 
           // we check if user federates with threads and if not we check they are not mentioning anyone from threads
-          const options = await getUserOptions(posterId)
+          const options = await getPosterOptions()
           const userFederatesWithThreads = options.filter(
             (elem) => elem.optionName === 'wafrn.federateWithThreads' && elem.optionValue === 'true'
           )
@@ -573,6 +588,8 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           post.content = content
           post.markdownContent = req.body.content.substring(0, 2 * 1024 * 1024)
           post.content_warning = content_warning
+          post.blueskySelfLabel = blueskySelfLabel
+          post.blueskyGraphicMedia = blueskyGraphicMedia
           post.privacy = bodyPrivacy
           post.language = filterLanguageCode(req.body.language)
           await post.save()
@@ -589,6 +606,10 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             mentionsToAdd.length === 0 &&
             (req.body.tags ? req.body.tags.trim : '') == ''
           )
+          let manualApprovalPending = false
+          // a top-level parent (nothing above it in the thread) has no rootId of its own - it IS the root,
+          // so fall back to it directly instead of looking up a rootId that doesn't exist
+          const initialPost = parent ? (parent.rootId ? await Post.findByPk(parent.rootId) : parent) : undefined
           if (parent) {
             const control = isReblog ? parent.reblogControl : parent.replyControl
             if (!(await canInteract(control, posterId, parent.id))) {
@@ -597,6 +618,15 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
                 success: false,
                 message: `This post has interaction controls and you do not have permisions to ${isReblog ? 'reblog' : 'reply to'} it`
               })
+            }
+
+            const policyPost =
+              !isReblog && control === InteractionControl.SameAsOp && initialPost ? initialPost : parent
+            const effectiveControl = isReblog ? parent.reblogControl : policyPost.replyControl
+            if (requiresManualApproval(effectiveControl) && policyPost.userId !== posterId) {
+              const parentMentions = isReblog ? [] : await parent.getMentionPost()
+              const posterIsMentionedByParent = parentMentions.some((mentioned: any) => mentioned.id === posterId)
+              manualApprovalPending = !posterIsMentionedByParent
             }
           }
           if (postToBeQuoted) {
@@ -609,13 +639,14 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             }
           }
           let canReply = req.body.canReply ? req.body.canReply : InteractionControl.Anyone
-          const initialPost = parent ? await Post.findByPk(parent.rootId as string) : undefined
           if (initialPost && initialPost.replyControl != InteractionControl.Anyone) {
             canReply = InteractionControl.SameAsOp
           }
           post = await Post.create({
             content,
             content_warning,
+            blueskySelfLabel,
+            blueskyGraphicMedia,
             userId: posterId,
             privacy: bodyPrivacy,
             parentId: req.body.parent,
@@ -626,9 +657,10 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
             likeControl: req.body.canLike || InteractionControl.Anyone,
             isReply: parent ? parent.isReply || parent.userId != posterId : false,
             isBskyExclusive: parent ? parent.isBskyExclusive : false,
-            language: filterLanguageCode(req.body.language)
+            language: filterLanguageCode(req.body.language),
+            waitToSendPost: manualApprovalPending
           })
-        }
+      }
 
         if (post.isReblog) {
           await createNotification(
@@ -729,7 +761,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
           )
         }
 
-        post.setEmojis(emojisToAdd)
+        await post.setEmojis(emojisToAdd)
         const inlineTags = Array.from(
           dompurify.sanitize(post.content, { ALLOWED_TAGS: [] }).matchAll(/#[a-zA-Z0-9_]+/gi)
         )
@@ -837,6 +869,7 @@ SELECT DISTINCT id as "ancestorId" FROM ancestors WHERE id != '${parent.id}'
         })
         success = true
         res.send(report)
+        await notifyAdminsOfReports([{ reporterId: posterId, postId: req.body.postId }], req.body.description)
       }
     } catch (error) {
       logger.error(error)
@@ -910,9 +943,9 @@ function getMaxPrivacy(privacies: PrivacyType[]) {
 async function triggerPostFederation(post: Post, user: User) {
   const jobData = { postId: post.id, petitionBy: post.userId }
   if (post.privacy === Privacy.Public && user.enableBsky && completeEnvironment.enableBsky && user.bskyDid) {
-    sendPostBskyQueue.add('sendPostBsky', jobData)
+    await sendPostBskyQueue.add('sendPostBsky', jobData)
   } else {
-    prepareSendPostQueue.add('prepareSendPost', jobData, {
+    await prepareSendPostQueue.add('prepareSendPost', jobData, {
       jobId: post.id
     })
   }

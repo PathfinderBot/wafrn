@@ -26,7 +26,17 @@ const sendPushNotificationQueue = new Queue<PushNotificationPayload>('sendPushNo
 export type NotificationBody = {
   notifiedUserId: string
   userId: string
-  notificationType: 'FOLLOW' | 'LIKE' | 'REWOOT' | 'MENTION' | 'QUOTE' | 'EMOJIREACT' | 'USERBITE' | 'POSTBITE'
+  notificationType:
+    | 'FOLLOW'
+    | 'LIKE'
+    | 'REWOOT'
+    | 'MENTION'
+    | 'QUOTE'
+    | 'EMOJIREACT'
+    | 'USERBITE'
+    | 'POSTBITE'
+    | 'ASK'
+    | 'REPORT'
   postId?: string
   emojiReactionId?: string
   createdAt?: Date
@@ -170,6 +180,14 @@ export function getNotificationTitle(notification: NotificationBody, context?: N
 
   if (notification.notificationType === 'EMOJIREACT' && context?.emoji) {
     return `${context?.userUrl || 'someone'} reacted with ${context.emoji} to ${yourPost}`
+  }
+
+  if (notification.notificationType === 'ASK') {
+    return `${context?.userUrl || 'someone'} sent ${you} an ask`
+  }
+
+  if (notification.notificationType === 'REPORT') {
+    return notification.postId ? 'New post report' : 'New user report'
   }
 
   return `${context?.userUrl || 'someone'} ${verbMap[notification.notificationType]} ${yourPost}`

@@ -198,7 +198,7 @@ async function processSinglePost(uri: string, forceUpdate = false, depth = 0): P
     })
   }
   let verifiedFedi: string | undefined
-  const postPetitionPds = await getPostThreadPDSDirect(uri)
+  const postPetitionPds = await getAtprotoRecordDirect(uri)
   if (!postPetitionPds) {
     return
   }
@@ -449,6 +449,9 @@ async function processSinglePost(uri: string, forceUpdate = false, depth = 0): P
     if (!federatedWoot) {
       postText = postText ? postText.replaceAll('\n', '<br>') : ''
     }
+
+    // witchsky posts can carry an array of "additional hashtags" outside of the post text/facets (post.tags)
+    tags = mergePostTags(tags, post.tags)
 
     const labels = getPostLabels(postPetitionPds.value as AppBskyFeedPost.Main)
     let cw = labels.length > 0 ? `Post is labeled as: ${labels.join(', ')}` : undefined
@@ -755,6 +758,12 @@ function parsePostEmbed(postUri: string, embed: AppBskyFeedPost.Main['embed']) {
   return null
 }
 
+/** Merges tags detected in the post body (hashtags, fullTags) with `post.tags`,
+ * bsky's array of additional hashtags that live outside the post text/facets. */
+function mergePostTags(bodyTags: string[], recordTags?: string[]): string[] {
+  return Array.from(new Set([...bodyTags, ...(recordTags ?? [])]))
+}
+
 // TODO improve this so we get better nsfw messages lol
 function getPostLabels(post: AppBskyFeedPost.Main) {
   const labels = new Set<string>()
@@ -783,8 +792,8 @@ async function getPostInteractionLevels(
   let canReply: InteractionControlType = InteractionControl.Anyone
   const { did, collection, rKey } = extractUriComponents(uri)
   const [threadGate, postGate] = await Promise.all([
-    getPostThreadPDSDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`),
-    getPostThreadPDSDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)
+    getAtprotoRecordDirect(`at://${did}/app.bsky.feed.threadgate/${rKey}`),
+    getAtprotoRecordDirect(`at://${did}/app.bsky.feed.postgate/${rKey}`)
   ])
 
   if (postGate && (postGate as any).value?.embeddingRules.length) {
@@ -939,7 +948,7 @@ function getQuotedPostUri(post: any): string | undefined {
   return res
 }
 
-async function getPostThreadPDSDirect(inputUri: string) {
+async function getAtprotoRecordDirect(inputUri: string) {
   try {
     const { did, collection, rKey } = extractUriComponents(inputUri)
     const pdsUrl = await getServerFromDid(did)
@@ -991,8 +1000,9 @@ function shouldShortCircuitToExistingPost(
 export {
   getQuotedPostUri,
   processSinglePost,
-  getPostThreadPDSDirect,
+  getAtprotoRecordDirect,
   getPostInteractionLevels,
   processReplies,
-  hasFediverseMirrorMetadata
+  hasFediverseMirrorMetadata,
+  mergePostTags
 }

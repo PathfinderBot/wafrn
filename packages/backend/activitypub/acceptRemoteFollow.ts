@@ -32,7 +32,7 @@ async function acceptRemoteFollow(userId: string, remoteUserId: string) {
     const response = await postPetitionSigned(apObj, localUser, remoteUser.remoteInbox ?? '')
     followToBeAccepted.accepted = true
     await followToBeAccepted.save()
-    return response
+    return response?.data ?? response
   }
 }
 

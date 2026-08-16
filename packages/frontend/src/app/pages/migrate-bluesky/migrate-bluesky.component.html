@@ -1,6 +1,9 @@
-<h1>{{ 'migrateBluesky.title' | translate }}</h1>
+<div class="mx-3 lg:mx-4 wafrn-container">
+  <h2 class="my-3 text-3xl">{{ 'migrateBluesky.title' | translate }}</h2>
+</div>
 @if (environment().enableBsky) {
-  <mat-stepper orientation="vertical">
+  <mat-card class="p-3 mb-6 lg:mx-4 wafrn-container">
+    <mat-stepper orientation="vertical">
     <mat-step state="prerequisites">
       <ng-template matStepLabel
         ><b>{{ 'migrateBluesky.prerequisites.label' | translate }}</b></ng-template
@@ -27,7 +30,7 @@
       <p>{{ 'migrateBluesky.unlinking.intro' | translate }}</p>
       <p>{{ 'migrateBluesky.unlinking.inviteCodeInfo' | translate }}</p>
       @if (!code) {
-        <button [disabled]="loading" (click)="loadInviteCode()" mat-flat-button class="w-full">
+        <button [disabled]="loading" (click)="loadInviteCode()" mat-flat-button color="primary" class="w-full">
           {{ 'migrateBluesky.unlinking.deleteAndGetCode' | translate }}
         </button>
       } @else {
@@ -120,5 +123,6 @@
     <ng-template matStepperIcon="profit">
       <mat-icon>done</mat-icon>
     </ng-template> -->
-  </mat-stepper>
+    </mat-stepper>
+  </mat-card>
 }

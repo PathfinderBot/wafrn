@@ -305,7 +305,7 @@ export class User extends Model<UserAttributes, UserAttributes> implements UserA
     allowNull: true,
     type: DataType.STRING
   })
-  declare bskyInviteCode: string
+  declare bskyInviteCode: string | null
 
   @Column({
     allowNull: true,

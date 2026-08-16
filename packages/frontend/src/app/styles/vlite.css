@@ -43,12 +43,7 @@
   width: 100%;
 }
 .v-vlite video::-webkit-media-controls {
-  display: none !important;
-}
-.v-vlite.v-fullscreenButtonDisplay .v-bigPlay,
-.v-vlite.v-fullscreenButtonDisplay .v-controlBar {
-  position: fixed;
-  z-index: 2147483647;
+  display: none;
 }
 .v-vlite.v-paused .v-controlBar.v-hidden {
   opacity: 1;
@@ -143,10 +138,14 @@
   transform: translateX(-50%) translateY(-50%);
   transition: opacity var(--vlite-transition);
   width: 58px;
-  z-index: 3;
+  z-index: 4;
 }
 .v-bigPlay * {
   pointer-events: none;
+}
+.v-bigPlay:focus-visible {
+  outline: 2px dashed var(--vlite-colorPrimary);
+  outline-offset: -4px;
 }
 .v-bigPlay svg {
   fill: var(--vlite-controlsColor);
@@ -174,7 +173,7 @@
 .v-loader {
   align-items: center;
   display: flex;
-  height: 100%;
+  height: calc(100% - var(--vlite-controlBarHeight));
   left: 0;
   opacity: 0;
   position: absolute;
@@ -188,7 +187,9 @@
 }
 .v-loaderContent {
   margin: 0 auto;
+  position: relative;
   text-align: center;
+  top: calc(var(--vlite-controlBarHeight) / 2);
   width: 70px;
 }
 .v-loaderContent > div {
@@ -228,7 +229,7 @@
   height: 100%;
   opacity: 0;
   visibility: hidden;
-  z-index: 2;
+  z-index: 3;
 }
 .v-poster.v-active {
   opacity: 1;
@@ -282,7 +283,11 @@
   outline-offset: 2px;
 }
 .v-progressBarStyle::-webkit-slider-runnable-track {
-  background: linear-gradient(to right, var(--vlite-colorPrimary) 0, var(--vlite-progressBarBackground) 0);
+  background: linear-gradient(
+    to right,
+    var(--vlite-colorPrimary) 0,
+    var(--vlite-progressBarBackground) 0
+  );
   background: linear-gradient(
     to right,
     var(--vlite-colorPrimary) var(--vlite-progressValue, 0),
@@ -293,7 +298,11 @@
   height: var(--vlite-progressBarHeight);
 }
 .v-progressBarStyle::-moz-range-track {
-  background: linear-gradient(to right, var(--vlite-colorPrimary) 0, var(--vlite-progressBarBackground) 0);
+  background: linear-gradient(
+    to right,
+    var(--vlite-colorPrimary) 0,
+    var(--vlite-progressBarBackground) 0
+  );
   background: linear-gradient(
     to right,
     var(--vlite-colorPrimary) var(--vlite-progressValue, 0),
@@ -380,6 +389,6 @@
 }
 @media (hover: hover) {
   .v-controlBar:hover {
-    opacity: 1 !important;
+    opacity: 1;
   }
 }

@@ -188,9 +188,11 @@ export class NotificationsService {
           userId: notification.userId,
           type: notification.notificationType,
           url:
-            notification.notificationType === 'FOLLOW' || 'USERBITE'
-              ? `/blog/${usr.url}`
-              : `/post/${notification.postId}`,
+            notification.notificationType === 'ASK'
+              ? '/profile/myAsks'
+              : notification.notificationType === 'FOLLOW' || 'USERBITE'
+                ? `/blog/${usr.url}`
+                : `/post/${notification.postId}`,
           avatar: usr.avatar,
           userUrl: usr.url,
           userName: usr.name,

@@ -8,7 +8,6 @@ import { forceUpdateDidsCacheQueue } from './interfaces/atproto/forceUpdateDidsC
 import { FOLLOWED_BSKY_DIDS_CACHE_KEY, FOLLOWED_HASHTAGS_CACHE_KEY, LOCAL_USER_DIDS_CACHE_KEY } from './constants.js'
 import { forcePopulateCache } from './atproto/cache/forcePopulateCache.js'
 import { getQueue } from './utils/queues.js'
-import { wait } from './utils/wait.js'
 import { getAtprotoUser } from './atproto/utils/getAtprotoUser.js'
 
 //const firehose = new Firehose(`wss://bolson.bsky.dev`);
@@ -31,8 +30,8 @@ if (!cacheLoaded) {
   await forcePopulateCache()
 }
 const cacheLastForceUpdate = (await redisCache.get('bskyCacheDate')) ?? '0'
-// every two weeks force update dids
-if (new Date().getDate() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 28 * 1000) {
+// every four weeks force update dids
+if (new Date().getTime() - parseInt(cacheLastForceUpdate) > 3600 * 24 * 28 * 1000) {
   logger.info({
     message: `UPDATING LOCAL CACHE OF USERS. This may take a few minutes depending on your isntance`
   })
@@ -62,25 +61,66 @@ const firehoseQueue = getQueue('firehoseQueue')
 
 const lowPriorityFirehoseQueue = getQueue('lowPriorityFirehoseQueue')
 
+async function persistCursor(timeUs: number | undefined) {
+  if (!timeUs) return
+  await redisCache.set('jetstreamCursor', timeUs)
+}
+
+setInterval(() => {
+  void persistCursor(jetstream.cursor)
+}, 5000)
+
+const COMMIT_CONCURRENCY = 25
+let activeCommits = 0
+const commitWaiters: (() => void)[] = []
+
+function acquireCommitSlot(): Promise<void> {
+  if (activeCommits < COMMIT_CONCURRENCY) {
+    activeCommits++
+    return Promise.resolve()
+  }
+  return new Promise((resolve) => commitWaiters.push(resolve))
+}
+
+function releaseCommitSlot() {
+  const next = commitWaiters.shift()
+  if (next) {
+    next()
+  } else {
+    activeCommits--
+  }
+}
+
 jetstream.on('commit', async (event) => {
   const commit = event.commit
-
-  if (await checkCommitMentions(event.did, commit)) {
-    await redisCache.set('jetstreamCursor', event.time_us)
-    const data = {
-      repo: event.did,
-      operation: {
-        ...(commit as any),
-        action: commit.operation,
-        collection: commit.collection,
-        path: `${commit.collection}/${commit.rkey}`
+  await acquireCommitSlot()
+  try {
+    if (await checkCommitMentions(event.did, commit)) {
+      const data = {
+        repo: event.did,
+        operation: {
+          ...(commit as any),
+          action: commit.operation,
+          collection: commit.collection,
+          path: `${commit.collection}/${commit.rkey}`
+        }
       }
+      if (commit.operation === 'delete' || ['app.bsky.graph.follow', 'app.bsky.feed.like'].includes(commit.collection)) {
+        await lowPriorityFirehoseQueue.add('lowPriorityFirehoseQueue', data)
+      } else {
+        await firehoseQueue.add('processFirehoseQueue', data)
+      }
+      await persistCursor(event.time_us)
     }
-    if (commit.operation === 'delete' || ['app.bsky.graph.follow', 'app.bsky.feed.like'].includes(commit.collection)) {
-      await lowPriorityFirehoseQueue.add('lowPriorityFirehoseQueue', data)
-    } else {
-      await firehoseQueue.add('processFirehoseQueue', data)
-    }
+  } catch (error) {
+    logger.error({
+      message: 'Error processing jetstream commit. Skipping this event.',
+      did: event.did,
+      collection: commit.collection,
+      error
+    })
+  } finally {
+    releaseCommitSlot()
   }
 })
 
@@ -92,12 +132,24 @@ jetstream.on('identity', async (event) => {
   }
 })
 
-jetstream.on('close', async () => {
-  logger.warn('jetstream closed')
-  const timeClosing = new Date().getTime()
-  await redisCache.set('jetstreamCursor', timeClosing)
-  await wait(2500)
-  throw new Error('Jetstream closed. Forcing restart')
+let reconnectWatchdog: NodeJS.Timeout | null = null
+
+jetstream.on('open', () => {
+  if (reconnectWatchdog) {
+    clearTimeout(reconnectWatchdog)
+    reconnectWatchdog = null
+  }
+})
+
+jetstream.on('close', () => {
+  logger.warn('jetstream closed, waiting for automatic reconnect')
+  void persistCursor(jetstream.cursor)
+  if (!reconnectWatchdog) {
+    reconnectWatchdog = setTimeout(() => {
+      logger.error('jetstream did not reconnect in time, forcing restart')
+      process.exit(1)
+    }, 120000)
+  }
 })
 
 jetstream.start()

@@ -8,7 +8,6 @@ import {
   Follows,
   Mutes,
   Post,
-  ServerBlock,
   User,
   UserBookmarkedPosts,
   UserEmojiRelation,
@@ -27,6 +26,7 @@ import optionalAuthentication from '../utils/optionalAuthentication.js'
 import { redisCache } from '../utils/redis.js'
 import getFollowedsIds from '../utils/cacheGetters/getFollowedsIds.js'
 import getBlockedIds from '../utils/cacheGetters/getBlockedIds.js'
+import getUserBlockedServers from '../utils/cacheGetters/getUserBlockedServers.js'
 import { getNotYetAcceptedFollowedids } from '../utils/cacheGetters/getNotYetAcceptedFollowedIds.js'
 import { getUserOptions } from '../utils/cacheGetters/getUserOptions.js'
 import { getMutedPosts } from '../utils/cacheGetters/getMutedPosts.js'
@@ -38,6 +38,7 @@ import { rejectremoteFollow } from '../activitypub/rejectRemoteFollow.js'
 import { acceptRemoteFollow } from '../activitypub/acceptRemoteFollow.js'
 import showdown from 'showdown'
 import { getAtProtoSession } from '../atproto/utils/getAtProtoSession.js'
+import { createNotification } from '../services/pushNotifications.js'
 import dompurify from 'isomorphic-dompurify'
 import { getFollowedHashtags } from '../utils/cacheGetters/getFollowedHashtags.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
@@ -246,6 +247,7 @@ function userRoutes(app: Application) {
       const options = req.body.options
       if (userId && options) {
         await updateProfileOptions(JSON.stringify(options), userId)
+        success = true
       }
       await redisCache.del('userOptions:' + userId)
       await redisCache.del('fediverse:user:base:' + userId)
@@ -368,7 +370,7 @@ function userRoutes(app: Application) {
           attributes: ['hideProfileNotLoggedIn']
         })
         if (user?.hideProfileNotLoggedIn) {
-          res.sendStatus(404)
+          res.status(403).send({ status: 'login_required' })
           return
         }
       }
@@ -414,16 +416,12 @@ function userRoutes(app: Application) {
             blockedId: blog.id
           }
         })
-        const serverBlockedQuery = await ServerBlock.count({
-          where: {
-            userBlockerId: req.jwtData.userId as string,
-            blockedServerId: blog.federatedHostId as string
-          }
-        })
-        await Promise.all([mutedQuery, blockedQuery, serverBlockedQuery, followed, followers, publicOptions])
+        const userBlockedServersQuery = getUserBlockedServers(req.jwtData.userId)
+        await Promise.all([mutedQuery, blockedQuery, userBlockedServersQuery, followed, followers, publicOptions])
         muted = (await mutedQuery) === 1
         blocked = (await blockedQuery) === 1
-        serverBlocked = serverBlocked || (await serverBlockedQuery) === 1
+        const userBlockedServers = await userBlockedServersQuery
+        serverBlocked = serverBlocked || userBlockedServers.some((elem) => elem.blockedServerId === blog.federatedHostId)
       } else {
         await Promise.all([followed, followers])
       }
@@ -792,14 +790,28 @@ function userRoutes(app: Application) {
       }
 
       const question = req.body.question ? req.body.question.substring(0, 10240) : ''
+      const sanitizedQuestion = dompurify.sanitize(question, { ALLOWED_TAGS: [] })
       await Ask.create({
-        question: dompurify.sanitize(question, { ALLOWED_TAGS: [] }),
+        question: sanitizedQuestion,
         apObject: null,
         creationIp: getIp(req),
         answered: false,
         userAsked: userRecivingAsk.id,
         userAsker: userAsking
       })
+      await createNotification(
+        {
+          notificationType: 'ASK',
+          // anonymous asks have no asker; use the "no user" placeholder id used elsewhere in the codebase
+          userId: userAsking ?? '00000000-0000-0000-0000-000000000000',
+          notifiedUserId: userRecivingAsk.id,
+          detached: false
+        },
+        {
+          userUrl: userAsking ? (await User.findByPk(userAsking))?.url : undefined,
+          postContent: sanitizedQuestion
+        }
+      )
       res.send({
         success: true
       })
@@ -818,13 +830,13 @@ function userRoutes(app: Application) {
         id: req.body.id
       }
     })
-    res.send({
-      success: askToIgnore ? true : false
-    })
     if (askToIgnore) {
       askToIgnore.answered = true
       await askToIgnore.save()
     }
+    res.send({
+      success: askToIgnore ? true : false
+    })
   })
 
   app.post('/api/user/bookmarkPost', authenticateToken, async (req: AuthorizedRequest, res: Response) => {
@@ -990,10 +1002,14 @@ async function updateProfileOptions(optionsJSON: string, posterId: string) {
     const options = _options
       .filter((elem) => elem.name)
       .map((opt) => {
+        let value = String(opt.value)
+        if (opt.name === 'wafrn.federateWithThreads' && !completeEnvironment.enableOptInFederationToThreads) {
+          value = 'false'
+        }
         return {
           ...opt,
           // NOTE: opt.value should be a string result of JSON.stringify, adding this to prevent any potential security issues
-          value: String(opt.value),
+          value,
           public: opt.name.startsWith('wafrn.public') || opt.name.startsWith('fediverse.public')
         }
       })

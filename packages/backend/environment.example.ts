@@ -17,7 +17,7 @@ export const baseEnvironment: Environment = {
   // this was a dev thing. leave to true unless you are doing stuff in local or your media url is yourinstance/uploads (not recomended)
   removeFolderNameFromFileUploads: true,
   // we use now postgresql.
-  databaseConnectionString: `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DBNAME}`,
+  databaseConnectionString: `postgresql://${process.env.POSTGRES_USER || 'root'}:${process.env.POSTGRES_PASSWORD || 'root'}@${process.env.POSTGRES_HOST || 'localhost'}:${process.env.POSTGRES_PORT || '5432'}/${process.env.POSTGRES_DBNAME || 'wafrn'}`,
   listenIp: process.env.LISTEN_IP || '0.0.0.0',
   port: parseInt(process.env.PORT || '9000'),
   // In the case of you wantint to put fedi petitions in another thread, use a different port here. You will have to update your apache config
@@ -109,11 +109,18 @@ export const baseEnvironment: Environment = {
   },
   enableBsky: process.env.ENABLE_BSKY == 'true',
   bskyPds: process.env.PDS_DOMAIN_NAME || '',
+  bskyPdsInternalUrl: process.env.PDS_INTERNAL_URL || '',
   bskyPdsJwtSecret: process.env.PDS_JWT_SECRET,
   bskyPdsAdminPassword: process.env.PDS_ADMIN_PASSWORD,
   bskySlingshotUrl: process.env.SLINGSHOT_URL || 'https://slingshot.microcosm.blue',
   bskyJetstreamUrl: process.env.JETSTREAM_URL || 'wss://jetstream1.eurosky.network/subscribe',
   bskyConstellationUrl: process.env.CONSTELLATION_URL || 'https://constellation.microcosm.blue',
+  enableBskyFallbackDashboard: process.env.ENABLE_BLUESKY_FALLBACK_DASHBOARD
+    ? process.env.ENABLE_BLUESKY_FALLBACK_DASHBOARD == 'true'
+    : true,
+  enableBskyFallbackNotifications: process.env.ENABLE_BLUESKY_FALLBACK_NOTIFICATIONS
+    ? process.env.ENABLE_BLUESKY_FALLBACK_NOTIFICATIONS == 'true'
+    : true,
   // to generate these keys use the following command: `npx web-push generate-vapid-keys`. Remember to do the environment one too!!
   webpushPrivateKey: process.env.WEBPUSH_PRIVATE || '',
   webpushPublicKey: process.env.WEBPUSH_PUBLIC || '',
@@ -123,8 +130,12 @@ export const baseEnvironment: Environment = {
   minimumAgeToRegister: parseInt(process.env.REGISTRATION_MINIMUM_AGE || '18'),
   registrationLevel: (process.env.REGISTRATION_LEVEL || 'PUBLIC') as 'PRIVATE' | 'INVITE' | 'PUBLIC',
   disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
+  disableAutomaticBlocklistSync: process.env.DISABLE_AUTOMATIC_BLOCKLIST_SYNC
+    ? process.env.DISABLE_AUTOMATIC_BLOCKLIST_SYNC == 'true'
+    : true,
   bubbleHostsShowType: (process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC') as 'PUBLIC' | 'HIDDEN' | 'LOGGEDIN',
   blockedHostsShowType: (process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN') as 'PUBLIC' | 'HIDDEN' | 'LOGGEDIN',
+  enableOptInFederationToThreads: process.env.ENABLE_OPT_IN_FEDERATION_TO_THREADS == 'true',
   donationUrl: process.env.DONATION_URL || '',
   bskyRotationKeyK256: process.env.PDS_PLC_ROTATION_KEY_K256_PRIVATE_KEY_HEX || '',
   frontendEnvironment: {
@@ -145,6 +156,7 @@ export const baseEnvironment: Environment = {
     disableShowingBlockedServers: process.env.HIDE_BLOCKED_SERVERS == 'true',
     bubbleHostsShowType: process.env.BUBBLE_SERVERS_SHOW_TYPE || 'PUBLIC',
     blockedHostsShowType: process.env.BLOCKED_SERVERS_SHOW_TYPE || 'LOGGEDIN',
+    enableOptInFederationToThreads: process.env.ENABLE_OPT_IN_FEDERATION_TO_THREADS == 'true',
     defaultLanguageCode: process.env.DEFAULT_LANGUAGE_CODE || 'en'
   }
 }

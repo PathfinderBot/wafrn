@@ -86,6 +86,9 @@ export async function userToJSONLD(user: User) {
     if (existsSync(`uploads/themes/${user.id}.css`)) {
       customCSS = new URL(`/api/uploads/themes/${user.id}.css`, completeEnvironment.frontendUrl).href
     }
+    // 1 = everyone (default), 2 = people who follow this user, 3 = people this user follows
+    const allowBitesOption = userOptions.find((elem) => elem.optionName === 'wafrn.public.allowBitesFrom')
+    const allowBitesFromValue = allowBitesOption?.optionValue || '1'
     userForFediverse = {
       '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
       id: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
@@ -141,7 +144,11 @@ export async function userToJSONLD(user: User) {
         owner: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}`,
         publicKeyPem: user.publicKey
       },
-      canBite: 'https://www.w3.org/ns/activitystreams#Public'
+      ...(allowBitesFromValue === '1'
+        ? { canBite: 'https://www.w3.org/ns/activitystreams#Public' }
+        : allowBitesFromValue === '3'
+          ? { canBite: `${completeEnvironment.frontendUrl}/fediverse/blog/${user.url.toLowerCase()}/following` }
+          : {})
     }
 
     if (user.userMigratedTo) {

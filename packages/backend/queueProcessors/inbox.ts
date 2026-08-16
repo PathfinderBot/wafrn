@@ -41,6 +41,8 @@ import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
 import { postPetitionSigned } from '../activitypub/postPetitionSigned.js'
 import { biteActivity } from './processors/bite.js'
 import { LITEPUB_CONTEXT_PATH } from '../activitypub/contexts.js'
+import { canInteract } from '../services/baseQueryNew.js'
+import { getApObjectPrivacy } from '../activitypub/getPrivacy.js'
 
 async function inboxWorker(job: Job) {
   try {
@@ -223,6 +225,110 @@ async function inboxWorker(job: Job) {
               }
             }
             break
+
+          // FEP-6fce: a remote actor politely asking to reply to / reblog one of our posts that has a
+          // manualApproval interactionPolicy. We do not have manual review yet, so we accept (or reject)
+          // immediately based on the same audience rules canInteract already enforces for our own posts.
+          case 'ReplyRequest':
+            {
+              if (req.body.object && req.body.object.startsWith(`${completeEnvironment.frontendUrl}/fediverse/post/`)) {
+                const postId = req.body.object.split(`${completeEnvironment.frontendUrl}/fediverse/post/`)[1]
+                const targetPost: any = await Post.findByPk(postId, {
+                  include: [{ model: User, as: 'user' }]
+                })
+                const instrumentUrl =
+                  typeof req.body.instrument === 'string' ? req.body.instrument : req.body.instrument?.id
+                const replyPost = instrumentUrl
+                  ? await getPostThreadRecursive(await getAdminUser(), instrumentUrl)
+                  : undefined
+                if (targetPost && replyPost) {
+                  const allowed = await canInteract(targetPost.replyControl, replyPost.userId, targetPost.id)
+                  const acceptOrReject: activityPubObject = {
+                    '@context': [
+                      'https://www.w3.org/ns/activitystreams',
+                      `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+                    ],
+                    actor: `${
+                      completeEnvironment.frontendUrl
+                    }/fediverse/blog/${targetPost.dataValues.user.url.toLowerCase()}`,
+                    id: `${completeEnvironment.frontendUrl}/fediverse/reply_request/${replyPost.id}`,
+                    type: allowed ? 'Accept' : 'Reject',
+                    object: req.body,
+                    ...(allowed
+                      ? { result: `${completeEnvironment.frontendUrl}/fediverse/reply_authorization/${replyPost.id}` }
+                      : {})
+                  } as activityPubObject
+                  await postPetitionSigned(
+                    acceptOrReject,
+                    (await User.scope('full').findByPk(targetPost.userId)) as User,
+                    remoteUser.remoteInbox ?? ''
+                  )
+                }
+              }
+            }
+            break
+
+          case 'AnnounceRequest':
+            {
+              if (req.body.object && req.body.object.startsWith(`${completeEnvironment.frontendUrl}/fediverse/post/`)) {
+                const postId = req.body.object.split(`${completeEnvironment.frontendUrl}/fediverse/post/`)[1]
+                const targetPost: any = await Post.findByPk(postId, {
+                  include: [{ model: User, as: 'user' }]
+                })
+                const instrumentUrl =
+                  typeof req.body.instrument === 'string' ? req.body.instrument : req.body.instrument?.id
+                if (targetPost && instrumentUrl) {
+                  let reblogPost = await Post.findOne({ where: { remotePostId: instrumentUrl } })
+                  if (!reblogPost) {
+                    const remoteAnnounce = await getPetitionSigned(await getAdminUser(), instrumentUrl)
+                    if (remoteAnnounce) {
+                      let createdAt = remoteAnnounce.published ? new Date(remoteAnnounce.published) : new Date()
+                      if (createdAt.getTime() > new Date().getTime()) {
+                        createdAt = new Date()
+                      }
+                      reblogPost = await Post.create({
+                        content: '',
+                        isReblog: true,
+                        content_warning: '',
+                        createdAt,
+                        updatedAt: createdAt,
+                        userId: remoteUser.id,
+                        remotePostId: instrumentUrl,
+                        privacy: getApObjectPrivacy(remoteAnnounce, remoteUser),
+                        parentId: targetPost.id
+                      })
+                    }
+                  }
+                  if (reblogPost) {
+                    const allowed = await canInteract(targetPost.reblogControl, reblogPost.userId, targetPost.id)
+                    const acceptOrReject: activityPubObject = {
+                      '@context': [
+                        'https://www.w3.org/ns/activitystreams',
+                        `${completeEnvironment.frontendUrl}${LITEPUB_CONTEXT_PATH}`
+                      ],
+                      actor: `${
+                        completeEnvironment.frontendUrl
+                      }/fediverse/blog/${targetPost.dataValues.user.url.toLowerCase()}`,
+                      id: `${completeEnvironment.frontendUrl}/fediverse/announce_request/${reblogPost.id}`,
+                      type: allowed ? 'Accept' : 'Reject',
+                      object: req.body,
+                      ...(allowed
+                        ? {
+                            result: `${completeEnvironment.frontendUrl}/fediverse/announce_authorization/${reblogPost.id}`
+                          }
+                        : {})
+                    } as activityPubObject
+                    await postPetitionSigned(
+                      acceptOrReject,
+                      (await User.scope('full').findByPk(targetPost.userId)) as User,
+                      remoteUser.remoteInbox ?? ''
+                    )
+                  }
+                }
+              }
+            }
+            break
+
           default: {
             logger.info(`NOT IMPLEMENTED: ${req.body.type}`)
             logger.info(req.body)
