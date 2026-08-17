@@ -1,6 +1,6 @@
 {
   "name": "wafrn",
-  "version": "2026.08.04",
+  "version": "2026.08.04-HOTFIX-1",
   "description": "wafrn",
   "main": "index.ts",
   "scripts": {
