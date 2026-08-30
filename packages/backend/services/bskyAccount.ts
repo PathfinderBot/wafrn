@@ -225,6 +225,21 @@ async function createBskyAppPassword(user: User, agent: AtpAgent, forceLog?: boo
   return true
 }
 
+async function createBskyInviteCode(): Promise<string> {
+  const authString = Buffer.from('admin:' + completeEnvironment.bskyPdsAdminPassword).toString('base64')
+  const reply: { data: { code: string } } = await axios.post(
+    serviceUrl + '/xrpc/com.atproto.server.createInviteCode',
+    { useCount: 1 },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + authString
+      }
+    }
+  )
+  return reply.data.code
+}
+
 async function updateBskyPassword(user: User, password: string) {
   const authString = Buffer.from('admin:' + completeEnvironment.bskyPdsAdminPassword).toString('base64')
   return await axios.post(
@@ -260,6 +275,7 @@ export {
   pinPostOnBluesky,
   createBskyAccount,
   createBskyAppPassword,
+  createBskyInviteCode,
   updateBskyPassword,
   forceUpdateBskyEmail
 }

@@ -1,8 +1,7 @@
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
-import { BskyInviteCodes } from '../models/index.js'
 import { AtpAgent } from '@atproto/api'
-import { createBskyAccount } from '../services/bskyAccount.js'
+import { createBskyAccount, createBskyInviteCode } from '../services/bskyAccount.js'
 import generateRandomString from '../utils/generateRandomString.js'
 import { getPdsServiceUrl } from '../atproto/utils/getPdsServiceUrl.js'
 
@@ -24,12 +23,7 @@ if (!user) {
 } else {
   if ((!user.enableBsky || !user.bskyDid) && completeEnvironment.enableBsky) {
     console.log(`Trying to create user: @${name + '.' + completeEnvironment.bskyPds}`)
-    const inviteCodeRecord = await BskyInviteCodes.findOne({
-      where: {
-        masterCode: true
-      }
-    })
-    const inviteCode = inviteCodeRecord?.code as string
+    const inviteCode = await createBskyInviteCode()
     const serviceUrl = completeEnvironment.bskyPds ? getPdsServiceUrl() : ''
     const agent = new AtpAgent({
       service: serviceUrl

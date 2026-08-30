@@ -1,9 +1,15 @@
 import { AtpAgent } from '@atproto/api'
-import { BskyInviteCodes, User, UserOptions } from '../models/index.js'
+import { User, UserOptions } from '../models/index.js'
 import { completeEnvironment } from './backendOptions.js'
 import generateRandomString from './generateRandomString.js'
 import { logger } from './logger.js'
-import { createBskyAccount, createBskyAppPassword, serviceUrl, updateBlueskyProfile } from '../services/bskyAccount.js'
+import {
+  createBskyAccount,
+  createBskyAppPassword,
+  createBskyInviteCode,
+  serviceUrl,
+  updateBlueskyProfile
+} from '../services/bskyAccount.js'
 
 const BLUESKY_REGISTRATION_OPTION_NAME = 'wafrn.blueskyRegistrationOption'
 
@@ -31,11 +37,7 @@ async function applyBlueskyRegistrationOption(user: User): Promise<string> {
 You can create or link one later from your settings.</p>`
     }
     try {
-      const inviteCodeRecord = await BskyInviteCodes.findOne({ where: { masterCode: true } })
-      const inviteCode = inviteCodeRecord?.code
-      if (!inviteCode) {
-        throw new Error('No master bluesky invite code configured on this instance')
-      }
+      const inviteCode = await createBskyInviteCode()
       const agent = new AtpAgent({ service: serviceUrl })
       const password = generateRandomString()
       await createBskyAccount({ agent, user, password, inviteCode })

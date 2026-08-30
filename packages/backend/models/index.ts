@@ -2,7 +2,6 @@ import { sequelize } from './sequelize.js'
 
 import { Ask } from './ask.js'
 import { Blocks } from './blocks.js'
-import { BskyInviteCodes } from './bskyInviteCodes.js'
 import { Emoji } from './emoji.js'
 import { EmojiCollection } from './emojiCollection.js'
 import { EmojiReaction } from './emojiReaction.js'
@@ -42,7 +41,6 @@ sequelize.addModels([
   Ask,
   Blocks,
   Bites,
-  BskyInviteCodes,
   InviteCode,
   Emoji,
   EmojiCollection,
@@ -89,7 +87,6 @@ export {
   Ask,
   Blocks,
   Bites,
-  BskyInviteCodes,
   Emoji,
   EmojiCollection,
   EmojiReaction,

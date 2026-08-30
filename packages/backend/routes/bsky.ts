@@ -16,10 +16,11 @@ import { navigationRateLimiter } from '../utils/rateLimiters.js'
 import { redisCache } from '../utils/redis.js'
 import { syncBskyAccountData } from '../atproto/utils/syncBskyAccountData.js'
 import AuthorizedRequest from '../interfaces/authorizedRequest.js'
-import { BskyInviteCodes, Post, sequelize, User } from '../models/index.js'
+import { Post, sequelize, User } from '../models/index.js'
 import {
   createBskyAccount,
   createBskyAppPassword,
+  createBskyInviteCode,
   serviceUrl,
   updateBlueskyProfile,
   updateBskyPassword
@@ -149,19 +150,8 @@ function bskyRoutes(app: Application) {
         }
       } else {
         // if user does not have a did, create a new account for them
-        const inviteCodeRecord = await BskyInviteCodes.findOne({
-          where: {
-            masterCode: true
-          }
-        })
-        const inviteCode = inviteCodeRecord?.code
-
-        if (!inviteCode) {
-          return res.status(400).send({
-            error: true,
-            message: `Contact the administrator: no master invite code available`
-          })
-        }
+        // generate a fresh single-use invite code directly via the PDS admin API
+        const inviteCode = await createBskyInviteCode()
         await createBskyAccount({
           agent,
           user,
@@ -239,7 +229,7 @@ function bskyRoutes(app: Application) {
     } else {
       const authString = Buffer.from('admin:' + completeEnvironment.bskyPdsAdminPassword).toString('base64')
       if (user.bskyDid) {
-        const deleteAccountReply = await axios.post(
+        await axios.post(
           serviceUrl + '/xrpc/com.atproto.admin.deleteAccount',
           { did: user.bskyDid },
           {
@@ -260,19 +250,10 @@ function bskyRoutes(app: Application) {
         await redisCache.del('localUserData:' + user.url.toLowerCase())
       }
       try {
-        const inviteCodesReply: { data: { code: string } } = await axios.post(
-          serviceUrl + '/xrpc/com.atproto.server.createInviteCode',
-          { useCount: 1 },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: 'Basic ' + authString
-            }
-          }
-        )
-        user.bskyInviteCode = inviteCodesReply.data.code
+        const inviteCode = await createBskyInviteCode()
+        user.bskyInviteCode = inviteCode
         await user.save()
-        return res.send({ code: inviteCodesReply.data.code })
+        return res.send({ code: inviteCode })
       } catch (error) {
         logger.error(error)
         return res.sendStatus(500)
