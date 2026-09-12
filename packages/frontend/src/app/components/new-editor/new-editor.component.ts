@@ -148,6 +148,7 @@ export class NewEditorComponent implements OnInit, OnDestroy {
   emojiDialog = inject(Dialog)
   editing = false
   baseMediaUrl = EnvironmentService.environment.baseMediaUrl
+  maxUploadSize = EnvironmentService.environment.maxUploadSize
   userSelectionMentionValue = ''
   contentWarning = ''
   blueskySelfLabel = ''

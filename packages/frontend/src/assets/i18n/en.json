@@ -323,6 +323,7 @@
     "insertEmojiTooltip": "Insert emoji",
     "hiddenMentionsTooltip": "Other mentioned users",
     "editorGuide": "Doubts on how to format the text or how to start? Check <a target=\"_blank\" href=\"https://wafrn.net/faq/GuideIntro.html\">the guide!</a>",
+    "uploadLimitNotice": "The size limit for media uploads is {{limit}}MB.",
     "usernameLabel": "Wooting as",
     "noResults": "No results.",
     "quotable": "Who can quote",
