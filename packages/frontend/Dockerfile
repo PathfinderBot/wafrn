@@ -34,6 +34,21 @@ FROM caddy:2
 
 RUN apk add perl jq bash
 
+# eMudhra CA compromise (2026-10): caddy 2.11.x is built with Go < 1.26.10, so its
+# embedded root store lacks the eMudhra key block. Point Go at a trimmed copy of
+# the system store until caddy re-releases with the fix.
+RUN mkdir -p /etc/cacerts && \
+    i=0 && \
+    for f in /etc/ssl/certs/ca-cert-*.pem; do \
+        s=$(openssl x509 -in "$f" -noout -subject 2>/dev/null) || continue; \
+        case "$s" in \
+            *emSign* | *EmSign* | *"AAA Certificate Services"* | *Comodo*AAA*) ;; \
+            *) cp "$f" "/etc/cacerts/c$i.pem"; i=$((i+1));; \
+        esac; \
+    done && \
+    cat /etc/cacerts/c*.pem > /etc/cacerts/bundle.pem && rm -f /etc/cacerts/c*.pem
+ENV SSL_CERT_FILE=/etc/cacerts/bundle.pem
+
 COPY packages/frontend/Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /app/packages/frontend/src/assets/pds-homepage.txt /pds-homepage/pds.txt
 COPY --from=builder /app/frontend/ /usr/share/wafrn/frontend
