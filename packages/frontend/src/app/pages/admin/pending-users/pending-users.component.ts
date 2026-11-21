@@ -37,30 +37,6 @@ export class PendingUsersComponent {
     this.reloadList()
   }
 
-  async requireExtra(user: SimplifiedUser) {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.admin.requireExtraStepsTitle',
-      content: 'dialog.admin.requireExtraStepsDescription'
-    })
-
-    if (!confirm) return
-
-    await this.adminService.requireExtraSteps(user.id)
-    this.reloadList()
-  }
-
-  async userUsedVPN(user: SimplifiedUser) {
-    const confirm = await this.simpleDialog.createConfirmDialog({
-      title: 'dialog.admin.userUsedVPNTitle',
-      content: 'dialog.admin.userUsedVPNDescription'
-    })
-
-    if (!confirm) return
-
-    await this.adminService.userUsedVPN(user.id)
-    this.reloadList()
-  }
-
   async rejectUser(user: SimplifiedUser) {
     const res = await this.simpleDialog.createPromptDialog({
       title: 'dialog.admin.rejectUserTitle',
@@ -84,7 +60,7 @@ export class PendingUsersComponent {
     if (!confirm) return
 
     await this.adminService.blockIp(user.registerIp as string)
-    await this.userUsedVPN(user)
+    await this.adminService.userUsedVPN(user.id)
     window.location.reload()
   }
 

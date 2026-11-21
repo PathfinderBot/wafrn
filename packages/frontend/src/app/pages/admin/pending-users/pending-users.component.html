@@ -43,12 +43,6 @@
       <button (click)="activateUser(user)" mat-flat-button class="w-full lg:w-auto primary mr-auto">
         {{ 'admin.pendingUsers.activateUser' | translate }}
       </button>
-      <button (click)="requireExtra(user)" mat-flat-button class="w-full lg:w-auto warn">
-        {{ 'admin.pendingUsers.requireExtraSteps' | translate }}
-      </button>
-      <button (click)="userUsedVPN(user)" mat-flat-button class="w-full lg:w-auto warn">{{
-        'admin.pendingUsers.userUsedVPN' | translate
-      }}</button>
       <button (click)="rejectUser(user)" mat-flat-button class="w-full lg:w-auto warn">{{
         'admin.pendingUsers.rejectUser' | translate
       }}</button>
