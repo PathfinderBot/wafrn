@@ -4,9 +4,13 @@ import { isArray } from 'underscore'
 import sequelize from 'sequelize/lib/sequelize'
 import { Post, PostReport, User } from '../../models/index.js'
 import { logger } from '../../utils/logger.js'
-import sendEmail from '../../utils/sendEmail.js'
 import { completeEnvironment } from '../../utils/backendOptions.js'
 import { notifyAdminsOfReports } from '../../services/reportNotifications.js'
+import { emailAdmins } from '../../services/adminNotifications.js'
+
+function escapeHtml(input: string): string {
+  return input.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+}
 
 async function flagActivity(body: activityPubObject, remoteUser: User, user: User) {
   const apObject: activityPubObject = body
@@ -37,10 +41,11 @@ async function flagActivity(body: activityPubObject, remoteUser: User, user: Use
     ])
   )
   if (reportedPostsIds.length == 0 && reportedUsersUrl.length > 0) {
-    await sendEmail({
-      email: completeEnvironment.adminEmail,
-      subject: `There has been a report that is directed towards an user but does not includes post`,
-      body: `<p>Here you go: ${reportedPostsIds.join(', ')}, ${JSON.stringify(apObject)}</p>\n`
+    await emailAdmins({
+      subject: `New report of an user without posts at ${completeEnvironment.instanceUrl}`,
+      body: `<p>A report was filed that is directed towards an user but does not include any posts.</p>
+<p>Reported users: ${reportedUsersUrl.map((elem) => escapeHtml(elem)).join(', ')}</p>
+<p>Original report activity: ${escapeHtml(JSON.stringify(apObject))}</p>\n`
     })
   } else {
     const reportedPosts = await Post.findAll({
