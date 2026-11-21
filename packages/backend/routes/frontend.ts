@@ -122,7 +122,9 @@ function frontend(app: Application) {
       const blog = await User.findOne({
         where: sequelize.and(
           sequelize.where(sequelize.fn('lower', sequelize.col('url')), url.toLowerCase()),
-          sequelize.where(sequelize.col('email'), Op.ne, null)
+          sequelize.where(sequelize.col('email'), Op.ne, null),
+          // queersky fork: unapproved accounts don't exist publicly
+          sequelize.where(sequelize.col('activated'), Op.eq, true)
         )
       })
       if (blog) {
@@ -516,7 +518,9 @@ async function getBlogSEOCache(url: string): Promise<MetaTagOptions & { content:
   const user = await User.findOne({
     where: sequelize.and(
       sequelize.where(sequelize.fn('lower', sequelize.col('url')), url.toLowerCase()),
-      sequelize.where(sequelize.col('email'), Op.ne, null)
+      sequelize.where(sequelize.col('email'), Op.ne, null),
+      // queersky fork: unapproved accounts don't exist publicly
+      sequelize.where(sequelize.col('activated'), Op.eq, true)
     )
   })
 

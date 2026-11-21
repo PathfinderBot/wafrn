@@ -355,7 +355,17 @@ function userRoutes(app: Application) {
           ],
           banned: {
             [Op.ne]: true
-          }
+          },
+          // queersky fork: accounts not approved by an admin don't exist yet.
+          // Admins (and the account itself, for completeness) can still view.
+          ...(req.jwtData?.role === 10
+            ? {}
+            : {
+                [Op.or]: [
+                  { activated: true },
+                  ...(req.jwtData?.userId ? [{ id: req.jwtData.userId }] : [])
+                ]
+              })
         }
       })
       if (blog && !isAdult(req.jwtData?.birthDate) && req.jwtData?.role !== 10 && blog.id !== req.jwtData?.userId) {
