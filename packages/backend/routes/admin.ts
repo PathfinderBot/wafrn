@@ -493,7 +493,7 @@ ${blueskyRegistrationEmailAddition}`
           body: `\
 <p>Hello, your registration request at ${completeEnvironment.instanceUrl} has been reviewed and rejected by the moderation team. Here is their note:</p>
 <p>${req.body.message}</p>
-<p>If you think this was a mistake, you can reply to this email to reach the moderation team, or you can join other wafrn servers listed on <a href="https://join.wafrn.net">https://join.wafrn.net</a> or host your own!</p>
+<p>If you think this was a mistake, you can contact the moderation team at <a href="mailto:${completeEnvironment.adminEmail}">${completeEnvironment.adminEmail}</a>, or you can join other wafrn servers listed on <a href="https://join.wafrn.net">https://join.wafrn.net</a> or host your own!</p>
 `
         })
         await userToReject.destroy()
