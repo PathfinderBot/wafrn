@@ -282,7 +282,7 @@ export default function adminRoutes(app: Application) {
       if (userToBeBanned.email && req.body.message) {
         emailSent = sendEmail({
           email: userToBeBanned.email,
-          subject: `Your account ${userToBeBanned.url} have been banned from ${completeEnvironment.instanceUrl}`,
+          subject: `Your account ${userToBeBanned.url} has been banned from ${completeEnvironment.instanceUrl}`,
           body: `<p>Hello, you have been banned from ${completeEnvironment.instanceUrl}. Reason: ${req.body.message}</p>\n`
         })
       }
@@ -489,11 +489,11 @@ ${blueskyRegistrationEmailAddition}`
       if (userToReject && userToReject.email) {
         const emailPromise = sendEmail({
           email: userToReject.email,
-          subject: `We are sorry ${userToReject.url}, your petition to register ${completeEnvironment.instanceUrl} has been rejected`,
+          subject: `Your registration request at ${completeEnvironment.instanceUrl} has been rejected`,
           body: `\
-<p>Hello, your registration request in wafrn has been rejected. Here is the note from the mod team:</p>
+<p>Hello, your registration request at ${completeEnvironment.instanceUrl} has been reviewed and rejected by the moderation team. Here is their note:</p>
 <p>${req.body.message}</p>
-<p>Remember, you can join other wafrns on <a href="https://join.wafrn.net">https://join.wafrn.net</a> or host your own!</p>
+<p>If you think this was a mistake, you can reply to this email to reach the moderation team, or you can join other wafrn servers listed on <a href="https://join.wafrn.net">https://join.wafrn.net</a> or host your own!</p>
 `
         })
         await userToReject.destroy()

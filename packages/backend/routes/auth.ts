@@ -29,6 +29,7 @@ import verifyTotp from '../utils/verifyTotp.js'
 import { follow } from '../services/follow.js'
 import { completeEnvironment } from '../utils/backendOptions.js'
 import { getAdminUser } from '../utils/getAdminAndDeletedUser.js'
+import { notifyAdminsOfNewRegistration } from '../services/adminNotifications.js'
 import { syncBskyAccountData } from '../atproto/utils/syncBskyAccountData.js'
 import { createBskyAppPassword, forceUpdateBskyEmail, serviceUrl, updateBskyPassword } from '../services/bskyAccount.js'
 import {
@@ -251,6 +252,7 @@ function authRoutes(app: Application) {
 `
                 })
             await Promise.all([userWithEmail, emailSent])
+            await notifyAdminsOfNewRegistration({ url: user.url, email })
             if (blueskyOption !== BlueskyRegistrationOption.NoThanks) {
               await UserOptions.create({
                 userId: id,
