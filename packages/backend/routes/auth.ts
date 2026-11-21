@@ -252,7 +252,7 @@ function authRoutes(app: Application) {
 `
                 })
             await Promise.all([userWithEmail, emailSent])
-            await notifyAdminsOfNewRegistration({ url: user.url, email })
+            await notifyAdminsOfNewRegistration({ url: user.url, email, description: user.description })
             if (blueskyOption !== BlueskyRegistrationOption.NoThanks) {
               await UserOptions.create({
                 userId: id,
