@@ -5,6 +5,7 @@ import websocketRoutes from './routes/websocket.js'
 import { completeEnvironment } from './utils/backendOptions.js'
 import cron from 'node-cron'
 import { nukeBannedUsers } from './maintenanceTasks/nukeBannedUsers.js'
+import { purgeUnverifiedRegistrations } from './maintenanceTasks/purgeUnverifiedRegistrations.js'
 import { blockHosts } from './updateDatabase/blockHosts.js'
 import { sequelize } from './models/sequelize.js'
 import { Op, QueryTypes } from 'sequelize'
@@ -44,6 +45,14 @@ cron.schedule('0 2 * * *', async () => {
   // maintenance tasks nuking users
   nukeBannedUsers().then(() => {
     logger.info(`NukeBannedUsers Done`)
+  })
+})
+
+// queersky fork: reap registrations that never verified their email, freeing
+// squatted usernames. Runs after the other user-nuking maintenance.
+cron.schedule('30 2 * * *', async () => {
+  purgeUnverifiedRegistrations().then(() => {
+    logger.info(`purgeUnverifiedRegistrations Done`)
   })
 })
 

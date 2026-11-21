@@ -33,7 +33,16 @@ async function getLocalUserByUrlCache(url: string): Promise<User | undefined> {
     }
   }
   // this function can return undefined
-  return cacheResult ? JSON.parse(cacheResult) : undefined
+  let user = cacheResult ? JSON.parse(cacheResult) : undefined
+  // queersky fork: accounts that have not been approved by an admin (activated)
+  // must not exist on the fediverse. We hide them here so every AP surface
+  // (actor, webfinger, inbox, outbox, collections) responds as if the account
+  // does not exist. Banned users are still returned so callers can reply
+  // with their usual 410 Gone.
+  if (user && user.activated !== true && !user.banned) {
+    user = undefined
+  }
+  return user
 }
 
 const inboxQueue = getQueue('inbox')

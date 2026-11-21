@@ -409,14 +409,25 @@ export default function adminRoutes(app: Application) {
         },
         banned: false
       }
-      if (!completeEnvironment.disableRequireSendEmail) {
-        whereConditions.emailVerified = true
-      }
+      // queersky fork: show unverified registrations in the approval queue too,
+      // so admins can see (and reject) name-squatters that never verify.
+      // Upstream hides them behind the emailVerified filter below.
+      // if (!completeEnvironment.disableRequireSendEmail) {
+      //   whereConditions.emailVerified = true
+      // }
       const notActiveUsers = await User.scope('full').findAll({
         where: whereConditions,
-        attributes: ['id', 'url', 'avatar', 'description', 'email', 'registerIp']
+        attributes: ['id', 'url', 'avatar', 'description', 'email', 'registerIp', 'emailVerified']
       })
-      res.send(notActiveUsers)
+      // HACK: mark unverified emails in the email string itself so the frontend
+      // can distinguish them without a frontend change. Remove when the
+      // frontend gets a proper "unverified" badge.
+      res.send(
+        notActiveUsers.map((user) => ({
+          ...user.dataValues,
+          email: user.emailVerified ? user.email : `${user.email ?? '(no email)'} (unverified)`
+        }))
+      )
     }
   )
 

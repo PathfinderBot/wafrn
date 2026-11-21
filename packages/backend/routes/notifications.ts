@@ -410,9 +410,8 @@ function notificationRoutes(app: Application) {
         },
         banned: false
       }
-      if (!completeEnvironment.disableRequireSendEmail) {
-        whereConditions.emailVerified = true
-      }
+      // queersky fork: count unverified registrations too, matching the
+      // admin approval queue (upstream filters on emailVerified here).
 
       usersAwaitingApproval = User.count({
         where: whereConditions
