@@ -358,12 +358,18 @@ function userRoutes(app: Application) {
           },
           // queersky fork: accounts not approved by an admin don't exist yet.
           // Admins (and the account itself, for completeness) can still view.
+          // NOTE: this must stay an Op.and — a second top-level Op.or key
+          // would overwrite the url/bskyDid matcher above.
           ...(req.jwtData?.role === 10
             ? {}
             : {
-                [Op.or]: [
-                  { activated: true },
-                  ...(req.jwtData?.userId ? [{ id: req.jwtData.userId }] : [])
+                [Op.and]: [
+                  {
+                    [Op.or]: [
+                      { activated: true },
+                      ...(req.jwtData?.userId ? [{ id: req.jwtData.userId }] : [])
+                    ]
+                  }
                 ]
               })
         }
